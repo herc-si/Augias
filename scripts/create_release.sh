@@ -4,7 +4,7 @@ set -euo pipefail
 
 # Extract version components
 VERSION="$1"    # e.g. "2.3.14"
-REPOSITORY="$2" # e.g. "SolidInvoice/SolidInvoice"
+REPOSITORY="$2" # e.g. "herc-si/Augias"
 MAJOR="$(echo "$VERSION" | cut -d '.' -f1)"
 MINOR="$(echo "$VERSION" | cut -d '.' -f2)"
 PATCH="$(echo "$VERSION" | cut -d '.' -f3)"

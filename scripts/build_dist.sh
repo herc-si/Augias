@@ -2,7 +2,7 @@
 
 set -euxo pipefail
 
-# This script is used to build the distribution archives for SolidInvoice.
+# This script is used to build the distribution archives for Augias.
 #
 # Usage:
 #   ./build_dist.sh [BRANCH] [VERSION] [--local]
@@ -20,9 +20,9 @@ set -euxo pipefail
 
 show_help() {
     cat << 'EOF'
-SolidInvoice Distribution Builder
+Augias Distribution Builder
 
-Builds distribution archives (.tar.gz and .zip) for SolidInvoice.
+Builds distribution archives (.tar.gz and .zip) for Augias.
 
 USAGE:
     ./build_dist.sh [BRANCH] [VERSION] [--local] [--help]
@@ -49,8 +49,8 @@ ENVIRONMENT:
     RELEASE=1   Upload archives to GitHub releases (requires gh CLI)
 
 OUTPUT:
-    build/dist/SolidInvoice-{VERSION}.tar.gz
-    build/dist/SolidInvoice-{VERSION}.zip
+    build/dist/Augias-{VERSION}.tar.gz
+    build/dist/Augias-{VERSION}.zip
 
 For more details, see scripts/BUILD_GUIDE.md
 EOF
@@ -147,12 +147,12 @@ if [ $USE_LOCAL -eq 1 ]; then
              --exclude='var/log/' \
              --exclude='.git/' \
              --exclude='frankenphp' \
-             "${ROOT_DIR}/" "./SolidInvoice/"
-    cd "./SolidInvoice"
+             "${ROOT_DIR}/" "./Augias/"
+    cd "./Augias"
 else
     echo "Cloning from remote repository..."
-    git clone --branch "${BRANCH}" --depth 1 "${REPO}" "./SolidInvoice"
-    cd "./SolidInvoice"
+    git clone --branch "${BRANCH}" --depth 1 "${REPO}" "./Augias"
+    cd "./Augias"
 fi
 
 composer config --no-plugins allow-plugins.symfony/flex true
@@ -167,12 +167,12 @@ echo "AUGIAS_DEBUG=$AUGIAS_DEBUG" >> .env
 
 chmod a+w config
 
-zip -qr "${DIST_DIR}/SolidInvoice-$VERSION".zip ./
-tar -czf "${DIST_DIR}/SolidInvoice-$VERSION".tar.gz ./
+zip -qr "${DIST_DIR}/Augias-$VERSION".zip ./
+tar -czf "${DIST_DIR}/Augias-$VERSION".tar.gz ./
 
 if [ "${RELEASE:-}" = "1" ]; then
-	gh release upload "${VERSION}" "${DIST_DIR}"/SolidInvoice-"${VERSION}".zip --repo augias/augias --clobber
-	gh release upload "${VERSION}" "${DIST_DIR}"/SolidInvoice-"${VERSION}".tar.gz --repo augias/augias --clobber
+	gh release upload "${VERSION}" "${DIST_DIR}"/Augias-"${VERSION}".zip --repo "${GITHUB_REPOSITORY:-augias/augias}" --clobber
+	gh release upload "${VERSION}" "${DIST_DIR}"/Augias-"${VERSION}".tar.gz --repo "${GITHUB_REPOSITORY:-augias/augias}" --clobber
 fi
 
-cd ../ && rm -Rf "./SolidInvoice"
+cd ../ && rm -Rf "./Augias"

@@ -2,7 +2,7 @@
 
 set -euxo pipefail
 
-# This script is used to build the binary files for SolidInvoice.
+# This script is used to build the binary files for Augias.
 #
 # Usage:
 #   ./build_binary.sh [VERSION] [--local] [--skip-dist]
@@ -20,9 +20,9 @@ set -euxo pipefail
 
 show_help() {
     cat << 'EOF'
-SolidInvoice Binary Builder
+Augias Binary Builder
 
-Builds standalone FrankenPHP binaries for SolidInvoice.
+Builds standalone FrankenPHP binaries for Augias.
 Automatically builds the distribution archive if needed.
 
 USAGE:
@@ -60,8 +60,8 @@ ENVIRONMENT:
     CLEAN=1             Clean build cache before building
 
 OUTPUT:
-    build/dist/SolidInvoice-{VERSION}.tar.gz     (if not --skip-dist)
-    build/dist/SolidInvoice-{VERSION}.zip        (if not --skip-dist)
+    build/dist/Augias-{VERSION}.tar.gz     (if not --skip-dist)
+    build/dist/Augias-{VERSION}.zip        (if not --skip-dist)
     frankenphp/dist/augias-{os}-{arch}     (binary)
 
 WORKFLOW:
@@ -137,29 +137,29 @@ NEED_BUILD_DIST=0
 
 if [ $SKIP_DIST -eq 1 ]; then
     # User explicitly wants to skip dist build
-    if [ ! -f "${DIST_DIR}"/SolidInvoice-"$AUGIAS_VERSION".tar.gz ]; then
+    if [ ! -f "${DIST_DIR}"/Augias-"$AUGIAS_VERSION".tar.gz ]; then
         echo "Error: Dist archive does not exist and --skip-dist was specified."
-        echo "Expected: ${DIST_DIR}/SolidInvoice-${AUGIAS_VERSION}.tar.gz"
+        echo "Expected: ${DIST_DIR}/Augias-${AUGIAS_VERSION}.tar.gz"
         exit 1
     fi
     echo "Skipping dist build (--skip-dist specified)"
-    echo "Using existing dist archive: ${DIST_DIR}/SolidInvoice-${AUGIAS_VERSION}.tar.gz"
+    echo "Using existing dist archive: ${DIST_DIR}/Augias-${AUGIAS_VERSION}.tar.gz"
 elif [ $USE_LOCAL -eq 1 ]; then
     # For --local, ALWAYS rebuild to pick up latest changes
     NEED_BUILD_DIST=1
-    if [ -f "${DIST_DIR}"/SolidInvoice-"$AUGIAS_VERSION".tar.gz ]; then
+    if [ -f "${DIST_DIR}"/Augias-"$AUGIAS_VERSION".tar.gz ]; then
         echo "Removing existing dist archive to rebuild with latest local changes..."
-        rm "${DIST_DIR}"/SolidInvoice-"$AUGIAS_VERSION".tar.gz
-        rm -f "${DIST_DIR}"/SolidInvoice-"$AUGIAS_VERSION".zip
+        rm "${DIST_DIR}"/Augias-"$AUGIAS_VERSION".tar.gz
+        rm -f "${DIST_DIR}"/Augias-"$AUGIAS_VERSION".zip
     fi
     echo "Building dist archive from local changes..."
-elif [ ! -f "${DIST_DIR}"/SolidInvoice-"$AUGIAS_VERSION".tar.gz ]; then
+elif [ ! -f "${DIST_DIR}"/Augias-"$AUGIAS_VERSION".tar.gz ]; then
     # Dist doesn't exist, need to build it
     NEED_BUILD_DIST=1
     echo "Dist archive not found. Building it automatically..."
 else
     # Dist exists and not using --local, reuse it
-    echo "Using existing dist archive: ${DIST_DIR}/SolidInvoice-${AUGIAS_VERSION}.tar.gz"
+    echo "Using existing dist archive: ${DIST_DIR}/Augias-${AUGIAS_VERSION}.tar.gz"
 fi
 
 # Build dist if needed
@@ -171,7 +171,7 @@ if [ $NEED_BUILD_DIST -eq 1 ]; then
     fi
 
     # Verify the build was successful
-    if [ ! -f "${DIST_DIR}"/SolidInvoice-"$AUGIAS_VERSION".tar.gz ]; then
+    if [ ! -f "${DIST_DIR}"/Augias-"$AUGIAS_VERSION".tar.gz ]; then
         echo "Error: Dist build failed. Archive was not created."
         exit 1
     fi
@@ -182,8 +182,8 @@ fi
 cd "${ROOT_DIR}/frankenphp"
 
 
-cp "${DIST_DIR}"/SolidInvoice-"$AUGIAS_VERSION".tar.gz ./app.tar.gz
+cp "${DIST_DIR}"/Augias-"$AUGIAS_VERSION".tar.gz ./app.tar.gz
 
-# Use the SolidInvoice wrapper script which calls build-static.sh with proper config
+# Use the Augias wrapper script which calls build-static.sh with proper config
 export AUGIAS_VERSION
 ./build-augias.sh

@@ -1,6 +1,6 @@
 # Build Scripts
 
-Scripts for building SolidInvoice distribution archives and standalone binaries.
+Scripts for building Augias distribution archives and standalone binaries.
 
 ## Quick Reference
 
@@ -71,7 +71,7 @@ See **[BUILD_GUIDE.md](./BUILD_GUIDE.md)** for:
 
 ## Output Locations
 
-- **Distribution archives**: `build/dist/SolidInvoice-{VERSION}.{tar.gz,zip}`
+- **Distribution archives**: `build/dist/Augias-{VERSION}.{tar.gz,zip}`
 - **Binary**: `frankenphp/dist/augias-{os}-{arch}`
 
 ## Requirements
