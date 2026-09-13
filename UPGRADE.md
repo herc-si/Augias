@@ -1,5 +1,5 @@
-Unreleased
-==========
+4.0.0-beta1
+===========
 
 **The application was renamed from SolidInvoice to Augias.** This is a hard
 break with no compatibility layer, so read this section before upgrading.
@@ -20,7 +20,7 @@ break with no compatibility layer, so read this section before upgrading.
   not resolve; settings screens fail until they are rewritten to `Augias\…`.
 * The npm package is `augias`, the Docker image `herc-si/augias`, and the Helm
   chart moved from `helm/solidinvoice` to `helm/augias`.
-* SolidInvoice was upgraded to **Symfony 8.1** and now requires **PHP 8.4.1 or
+* The application was upgraded to **Symfony 8.1** and now requires **PHP 8.4.1 or
   higher**.
 * The **Sms77** and **Gitter** notification transports were removed, as the
   underlying Symfony bridges are discontinued. If you had a notification

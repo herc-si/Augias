@@ -1,11 +1,19 @@
 Changelog
 =========
 
-Unreleased
-----------
+4.0.0-beta1 / 2026-09-13
+------------------------
 
 ### Changes
 
+* Accounting module for the French micro-entreprise: the statutory books fed from the payments already recorded, turnover watched against the regime's ceilings, and a declaration computed per period
+* Periods are sealed one way, in date order, into a hash chain — and a period still running can no longer be sealed, since money received before it ends still belongs in it
+* A quarter in which nothing was received can be created and declared, so a nil return leaves the same trace as any other
+* A lock date shuts the books up to a chosen day without sealing them, for the weeks between a period ending and anyone closing it
+* VAT is recorded as it is collected, split by rate, and as it is paid to suppliers — and declared as a return of its own alongside the turnover declaration
+* VAT can be declared on a cycle of its own, and the financial year can open in a month of its own
+* Customisable dashboard: each user arranges their own, widgets carry their own width, and business bundles contribute their own cards
+* Invoices are numbered FACT-n-<year> on a new instance
 * Renamed the application from SolidInvoice to Augias — display name, PHP namespace, environment variables, package names and data paths. See `UPGRADE.md` for the migration steps
 * Rebuilt the data grid tables and moved the brand palette from green to ink blue, freeing green to mean "paid" and nothing else
 * Status chips now meet WCAG AA; they previously measured as low as 1.97:1
