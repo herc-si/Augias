@@ -27,7 +27,7 @@ The first screen introduces the wizard. Click `Begin Installation` to start.
 
 This step verifies your environment can run Augias. Two summary cards show how many `Required` and `Recommended` checks pass. The `Next` button stays disabled while any required check is failing.
 
-![The system requirements screen with all checks passing](/img/installation-guide/wizard-system-requirements.webp)
+![The system requirements screen with all checks passing](/img/installation-guide/wizard-system-requirements.png)
 
 Two collapsible accordions list the individual checks:
 
