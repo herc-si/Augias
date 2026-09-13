@@ -15,6 +15,7 @@ namespace Augias\InvoiceBundle\Tests\Functional\Email;
 
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\ClientBundle\Test\Factory\ContactFactory;
+use Augias\CoreBundle\AugiasCoreBundle;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -42,6 +43,12 @@ final class TemplateEmailSnapshotTest extends KernelTestCase
     use MatchesSnapshots;
 
     private const string INVOICE_ID = '181aaf4a-0097-11ef-9b64-5a2cf21a5680';
+
+    /**
+     * The footer prints the running version, which would otherwise make
+     * every release rewrite all of these snapshots.
+     */
+    private const string VERSION_PLACEHOLDER = '0.0.0-test';
 
     private Environment $twig;
 
@@ -79,7 +86,9 @@ final class TemplateEmailSnapshotTest extends KernelTestCase
             ['invoice' => $invoice]
         );
 
-        $this->assertMatchesHtmlSnapshot($rendered);
+        $this->assertMatchesHtmlSnapshot(
+            str_replace(AugiasCoreBundle::VERSION, self::VERSION_PLACEHOLDER, $rendered)
+        );
     }
 
     private function createFixtureInvoice(): Invoice
