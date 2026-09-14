@@ -285,7 +285,10 @@ echo ""
 # ============================================================================
 
 if [ "${RELEASE:-}" = "1" ]; then
+	# The repository the workflow runs in, not a hardcoded slug: a fork builds
+	# and uploads to itself. Same reasoning as build_dist.sh.
+	: "${GITHUB_REPOSITORY:?RELEASE=1 needs GITHUB_REPOSITORY to know which release to upload to}"
 	echo "Uploading to GitHub releases..."
-	gh release upload "${VERSION}" "${AUGIAS_BIN}" --repo augias/augias --clobber
+	gh release upload "${VERSION}" "${AUGIAS_BIN}" --repo "${GITHUB_REPOSITORY}" --clobber
 	echo "Upload complete!"
 fi

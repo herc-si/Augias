@@ -256,7 +256,11 @@ final class CreditNoteFlowTest extends WebTestCase
      */
     private function client(): Client
     {
-        return $this->client ??= ClientFactory::createOne(['company' => $this->company]);
+        // Pinned: ClientFactory leaves the currency to Faker, which happily
+        // produces codes moneyphp has never heard of (ANG, demonetised) and
+        // ones with a different subunit, and these tests both render money and
+        // type an amount in major units.
+        return $this->client ??= ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
     }
 
     private function createUser(string $email = 'credit-notes@example.com', #[SensitiveParameter] string $password = 'password'): User
