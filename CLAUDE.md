@@ -2,7 +2,7 @@
 
 Open-source invoicing application for small businesses/freelancers. Features: client management, quotes, invoices (recurring), payments (Payum), tax/discounts, REST API, notifications.
 
-**Version:** 4.0.0-dev | **License:** MIT | **Author:** Pierre du Plessis
+**Version:** 4.0.0-beta1 | **License:** MIT | **Author:** Pierre du Plessis
 
 **Current Status:** UI rewrite from AdminLTE (Bootstrap 4) to Tabler (Bootstrap 5.3). All frontend changes must follow Tabler design system.
 
@@ -10,7 +10,7 @@ Open-source invoicing application for small businesses/freelancers. Features: cl
 
 ## Technology Stack
 
-**Backend:** Symfony 7.1+, PHP 8.4+, Doctrine ORM, API Platform 4.0+, payum/payum-bundle, moneyphp/money
+**Backend:** Symfony 8.1+, PHP 8.4.1+, Doctrine ORM, API Platform 4.0+, payum/payum-bundle, moneyphp/money
 
 **Frontend:** Webpack (Encore), Stimulus, Tabler (Bootstrap 5.3), Sass, Bun
 

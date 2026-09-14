@@ -1,4 +1,4 @@
-# SolidInvoice Build Scripts Guide
+# Augias Build Scripts Guide
 
 This guide explains how to use the improved build scripts for both local development/testing and production releases.
 
@@ -68,8 +68,8 @@ Builds the distribution archives (`.tar.gz` and `.zip`) containing the applicati
 5. Optionally uploads to GitHub releases (if `RELEASE=1`)
 
 **Output:**
-- `build/dist/SolidInvoice-{VERSION}.tar.gz`
-- `build/dist/SolidInvoice-{VERSION}.zip`
+- `build/dist/Augias-{VERSION}.tar.gz`
+- `build/dist/Augias-{VERSION}.zip`
 
 ### 2. `build_binary.sh` - Binary Builder Wrapper
 
@@ -183,8 +183,8 @@ After building, upload to GitHub:
 RELEASE=1 ./scripts/build_binary.sh v2.3.0
 
 # Or upload separately after building
-gh release upload v2.3.0 build/dist/SolidInvoice-v2.3.0.tar.gz
-gh release upload v2.3.0 build/dist/SolidInvoice-v2.3.0.zip
+gh release upload v2.3.0 build/dist/Augias-v2.3.0.tar.gz
+gh release upload v2.3.0 build/dist/Augias-v2.3.0.zip
 gh release upload v2.3.0 frankenphp/dist/augias-linux-x86_64
 ```
 
@@ -222,8 +222,8 @@ RELEASE=1 ./scripts/build_binary.sh "${GITHUB_REF_NAME}" --skip-dist
 
 ### Distribution Archives
 Located in `build/dist/`:
-- `SolidInvoice-{VERSION}.tar.gz` - Gzip compressed tarball
-- `SolidInvoice-{VERSION}.zip` - ZIP archive
+- `Augias-{VERSION}.tar.gz` - Gzip compressed tarball
+- `Augias-{VERSION}.zip` - ZIP archive
 
 Both contain the same files:
 - PHP application code

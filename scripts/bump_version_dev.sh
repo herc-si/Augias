@@ -10,7 +10,7 @@ if [ -n "$GITHUB_ACTIONS" ]; then
 fi
 
 # File path
-FILE="./src/CoreBundle/SolidInvoiceCoreBundle.php"
+FILE="./src/CoreBundle/AugiasCoreBundle.php"
 PACKAGE_JSON="./package.json"
 COMPOSER_JSON="./package.json"
 

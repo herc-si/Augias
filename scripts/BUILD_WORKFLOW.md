@@ -60,7 +60,7 @@ vim src/SomeBundle/SomeFile.php
 ```
 
 **What happens:**
-1. ✅ Checks if `build/dist/SolidInvoice-v2.3.0.tar.gz` exists
+1. ✅ Checks if `build/dist/Augias-v2.3.0.tar.gz` exists
 2. If exists: Reuses it
 3. If missing: Clones from GitHub tag `v2.3.0` and builds
 4. ✅ Builds binary
@@ -185,8 +185,8 @@ export PHP_EXTENSIONS="opcache,pdo_mysql"
 project/
 ├── build/
 │   └── dist/
-│       ├── SolidInvoice-{VERSION}.tar.gz  ← Dist archive
-│       └── SolidInvoice-{VERSION}.zip
+│       ├── Augias-{VERSION}.tar.gz  ← Dist archive
+│       └── Augias-{VERSION}.zip
 ├── frankenphp/
 │   ├── app.tar.gz                         ← Copy of dist (for embedding)
 │   └── dist/
@@ -211,7 +211,7 @@ project/
 
 ```
 Error: Dist archive does not exist and --skip-dist was specified.
-Expected: build/dist/SolidInvoice-main.tar.gz
+Expected: build/dist/Augias-main.tar.gz
 ```
 
 **Solution:** Remove `--skip-dist` or build dist first:
