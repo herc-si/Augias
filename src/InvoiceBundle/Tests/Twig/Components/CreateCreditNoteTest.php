@@ -67,7 +67,7 @@ final class CreateCreditNoteTest extends LiveComponentTest
      */
     public function testSurvivesPickingAClient(): void
     {
-        $client = ClientFactory::createOne(['company' => $this->company]);
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
 
         $component = $this->createLiveComponent(CreateCreditNote::class, ['dto' => new CreditNoteFormDTO()])
             ->actingAs($this->getUser());
@@ -96,7 +96,7 @@ final class CreateCreditNoteTest extends LiveComponentTest
      */
     public function testOffersTheDiscountWhenMirroringAnInvoice(): void
     {
-        $client = ClientFactory::createOne(['company' => $this->company]);
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
         $invoice = InvoiceFactory::createOne(['company' => $this->company, 'client' => $client]);
 
         $dto = new CreditNoteFormDTO();
@@ -114,7 +114,9 @@ final class CreateCreditNoteTest extends LiveComponentTest
     private function dto(): CreditNoteFormDTO
     {
         $dto = new CreditNoteFormDTO();
-        $dto->client = ClientFactory::createOne(['company' => $this->company]);
+        // Pinned: a Faker currency moneyphp does not know makes the money
+        // filter throw while the component renders.
+        $dto->client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
         $dto->creditNoteDate = CarbonImmutable::now();
         $dto->lines->add(new CreditNoteLine());
 

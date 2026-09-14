@@ -193,7 +193,7 @@ final class CreditNoteAllocatorTest extends KernelTestCase
     public function testRefusesToCreditAnotherClientsInvoice(): void
     {
         $creditNote = $this->issuedCreditNote(10_000);
-        $other = ClientFactory::createOne(['company' => $this->company]);
+        $other = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
         $invoice = InvoiceFactory::createOne(['company' => $this->company, 'client' => $other]);
 
         $this->expectException(AllocationException::class);
@@ -231,6 +231,6 @@ final class CreditNoteAllocatorTest extends KernelTestCase
 
     private function client(): Client
     {
-        return $this->testClient ??= ClientFactory::createOne(['company' => $this->company]);
+        return $this->testClient ??= ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
     }
 }
