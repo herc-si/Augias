@@ -18,7 +18,6 @@ use Augias\CoreBundle\Billing\TotalCalculator;
 use Augias\InvoiceBundle\DTO\InvoiceFormDTO;
 use Augias\InvoiceBundle\Email\InvoiceEmail;
 use Augias\InvoiceBundle\Entity\Invoice;
-use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Form\Type\InvoiceType;
 use Augias\InvoiceBundle\Manager\InvoiceFormManager;
 use Augias\InvoiceBundle\Model\Graph;
@@ -36,6 +35,7 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
 use function assert;
+use function iterator_to_array;
 
 final readonly class Edit
 {
@@ -57,10 +57,23 @@ final readonly class Edit
     #[Template('@AugiasInvoice/Default/edit.html.twig')]
     public function __invoke(Request $request, Invoice $invoice): array | Response
     {
-        if (InvoiceStatus::Paid === $invoice->getStatus()) {
+        // Asked of the state machine rather than of the status, so the rule
+        // lives in one place. This still covers a paid invoice — `edit` does
+        // not lead out of that place — and it now also covers an issued one
+        // under a regime that holds documents final, where a guard refuses the
+        // transition. Hiding the button was never enough on its own: this URL
+        // is reachable by hand.
+        if (! $this->invoiceStateMachine->can($invoice, Graph::TRANSITION_EDIT)) {
+            $blockers = iterator_to_array(
+                $this->invoiceStateMachine->buildTransitionBlockerList($invoice, Graph::TRANSITION_EDIT)
+            );
+
             $session = $request->getSession();
             assert($session instanceof Session);
-            $session->getFlashBag()->add('warning', 'invoice.edit.paid');
+            $session->getFlashBag()->add(
+                'warning',
+                [] === $blockers ? 'invoice.edit.paid' : $blockers[0]->getMessage(),
+            );
 
             return new RedirectResponse($this->router->generate('_invoices_index'));
         }

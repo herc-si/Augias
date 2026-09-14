@@ -16,10 +16,13 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 use Augias\BillBundle\Entity\Bill;
 use Augias\BillBundle\Enum\BillStatus;
 use Augias\BillBundle\Model\Graph as BillGraph;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
+use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Enum\RecurringInvoiceStatus;
+use Augias\InvoiceBundle\Model\CreditNoteGraph;
 use Augias\InvoiceBundle\Model\Graph as InvoiceGraph;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\QuoteBundle\Enum\QuoteStatus;
@@ -89,7 +92,7 @@ return App::config([
                             'to' => [InvoiceStatus::Archived->value],
                         ],
                         [
-                            'name' => 'edit',
+                            'name' => InvoiceGraph::TRANSITION_EDIT,
                             'from' => [InvoiceStatus::Cancelled->value, InvoiceStatus::Draft->value, InvoiceStatus::Pending->value, InvoiceStatus::Overdue->value],
                             'to' => [InvoiceStatus::Draft->value],
                         ],
@@ -278,6 +281,39 @@ return App::config([
                             'name' => BillGraph::TRANSITION_EDIT,
                             'from' => [BillStatus::Cancelled->value, BillStatus::Pending->value, BillStatus::Overdue->value],
                             'to' => [BillStatus::Draft->value],
+                        ],
+                    ],
+                ],
+                'credit_note' => [
+                    'type' => 'state_machine',
+                    'marking_store' => [
+                        'type' => 'method',
+                        'property' => 'statusValue',
+                    ],
+                    'audit_trail' => [
+                        'enabled' => true,
+                    ],
+                    'supports' => [
+                        CreditNote::class,
+                    ],
+                    // No cancel, and no edit: a credit note that has been handed
+                    // over is as fixed as the invoice it corrects. One raised in
+                    // error is corrected by an invoice, not unwound here.
+                    'places' => [
+                        CreditNoteStatus::Draft->value,
+                        CreditNoteStatus::Issued->value,
+                        CreditNoteStatus::Settled->value,
+                    ],
+                    'transitions' => [
+                        [
+                            'name' => CreditNoteGraph::TRANSITION_ISSUE,
+                            'from' => [CreditNoteStatus::Draft->value],
+                            'to' => [CreditNoteStatus::Issued->value],
+                        ],
+                        [
+                            'name' => CreditNoteGraph::TRANSITION_SETTLE,
+                            'from' => [CreditNoteStatus::Issued->value],
+                            'to' => [CreditNoteStatus::Settled->value],
                         ],
                     ],
                 ],

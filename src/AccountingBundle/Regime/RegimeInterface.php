@@ -90,4 +90,17 @@ interface RegimeInterface extends ThresholdProviderInterface, ContributionCalcul
      * but filed nothing.
      */
     public function filingUrl(): ?string;
+
+    /**
+     * Whether a document this regime governs is fixed once it has been issued.
+     *
+     * Where it is, an invoice that has gone to the client can no longer be
+     * changed or cancelled; the correction is a credit note that points back at
+     * it. France works this way, and the application has to stop offering the
+     * shortcut rather than merely discourage it — otherwise the shortcut is
+     * what gets used.
+     *
+     * A regime that answers false leaves the existing transitions alone.
+     */
+    public function issuedDocumentsAreFinal(): bool;
 }

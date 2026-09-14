@@ -121,6 +121,9 @@ accounting:
             bill_payment: 'Paiement fournisseur'
             invoice_payment: 'Encaissement de facture'
             manual: 'Saisie manuelle'
+    invoice:
+        cancel_blocked: "Cette facture a été émise et ne peut plus être annulée. Établissez un avoir qui s'y rapporte."
+        edit_blocked: "Cette facture a été émise et ne peut plus être modifiée. Établissez un avoir qui s'y rapporte."
     menu:
         main: Comptabilité
     pension_fund:
