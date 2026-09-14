@@ -1,0 +1,104 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% set currency = creditNote.client.currency %}
+
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <style type="text/css">
+        {{ file(asset('static/pdf.css')) }}
+
+        @page {
+            margin-top: 20mm;
+            margin-bottom: 25mm;
+            margin-left: 15mm;
+            margin-right: 15mm;
+        }
+    </style>
+</head>
+<body>
+
+<h1>{{ 'credit_note.pdf.heading'|trans }}</h1>
+
+<table width="100%">
+    <tr>
+        <td>
+            <strong>{{ 'credit_note.field.number'|trans }}</strong><br />
+            {{ creditNote.creditNoteId }}
+        </td>
+        <td align="right">
+            <strong>{{ 'credit_note.field.date'|trans }}</strong><br />
+            {{ creditNote.creditNoteDate|date('d/m/Y') }}
+        </td>
+    </tr>
+</table>
+
+<p>
+    <strong>{{ creditNote.client.name }}</strong>
+</p>
+
+{#
+ # Mandatory on the document itself, not merely in the interface: a credit note
+ # has to say which invoice it corrects, and why.
+ #}
+{% if creditNote.creditedInvoice %}
+    <p>{{ 'credit_note.pdf.credits_invoice'|trans({'%invoice%': creditNote.creditedInvoice.invoiceId}) }}</p>
+{% endif %}
+
+{% if creditNote.reason %}
+    <p>{{ 'credit_note.field.reason'|trans }}: {{ creditNote.reason.label|trans }}</p>
+{% endif %}
+
+<table width="100%" cellpadding="6">
+    <thead>
+        <tr>
+            <th align="left">{{ 'invoice.item.heading.description'|trans }}</th>
+            <th align="right">{{ 'invoice.item.heading.price'|trans }}</th>
+            <th align="right">{{ 'invoice.item.heading.qty'|trans }}</th>
+            <th align="right">{{ 'invoice.item.heading.total'|trans }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for line in creditNote.lines %}
+            <tr>
+                <td>{{ line.description|nl2br }}</td>
+                <td align="right">{{ line.price|formatCurrency(currency) }}</td>
+                <td align="right">{{ line.qty }}</td>
+                <td align="right">{{ line.total|formatCurrency(currency) }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table width="100%" cellpadding="6">
+    <tr>
+        <td align="right">{{ 'billing.subtotal'|trans }}</td>
+        <td align="right" width="25%">{{ creditNote.baseTotal|formatCurrency(currency) }}</td>
+    </tr>
+    <tr>
+        <td align="right">{{ 'billing.tax'|trans }}</td>
+        <td align="right">{{ creditNote.tax|formatCurrency(currency) }}</td>
+    </tr>
+    <tr>
+        <td align="right"><strong>{{ 'credit_note.totals.credited'|trans }}</strong></td>
+        <td align="right"><strong>{{ creditNote.total|formatCurrency(currency) }}</strong></td>
+    </tr>
+</table>
+
+{% if creditNote.terms %}
+    <p>{{ creditNote.terms|nl2br }}</p>
+{% endif %}
+
+{% if creditNote.notes %}
+    <p>{{ creditNote.notes|nl2br }}</p>
+{% endif %}
+
+</body>
+</html>

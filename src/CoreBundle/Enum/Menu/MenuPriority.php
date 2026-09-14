@@ -46,6 +46,8 @@ enum MenuPriority: int
 
     case PRIORITY_BILL = 77;
 
+    case PRIORITY_CREDIT_NOTE = 76;
+
     case PRIORITY_CATALOG = 70;
 
     case PRIORITY_PAYMENT = 60;

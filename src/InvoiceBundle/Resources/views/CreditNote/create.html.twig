@@ -1,0 +1,16 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@AugiasCore/Layout/default.html.twig" %}
+
+{% block page_title %}{{ (isEdit ? 'credit_note.edit.title' : 'credit_note.create.title')|trans }}{% endblock %}
+
+{% block content %}
+    <twig:CreateCreditNote :dto="dto" :isEdit="isEdit" :creditNote="creditNote" />
+{% endblock content %}

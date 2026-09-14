@@ -53,13 +53,13 @@ final class SidebarMenuTest extends KernelTestCase
         );
     }
 
-    public function testPrestationGroupsTheThreeBillingDocuments(): void
+    public function testPrestationGroupsTheBillingDocuments(): void
     {
         $section = $this->sidebar()->getChild(PrestationMenu::SECTION);
 
         self::assertInstanceOf(ItemInterface::class, $section);
         self::assertSame(
-            ['quote.menu.main', 'invoice.menu.main', 'bill.menu.main'],
+            ['quote.menu.main', 'invoice.menu.main', 'bill.menu.main', 'credit_note.menu.main'],
             $this->names($section),
         );
     }

@@ -1,0 +1,39 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@AugiasCore/Layout/Email/base.html.twig" %}
+
+{%- block title -%}
+    {{ 'credit_note.title'|trans({'%id%': creditNote.creditNoteId}, 'email') }}
+{%- endblock -%}
+
+{% block content %}
+    {% set currency = creditNote.client.currency %}
+
+    <p>{{ 'credit_note.email.intro'|trans({'%id%': creditNote.creditNoteId}) }}</p>
+
+    {% if creditNote.creditedInvoice %}
+        <p>{{ 'credit_note.email.credits_invoice'|trans({'%invoice%': creditNote.creditedInvoice.invoiceId}) }}</p>
+    {% endif %}
+
+    <table role="presentation" width="100%">
+        <tr>
+            <td>{{ 'billing.subtotal'|trans }}</td>
+            <td align="right">{{ creditNote.baseTotal|formatCurrency(currency) }}</td>
+        </tr>
+        <tr>
+            <td>{{ 'billing.tax'|trans }}</td>
+            <td align="right">{{ creditNote.tax|formatCurrency(currency) }}</td>
+        </tr>
+        <tr>
+            <td><strong>{{ 'credit_note.totals.credited'|trans }}</strong></td>
+            <td align="right"><strong>{{ creditNote.total|formatCurrency(currency) }}</strong></td>
+        </tr>
+    </table>
+{% endblock %}
