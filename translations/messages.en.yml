@@ -691,6 +691,22 @@ credit_note:
     client: 'Client'
     issued_at: 'Issued'
     credits_invoice: 'Credits invoice'
+    allocation:
+        kind_label:
+            offset: 'Set against an invoice'
+            refund: 'Refunded'
+        title: 'Settlement'
+        remaining: 'Still owed'
+        none: 'Nothing has been set against this credit note yet.'
+        record: 'Record'
+        kind: 'How'
+        amount: 'Amount'
+        invoice: 'Invoice'
+        no_invoice: 'No invoice'
+        date: 'Date'
+        notes: 'Notes'
+        recorded: 'Settlement recorded'
+        invalid: 'That settlement could not be recorded. Check the amount and the date.'
     action:
         create: 'Create Credit Note'
         issue: 'Issue'
@@ -710,6 +726,11 @@ credit_note:
         credited_invoice: 'Invoice being credited'
     client_choose: 'Choose a client'
     reason:
+        cancellation: 'Cancellation'
+        return: 'Return'
+        rebate: 'Rebate'
+        commercial_gesture: 'Commercial gesture'
+        error_correction: 'Error correction'
         choose: 'Choose a reason'
     invoice:
         none: 'No specific invoice'
@@ -3172,6 +3193,7 @@ status:
     expired: Expired
     failed: Failed
     inactive: Inactive
+    issued: Issued
     new: New
     overdue: Overdue
     paid: Paid
@@ -3179,6 +3201,7 @@ status:
     pending: Pending
     refunded: Refunded
     rejected: Rejected
+    settled: Settled
     suspended: Suspended
     unknown: Unknown
 success: Success

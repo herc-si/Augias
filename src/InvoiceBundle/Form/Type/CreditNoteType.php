@@ -71,7 +71,7 @@ class CreditNoteType extends AbstractType
             'class' => CreditReason::class,
             'label' => 'credit_note.field.reason',
             'placeholder' => 'credit_note.reason.choose',
-            'choice_label' => static fn (CreditReason $reason): string => $reason->getLabel(),
+            'choice_label' => static fn (CreditReason $reason): string => $reason->getTranslationKey(),
         ]);
 
         // Only the chosen client's invoices, and the field stays optional: a

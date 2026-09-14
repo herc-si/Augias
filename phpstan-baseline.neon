@@ -1565,3 +1565,15 @@ parameters:
 			identifier: doctrine.columnType
 			count: 1
 			path: src/CoreBundle/Traits/Entity/TimeStampable.php
+
+		-
+			message: '#^Property Augias\\InvoiceBundle\\Entity\\CreditNoteAllocation\:\:\$created type mapping mismatch\: property can contain DateTimeImmutable\|null but database expects DateTimeImmutable\.$#'
+			identifier: doctrine.columnType
+			count: 1
+			path: src/CoreBundle/Traits/Entity/TimeStampable.php
+
+		-
+			message: '#^Property Augias\\InvoiceBundle\\Entity\\CreditNoteAllocation\:\:\$updated type mapping mismatch\: property can contain DateTimeImmutable\|null but database expects DateTimeImmutable\.$#'
+			identifier: doctrine.columnType
+			count: 1
+			path: src/CoreBundle/Traits/Entity/TimeStampable.php

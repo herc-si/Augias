@@ -29,7 +29,7 @@
                     </span>
                     <span class="doc-view-meta-item">
                         {{ ux_icon('tabler:tag', {width: 14, height: 14}) }}
-                        {{ creditNote.reason ? creditNote.reason.label|trans : '' }}
+                        {{ creditNote.reason ? creditNote.reason.translationKey|trans : '' }}
                     </span>
                 </div>
             </div>
@@ -145,6 +145,60 @@
                     <span class="totals-label">{{ 'credit_note.totals.credited'|trans }}</span>
                     <span class="totals-value">{{ creditNote.total|formatCurrency(currency) }}</span>
                 </div>
+            </twig:Ui:Card>
+
+            <twig:Ui:Card class="mt-3">
+                <h2 class="h4">{{ 'credit_note.allocation.title'|trans }}</h2>
+
+                {#
+                 # What is still owed on this credit note. The client's balance
+                 # holds the same figure, but only this page can say which
+                 # invoice consumed which credit.
+                 #}
+                <div class="totals-row totals-row-total">
+                    <span class="totals-label">{{ 'credit_note.allocation.remaining'|trans }}</span>
+                    <span class="totals-value">{{ remaining|formatCurrency(currency) }}</span>
+                </div>
+
+                {% if creditNote.allocations|length > 0 %}
+                    <table class="table table-sm mt-2">
+                        <tbody>
+                            {% for allocation in creditNote.allocations %}
+                                <tr>
+                                    <td>
+                                        {{ allocation.kind.translationKey|trans }}
+                                        {% if allocation.invoice %}
+                                            —
+                                            <a href="{{ path('_invoices_view', {'id': allocation.invoice.id}) }}">
+                                                {{ allocation.invoice.invoiceId }}
+                                            </a>
+                                        {% endif %}
+                                        <br />
+                                        <small class="text-muted">{{ allocation.allocatedOn|date('M d, Y') }}</small>
+                                    </td>
+                                    <td class="text-end">{{ allocation.amount|formatCurrency(currency) }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% else %}
+                    <p class="text-muted mb-0">{{ 'credit_note.allocation.none'|trans }}</p>
+                {% endif %}
+
+                {% if allocationForm %}
+                    <hr />
+                    {{ form_start(allocationForm) }}
+                        {{ form_row(allocationForm.kind) }}
+                        {{ form_row(allocationForm.invoice) }}
+                        {{ form_row(allocationForm.amount) }}
+                        {{ form_row(allocationForm.allocatedOn) }}
+                        {{ form_row(allocationForm.notes) }}
+                        <button type="submit" class="btn btn-primary w-100">
+                            {{ ux_icon('tabler:arrow-down-circle', {width: 18, height: 18}) }}
+                            {{ 'credit_note.allocation.record'|trans }}
+                        </button>
+                    {{ form_end(allocationForm) }}
+                {% endif %}
             </twig:Ui:Card>
 
             <twig:Ui:Card class="mt-3">

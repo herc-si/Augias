@@ -16,6 +16,7 @@ namespace Augias\InvoiceBundle\Tests\Functional;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Entity\Company;
+use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\CreditNote;
@@ -176,13 +177,59 @@ final class CreditNoteFlowTest extends WebTestCase
     }
 
     /**
+     * The settlement panel is the whole point of the document page once the
+     * credit note is out: it is where a refund or an offset gets written down.
+     */
+    public function testRecordsARefundFromTheDocumentPage(): void
+    {
+        $creditNote = CreditNoteFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => CreditNoteStatus::Issued,
+            'discount' => new Discount(),
+            'lines' => [
+                new CreditNoteLine()
+                    ->setDescription('Returned licence')
+                    ->setPrice(9900)
+                    ->setQty(1)
+                    ->updateTotal(),
+            ],
+        ]);
+
+        $this->browser()
+            ->actingAs($this->createUser())
+            ->interceptRedirects()
+            ->visit('/invoices/credit-notes/view/' . $creditNote->getId())
+            ->assertSuccessful()
+            ->fillField('credit_note_allocation[amount]', '99.00')
+            ->selectFieldOption('credit_note_allocation[kind]', 'refund')
+            ->click('Record')
+            ->assertRedirectedTo('/invoices/credit-notes/view/' . $creditNote->getId());
+
+        $this->em->clear();
+
+        $reloaded = $this->em->find(CreditNote::class, $creditNote->getId());
+
+        self::assertInstanceOf(CreditNote::class, $reloaded);
+        self::assertCount(1, $reloaded->getAllocations());
+        self::assertSame('9900', (string) $reloaded->getAllocations()->first()->getAmount());
+
+        // Using it up in one go settles it.
+        self::assertSame(CreditNoteStatus::Settled, $reloaded->getStatus());
+    }
+
+    /**
      * Created on demand rather than in setUp(): the company this belongs to is
      * installed by a #[Before] hook, and ordering the two reliably is not worth
      * the trouble when a lazy accessor says the same thing.
      */
     private function client(): Client
     {
-        return $this->client ??= ClientFactory::createOne(['company' => $this->company]);
+        // Pinned: ClientFactory leaves the currency to Faker, which happily
+        // produces codes moneyphp has never heard of (ANG, demonetised) and
+        // ones with a different subunit, and these tests both render money and
+        // type an amount in major units.
+        return $this->client ??= ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
     }
 
     private function createUser(string $email = 'credit-notes@example.com', #[SensitiveParameter] string $password = 'password'): User
