@@ -27,6 +27,7 @@ use Doctrine\DBAL\Platforms\SQLitePlatform;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use function assert;
 
 /**
  * Proves the mapping holds up against a real database — in particular that a
@@ -49,8 +50,11 @@ final class CreditNoteRepositoryTest extends KernelTestCase
         parent::setUp();
 
         $registry = self::getContainer()->get('doctrine');
+        $entityManager = $registry->getManager();
+        assert($entityManager instanceof EntityManagerInterface);
+
         $this->repository = $registry->getRepository(CreditNote::class);
-        $this->entityManager = $registry->getManager();
+        $this->entityManager = $entityManager;
     }
 
     public function testRoundTripsThroughTheDatabase(): void
