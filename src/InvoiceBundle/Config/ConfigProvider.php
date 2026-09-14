@@ -39,6 +39,13 @@ final class ConfigProvider implements ProviderInterface
             // would still read 2026 next January. {year} is resolved every time
             // an id is generated.
             new Config('invoice/id_generation/id_suffix', '-{year}', 'Printed after the number. Use {year} for the current year, as in -{year}', TextType::class),
+            // A credit note is numbered in a series of its own, and only in an
+            // unbroken run: a gap in the numbering of a book document is what
+            // an audit looks for first, so the random, uuid, ulid and timestamp
+            // strategies are not offered here at all.
+            new Config('credit_note/id_generation/strategy', 'auto_increment', '', BillingIdConfigurationType::class, ['sequential_only' => true]),
+            new Config('credit_note/id_generation/id_prefix', 'AV-', 'Printed before the number. Example: AV-', TextType::class),
+            new Config('credit_note/id_generation/id_suffix', '-{year}', 'Printed after the number. Use {year} for the current year, as in -{year}', TextType::class),
             new Config(
                 'invoice/reminder/enabled',
                 '1',
