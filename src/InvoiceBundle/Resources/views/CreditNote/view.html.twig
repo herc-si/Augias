@@ -29,7 +29,7 @@
                     </span>
                     <span class="doc-view-meta-item">
                         {{ ux_icon('tabler:tag', {width: 14, height: 14}) }}
-                        {{ creditNote.reason ? creditNote.reason.label|trans : '' }}
+                        {{ creditNote.reason ? creditNote.reason.translationKey|trans : '' }}
                     </span>
                 </div>
             </div>
@@ -166,7 +166,7 @@
                             {% for allocation in creditNote.allocations %}
                                 <tr>
                                     <td>
-                                        {{ allocation.kind.label|trans }}
+                                        {{ allocation.kind.translationKey|trans }}
                                         {% if allocation.invoice %}
                                             —
                                             <a href="{{ path('_invoices_view', {'id': allocation.invoice.id}) }}">

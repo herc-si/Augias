@@ -694,6 +694,9 @@ credit_note:
     issued_at: 'Émis le'
     credits_invoice: 'Se rapporte à la facture'
     allocation:
+        kind_label:
+            offset: 'Imputé sur une facture'
+            refund: 'Remboursé'
         title: 'Règlement'
         remaining: 'Reste dû'
         none: "Rien n'a encore été imputé sur cet avoir."
@@ -725,6 +728,11 @@ credit_note:
         credited_invoice: 'Facture concernée'
     client_choose: 'Choisir un client'
     reason:
+        cancellation: 'Annulation'
+        return: 'Retour'
+        rebate: 'Ristourne'
+        commercial_gesture: 'Geste commercial'
+        error_correction: "Correction d'erreur"
         choose: 'Choisir un motif'
     invoice:
         none: 'Aucune facture précise'
@@ -3187,6 +3195,7 @@ status:
     expired: Expiré
     failed: Échoué
     inactive: Inactif
+    issued: Émis
     new: Nouveau
     overdue: 'En retard'
     paid: Payée
@@ -3194,6 +3203,7 @@ status:
     pending: 'En attente'
     refunded: Remboursé
     rejected: Rejeté
+    settled: Soldé
     suspended: Suspendu
     unknown: Inconnu
 success: Succès
