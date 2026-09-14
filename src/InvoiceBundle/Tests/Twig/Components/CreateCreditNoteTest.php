@@ -58,6 +58,24 @@ final class CreateCreditNoteTest extends LiveComponentTest
         self::assertStringContainsString('credit_note', $component->render()->toString());
     }
 
+    /**
+     * The contact checkboxes only exist once a client has been picked — the
+     * field is dependent on it. That is also the moment the client card starts
+     * rendering them, so anything else that renders the same field blows up
+     * with "Field users has already been rendered".
+     */
+    public function testSurvivesPickingAClient(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company]);
+
+        $component = $this->createLiveComponent(CreateCreditNote::class, ['dto' => new CreditNoteFormDTO()])
+            ->actingAs($this->getUser());
+
+        $component->submitForm(['client' => (string) $client->getId()]);
+
+        self::assertStringContainsString('credit_note', $component->render()->toString());
+    }
+
     private function dto(): CreditNoteFormDTO
     {
         $dto = new CreditNoteFormDTO();
