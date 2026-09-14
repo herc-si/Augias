@@ -216,12 +216,11 @@
             </div>
         </details>
 
-        {% if form.users is defined %}
-            <div class="billing-recipients-section mt-3">
-                {{ form_row(form.users) }}
-            </div>
-        {% endif %}
-
+        {#
+         # No recipients block here: @AugiasClient/Ajax/info.html.twig renders
+         # the contact checkboxes as part of the client card above, and Twig
+         # refuses to render a field twice.
+         #}
         <div class="billing-form-actions">
             <div class="billing-form-actions-inner">
                 <a href="{{ path('_credit_notes_index') }}" class="btn btn-ghost">
