@@ -61,6 +61,11 @@ final class CreateCreditNote extends AbstractController
     /**
      * Not a LiveProp: the live state lives in $formValues, and the DTO is
      * rebuilt from it on every render.
+     *
+     * Initialised in the constructor because a re-render builds the component
+     * again from its LiveProps alone, with no mount to hand it one — and
+     * instantiateForm() reads it immediately. Left uninitialized, the first
+     * interaction on the form dies before the form is even built.
      */
     public CreditNoteFormDTO $dto;
 
@@ -82,6 +87,7 @@ final class CreateCreditNote extends AbstractController
         private readonly EmailVerificationGateInterface $emailVerificationGate,
         private readonly Calculator $calculator,
     ) {
+        $this->dto = new CreditNoteFormDTO();
     }
 
     /**
