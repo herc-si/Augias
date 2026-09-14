@@ -32,6 +32,7 @@ use function array_key_first;
 use function array_keys;
 use function array_map;
 use function count;
+use function sprintf;
 use function strval;
 
 /**
@@ -46,8 +47,23 @@ use function strval;
  *
  * @see \Augias\AccountingBundle\Tests\Functional\LedgerBookkeepingTest
  */
-final readonly class AccountingPeriodManager
+final class AccountingPeriodManager
 {
+    /**
+     * Periods created in this unit of work and not yet flushed, keyed by the
+     * columns the table is unique on.
+     *
+     * {@see AccountingPeriodRepository::findForDate()} is a DQL query, so it
+     * only ever sees what the database already holds. A period persisted a
+     * moment ago and not yet flushed is invisible to it, and asking twice in
+     * one unit of work — two payments in the same quarter, which the demo data
+     * loader does routinely — used to build the period twice and fail the flush
+     * on the unique constraint.
+     *
+     * @var array<string, AccountingPeriod>
+     */
+    private array $pending = [];
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private AccountingPeriodRepository $periodRepository,
@@ -79,16 +95,31 @@ final readonly class AccountingPeriodManager
             return $existing;
         }
 
+        $year = $type->yearOf($date, $fiscalYearStartMonth);
+        $ordinal = $type->ordinalOf($date);
+        $key = sprintf('%s|%s|%d|%d', strval($company->getId()), $type->value, $year, $ordinal);
+
+        // The entity manager is cleared between units of work, which detaches
+        // anything remembered here — so a hit is only trusted while the period
+        // is still managed.
+        $pending = $this->pending[$key] ?? null;
+
+        if ($pending instanceof AccountingPeriod && $this->entityManager->contains($pending)) {
+            return $pending;
+        }
+
         $period = new AccountingPeriod()
             ->setType($type)
-            ->setYear($type->yearOf($date, $fiscalYearStartMonth))
-            ->setOrdinal($type->ordinalOf($date))
+            ->setYear($year)
+            ->setOrdinal($ordinal)
             ->setStartDate($type->startOf($date, $fiscalYearStartMonth))
             ->setEndDate($type->endOf($date, $fiscalYearStartMonth));
 
         $period->setCompany($company);
 
         $this->entityManager->persist($period);
+
+        $this->pending[$key] = $period;
 
         return $period;
     }

@@ -28,6 +28,7 @@ use Augias\AccountingBundle\Service\CurrentCompany;
 use Augias\CoreBundle\Entity\Company;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\SettingsBundle\SystemConfig;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -86,6 +87,34 @@ final class CreatePeriodTest extends KernelTestCase
     {
         $this->post('2026-05-15');
         $this->post('2026-06-02');
+
+        self::assertCount(1, $this->repository()->findForYear($this->companyReference(), PeriodType::Quarter, 2026));
+    }
+
+    /**
+     * The same quarter asked for twice inside one unit of work, with no flush in
+     * between — two payments booked in the same quarter, which is what the demo
+     * data loader does, and what a batch import would do.
+     *
+     * findForDate() is a DQL query and so only sees what the database already
+     * holds: the period persisted a moment ago is invisible to it. Without the
+     * manager remembering what it has just built, this produced two rows and the
+     * flush died on "UNIQUE constraint failed: accounting_periods.company_id,
+     * period_type, period_year, period_ordinal".
+     */
+    public function testTheSameQuarterAskedForTwiceBeforeAFlushIsOnePeriod(): void
+    {
+        $manager = self::getContainer()->get(AccountingPeriodManager::class);
+        self::assertInstanceOf(AccountingPeriodManager::class, $manager);
+
+        $company = $this->companyReference();
+
+        $first = $manager->periodFor($company, PeriodType::Quarter, new DateTimeImmutable('2026-05-15'));
+        $second = $manager->periodFor($company, PeriodType::Quarter, new DateTimeImmutable('2026-06-02'));
+
+        self::assertSame($first, $second, 'the second call must hand back the period the first one built');
+
+        $this->entityManager->flush();
 
         self::assertCount(1, $this->repository()->findForYear($this->companyReference(), PeriodType::Quarter, 2026));
     }
