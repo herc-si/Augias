@@ -117,9 +117,11 @@ accounting:
         label:
             bill_payment: 'Supplier payment'
             invoice_payment: 'Invoice payment'
+            invoice_refund: 'Refund to client'
         source:
             bill_payment: 'Supplier payment'
             invoice_payment: 'Invoice payment'
+            invoice_refund: 'Refund to client'
             manual: 'Manual entry'
     invoice:
         cancel_blocked: 'This invoice has been issued and can no longer be cancelled. Raise a credit note against it instead.'

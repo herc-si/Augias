@@ -15,6 +15,8 @@ namespace Augias\AccountingBundle\Service;
 
 use Augias\AccountingBundle\Model\LedgerTaxSplit;
 use Augias\AccountingBundle\Model\TaxShare;
+use Augias\InvoiceBundle\Entity\BaseInvoice;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\TaxBundle\Calculator\Result\TaxSummaryRow;
 use Augias\TaxBundle\Calculator\TaxCalculatorInterface;
@@ -62,7 +64,29 @@ final readonly class LedgerTaxSplitter
      */
     public function forInvoicePayment(Invoice $invoice, BigNumber $paid): ?LedgerTaxSplit
     {
-        $result = $this->taxCalculator->calculate($invoice);
+        return $this->forDocument($invoice, $paid);
+    }
+
+    /**
+     * The same split, read off a credit note instead.
+     *
+     * A refund gives back tax that was collected, in the proportions it was
+     * collected in — so the arithmetic is the one used for a payment, applied
+     * to the other document.
+     *
+     * @throws MathException
+     */
+    public function forCreditNoteRefund(CreditNote $creditNote, BigNumber $refunded): ?LedgerTaxSplit
+    {
+        return $this->forDocument($creditNote, $refunded);
+    }
+
+    /**
+     * @throws MathException
+     */
+    private function forDocument(BaseInvoice $document, BigNumber $settled): ?LedgerTaxSplit
+    {
+        $result = $this->taxCalculator->calculate($document);
 
         /** @var array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal}> $groups */
         $groups = [];
@@ -86,7 +110,7 @@ final readonly class LedgerTaxSplitter
             return null;
         }
 
-        return $this->prorate($groups, $paid, $this->documentTotal($invoice));
+        return $this->prorate($groups, $settled, $this->documentTotal($document));
     }
 
     /**
@@ -122,11 +146,11 @@ final readonly class LedgerTaxSplitter
      *
      * @throws MathException
      */
-    private function documentTotal(Invoice $invoice): BigDecimal
+    private function documentTotal(BaseInvoice $document): BigDecimal
     {
-        $payable = BigDecimal::of($invoice->getPayableAmount());
+        $payable = BigDecimal::of($document->getPayableAmount());
 
-        return $payable->isPositive() ? $payable : BigDecimal::of($invoice->getTotal());
+        return $payable->isPositive() ? $payable : BigDecimal::of($document->getTotal());
     }
 
     /**
