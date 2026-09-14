@@ -1,0 +1,99 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+<twig:Ui:Card>
+    <twig:block name="header">
+        <div class="d-flex justify-content-between align-items-center w-100">
+            <div>
+                <h3 class="card-title mb-0">{{ 'dashboard.credit_notes.title'|trans }}</h3>
+                <small class="text-muted">{{ 'dashboard.credit_notes.subtitle'|trans }}</small>
+            </div>
+            <a href="{{ path('_credit_notes_index') }}" class="btn btn-sm btn-ghost">
+                {{ 'dashboard.credit_notes.view_all'|trans }}
+                {{ ux_icon('tabler:arrow-right', {width: 16, height: 16}) }}
+            </a>
+        </div>
+    </twig:block>
+
+    {#
+     # Imported inside the slot, not at the top of the file: the default slot of
+     # a twig:Ui:Card compiles as its own template, so a top-level import is out
+     # of scope by the time the rows below render.
+     #}
+    {% import '@AugiasDashboard/money.html.twig' as money %}
+
+    {% if not hasOutstanding %}
+        <div class="attention-empty">
+            <div class="attention-empty-icon">
+                {{ ux_icon('tabler:check', {width: 32, height: 32}) }}
+            </div>
+            <p class="attention-empty-text">{{ 'dashboard.credit_notes.nothing_owed'|trans }}</p>
+        </div>
+    {% else %}
+        {#
+         # One total per currency, stacked rather than summed: a credit note is
+         # settled in the currency it was raised in.
+         #}
+        <div class="d-flex justify-content-between align-items-baseline mb-3">
+            <span class="text-muted">{{ 'dashboard.credit_notes.owed'|trans }}</span>
+            <span class="d-flex flex-column align-items-end gap-1">
+                {% for currency, amount in owed %}
+                    {# Neutral: money owed out, neither a loss nor a gain. #}
+                    {{ money.money(amount, currency, ['total']) }}
+                {% else %}
+                    {{ money.money(0, null, ['total']) }}
+                {% endfor %}
+            </span>
+        </div>
+
+        {% if draftTotal > 0 %}
+            {#
+             # Worth surfacing: a draft credit note owes the client nothing yet,
+             # so it is easy to leave half-written and forget that a client is
+             # still waiting to be credited.
+             #}
+            <div class="attention-section-header">
+                {{ ux_icon('tabler:pencil', {width: 16, height: 16}) }}
+                <span>{{ 'dashboard.credit_notes.drafts'|trans }}</span>
+                <span class="attention-badge">{{ draftTotal }}</span>
+            </div>
+        {% endif %}
+
+        <div class="attention-items">
+            {% for creditNote in creditNotes %}
+                <a href="{{ path('_credit_notes_view', {id: creditNote.id}) }}" class="attention-item">
+                    <span class="attention-item-main">
+                        <span class="attention-item-id">{{ creditNote.creditNoteId }}</span>
+                        <span class="attention-item-client">{{ creditNote.client.name }}</span>
+                    </span>
+                    <span class="attention-item-meta">
+                        <span class="attention-item-amount">
+                            {{ money.money(creditNote.total, creditNote.client.currency.code, ['total']) }}
+                        </span>
+                        <span class="attention-item-date">
+                            {{ creditNote.creditNoteDate|date('M j') }}
+                        </span>
+                    </span>
+                </a>
+            {% endfor %}
+        </div>
+
+        {% if issuedTotal > creditNotes|length %}
+            <div class="d-flex align-items-center justify-content-between gap-2 px-3 py-2">
+                <span class="text-secondary small">
+                    {{ 'dashboard.attention.showing'|trans({'%shown%': creditNotes|length, '%total%': issuedTotal}) }}
+                </span>
+                <a href="{{ path('_credit_notes_index') }}" class="btn btn-sm btn-ghost">
+                    {{ 'dashboard.attention.view_all'|trans }}
+                    {{ ux_icon('tabler:arrow-right', {width: 14, height: 14}) }}
+                </a>
+            </div>
+        {% endif %}
+    {% endif %}
+</twig:Ui:Card>

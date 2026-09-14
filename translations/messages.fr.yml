@@ -638,6 +638,7 @@ client:
         more_actions: 'Plus d''actions'
         tabs:
             info: Infos
+            credit_notes: 'Avoirs'
             invoices: Factures
             payments: Paiements
             quotes: Devis
@@ -1016,6 +1017,13 @@ dashboard:
         recent: 'Paiements récents'
         view_all: 'Voir tous les paiements'
     pending_quotes: 'Devis en attente'
+    credit_notes:
+        title: 'Avoirs à régler'
+        subtitle: 'Ce que vous devez encore à vos clients'
+        view_all: 'Tous les avoirs'
+        owed: 'Reste dû'
+        drafts: 'Brouillons non émis'
+        nothing_owed: 'Tous les avoirs ont été soldés.'
     purchases:
         nothing_owed: 'Rien à payer aux fournisseurs.'
         outstanding: 'Reste à payer'
@@ -1051,6 +1059,7 @@ dashboard:
         outstanding_total: Impayé
         overdue_invoices: 'Factures en retard'
         payments_this_month: 'Encaissé ce mois-ci'
+        credit_notes: 'Avoirs à régler'
         purchases: 'Achats'
         quick_actions: 'Actions rapides'
         recent_activity: 'Activité récente'

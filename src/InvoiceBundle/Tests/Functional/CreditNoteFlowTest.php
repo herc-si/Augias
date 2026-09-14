@@ -177,6 +177,37 @@ final class CreditNoteFlowTest extends WebTestCase
     }
 
     /**
+     * The client's own page is where someone asks "what has this client been
+     * credited", so the tab has to be there — and only once there is something
+     * behind it.
+     */
+    public function testShowsTheCreditNotesTabOnTheClientPage(): void
+    {
+        // Before the browser boots: it starts a kernel of its own, and a client
+        // created afterwards lands with no company on its credit row.
+        $client = $this->client();
+
+        $browser = $this->browser()->actingAs($this->createUser());
+
+        $browser
+            ->visit('/clients/view/' . $client->getId())
+            ->assertSuccessful()
+            ->assertElementCount('#credit-notes-tab', 0);
+
+        CreditNoteFactory::createOne([
+            'company' => $this->company,
+            'client' => $client,
+            'creditNoteId' => 'AV-0042-2026',
+        ]);
+
+        $browser
+            ->visit('/clients/view/' . $client->getId())
+            ->assertSuccessful()
+            ->assertElementCount('#credit-notes-tab', 1)
+            ->assertSeeIn('#credit-notes-tab', 'Credit Notes');
+    }
+
+    /**
      * The settlement panel is the whole point of the document page once the
      * credit note is out: it is where a refund or an offset gets written down.
      */
