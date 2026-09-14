@@ -100,6 +100,14 @@ final class ApiTokenCreateGateTest extends WebTestCase
         $client = self::createClient();
         $client->disableReboot();
 
+        // This test has failed intermittently in CI with a bare 500, and the only
+        // evidence left behind was the rendered error page — which says "Internal
+        // server error" and nothing else. Letting the kernel rethrow means the next
+        // occurrence carries the exception and its stack trace into the test output
+        // instead. It changes nothing while the tests pass: all three assert a
+        // successful response, so nothing here expects an error page.
+        $client->catchExceptions(false);
+
         if ($featureGate instanceof FeatureGate) {
             self::getContainer()->set(FeatureGate::class, $featureGate);
         }
