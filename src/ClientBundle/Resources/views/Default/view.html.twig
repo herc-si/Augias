@@ -174,6 +174,20 @@
                         <span class="badge bg-secondary-lt">{{ client.invoices|length }}</span>
                     </button>
                 </li>
+                {#
+                 # Only once there is one. A client who has never been credited
+                 # does not need a permanently empty tab explaining that credit
+                 # notes exist, the way the payments tab already reasons.
+                 #}
+                {% if client.creditNotes|length > 0 %}
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="credit-notes-tab" data-bs-toggle="tab" data-bs-target="#credit-notes" type="button" role="tab" aria-controls="credit-notes" aria-selected="false">
+                            {{ ux_icon('tabler:receipt-refund', {width: 16, height: 16}) }}
+                            <span>{{ 'client.view.tabs.credit_notes'|trans }}</span>
+                            <span class="badge bg-secondary-lt">{{ client.creditNotes|length }}</span>
+                        </button>
+                    </li>
+                {% endif %}
                 {% if payments|length > 0 %}
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="payments-tab" data-bs-toggle="tab" data-bs-target="#payments" type="button" role="tab" aria-controls="payments" aria-selected="false">
@@ -204,6 +218,13 @@
                 <div class="tab-pane fade" id="invoices" role="tabpanel" aria-labelledby="invoices-tab">
                     {% include "@AugiasClient/invoice_list.html.twig" %}
                 </div>
+
+                {# Credit Notes Tab #}
+                {% if client.creditNotes|length > 0 %}
+                    <div class="tab-pane fade" id="credit-notes" role="tabpanel" aria-labelledby="credit-notes-tab">
+                        {% include "@AugiasClient/credit_note_list.html.twig" %}
+                    </div>
+                {% endif %}
 
                 {# Payments Tab #}
                 {% if payments|length > 0 %}

@@ -638,6 +638,7 @@ client:
         more_actions: 'More actions'
         tabs:
             info: Info
+            credit_notes: 'Credit Notes'
             invoices: Invoices
             payments: Payments
             quotes: Quotes
@@ -1016,6 +1017,13 @@ dashboard:
         recent: 'Recent Payments'
         view_all: 'View All Payments'
     pending_quotes: 'Pending Quotes'
+    credit_notes:
+        title: 'Credit notes owed'
+        subtitle: 'What you still owe your clients'
+        view_all: 'All credit notes'
+        owed: 'Still owed'
+        drafts: 'Drafts not yet issued'
+        nothing_owed: 'Every credit note has been settled.'
     purchases:
         nothing_owed: 'Nothing owed to suppliers.'
         outstanding: 'Still to pay'
@@ -1051,6 +1059,7 @@ dashboard:
         outstanding_total: Outstanding
         overdue_invoices: 'Overdue Invoices'
         payments_this_month: 'Received This Month'
+        credit_notes: 'Credit notes owed'
         purchases: 'Purchases'
         quick_actions: 'Quick Actions'
         recent_activity: 'Recent Activity'
