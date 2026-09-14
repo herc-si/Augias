@@ -159,7 +159,7 @@ final class InstallationTest extends PantherTestCase
             ->wait(200)
             ->click('button[name="installation[navigator][next]"]')
             ->use(
-                static fn (Client $client) => $client->waitFor('button[name="installation[navigator][next]"]')
+                static fn (Client $client) => $client->waitFor('input[name="installation[user_account][firstName]"]')
             )
             ->assertSee('User Account')
             ->selectFieldOption('installation[user_account][locale]', 'en')
