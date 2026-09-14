@@ -37,6 +37,11 @@ enum AllocationKind: string
         };
     }
 
+    public function getTranslationKey(): string
+    {
+        return 'credit_note.allocation.kind_label.' . $this->value;
+    }
+
     /**
      * Whether this movement is one the books have to record on its own. An
      * offset needs no entry: the payment that follows is already smaller.

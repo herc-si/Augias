@@ -41,7 +41,7 @@ final class CreditNoteAllocationType extends AbstractType
         $builder->add('kind', EnumType::class, [
             'class' => AllocationKind::class,
             'label' => 'credit_note.allocation.kind',
-            'choice_label' => static fn (AllocationKind $kind): string => $kind->getLabel(),
+            'choice_label' => static fn (AllocationKind $kind): string => $kind->getTranslationKey(),
         ]);
 
         // No divisor here: MoneyExtension swaps in its own view transformer,

@@ -47,6 +47,16 @@ enum CreditReason: string
     }
 
     /**
+     * The catalogue key for display. getLabel() stays untranslated for the
+     * places that need a stable string — grids, filters, the API — the same
+     * split the status enums use.
+     */
+    public function getTranslationKey(): string
+    {
+        return 'credit_note.reason.' . $this->value;
+    }
+
+    /**
      * Whether the reason describes a credit that stands on its own, with no
      * invoice behind it.
      */
