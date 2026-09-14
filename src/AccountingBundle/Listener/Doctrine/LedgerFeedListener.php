@@ -16,7 +16,9 @@ namespace Augias\AccountingBundle\Listener\Doctrine;
 use Augias\AccountingBundle\Entity\LedgerEntry;
 use Augias\AccountingBundle\Service\LedgerFeeder;
 use Augias\BillBundle\Entity\BillPayment;
+use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
 use Augias\PaymentBundle\Entity\Payment;
+use Brick\Math\Exception\MathException;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
@@ -43,7 +45,7 @@ use function array_merge;
 #[AsDoctrineListener(Events::postFlush)]
 final class LedgerFeedListener
 {
-    /** @var list<Payment|BillPayment> */
+    /** @var list<Payment|BillPayment|CreditNoteAllocation> */
     private array $pending = [];
 
     /**
@@ -70,7 +72,7 @@ final class LedgerFeedListener
         // written first and captured a moment later, and only the second of
         // those is the event the book cares about.
         foreach (array_merge($unitOfWork->getScheduledEntityInsertions(), $unitOfWork->getScheduledEntityUpdates()) as $entity) {
-            if ($entity instanceof Payment || $entity instanceof BillPayment) {
+            if ($entity instanceof Payment || $entity instanceof BillPayment || $entity instanceof CreditNoteAllocation) {
                 $this->pending[] = $entity;
             }
         }
@@ -89,12 +91,10 @@ final class LedgerFeedListener
         $this->writing = true;
 
         try {
-            foreach ($pending as $payment) {
-                $entry = $payment instanceof Payment
-                    ? $this->feeder->recordInvoicePayment($payment)
-                    : $this->feeder->recordBillPayment($payment);
-
-                $written = $written || $entry instanceof LedgerEntry;
+            foreach ($pending as $subject) {
+                foreach ($this->entriesFor($subject) as $entry) {
+                    $written = $written || $entry instanceof LedgerEntry;
+                }
             }
 
             if ($written) {
@@ -103,5 +103,32 @@ final class LedgerFeedListener
         } finally {
             $this->writing = false;
         }
+    }
+
+    /**
+     * Both feeders are asked of a payment, and each decides for itself whether
+     * it has anything to write: one books a capture, the other takes it back
+     * when the gateway reverses it. Asking twice is cheaper than teaching this
+     * listener to read payment statuses.
+     *
+     * @return iterable<LedgerEntry|null>
+     * @throws MathException
+     */
+    private function entriesFor(Payment | BillPayment | CreditNoteAllocation $subject): iterable
+    {
+        if ($subject instanceof BillPayment) {
+            yield $this->feeder->recordBillPayment($subject);
+
+            return;
+        }
+
+        if ($subject instanceof CreditNoteAllocation) {
+            yield $this->feeder->recordCreditNoteRefund($subject);
+
+            return;
+        }
+
+        yield $this->feeder->recordInvoicePayment($subject);
+        yield $this->feeder->recordPaymentRefund($subject);
     }
 }

@@ -26,6 +26,13 @@ enum LedgerEntrySource: string
 {
     case InvoicePayment = 'invoice_payment';
 
+    /**
+     * Money given back to a client — a refunded credit note, or a payment
+     * the gateway reversed. Its source id is whichever of those two
+     * records it, so each stays idempotent on its own.
+     */
+    case InvoiceRefund = 'invoice_refund';
+
     case BillPayment = 'bill_payment';
 
     case Manual = 'manual';
@@ -34,6 +41,7 @@ enum LedgerEntrySource: string
     {
         return match ($this) {
             self::InvoicePayment => 'Invoice payment',
+            self::InvoiceRefund => 'Refund to client',
             self::BillPayment => 'Supplier payment',
             self::Manual => 'Manual entry',
         };
@@ -43,6 +51,7 @@ enum LedgerEntrySource: string
     {
         return match ($this) {
             self::InvoicePayment => 'accounting.entry.source.invoice_payment',
+            self::InvoiceRefund => 'accounting.entry.source.invoice_refund',
             self::BillPayment => 'accounting.entry.source.bill_payment',
             self::Manual => 'accounting.entry.source.manual',
         };

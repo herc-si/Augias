@@ -23,6 +23,9 @@ use Augias\AccountingBundle\Regime\RegimeRegistry;
 use Augias\AccountingBundle\Repository\LedgerEntryRepository;
 use Augias\BillBundle\Entity\BillPayment;
 use Augias\CoreBundle\Entity\Company;
+use Augias\InvoiceBundle\Entity\CreditNote;
+use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
+use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\SettingsBundle\SystemConfig;
@@ -35,6 +38,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function count;
 use function in_array;
 use function trim;
 
@@ -160,6 +164,218 @@ final readonly class LedgerFeeder
         }
 
         return $this->persist($entry, $profile);
+    }
+
+    /**
+     * Books money given back to a client against a credit note.
+     *
+     * Only a refund produces an entry. An offset needs none: under cash-basis
+     * books the client simply pays less on the next invoice, and that smaller
+     * receipt is already the whole truth — the revenue booked when the first
+     * invoice was paid stays acquired, the next one is reduced by the same
+     * amount, and the net is exact without anything being written here.
+     *
+     * The entry is dated on the day the money moved, which is what keeps a
+     * refund out of a period that has already been sealed.
+     *
+     * @throws MathException
+     */
+    public function recordCreditNoteRefund(CreditNoteAllocation $allocation): ?LedgerEntry
+    {
+        if (! $allocation->getKind()->movesMoney()) {
+            return null;
+        }
+
+        $creditNote = $allocation->getCreditNote();
+        $company = $creditNote->getCompany();
+        $profile = $this->books($company, LedgerBook::Revenue);
+
+        if (! $profile instanceof AccountingProfile) {
+            return null;
+        }
+
+        $id = $allocation->getId();
+
+        if (! $id instanceof Ulid) {
+            return null;
+        }
+
+        $existing = $this->entryRepository
+            ->findBySource($company, LedgerBook::Revenue, LedgerEntrySource::InvoiceRefund, $id);
+
+        if ($existing instanceof LedgerEntry) {
+            return null;
+        }
+
+        $amount = BigInteger::of((string) $allocation->getAmount());
+        $client = $creditNote->getClient();
+
+        $entry = new LedgerEntry()
+            ->setBook(LedgerBook::Revenue)
+            ->setSource(LedgerEntrySource::InvoiceRefund)
+            ->setSourceId($id)
+            ->setEntryDate($allocation->getAllocatedOn())
+            ->setLabel($this->label('accounting.entry.label.invoice_refund', $company))
+            ->setDocumentReference($creditNote->getCreditNoteId())
+            // Negative: this is revenue going back out. Stored positive on the
+            // document, signed here, which is where the books read it.
+            ->setAmount($amount->negated())
+            ->setCurrencyCode($client->getCurrency()->getCode())
+            ->setActivityNature($profile->primaryActivity)
+            ->setCounterparty($client)
+            ->setReverses($this->soleEntryFor($creditNote));
+
+        $entry->setCompany($company);
+
+        if ('' === $entry->getCounterpartyName()) {
+            $entry->setCounterpartyName((string) $client->getName());
+        }
+
+        // The tax given back, split by rate, in the proportions it was
+        // collected in. Negated for the same reason as the amount.
+        $split = $this->taxSplitter->forCreditNoteRefund($creditNote, $amount);
+
+        if ($split instanceof LedgerTaxSplit) {
+            $entry->setTax(
+                BigInteger::of((string) $split->net)->negated(),
+                BigInteger::of((string) $split->tax)->negated(),
+                $split->toArray(),
+            );
+        }
+
+        return $this->persist($entry, $profile);
+    }
+
+    /**
+     * Books a payment the gateway reversed.
+     *
+     * This is not about credit notes at all. recordInvoicePayment() protects
+     * itself from doubles by looking for an existing entry, which means a
+     * payment that later flips to refunded finds one and does nothing — so the
+     * revenue stayed acquired in the books although the money went back. This
+     * is the entry that was missing.
+     *
+     * @throws MathException
+     */
+    public function recordPaymentRefund(Payment $payment): ?LedgerEntry
+    {
+        $invoice = $payment->getInvoice();
+
+        if (null === $invoice || PaymentStatus::Refunded !== $payment->getStatus()) {
+            return null;
+        }
+
+        $company = $invoice->getCompany();
+        $profile = $this->books($company, LedgerBook::Revenue);
+
+        if (! $profile instanceof AccountingProfile) {
+            return null;
+        }
+
+        $id = $payment->getId();
+
+        if (! $id instanceof Ulid) {
+            return null;
+        }
+
+        $existing = $this->entryRepository
+            ->findBySource($company, LedgerBook::Revenue, LedgerEntrySource::InvoiceRefund, $id);
+
+        if ($existing instanceof LedgerEntry) {
+            return null;
+        }
+
+        // Nothing to reverse if the payment was never booked — a payment that
+        // failed before capture and was then marked refunded never produced
+        // revenue to take back.
+        $original = $this->entryRepository
+            ->findBySource($company, LedgerBook::Revenue, LedgerEntrySource::InvoicePayment, $id);
+
+        if (! $original instanceof LedgerEntry) {
+            return null;
+        }
+
+        $money = $payment->getAmount();
+        $client = $payment->getClient() ?? $invoice->getClient();
+
+        $entry = new LedgerEntry()
+            ->setBook(LedgerBook::Revenue)
+            ->setSource(LedgerEntrySource::InvoiceRefund)
+            ->setSourceId($id)
+            // The gateway does not tell us when it reversed, only that it did.
+            // Today is when the books learned of it, and dating it any earlier
+            // would be inventing a fact — possibly into a sealed period.
+            ->setEntryDate(new DateTimeImmutable('today'))
+            ->setLabel($this->label('accounting.entry.label.invoice_refund', $company))
+            ->setDocumentReference($invoice->getInvoiceId())
+            ->setAmount(BigInteger::of($money->getAmount())->negated())
+            ->setCurrencyCode($money->getCurrency()->getCode())
+            ->setActivityNature($original->getActivityNature() ?? $profile->primaryActivity)
+            ->setSettlementMethod(SettlementMethod::fromGatewayName($payment->getMethod()?->getGatewayName()))
+            ->setReverses($original);
+
+        $entry->setCompany($company);
+
+        if (null !== $client) {
+            $entry->setCounterparty($client);
+        }
+
+        if ('' === $entry->getCounterpartyName()) {
+            $entry->setCounterpartyName((string) $invoice->getClient()?->getName());
+        }
+
+        // Exactly what was booked, taken back: the split is already on the
+        // entry being reversed, so there is nothing to recompute and no way for
+        // the two to disagree.
+        $net = $original->getNetAmount();
+        $tax = $original->getTaxAmount();
+
+        if (null !== $net && null !== $tax) {
+            $entry->setTax(
+                BigInteger::of((string) $net)->negated(),
+                BigInteger::of((string) $tax)->negated(),
+                $original->getTaxBreakdown() ?? [],
+            );
+        }
+
+        return $this->persist($entry, $profile);
+    }
+
+    /**
+     * The entry a credit note refund reverses, when there is exactly one
+     * candidate.
+     *
+     * An invoice settled in several payments has several entries and no single
+     * one is *the* original; guessing would put a misleading link in the books,
+     * so the field stays empty and the document reference carries the story.
+     */
+    private function soleEntryFor(CreditNote $creditNote): ?LedgerEntry
+    {
+        $invoice = $creditNote->getCreditedInvoice();
+
+        if (! $invoice instanceof Invoice) {
+            return null;
+        }
+
+        $company = $creditNote->getCompany();
+        $found = [];
+
+        foreach ($invoice->getPayments() as $payment) {
+            $paymentId = $payment->getId();
+
+            if (! $paymentId instanceof Ulid) {
+                continue;
+            }
+
+            $entry = $this->entryRepository
+                ->findBySource($company, LedgerBook::Revenue, LedgerEntrySource::InvoicePayment, $paymentId);
+
+            if ($entry instanceof LedgerEntry) {
+                $found[] = $entry;
+            }
+        }
+
+        return 1 === count($found) ? $found[0] : null;
     }
 
     /**
