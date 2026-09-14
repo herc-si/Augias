@@ -29,6 +29,7 @@ use Augias\ClientBundle\Validator\Constraints\WithinPlanClientLimit;
 use Augias\CoreBundle\Traits\Entity\Archivable;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
@@ -217,6 +218,13 @@ class Client implements Stringable
     private Collection $quotes;
 
     /**
+     * @var Collection<int, CreditNote>
+     */
+    #[ORM\OneToMany(targetEntity: CreditNote::class, mappedBy: 'client', cascade: ['remove'], fetch: 'EXTRA_LAZY', orphanRemoval: true)]
+    #[ORM\OrderBy(['created' => 'DESC'])]
+    private Collection $creditNotes;
+
+    /**
      * @var Collection<int, Invoice>
      */
     #[ORM\OneToMany(targetEntity: Invoice::class, mappedBy: 'client', cascade: ['remove'], fetch: 'EXTRA_LAZY', orphanRemoval: true)]
@@ -265,6 +273,7 @@ class Client implements Stringable
         $this->contacts = new ArrayCollection();
         $this->quotes = new ArrayCollection();
         $this->invoices = new ArrayCollection();
+        $this->creditNotes = new ArrayCollection();
         $this->recurringInvoices = new ArrayCollection();
         $this->payments = new ArrayCollection();
         $this->addresses = new ArrayCollection();
@@ -426,6 +435,14 @@ class Client implements Stringable
         $this->invoices->removeElement($invoice);
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, CreditNote>
+     */
+    public function getCreditNotes(): Collection
+    {
+        return $this->creditNotes;
     }
 
     /**

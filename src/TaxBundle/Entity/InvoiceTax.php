@@ -17,6 +17,7 @@ use ApiPlatform\Metadata\ApiProperty;
 use Augias\CoreBundle\Doctrine\Type\BigIntegerType;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
 use Augias\QuoteBundle\Entity\Quote;
@@ -73,6 +74,10 @@ class InvoiceTax
     #[ORM\ManyToOne(targetEntity: Quote::class, inversedBy: 'invoiceTaxes')]
     #[ORM\JoinColumn(name: 'quote_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
     private ?Quote $quote = null;
+
+    #[ORM\ManyToOne(targetEntity: CreditNote::class, inversedBy: 'invoiceTaxes')]
+    #[ORM\JoinColumn(name: 'credit_note_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
+    private ?CreditNote $creditNote = null;
 
     #[ORM\ManyToOne(targetEntity: RecurringInvoice::class, inversedBy: 'invoiceTaxes')]
     #[ORM\JoinColumn(name: 'recurring_invoice_id', referencedColumnName: 'id', nullable: true, onDelete: 'CASCADE')]
@@ -157,6 +162,18 @@ class InvoiceTax
     public function setQuote(?Quote $quote): self
     {
         $this->quote = $quote;
+
+        return $this;
+    }
+
+    public function getCreditNote(): ?CreditNote
+    {
+        return $this->creditNote;
+    }
+
+    public function setCreditNote(?CreditNote $creditNote): self
+    {
+        $this->creditNote = $creditNote;
 
         return $this;
     }

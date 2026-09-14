@@ -25,6 +25,7 @@ use Augias\ClientBundle\Api\Processor\ContactPersistProcessor;
 use Augias\ClientBundle\Repository\ContactRepository;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
 use Augias\QuoteBundle\Entity\Quote;
@@ -223,6 +224,12 @@ class Contact implements Serializable, Stringable
     private Collection $invoices;
 
     /**
+     * @var Collection<int, CreditNote>
+     */
+    #[ORM\ManyToMany(targetEntity: CreditNote::class, mappedBy: 'users')]
+    private Collection $creditNotes;
+
+    /**
      * @var Collection<int, RecurringInvoice>
      */
     #[ORM\ManyToMany(targetEntity: RecurringInvoice::class, mappedBy: 'users')]
@@ -238,6 +245,7 @@ class Contact implements Serializable, Stringable
     {
         $this->id = new Ulid();
         $this->invoices = new ArrayCollection();
+        $this->creditNotes = new ArrayCollection();
         $this->recurringInvoices = new ArrayCollection();
         $this->quotes = new ArrayCollection();
     }
@@ -340,6 +348,14 @@ class Contact implements Serializable, Stringable
         $this->email = $email;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, CreditNote>
+     */
+    public function getCreditNotes(): Collection
+    {
+        return $this->creditNotes;
     }
 
     /**

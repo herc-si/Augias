@@ -21,6 +21,7 @@ use Augias\ClientBundle\Entity\Credit;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\InvoiceReminder;
 use Augias\InvoiceBundle\Entity\Line as InvoieLine;
@@ -188,6 +189,12 @@ class Company implements Stringable, SubscribableInterface
     public Collection $invoices;
 
     /**
+     * @var Collection<int, CreditNote>
+     */
+    #[ORM\OneToMany(targetEntity: CreditNote::class, mappedBy: 'company', cascade: ['persist'], orphanRemoval: true)]
+    public Collection $creditNotes;
+
+    /**
      * @var Collection<int, RecurringInvoice>
      */
     #[ORM\OneToMany(targetEntity: RecurringInvoice::class, mappedBy: 'company', cascade: ['persist'], orphanRemoval: true)]
@@ -235,6 +242,7 @@ class Company implements Stringable, SubscribableInterface
         $this->userNotifications = new ArrayCollection();
         $this->transportSettings = new ArrayCollection();
         $this->invoices = new ArrayCollection();
+        $this->creditNotes = new ArrayCollection();
         $this->recurringInvoices = new ArrayCollection();
         $this->invoiceLines = new ArrayCollection();
         $this->users = new ArrayCollection();
