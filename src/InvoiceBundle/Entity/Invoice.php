@@ -242,6 +242,16 @@ class Invoice extends BaseInvoice implements Stringable
     #[ORM\OrderBy(['created' => 'DESC'])]
     private Collection $creditNotes;
 
+    /**
+     * Credit notes set against this invoice. Not the same thing as the credit
+     * notes raised *about* it — a rebate raised on nothing in particular can
+     * still be used to settle this one.
+     *
+     * @var Collection<int, CreditNoteAllocation>
+     */
+    #[ORM\OneToMany(targetEntity: CreditNoteAllocation::class, mappedBy: 'invoice')]
+    private Collection $creditNoteAllocations;
+
     public function __construct()
     {
         parent::__construct();
@@ -252,6 +262,7 @@ class Invoice extends BaseInvoice implements Stringable
         $this->invoiceTaxes = new ArrayCollection();
         $this->electronicInvoiceSubmissions = new ArrayCollection();
         $this->creditNotes = new ArrayCollection();
+        $this->creditNoteAllocations = new ArrayCollection();
         $this->balance = BigInteger::zero();
         $this->invoiceDate = CarbonImmutable::now();
         $this->setUuid(Uuid::v7());
@@ -268,6 +279,14 @@ class Invoice extends BaseInvoice implements Stringable
     public function getCreditNotes(): Collection
     {
         return $this->creditNotes;
+    }
+
+    /**
+     * @return Collection<int, CreditNoteAllocation>
+     */
+    public function getCreditNoteAllocations(): Collection
+    {
+        return $this->creditNoteAllocations;
     }
 
     public function getStatus(): ?InvoiceStatus

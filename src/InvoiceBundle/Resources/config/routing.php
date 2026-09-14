@@ -15,6 +15,7 @@ use Augias\InvoiceBundle\Action\CloneInvoice;
 use Augias\InvoiceBundle\Action\CloneRecurringInvoice;
 use Augias\InvoiceBundle\Action\Create;
 use Augias\InvoiceBundle\Action\CreateRecurring;
+use Augias\InvoiceBundle\Action\CreditNote\Allocate as CreditNoteAllocate;
 use Augias\InvoiceBundle\Action\CreditNote\Create as CreditNoteCreate;
 use Augias\InvoiceBundle\Action\CreditNote\Edit as CreditNoteEdit;
 use Augias\InvoiceBundle\Action\CreditNote\Index as CreditNoteIndex;
@@ -124,6 +125,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_credit_notes_send', '/credit-notes/action/send/{id}')
         ->controller(CreditNoteSend::class);
+
+    $routingConfigurator
+        ->add('_credit_notes_allocate', '/credit-notes/allocate/{id}')
+        ->methods(['POST'])
+        ->controller(CreditNoteAllocate::class);
 
     $routingConfigurator
         ->add('_action_credit_note', '/credit-notes/action/{action}/{id}')

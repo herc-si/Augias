@@ -16,6 +16,7 @@ namespace Augias\InvoiceBundle\Tests\Functional;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Entity\Company;
+use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\CreditNote;
@@ -173,6 +174,48 @@ final class CreditNoteFlowTest extends WebTestCase
         self::assertInstanceOf(CreditNote::class, $reloaded);
         self::assertSame(CreditNoteStatus::Issued, $reloaded->getStatus());
         self::assertNotNull($reloaded->getIssuedAt());
+    }
+
+    /**
+     * The settlement panel is the whole point of the document page once the
+     * credit note is out: it is where a refund or an offset gets written down.
+     */
+    public function testRecordsARefundFromTheDocumentPage(): void
+    {
+        $creditNote = CreditNoteFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => CreditNoteStatus::Issued,
+            'discount' => new Discount(),
+            'lines' => [
+                new CreditNoteLine()
+                    ->setDescription('Returned licence')
+                    ->setPrice(9900)
+                    ->setQty(1)
+                    ->updateTotal(),
+            ],
+        ]);
+
+        $this->browser()
+            ->actingAs($this->createUser())
+            ->interceptRedirects()
+            ->visit('/invoices/credit-notes/view/' . $creditNote->getId())
+            ->assertSuccessful()
+            ->fillField('credit_note_allocation[amount]', '99.00')
+            ->selectFieldOption('credit_note_allocation[kind]', 'refund')
+            ->click('Record')
+            ->assertRedirectedTo('/invoices/credit-notes/view/' . $creditNote->getId());
+
+        $this->em->clear();
+
+        $reloaded = $this->em->find(CreditNote::class, $creditNote->getId());
+
+        self::assertInstanceOf(CreditNote::class, $reloaded);
+        self::assertCount(1, $reloaded->getAllocations());
+        self::assertSame('9900', (string) $reloaded->getAllocations()->first()->getAmount());
+
+        // Using it up in one go settles it.
+        self::assertSame(CreditNoteStatus::Settled, $reloaded->getStatus());
     }
 
     /**

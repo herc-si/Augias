@@ -691,6 +691,19 @@ credit_note:
     client: 'Client'
     issued_at: 'Émis le'
     credits_invoice: 'Se rapporte à la facture'
+    allocation:
+        title: 'Règlement'
+        remaining: 'Reste dû'
+        none: "Rien n'a encore été imputé sur cet avoir."
+        record: 'Enregistrer'
+        kind: 'Nature'
+        amount: 'Montant'
+        invoice: 'Facture'
+        no_invoice: 'Aucune facture'
+        date: 'Date'
+        notes: 'Notes'
+        recorded: 'Règlement enregistré'
+        invalid: "Ce règlement n'a pas pu être enregistré. Vérifiez le montant et la date."
     action:
         create: 'Créer un avoir'
         issue: 'Émettre'

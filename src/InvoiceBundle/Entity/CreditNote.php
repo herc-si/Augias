@@ -129,6 +129,16 @@ class CreditNote extends BaseInvoice implements Stringable
     private Collection $users;
 
     /**
+     * Every use of this credit note — set against an invoice, or refunded. A
+     * credit note may be used up in several goes.
+     *
+     * @var Collection<int, CreditNoteAllocation>
+     */
+    #[ORM\OneToMany(targetEntity: CreditNoteAllocation::class, mappedBy: 'creditNote', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['allocatedOn' => 'ASC'])]
+    private Collection $allocations;
+
+    /**
      * @var Collection<int, InvoiceTax>
      */
     #[ORM\OneToMany(targetEntity: InvoiceTax::class, mappedBy: 'creditNote', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -141,6 +151,7 @@ class CreditNote extends BaseInvoice implements Stringable
         $this->lines = new ArrayCollection();
         $this->users = new ArrayCollection();
         $this->invoiceTaxes = new ArrayCollection();
+        $this->allocations = new ArrayCollection();
         $this->creditNoteDate = CarbonImmutable::now();
         $this->setUuid(Uuid::v7());
     }
@@ -148,6 +159,22 @@ class CreditNote extends BaseInvoice implements Stringable
     public function getId(): ?Ulid
     {
         return $this->id;
+    }
+
+    /**
+     * @return Collection<int, CreditNoteAllocation>
+     */
+    public function getAllocations(): Collection
+    {
+        return $this->allocations;
+    }
+
+    public function addAllocation(CreditNoteAllocation $allocation): self
+    {
+        $this->allocations->add($allocation);
+        $allocation->setCreditNote($this);
+
+        return $this;
     }
 
     public function getCreditNoteId(): string
