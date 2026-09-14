@@ -72,6 +72,11 @@ final readonly class MicroEntrepriseRegime implements RegimeInterface
         return 'FR';
     }
 
+    public function issuedDocumentsAreFinal(): bool
+    {
+        return true;
+    }
+
     /**
      * The revenue book is compulsory for everyone. The purchase register is
      * only required of resale and accommodation activities — a pure services
