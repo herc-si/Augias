@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\CoreBundle\DependencyInjection;
 
 use Augias\CoreBundle\Generator\BillingIdGenerator\IdGeneratorInterface;
+use Augias\CoreBundle\Generator\BillingIdGenerator\SequentialIdGeneratorInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
@@ -33,6 +34,12 @@ class AugiasCoreExtension extends Extension
 
         $container->registerForAutoconfiguration(IdGeneratorInterface::class)
             ->addTag(IdGeneratorInterface::class)
+        ;
+
+        // A second tag, so a setting that may only offer gapless numbering can
+        // be handed just those strategies instead of filtering the full list.
+        $container->registerForAutoconfiguration(SequentialIdGeneratorInterface::class)
+            ->addTag(SequentialIdGeneratorInterface::class)
         ;
     }
 }

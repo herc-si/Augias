@@ -15,6 +15,7 @@ namespace Augias\CoreBundle\Tests\Generator;
 
 use Augias\CoreBundle\Generator\BillingIdGenerator;
 use Augias\CoreBundle\Generator\BillingIdGenerator\IdGeneratorInterface;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\SettingsBundle\SystemConfig;
 use DateTimeImmutable;
@@ -224,5 +225,45 @@ final class BillingIdGeneratorTest extends TestCase
         );
 
         $generator->generate(new Invoice());
+    }
+
+    /**
+     * A credit note is numbered in a series of its own — reading the invoice
+     * settings would interleave the two and break both runs.
+     *
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     * @throws JsonException
+     */
+    public function testGenerateReadsTheCreditNoteSeries(): void
+    {
+        $year = new DateTimeImmutable()->format('Y');
+
+        $autoIncrementGenerator = $this->createMock(IdGeneratorInterface::class);
+
+        $autoIncrementGenerator->expects(self::once())
+            ->method('generate')
+            ->with(
+                self::isInstanceOf(CreditNote::class),
+                self::callback(static fn (array $options): bool => 'AV-' === $options['prefix']
+                    && '-' . $year === $options['suffix']),
+            )
+            ->willReturn('7');
+
+        $systemConfig = $this->createStub(SystemConfig::class);
+
+        $systemConfig->method('get')
+            ->willReturnMap([
+                ['credit_note/id_generation/strategy', null, 'auto_increment'],
+                ['credit_note/id_generation/id_prefix', null, 'AV-'],
+                ['credit_note/id_generation/id_suffix', null, '-{year}'],
+            ]);
+
+        $generator = new BillingIdGenerator(
+            new ServiceLocator(['auto_increment' => static fn () => $autoIncrementGenerator]),
+            $systemConfig,
+        );
+
+        self::assertSame('AV-7-' . $year, $generator->generate(new CreditNote()));
     }
 }

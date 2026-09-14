@@ -24,7 +24,7 @@ use function assert;
  * @see \Augias\CoreBundle\Tests\Generator\BillingIdGenerator\AutoIncrementIdGeneratorTest
  */
 #[AsTaggedItem('auto_increment')]
-final readonly class AutoIncrementIdGenerator implements IdGeneratorInterface
+final readonly class AutoIncrementIdGenerator implements SequentialIdGeneratorInterface
 {
     public function __construct(
         private ManagerRegistry $registry

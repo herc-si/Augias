@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\CoreBundle\Generator;
 
 use Augias\CoreBundle\Generator\BillingIdGenerator\IdGeneratorInterface;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\SettingsBundle\SystemConfig;
@@ -58,6 +59,9 @@ final readonly class BillingIdGenerator
     public function generate(object $entity, array $options = [], ?string $strategy = null): string
     {
         $settingSection = match (true) {
+            // Before Invoice: a credit note is not one, but keeping the two
+            // apart is the point — they are numbered in separate series.
+            $entity instanceof CreditNote => 'credit_note',
             $entity instanceof Invoice => 'invoice',
             $entity instanceof Quote => 'quote',
             default => throw new InvalidArgumentException('Invalid entity type'),
