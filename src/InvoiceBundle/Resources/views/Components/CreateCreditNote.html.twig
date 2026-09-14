@@ -152,9 +152,12 @@
                     }) }}
                 </div>
 
-                <div class="billing-discount-row mt-3">
-                    {{ form_row(form.discount) }}
-                </div>
+                {% if form.discount is defined %}
+                    {# Only present on a credit note that mirrors an invoice. #}
+                    <div class="billing-discount-row mt-3">
+                        {{ form_row(form.discount) }}
+                    </div>
+                {% endif %}
             </div>
 
             <div class="billing-totals-sidebar">
@@ -179,10 +182,12 @@
                             </div>
                         {% endif %}
 
-                        <div class="totals-row totals-row-discount">
-                            <span class="totals-label">{{ 'billing.discount'|trans }}</span>
-                            <span class="totals-value">{{ discountAmount|formatCurrency(currency) }}</span>
-                        </div>
+                        {% if form.discount is defined %}
+                            <div class="totals-row totals-row-discount">
+                                <span class="totals-label">{{ 'billing.discount'|trans }}</span>
+                                <span class="totals-value">{{ discountAmount|formatCurrency(currency) }}</span>
+                            </div>
+                        {% endif %}
 
                         {#
                          # Shown as what the client is owed rather than as a negative

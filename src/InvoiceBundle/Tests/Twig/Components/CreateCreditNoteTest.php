@@ -17,6 +17,7 @@ use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Test\LiveComponentTest;
 use Augias\InvoiceBundle\DTO\CreditNoteFormDTO;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
+use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Augias\InvoiceBundle\Twig\Components\CreateCreditNote;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -74,6 +75,40 @@ final class CreateCreditNoteTest extends LiveComponentTest
         $component->submitForm(['client' => (string) $client->getId()]);
 
         self::assertStringContainsString('credit_note', $component->render()->toString());
+    }
+
+    /**
+     * A credit that answers to no invoice has nothing to take a discount off:
+     * the amount to give back is typed directly, and a discount on top of it
+     * would be a second reduction nobody asked for.
+     */
+    public function testOffersNoDiscountWithoutAnInvoiceToMirror(): void
+    {
+        $component = $this->createLiveComponent(CreateCreditNote::class, ['dto' => $this->dto()])
+            ->actingAs($this->getUser());
+
+        self::assertStringNotContainsString('credit_note[discount]', $component->render()->toString());
+    }
+
+    /**
+     * The counterpart: mirroring an invoice, the discount is exactly what makes
+     * the credit match what was charged, so it has to be there.
+     */
+    public function testOffersTheDiscountWhenMirroringAnInvoice(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company]);
+        $invoice = InvoiceFactory::createOne(['company' => $this->company, 'client' => $client]);
+
+        $dto = new CreditNoteFormDTO();
+        $dto->client = $client;
+        $dto->creditedInvoice = $invoice;
+        $dto->creditNoteDate = CarbonImmutable::now();
+        $dto->lines->add(new CreditNoteLine());
+
+        $component = $this->createLiveComponent(CreateCreditNote::class, ['dto' => $dto])
+            ->actingAs($this->getUser());
+
+        self::assertStringContainsString('credit_note[discount]', $component->render()->toString());
     }
 
     private function dto(): CreditNoteFormDTO

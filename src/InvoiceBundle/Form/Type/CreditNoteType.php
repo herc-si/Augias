@@ -112,11 +112,27 @@ class CreditNoteType extends AbstractType
             ]);
         });
 
-        $builder->add('discount', DiscountType::class, [
-            'required' => false,
-            'label' => 'billing.discount',
-            'currency' => $options['currency'],
-        ]);
+        // Only on a credit note that mirrors an invoice.
+        //
+        // There it is not optional decoration: if the invoice carried a 10%
+        // discount the client was charged the discounted figure, so crediting
+        // the full one would give back more than they ever paid. The credit has
+        // to reproduce the invoice's arithmetic.
+        //
+        // On a credit that answers to no invoice — a gesture, a rebate — the
+        // field means nothing: the amount to give back is simply typed. Offering
+        // a discount on top of it invites a second reduction nobody intended.
+        $builder->addDependent('discount', 'creditedInvoice', static function (DependentField $field, ?Invoice $invoice) use ($options): void {
+            if (! $invoice instanceof Invoice) {
+                return;
+            }
+
+            $field->add(DiscountType::class, [
+                'required' => false,
+                'label' => 'billing.discount',
+                'currency' => $options['currency'],
+            ]);
+        });
 
         // ItemType is shared with invoices; only the row's class differs, so a
         // line added here is a CreditNoteLine rather than a plain Line.
