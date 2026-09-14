@@ -70,7 +70,14 @@ export AUGIAS_ENV=prod
 export AUGIAS_DEBUG=0
 export NODE_ENVIRONMENT=production
 
-REPO=https://github.com/augias/augias.git
+# Where to clone from. In CI the GitHub context names the repository the
+# workflow runs in, so a fork builds itself; outside CI we follow the origin
+# remote of the working copy.
+if [ -n "${GITHUB_REPOSITORY:-}" ]; then
+    REPO="${GITHUB_SERVER_URL:-https://github.com}/${GITHUB_REPOSITORY}.git"
+else
+    REPO=$(git remote get-url origin 2>/dev/null || true)
+fi
 USE_LOCAL=0
 
 # Parse arguments and filter out --local
@@ -150,6 +157,11 @@ if [ $USE_LOCAL -eq 1 ]; then
              "${ROOT_DIR}/" "./Augias/"
     cd "./Augias"
 else
+    if [ -z "${REPO}" ]; then
+        echo "Error: no repository to clone from. Run inside a git checkout with an"
+        echo "origin remote, set GITHUB_REPOSITORY, or pass --local."
+        exit 1
+    fi
     echo "Cloning from remote repository..."
     git clone --branch "${BRANCH}" --depth 1 "${REPO}" "./Augias"
     cd "./Augias"
@@ -171,8 +183,9 @@ zip -qr "${DIST_DIR}/Augias-$VERSION".zip ./
 tar -czf "${DIST_DIR}/Augias-$VERSION".tar.gz ./
 
 if [ "${RELEASE:-}" = "1" ]; then
-	gh release upload "${VERSION}" "${DIST_DIR}"/Augias-"${VERSION}".zip --repo "${GITHUB_REPOSITORY:-augias/augias}" --clobber
-	gh release upload "${VERSION}" "${DIST_DIR}"/Augias-"${VERSION}".tar.gz --repo "${GITHUB_REPOSITORY:-augias/augias}" --clobber
+	: "${GITHUB_REPOSITORY:?RELEASE=1 needs GITHUB_REPOSITORY to know which release to upload to}"
+	gh release upload "${VERSION}" "${DIST_DIR}"/Augias-"${VERSION}".zip --repo "${GITHUB_REPOSITORY}" --clobber
+	gh release upload "${VERSION}" "${DIST_DIR}"/Augias-"${VERSION}".tar.gz --repo "${GITHUB_REPOSITORY}" --clobber
 fi
 
 cd ../ && rm -Rf "./Augias"

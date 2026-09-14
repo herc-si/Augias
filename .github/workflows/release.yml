@@ -60,7 +60,7 @@ jobs:
           elif [[ "${EVENT_NAME}" == "workflow_dispatch" && -n "${INPUT_VERSION}" ]]; then
             ref="${INPUT_VERSION}"
           else
-            ref="$(gh release view --repo augias/augias --json tagName --jq '.tagName')"
+            ref="$(gh release view --repo ${{ github.repository }} --json tagName --jq '.tagName')"
           fi
           echo "ref=${ref}" >> "${GITHUB_OUTPUT}"
 
@@ -101,7 +101,7 @@ jobs:
       - name: Build Release Artifact
         env:
           RELEASE: ${{ needs.prepare.outputs.release }}
-          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN || github.token }}
           BUILD_BRANCH: ${{ needs.prepare.outputs.branch }}
           BUILD_VERSION: ${{ needs.prepare.outputs.ref }}
         run: "./scripts/build_dist.sh ${BUILD_BRANCH} ${BUILD_VERSION}"
@@ -174,8 +174,8 @@ jobs:
           # GITHUB_TOKEN needs to be defined twice here.
           # GH_TOKEN is used by the gh cli utility to upload the binary files
           # GITHUB_TOKEN is used by static-php-cli script to make api calls to Github
-          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN || github.token }}
           RELEASE: ${{ needs.prepare.outputs.release }}
           # Use pre-built extension binaries where available to avoid compiling
           # PHP and all extensions from source (~50 min → a few minutes).
@@ -264,8 +264,8 @@ jobs:
       - name: Build Augias
         run: ./scripts/build_binary.sh ${{ needs.prepare.outputs.ref }}
         env:
-          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN || github.token }}
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN || github.token }}
           RELEASE: ${{ needs.prepare.outputs.release }}
           # Unset CI so build-static.sh preserves downloads/ and source/ for caching
           CI: ""
@@ -291,22 +291,22 @@ jobs:
           key: linux-${{ matrix.arch }}-static-php-${{ env.PHP_VERSION }}-${{ hashFiles('frankenphp/build-static.sh', 'frankenphp/build-augias.sh') }}
 
       - name: Login to DockerHub
-        if: needs.prepare.outputs.release == '1'
+        if: needs.prepare.outputs.release == '1' && vars.PUBLISH_DOCKER == 'true'
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
         with:
           username: ${{ vars.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PAT }}
 
       - name: Set up Docker Buildx
-        if: needs.prepare.outputs.release == '1'
+        if: needs.prepare.outputs.release == '1' && vars.PUBLISH_DOCKER == 'true'
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
 
       - name: Copy binary to Docker context
-        if: needs.prepare.outputs.release == '1'
+        if: needs.prepare.outputs.release == '1' && vars.PUBLISH_DOCKER == 'true'
         run: cp frankenphp/dist/augias-linux-${{ matrix.arch }} docker/augias
 
       - name: Build and push Docker image
-        if: needs.prepare.outputs.release == '1'
+        if: needs.prepare.outputs.release == '1' && vars.PUBLISH_DOCKER == 'true'
         id: build
         uses: docker/bake-action@3acf805d94d93a86cce4ca44798a76464a75b88c # v6.9.0
         with:
@@ -321,7 +321,7 @@ jobs:
           LATEST: ${{ !contains(needs.prepare.outputs.ref, '-') }}
 
       - name: Export digest for manifest merge
-        if: needs.prepare.outputs.release == '1'
+        if: needs.prepare.outputs.release == '1' && vars.PUBLISH_DOCKER == 'true'
         run: |
           mkdir -p /tmp/digests
           digest=$(jq -r '."package"."containerimage.digest"' <<< "$METADATA")
@@ -330,7 +330,7 @@ jobs:
           METADATA: ${{ steps.build.outputs.metadata }}
 
       - name: Upload digest artifact
-        if: needs.prepare.outputs.release == '1'
+        if: needs.prepare.outputs.release == '1' && vars.PUBLISH_DOCKER == 'true'
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: digest-linux-${{ matrix.arch }}
@@ -342,7 +342,7 @@ jobs:
     needs: [prepare, build-linux]
     permissions:
       contents: read
-    if: needs.prepare.outputs.release == '1'
+    if: needs.prepare.outputs.release == '1' && vars.PUBLISH_DOCKER == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Harden the runner
@@ -408,7 +408,7 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           fetch-depth: 0
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          token: ${{ secrets.GH_ACCESS_TOKEN || github.token }}
 
       - name: Set up Helm
         uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
@@ -437,11 +437,11 @@ jobs:
 
       - name: Upload chart to GitHub release
         env:
-          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN || github.token }}
           VERSION: ${{ needs.prepare.outputs.ref }}
         run: |
           gh release upload "$VERSION" /tmp/helm-packages/*.tgz \
-            --repo augias/augias --clobber
+            --repo ${{ github.repository }} --clobber
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
@@ -453,12 +453,12 @@ jobs:
       - name: Push chart to GHCR (OCI)
         run: |
           for chart in /tmp/helm-packages/*.tgz; do
-            helm push "$chart" oci://ghcr.io/augias/charts
+            helm push "$chart" oci://ghcr.io/${{ github.repository_owner }}/charts
           done
 
       - name: Publish to Helm repository (gh-pages)
         env:
-          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN || github.token }}
           REPOSITORY: ${{ github.repository }}
         run: |
           git config user.name "github-actions[bot]"
