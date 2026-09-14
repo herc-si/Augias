@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\TaxBundle\Calculator;
 
 use Augias\InvoiceBundle\Entity\BaseInvoice;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
 use Augias\QuoteBundle\Entity\Quote;
@@ -25,6 +26,7 @@ use Augias\TaxBundle\Enum\TaxType;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException;
 use Brick\Math\RoundingMode;
+use Doctrine\Common\Collections\Collection;
 
 /**
  * Computes whole-document (invoice-level) tax breakdowns.
@@ -148,11 +150,15 @@ final class InvoiceTaxCalculator
         $collection = match (true) {
             $document instanceof Invoice,
             $document instanceof RecurringInvoice,
+            $document instanceof CreditNote,
             $document instanceof Quote => $document->getInvoiceTaxes(),
+            // A document type that carries no tax summary of its own. The null
+            // used to fall straight into isEmpty() below, so every new
+            // BaseInvoice subclass crashed here the first time it was saved.
             default => null,
         };
 
-        if ($collection->isEmpty()) {
+        if (! $collection instanceof Collection || $collection->isEmpty()) {
             return [];
         }
 
