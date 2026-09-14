@@ -17,6 +17,7 @@ use Augias\BillBundle\Enum\BillStatus;
 use Augias\ClientBundle\Enum\ClientStatus;
 use Augias\CoreBundle\Enum\HasStatusLabel;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
+use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Enum\RecurringInvoiceStatus;
 use Augias\PaymentBundle\Enum\PaymentStatus;
@@ -65,6 +66,11 @@ class StatusExtension extends AbstractExtension
             new TwigFunction(
                 'einvoicing_status_label',
                 fn (Environment $environment, ElectronicInvoiceProcessingStatus | null $status = null, ?string $tooltip = null) => $this->renderStatusOrAll($environment, $status, ElectronicInvoiceProcessingStatus::class, $tooltip),
+                ['is_safe' => ['html'], 'needs_environment' => true]
+            ),
+            new TwigFunction(
+                'credit_note_label',
+                fn (Environment $environment, CreditNoteStatus | null $status = null, ?string $tooltip = null) => $this->renderStatusOrAll($environment, $status, CreditNoteStatus::class, $tooltip),
                 ['is_safe' => ['html'], 'needs_environment' => true]
             ),
             new TwigFunction(

@@ -682,6 +682,73 @@ contact_saved: 'Le contact a été enregistré avec succès'
 create_new: 'Créer nouveau'
 create_now: 'Créez-en un maintenant.'
 created: Créé
+credit_note:
+    menu:
+        main: 'Avoirs'
+    list:
+        title: 'Avoirs'
+    title: 'Avoir n° %id%'
+    client: 'Client'
+    issued_at: 'Émis le'
+    credits_invoice: 'Se rapporte à la facture'
+    action:
+        create: 'Créer un avoir'
+        issue: 'Émettre'
+        send: 'Envoyer'
+    create:
+        title: 'Nouvel avoir'
+        subtitle: "Corriger une facture déjà remise au client."
+        success: 'Avoir enregistré'
+    edit:
+        title: "Modifier l'avoir"
+        success: 'Avoir enregistré'
+        issued: "Cet avoir a été émis et ne peut plus être modifié."
+    field:
+        number: "Numéro d'avoir"
+        date: "Date de l'avoir"
+        reason: 'Motif'
+        credited_invoice: 'Facture concernée'
+    client_choose: 'Choisir un client'
+    reason:
+        choose: 'Choisir un motif'
+    invoice:
+        none: 'Aucune facture précise'
+    items:
+        empty:
+            title: 'Rien à créditer pour le moment'
+            description: 'Ajoutez une ligne pour chaque élément crédité.'
+    item:
+        description:
+            placeholder: "Ce qui est crédité"
+    totals:
+        title: 'Totaux'
+        credited: 'Montant de l''avoir'
+    save:
+        draft: 'Enregistrer le brouillon'
+        issue: 'Émettre'
+        send: 'Émettre et envoyer'
+    send:
+        success: 'Avoir envoyé'
+        failed: "L'avoir a été émis mais n'a pas pu être envoyé."
+        no_recipients: "Ajoutez au moins un contact avant l'envoi."
+    transition:
+        issue: 'Avoir émis'
+        settle: 'Avoir soldé'
+    grid:
+        number: 'Numéro'
+        client: 'Client'
+        credited_invoice: 'Facture'
+        status: 'Statut'
+        total: 'Total'
+        tax: 'TVA'
+        date: 'Date'
+        reason: 'Motif'
+    email:
+        intro: "Veuillez trouver ci-joint l'avoir %id%."
+        credits_invoice: 'Cet avoir corrige la facture %invoice%.'
+    pdf:
+        heading: 'AVOIR'
+        credits_invoice: "Avoir se rapportant à la facture %invoice%."
 custom_field:
     add: 'Ajouter un champ'
     badge:

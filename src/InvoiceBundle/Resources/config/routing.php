@@ -15,6 +15,12 @@ use Augias\InvoiceBundle\Action\CloneInvoice;
 use Augias\InvoiceBundle\Action\CloneRecurringInvoice;
 use Augias\InvoiceBundle\Action\Create;
 use Augias\InvoiceBundle\Action\CreateRecurring;
+use Augias\InvoiceBundle\Action\CreditNote\Create as CreditNoteCreate;
+use Augias\InvoiceBundle\Action\CreditNote\Edit as CreditNoteEdit;
+use Augias\InvoiceBundle\Action\CreditNote\Index as CreditNoteIndex;
+use Augias\InvoiceBundle\Action\CreditNote\Send as CreditNoteSend;
+use Augias\InvoiceBundle\Action\CreditNote\Transition as CreditNoteTransition;
+use Augias\InvoiceBundle\Action\CreditNote\View as CreditNoteView;
 use Augias\InvoiceBundle\Action\Edit;
 use Augias\InvoiceBundle\Action\EditRecurring;
 use Augias\InvoiceBundle\Action\Fields;
@@ -93,4 +99,33 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_action_recurring_invoice', '/recurring-action/{action}/{id}')
         ->controller(RecurringTransition::class);
+
+    // Credit notes sit under the invoice prefix because that is where they
+    // belong: a credit note corrects an invoice, and the two are read together.
+    $routingConfigurator
+        ->add('_credit_notes_index', '/credit-notes')
+        ->controller(CreditNoteIndex::class);
+
+    $routingConfigurator
+        ->add('_credit_notes_create', '/credit-notes/create/{invoice}')
+        ->controller(CreditNoteCreate::class)
+        ->defaults(['invoice' => null]);
+
+    $routingConfigurator
+        ->add('_credit_notes_edit', '/credit-notes/edit/{id}')
+        ->controller(CreditNoteEdit::class);
+
+    $routingConfigurator
+        ->add('_credit_notes_view', '/credit-notes/view/{id}.{_format}')
+        ->controller(CreditNoteView::class)
+        ->defaults(['_format' => 'html'])
+        ->requirements(['_format' => 'html|pdf']);
+
+    $routingConfigurator
+        ->add('_credit_notes_send', '/credit-notes/action/send/{id}')
+        ->controller(CreditNoteSend::class);
+
+    $routingConfigurator
+        ->add('_action_credit_note', '/credit-notes/action/{action}/{id}')
+        ->controller(CreditNoteTransition::class);
 };

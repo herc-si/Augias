@@ -682,6 +682,73 @@ contact_saved: 'The contact was saved successfully'
 create_new: 'Create New'
 create_now: 'Create one now.'
 created: Created
+credit_note:
+    menu:
+        main: 'Credit Notes'
+    list:
+        title: 'Credit Notes'
+    title: 'Credit Note #%id%'
+    client: 'Client'
+    issued_at: 'Issued'
+    credits_invoice: 'Credits invoice'
+    action:
+        create: 'Create Credit Note'
+        issue: 'Issue'
+        send: 'Send'
+    create:
+        title: 'New Credit Note'
+        subtitle: 'Correct an invoice that has already gone to the client.'
+        success: 'Credit note saved'
+    edit:
+        title: 'Edit Credit Note'
+        success: 'Credit note saved'
+        issued: 'This credit note has been issued and can no longer be edited.'
+    field:
+        number: 'Credit note number'
+        date: 'Credit note date'
+        reason: 'Reason'
+        credited_invoice: 'Invoice being credited'
+    client_choose: 'Choose a client'
+    reason:
+        choose: 'Choose a reason'
+    invoice:
+        none: 'No specific invoice'
+    items:
+        empty:
+            title: 'Nothing credited yet'
+            description: 'Add a line for each item being credited.'
+    item:
+        description:
+            placeholder: 'What is being credited'
+    totals:
+        title: 'Totals'
+        credited: 'Credited'
+    save:
+        draft: 'Save draft'
+        issue: 'Issue'
+        send: 'Issue and send'
+    send:
+        success: 'Credit note sent'
+        failed: 'The credit note was issued but could not be sent.'
+        no_recipients: 'Add at least one contact before sending.'
+    transition:
+        issue: 'Credit note issued'
+        settle: 'Credit note settled'
+    grid:
+        number: 'Number'
+        client: 'Client'
+        credited_invoice: 'Invoice'
+        status: 'Status'
+        total: 'Total'
+        tax: 'Tax'
+        date: 'Date'
+        reason: 'Reason'
+    email:
+        intro: 'Please find credit note %id% attached.'
+        credits_invoice: 'This credit note corrects invoice %invoice%.'
+    pdf:
+        heading: 'CREDIT NOTE'
+        credits_invoice: 'Credit note relating to invoice %invoice%.'
 custom_field:
     add: 'Add field'
     badge:
