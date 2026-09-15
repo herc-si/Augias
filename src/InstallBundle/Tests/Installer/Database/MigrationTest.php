@@ -25,6 +25,7 @@ use Doctrine\Migrations\Version\Comparator;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Uid\Ulid;
@@ -41,8 +42,25 @@ use function uniqid;
  * Not out of tidiness: creating the migrations table is DDL, and on a platform
  * where DDL commits the surrounding transaction it would end the one that keeps
  * the rest of the suite isolated, taking every test that follows down with it.
+ *
+ * A database of its own turned out not to be enough. With this class in the
+ * default run, about one run in five failed somewhere else entirely — ledger
+ * lock dates not enforced, a deleted company's security token still present —
+ * in whichever tests the random order happened to put afterwards. Bisecting the
+ * merges found this class; running the suite without it was green eight times
+ * out of eight. What exactly escapes is not identified: it is not the shared ORM
+ * configuration (cloning it changed nothing), and it survives a second entity
+ * manager and a connection of its own.
+ *
+ * So it joins `installation` and `saas-kernel` in the groups excluded by
+ * default and run in an invocation of their own — the same answer this project
+ * already gives to a test that cannot share a process with the rest. Process
+ * isolation per test is not an option here: tests/bootstrap.php clears
+ * var/cache/test and rebuilds the schema in every process, so a child spawned
+ * mid-run destroys the database the parent is still using.
  */
 #[CoversClass(Migration::class)]
+#[Group('migrations')]
 final class MigrationTest extends KernelTestCase
 {
     /**

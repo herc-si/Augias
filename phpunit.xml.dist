@@ -49,10 +49,29 @@
 
     An explicit group option on the command line overrides this exclusion.
   -->
+  <!--
+    Same treatment again, for a reason that is understood less well than the two above.
+    The migration installer test drives its own SQLite file through its own connection and
+    entity manager, and still leaves something behind: with it in the default run, about one
+    run in five failed in unrelated tests further down the random order — a ledger lock date
+    not enforced, a deleted company's security token still there. Without it, eight runs out
+    of eight were green. Cloning the ORM configuration it borrows changed nothing, so what
+    escapes is still unidentified.
+
+    Per-test process isolation is not the way out: tests/bootstrap.php clears var/cache/test
+    and rebuilds the schema in every process, so a child spawned mid-run destroys the
+    database the parent is still using — 685 errors on the first attempt.
+
+        bin/phpunit —group migrations
+
+    Note for db-tests.yml: naming any excluded group on the command line replaces this list
+    rather than adding to it, so that workflow has to name this group as well.
+  -->
   <groups>
     <exclude>
       <group>installation</group>
       <group>saas-kernel</group>
+      <group>migrations</group>
     </exclude>
   </groups>
   <testsuites>
