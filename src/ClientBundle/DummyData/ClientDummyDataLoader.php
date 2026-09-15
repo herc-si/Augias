@@ -58,7 +58,10 @@ final readonly class ClientDummyDataLoader implements DummyDataLoaderInterface
 
         for ($i = 0; $i < 10; ++$i) {
             $client = new Client();
-            $client->setName(substr($this->faker->company(), 0, 125))
+            // clients is unique on (name, company_id), and Faker repeats itself
+            // often enough over ten draws to have broken a CI run on two of the
+            // fourteen database jobs while the rest went green.
+            $client->setName(substr($this->faker->unique()->company(), 0, 125))
                 ->setWebsite(substr($this->faker->url(), 0, 125))
                 ->setStatus(ClientStatus::Active)
                 ->setCurrencyCode($currency)
