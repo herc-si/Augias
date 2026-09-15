@@ -59,7 +59,8 @@ final class CreditNoteGrid extends Grid
     {
         return [
             StringColumn::new('creditNoteId')
-                ->label('credit_note.grid.number'),
+                ->label('credit_note.grid.number')
+                ->naturalSort(),
             StringColumn::new('client')
                 ->label('credit_note.grid.client')
                 ->searchable(false)

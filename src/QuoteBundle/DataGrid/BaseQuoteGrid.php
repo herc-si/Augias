@@ -53,7 +53,8 @@ abstract class BaseQuoteGrid extends Grid
         return [
             StringColumn::new('quoteId')
                 ->label('quote.grid.quote_number')
-                ->cellClass('col-id'),
+                ->cellClass('col-id')
+                ->naturalSort(),
             StringColumn::new('client')
                 ->label('quote.grid.client')
                 ->searchable(false)

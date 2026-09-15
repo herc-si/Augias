@@ -61,7 +61,8 @@ abstract class BaseInvoiceGrid extends Grid
             // with all 11 columns visible at once the row actions were only
             // reachable after scrolling the table horizontally.
             StringColumn::new('invoiceId')
-                ->label('invoice.grid.invoice_number'),
+                ->label('invoice.grid.invoice_number')
+                ->naturalSort(),
             StringColumn::new('client')
                 ->label('invoice.grid.client')
                 ->searchable(false)
