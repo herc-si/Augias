@@ -588,6 +588,9 @@ client:
         add_credit: 'Add Credit'
         credit:
             amount: Amount
+            not_a_receipt:
+                body: 'Credit granted here is not money received: it stays out of your revenue and out of your books. If the client actually paid you — cash, an advance, a transfer — record a payment on their invoice instead, otherwise that money is counted nowhere.'
+                title: 'This is not a payment'
             tip: "<strong>Tip:</strong> To subtract an amount, add a '-' before the amount, E.G <code>%amount%</code>"
         edit_address: 'Edit Address'
         edit_contact: 'Edit Contact'

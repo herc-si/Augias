@@ -588,6 +588,9 @@ client:
         add_credit: 'Ajouter un crédit'
         credit:
             amount: Montant
+            not_a_receipt:
+                body: "Un crédit accordé ici n'est pas de l'argent encaissé : il n'entre ni dans vos recettes ni dans vos livres. Si le client vous a réellement versé quelque chose — espèces, acompte, virement — enregistrez plutôt un paiement sur sa facture, sinon cette somme n'est comptée nulle part."
+                title: "Ceci n'est pas un paiement"
             tip: "<strong>Astuce :</strong> pour soustraire un montant, ajoutez un « - » avant le montant, par exemple <code>%amount%</code>"
         edit_address: 'Modifier l''adresse'
         edit_contact: 'Modifier le contact'
