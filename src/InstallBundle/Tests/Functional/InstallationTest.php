@@ -173,6 +173,11 @@ final class InstallationTest extends PantherTestCase
             )
             ->assertSee('Review')
             ->click('button[name="installation[navigator][install]"]')
+            // Enabled again is what says the steps have all run: the next screen
+            // is only reachable once they have, and the text of the step list
+            // appears before that. Left as it is deliberately — see the comment
+            // in testInstallationStepDisplaysProgress for why the other one
+            // could not stay this way.
             ->use(
                 static fn (Client $client) => $client->waitForEnabled('button[name="installation[navigator][next]"]')
             )
@@ -587,9 +592,13 @@ final class InstallationTest extends PantherTestCase
                 static fn (Client $client) => $client->waitFor('button[name="installation[navigator][install]"]')
             )
             ->click('button[name="installation[navigator][install]"]')
-            ->use(
-                static fn (Client $client) => $client->waitForEnabled('button[name="installation[navigator][next]"]')
-            )
+            // Waiting on the last step's name rather than on the next button
+            // becoming enabled: the page redraws while the steps run, and a node
+            // the driver is holding across a redraw is a detached node — "Node
+            // with given id does not belong to the document", the same shape of
+            // failure as issue #25. A text match re-reads the document each poll,
+            // so there is nothing to hold.
+            ->waitUntilSeeIn('body', 'Creating admin user')
             ->assertSee('Generating secret')
             ->assertSee('Creating database')
             ->assertSee('Creating database schema')
