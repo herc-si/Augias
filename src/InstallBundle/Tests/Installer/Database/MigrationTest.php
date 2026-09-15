@@ -13,35 +13,44 @@ declare(strict_types=1);
 
 namespace Augias\InstallBundle\Tests\Installer\Database;
 
+use Augias\CoreBundle\Doctrine\Migrations\NaturalVersionComparator;
+use Augias\CoreBundle\Entity\Company;
 use Augias\InstallBundle\Installer\Database\Migration;
-use Augias\InstallBundle\Test\EnsureApplicationInstalled;
-use Augias\SettingsBundle\SystemConfig;
-use Carbon\CarbonImmutable;
 use Doctrine\DBAL\Connection;
+use Doctrine\DBAL\DriverManager;
+use Doctrine\Migrations\Configuration\Connection\ExistingConnection;
+use Doctrine\Migrations\Configuration\Migration\ConfigurationArray;
 use Doctrine\Migrations\DependencyFactory;
-use Doctrine\Migrations\Version\Direction;
-use Doctrine\Migrations\Version\ExecutionResult;
+use Doctrine\Migrations\Version\Comparator;
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Uid\Ulid;
 use function count;
 use function iterator_to_array;
 use function sprintf;
+use function sys_get_temp_dir;
+use function uniqid;
 
 /**
- * A database that already carries data is upgraded by running the migrations
- * that have not run yet — not by recording them as though they had.
+ * Both routes through {@see Migration::migrate()} run against a database of
+ * their own — a throwaway SQLite file, with its own connection.
+ *
+ * Not out of tidiness: creating the migrations table is DDL, and on a platform
+ * where DDL commits the surrounding transaction it would end the one that keeps
+ * the rest of the suite isolated, taking every test that follows down with it.
  */
 #[CoversClass(Migration::class)]
 final class MigrationTest extends KernelTestCase
 {
-    use EnsureApplicationInstalled;
-
     /**
      * Seeds the credit note numbering settings for companies that already
      * exist, and does all of it in postUp(): a migration whose whole purpose is
      * data, so skipping it leaves no trace in the schema to notice later.
      */
-    private const string PENDING_MIGRATION = 'DoctrineMigrations\Version40000_13';
+    private const string DATA_MIGRATION = 'DoctrineMigrations\Version40000_13';
 
     private const array SEEDED_SETTINGS = [
         'credit_note/id_generation/strategy',
@@ -49,103 +58,104 @@ final class MigrationTest extends KernelTestCase
         'credit_note/id_generation/id_suffix',
     ];
 
-    public function testAPendingDataMigrationRunsOnATrackedDatabase(): void
+    private string $databaseFile;
+
+    private Connection $connection;
+
+    private Migration $migration;
+
+    private DependencyFactory $dependencyFactory;
+
+    protected function setUp(): void
     {
-        $container = self::getContainer();
+        parent::setUp();
 
-        $config = $container->get(SystemConfig::class);
-        self::assertInstanceOf(SystemConfig::class, $config);
+        self::bootKernel();
 
-        $dependencyFactory = $container->get(DependencyFactory::class);
-        self::assertInstanceOf(DependencyFactory::class, $dependencyFactory);
+        $this->databaseFile = sprintf('%s/%s.db', sys_get_temp_dir(), uniqid('augias-migration-', true));
 
-        $migration = $container->get(Migration::class);
-        self::assertInstanceOf(Migration::class, $migration);
+        $this->connection = DriverManager::getConnection([
+            'driver' => 'pdo_sqlite',
+            'path' => $this->databaseFile,
+        ]);
 
-        // The company predates the setting, the state the migration exists for.
-        foreach (self::SEEDED_SETTINGS as $key) {
-            $config->remove($key);
-            self::assertNull($config->get($key, $this->company));
-        }
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
 
-        $this->recordEveryMigrationExceptThePendingOne($dependencyFactory);
+        // The mapping of the application, pointed at a database of its own.
+        $isolated = new EntityManager($this->connection, $entityManager->getConfiguration());
 
-        iterator_to_array($migration->migrate());
+        $this->dependencyFactory = DependencyFactory::fromConnection(
+            new ConfigurationArray([
+                'migrations_paths' => ['DoctrineMigrations' => self::getContainer()->getParameter('kernel.project_dir') . '/migrations'],
+                'table_storage' => ['table_name' => 'migration_versions'],
+            ]),
+            new ExistingConnection($this->connection),
+        );
 
-        foreach (self::SEEDED_SETTINGS as $key) {
-            self::assertNotNull($config->get($key, $this->company), sprintf('The migration did not seed "%s".', $key));
-        }
-    }
+        // As configured in config/packages/doctrine_migrations.php: without it
+        // Version40000_9 runs after Version40000_10.
+        $this->dependencyFactory->setDefinition(Comparator::class, static fn (): Comparator => new NaturalVersionComparator());
 
-    /**
-     * The other half of the same rule: history that was never recorded cannot
-     * be replayed. Running it would mean applying every migration of the
-     * project to a schema that already has them, so an untracked database is
-     * baselined instead — and nothing that a migration carries is applied to it.
-     */
-    public function testAnUntrackedDatabaseIsBaselinedRatherThanReplayed(): void
-    {
-        $container = self::getContainer();
-
-        $config = $container->get(SystemConfig::class);
-        self::assertInstanceOf(SystemConfig::class, $config);
-
-        $dependencyFactory = $container->get(DependencyFactory::class);
-        self::assertInstanceOf(DependencyFactory::class, $dependencyFactory);
-
-        $migration = $container->get(Migration::class);
-        self::assertInstanceOf(Migration::class, $migration);
-
-        foreach (self::SEEDED_SETTINGS as $key) {
-            $config->remove($key);
-        }
-
-        iterator_to_array($migration->migrate());
-
-        $available = $dependencyFactory->getMigrationRepository()->getMigrations()->getItems();
-        $executed = $dependencyFactory->getMetadataStorage()->getExecutedMigrations()->getItems();
-
-        self::assertCount(count($available), $executed);
-        self::assertTrue($migration->isUpToDate());
-
-        foreach (self::SEEDED_SETTINGS as $key) {
-            self::assertNull($config->get($key, $this->company), sprintf('"%s" was seeded by a migration that never ran here.', $key));
-        }
+        $this->migration = new Migration($this->dependencyFactory, $isolated);
     }
 
     protected function tearDown(): void
     {
-        $connection = self::getContainer()->get('doctrine')->getConnection();
-        self::assertInstanceOf(Connection::class, $connection);
+        $this->connection->close();
 
-        // On a platform where DDL commits the surrounding transaction, the table
-        // created below outlives the test's rollback.
-        $schemaManager = $connection->createSchemaManager();
-
-        if ($schemaManager->tablesExist(['migration_versions'])) {
-            $schemaManager->dropTable('migration_versions');
-        }
+        new Filesystem()->remove($this->databaseFile);
 
         parent::tearDown();
     }
 
     /**
-     * Leaves exactly one migration to run, so that the assertion is about that
-     * migration rather than about the whole history replaying.
+     * An empty database has no history that can be replayed — the oldest
+     * migrations of this project expect a schema that predates them — so the
+     * schema is built from the mapping in one pass and the history written to
+     * match. Nothing a migration carries is applied.
      */
-    private function recordEveryMigrationExceptThePendingOne(DependencyFactory $dependencyFactory): void
+    public function testAnEmptyDatabaseIsBaselinedRatherThanReplayed(): void
     {
-        $metadataStorage = $dependencyFactory->getMetadataStorage();
-        $metadataStorage->ensureInitialized();
+        iterator_to_array($this->migration->migrate());
 
-        $now = CarbonImmutable::now();
+        $schemaManager = $this->connection->createSchemaManager();
+        self::assertTrue($schemaManager->tablesExist([Company::TABLE_NAME]));
 
-        foreach ($dependencyFactory->getMigrationRepository()->getMigrations()->getItems() as $availableMigration) {
-            if (self::PENDING_MIGRATION === (string) $availableMigration->getVersion()) {
-                continue;
-            }
+        $available = $this->dependencyFactory->getMigrationRepository()->getMigrations()->getItems();
+        $executed = $this->dependencyFactory->getMetadataStorage()->getExecutedMigrations()->getItems();
 
-            $metadataStorage->complete(new ExecutionResult($availableMigration->getVersion(), Direction::UP, $now));
-        }
+        self::assertNotEmpty($available);
+        self::assertCount(count($available), $executed);
+        self::assertTrue($this->migration->isUpToDate());
+    }
+
+    /**
+     * A database that knows where it stands runs what it has not run yet — the
+     * only way a migration that carries data rather than structure ever
+     * happens.
+     */
+    public function testAPendingDataMigrationRunsOnATrackedDatabase(): void
+    {
+        iterator_to_array($this->migration->migrate());
+
+        $company = new Ulid();
+        $this->connection->insert(Company::TABLE_NAME, ['id' => $company->toBinary(), 'name' => 'Baker Street Bakery']);
+
+        // The company predates the setting, the state the migration exists for.
+        $this->connection->delete('migration_versions', ['version' => self::DATA_MIGRATION]);
+        self::assertSame(0, $this->countSeededSettings($company));
+
+        iterator_to_array($this->migration->migrate());
+
+        self::assertSame(count(self::SEEDED_SETTINGS), $this->countSeededSettings($company));
+    }
+
+    private function countSeededSettings(Ulid $company): int
+    {
+        return (int) $this->connection->fetchOne(
+            'SELECT COUNT(*) FROM app_config WHERE company_id = ? AND setting_key IN (?, ?, ?)',
+            [$company->toBinary(), ...self::SEEDED_SETTINGS],
+        );
     }
 }

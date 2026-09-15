@@ -22,7 +22,6 @@ use Doctrine\Migrations\MigratorConfiguration;
 use Doctrine\Migrations\Version\ExecutionResult;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
-use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\SqlFormatter\SqlFormatter;
 use Generator;
 use function count;
@@ -34,7 +33,7 @@ final readonly class Migration
 
     public function __construct(
         private DependencyFactory $migrationDependencyFactory,
-        private ManagerRegistry $registry,
+        private EntityManagerInterface $entityManager,
     ) {
         $this->sqlFormatter = new SqlFormatter();
     }
@@ -120,12 +119,10 @@ final readonly class Migration
 
     private function updateSchema(?callable $callback): Generator
     {
-        $em = $this->registry->getManager();
-        assert($em instanceof EntityManagerInterface);
-        $tables = $em->getMetadataFactory()->getAllMetadata();
+        $tables = $this->entityManager->getMetadataFactory()->getAllMetadata();
 
-        $schemaTool = new SchemaTool($em);
-        $conn = $em->getConnection();
+        $schemaTool = new SchemaTool($this->entityManager);
+        $conn = $this->entityManager->getConnection();
 
         // ORM 3's SchemaTool::getUpdateSchemaSql() no longer has a "save mode" (the
         // boolean second argument was removed in ORM 3), so it now emits DROP TABLE
