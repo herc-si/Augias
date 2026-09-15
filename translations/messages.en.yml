@@ -690,6 +690,12 @@ credit_note:
         main: 'Credit Notes'
     list:
         title: 'Credit Notes'
+    settings:
+        id_generation:
+            id_prefix:
+                description: 'Printed before the number. Example: AV-'
+            id_suffix:
+                description: 'Printed after the number. Use {year} for the current year, as in -{year}'
     title: 'Credit Note #%id%'
     client: 'Client'
     issued_at: 'Issued'
@@ -1785,6 +1791,25 @@ invoice:
     send:
         no_recipients: 'Cannot send invoice: no contacts with email addresses found'
     send_to: 'Send invoice to:'
+    settings:
+        bcc_address:
+            description: 'Every invoice email is copied here, blind to the client.'
+        email_subject:
+            description: 'Subject of the email an invoice is sent with. {id} is replaced by the invoice number.'
+        id_generation:
+            id_prefix:
+                description: 'Printed before the number. Example: FACT-'
+            id_suffix:
+                description: 'Printed after the number. Use {year} for the current year, as in -{year}'
+        reminder:
+            enabled:
+                description: 'Chase unpaid invoices automatically.'
+            pre_due_days:
+                description: 'How many days before the due date the reminder goes out. 0 turns it off.'
+            pre_due_enabled:
+                description: 'Send a reminder before the due date, not only after it.'
+        watermark:
+            description: 'Print the status across the invoice, so a draft or a cancelled one cannot be mistaken for a live document.'
     stats:
         active_recurring: 'Active Recurring'
         count:
@@ -2652,6 +2677,18 @@ quote:
         update: Update
     send_to: 'Send quote to:'
     sent: 'Quote Sent'
+    settings:
+        bcc_address:
+            description: 'Every quote email is copied here, blind to the client.'
+        email_subject:
+            description: 'Subject of the email a quote is sent with. {id} is replaced by the quote number.'
+        id_generation:
+            id_prefix:
+                description: 'Printed before the number. Example: DEV-'
+            id_suffix:
+                description: 'Printed after the number. Use {year} for the current year, as in -{year}'
+        watermark:
+            description: 'Print the status across the quote, so a draft or a declined one cannot be mistaken for a live document.'
     stats:
         accepted_quotes: Accepted
         count:
@@ -2846,6 +2883,12 @@ saas:
         feature_blocked: 'Recurring invoices are not available on your current plan.'
         feature_blocked_upgrade: 'Recurring invoices are not available on your current plan. Upgrade to %plan% to activate this recurring invoice.'
     settings:
+        billing_template:
+            description: 'Design used for invoices and quotes everywhere clients see them: PDF downloads, emails and the client portal.'
+        custom_domain:
+            description: 'Serve this company on a domain of its own. Leave empty to use the default address.'
+        hide_powered_by:
+            description: 'Remove the "Powered by Augias" line from invoices and quotes.'
         template_preview:
             title: 'Template preview'
     trial_banner:

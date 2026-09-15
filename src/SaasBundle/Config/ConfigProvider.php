@@ -36,14 +36,14 @@ final class ConfigProvider implements ProviderInterface
             new Config(
                 'system/general/hide_powered_by',
                 '0',
-                'Hide "Powered by Augias" text in invoices and quotes.',
+                'saas.settings.hide_powered_by.description',
                 CheckboxType::class,
                 ['feature_gated' => Feature::CustomBranding->value]
             ),
             new Config(
                 'system/domain/custom_domain',
                 null,
-                'Custom domain for this company (leave empty to use the default URL).',
+                'saas.settings.custom_domain.description',
                 CustomDomainType::class,
                 [
                     'feature_gated' => Feature::CustomDomain->value,
@@ -53,7 +53,7 @@ final class ConfigProvider implements ProviderInterface
             new Config(
                 BillingTemplateResolver::TEMPLATE_SETTING_KEY,
                 BillingTemplateRegistry::DEFAULT_SLUG,
-                'Design template used for invoices and quotes everywhere clients see them: PDF downloads, emails and the client portal.',
+                'saas.settings.billing_template.description',
                 InvoiceTemplateType::class,
                 ['feature_gated' => Feature::CustomTemplates->value],
             ),

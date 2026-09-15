@@ -690,6 +690,12 @@ credit_note:
         main: 'Avoirs'
     list:
         title: 'Avoirs'
+    settings:
+        id_generation:
+            id_prefix:
+                description: 'Imprimé avant le numéro. Exemple : AV-'
+            id_suffix:
+                description: "Imprimé après le numéro. Utilisez {year} pour l'année en cours, comme dans -{year}"
     title: 'Avoir n° %id%'
     client: 'Client'
     issued_at: 'Émis le'
@@ -1785,6 +1791,25 @@ invoice:
     send:
         no_recipients: 'Impossible d''envoyer la facture : aucun contact avec une adresse e-mail trouvé'
     send_to: 'Envoyer la facture à :'
+    settings:
+        bcc_address:
+            description: 'Chaque e-mail de facture est copié ici, en copie cachée pour le client.'
+        email_subject:
+            description: "Objet de l'e-mail d'envoi d'une facture. {id} est remplacé par le numéro de la facture."
+        id_generation:
+            id_prefix:
+                description: 'Imprimé avant le numéro. Exemple : FACT-'
+            id_suffix:
+                description: "Imprimé après le numéro. Utilisez {year} pour l'année en cours, comme dans -{year}"
+        reminder:
+            enabled:
+                description: 'Relance automatiquement les factures impayées.'
+            pre_due_days:
+                description: "Combien de jours avant l'échéance la relance part. 0 la désactive."
+            pre_due_enabled:
+                description: "Envoie une relance avant l'échéance, et pas seulement après."
+        watermark:
+            description: "Imprime le statut en travers de la facture, pour qu'un brouillon ou une facture annulée ne puisse pas passer pour un document valide."
     stats:
         active_recurring: 'Récurrences actives'
         count:
@@ -2652,6 +2677,18 @@ quote:
         update: 'Mettre à jour'
     send_to: 'Envoyer le devis à :'
     sent: 'Devis envoyé'
+    settings:
+        bcc_address:
+            description: 'Chaque e-mail de devis est copié ici, en copie cachée pour le client.'
+        email_subject:
+            description: "Objet de l'e-mail d'envoi d'un devis. {id} est remplacé par le numéro du devis."
+        id_generation:
+            id_prefix:
+                description: 'Imprimé avant le numéro. Exemple : DEV-'
+            id_suffix:
+                description: "Imprimé après le numéro. Utilisez {year} pour l'année en cours, comme dans -{year}"
+        watermark:
+            description: "Imprime le statut en travers du devis, pour qu'un brouillon ou un devis refusé ne puisse pas passer pour un document valide."
     stats:
         accepted_quotes: Acceptés
         count:
@@ -2846,6 +2883,12 @@ saas:
         feature_blocked: 'Les factures récurrentes ne sont pas disponibles avec votre plan actuel.'
         feature_blocked_upgrade: 'Les factures récurrentes ne sont pas disponibles avec votre plan actuel. Passez au plan %plan% pour activer cette facture récurrente.'
     settings:
+        billing_template:
+            description: 'Modèle utilisé pour les factures et devis partout où les clients les voient : PDF, e-mails et portail client.'
+        custom_domain:
+            description: "Sert cette société sur un domaine à elle. Laissez vide pour utiliser l'adresse par défaut."
+        hide_powered_by:
+            description: 'Retire la mention « Powered by Augias » des factures et des devis.'
         template_preview:
             title: 'Aperçu du modèle'
     trial_banner:
