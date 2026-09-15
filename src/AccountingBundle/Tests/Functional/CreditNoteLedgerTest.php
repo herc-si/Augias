@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\AccountingBundle\Tests\Functional;
 
 use Augias\AccountingBundle\AccountingSettings;
+use Augias\AccountingBundle\Entity\AccountingPeriod;
 use Augias\AccountingBundle\Entity\LedgerEntry;
 use Augias\AccountingBundle\Enum\ActivityNature;
 use Augias\AccountingBundle\Enum\LedgerBook;
@@ -22,6 +23,7 @@ use Augias\AccountingBundle\Enum\PeriodType;
 use Augias\AccountingBundle\Listener\Doctrine\LedgerFeedListener;
 use Augias\AccountingBundle\Regime\Fr\MicroEntrepriseRegime;
 use Augias\AccountingBundle\Repository\LedgerEntryRepository;
+use Augias\AccountingBundle\Service\AccountingPeriodManager;
 use Augias\AccountingBundle\Service\LedgerFeeder;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
@@ -120,8 +122,8 @@ final class CreditNoteLedgerTest extends KernelTestCase
         self::assertSame(LedgerEntrySource::InvoiceRefund, $entry->getSource());
         self::assertSame('-50000', (string) $entry->getAmount());
         self::assertSame('EUR', $entry->getCurrencyCode());
-        // The day the money moved, which is what keeps a refund out of a period
-        // that has already been sealed.
+        // This credit note credits no invoice, so there is no receipt to date
+        // the refund on and it keeps the day it happened.
         self::assertSame('2026-05-20', $entry->getEntryDate()->format('Y-m-d'));
         self::assertSame(ActivityNature::ServicesBnc, $entry->getActivityNature());
         self::assertSame('Johnston PLC', $entry->getCounterpartyName());
@@ -219,6 +221,129 @@ final class CreditNoteLedgerTest extends KernelTestCase
         self::assertCount(1, $this->entries());
     }
 
+    /**
+     * The Urssaf imputes a refund to the period of the sale it corrects, not to
+     * the period it was paid in: a sale in one quarter refunded in the next is
+     * a correction of the first quarter, and once that quarter has been
+     * declared it is that declaration which gets rectified.
+     */
+    public function testARefundIsDatedOnTheReceiptItTakesBack(): void
+    {
+        $payment = $this->capturedPayment(120_000, new DateTimeImmutable('2026-02-10'));
+        $creditNote = $this->issuedCreditNoteFor($payment->getInvoice(), 50_000);
+
+        $this->allocator()->allocate(
+            $creditNote,
+            AllocationKind::Refund,
+            50_000,
+            null,
+            new DateTimeImmutable('2026-05-20'),
+        );
+
+        $refund = $this->refundEntry();
+
+        self::assertSame(
+            '2026-02-10',
+            $refund->getEntryDate()->format('Y-m-d'),
+            'The refund belongs to the quarter the money was taken in, not the one it went back in.',
+        );
+        self::assertSame(
+            $payment->getId()?->toString(),
+            $refund->getReverses()?->getSourceId()?->toString(),
+            'The date and the reversal link come from the same receipt.',
+        );
+    }
+
+    /**
+     * An invoice paid in instalments has no single receipt to point at, and
+     * picking one of them would attribute the refund to a period by guesswork.
+     * It keeps the day it happened instead — the same condition the `reverses`
+     * link already applies.
+     */
+    public function testARefundOnAnInvoicePaidInInstalmentsKeepsTheDayItHappened(): void
+    {
+        $invoice = $this->invoice();
+        $this->payment($invoice, 60_000, new DateTimeImmutable('2026-02-10'));
+        $this->payment($invoice, 60_000, new DateTimeImmutable('2026-03-11'));
+
+        $creditNote = $this->issuedCreditNoteFor($invoice, 50_000);
+
+        $this->allocator()->allocate(
+            $creditNote,
+            AllocationKind::Refund,
+            50_000,
+            null,
+            new DateTimeImmutable('2026-05-20'),
+        );
+
+        $refund = $this->refundEntry();
+
+        self::assertSame('2026-05-20', $refund->getEntryDate()->format('Y-m-d'));
+        self::assertNull($refund->getReverses());
+    }
+
+    /**
+     * Dating the entry in the past is safe even when that past is sealed: the
+     * date stays truthful and the entry is filed into the earliest open period,
+     * flagged late. That flag is the signal that a corrective declaration is
+     * owed — which is exactly what the Urssaf asks for in this case.
+     */
+    public function testARefundOfASealedQuarterIsFiledLateAndKeepsItsDate(): void
+    {
+        $invoiceId = $this->capturedPayment(120_000, new DateTimeImmutable('2026-02-10'))
+            ->getInvoice()
+            ?->getId();
+
+        $firstQuarter = $this->entries()[0]->getPeriod();
+        self::assertInstanceOf(AccountingPeriod::class, $firstQuarter);
+        self::getContainer()->get(AccountingPeriodManager::class)->close($firstQuarter);
+
+        // A second quarter has to exist and be open for a late entry to have
+        // somewhere to go.
+        $this->capturedPayment(80_000, new DateTimeImmutable('2026-04-03'));
+
+        // Re-read: entries() clears the identity map, which leaves the invoice
+        // this test is holding detached.
+        $invoice = $this->entityManager->find(Invoice::class, $invoiceId);
+        $creditNote = $this->issuedCreditNoteFor($invoice, 20_000);
+
+        $this->allocator()->allocate(
+            $creditNote,
+            AllocationKind::Refund,
+            20_000,
+            null,
+            new DateTimeImmutable('2026-05-20'),
+        );
+
+        $refund = $this->refundEntry();
+
+        self::assertSame(
+            '2026-02-10',
+            $refund->getEntryDate()->format('Y-m-d'),
+            'The date stays truthful even though that quarter is sealed.',
+        );
+        self::assertTrue(
+            $refund->isLateEntry(),
+            'Filed into the open quarter and flagged — the signal that a corrective declaration is owed.',
+        );
+        self::assertNotSame(
+            $firstQuarter->getId()?->toString(),
+            $refund->getPeriod()?->getId()?->toString(),
+            'A sealed period cannot take a new entry.',
+        );
+    }
+
+    private function refundEntry(): LedgerEntry
+    {
+        foreach ($this->entries() as $entry) {
+            if (LedgerEntrySource::InvoiceRefund === $entry->getSource()) {
+                return $entry;
+            }
+        }
+
+        self::fail('No refund entry was written.');
+    }
+
     private function allocator(): CreditNoteAllocator
     {
         $allocator = self::getContainer()->get(CreditNoteAllocator::class);
@@ -254,6 +379,36 @@ final class CreditNoteLedgerTest extends KernelTestCase
         return $creditNote;
     }
 
+    private function issuedCreditNoteFor(?Invoice $invoice, int $amount): CreditNote
+    {
+        $creditNote = $this->issuedCreditNote($amount);
+        $creditNote->setCreditedInvoice($invoice);
+
+        $this->entityManager->flush();
+
+        return $creditNote;
+    }
+
+    private function payment(Invoice $invoice, int $amount, DateTimeImmutable $completed): Payment
+    {
+        $payment = new Payment();
+        $payment->setTotalAmount($amount);
+        $payment->setCurrencyCode('EUR');
+        // Both sides, as Prepare.php does when a payment is recorded: the
+        // feeder walks $invoice->getPayments() to find the receipt a refund
+        // takes back, and an owning-side-only link leaves that collection empty.
+        $invoice->addPayment($payment);
+        $payment->setClient($invoice->getClient());
+        $payment->setStatus(PaymentStatus::Captured);
+        $payment->setCompleted($completed);
+        $payment->setCompany($this->entityManager->find(Company::class, $this->company->getId()));
+
+        $this->entityManager->persist($payment);
+        $this->entityManager->flush();
+
+        return $payment;
+    }
+
     private function capturedPayment(
         int $amount,
         DateTimeImmutable $completed,
@@ -264,7 +419,7 @@ final class CreditNoteLedgerTest extends KernelTestCase
         $payment = new Payment();
         $payment->setTotalAmount($amount);
         $payment->setCurrencyCode('EUR');
-        $payment->setInvoice($invoice);
+        $invoice->addPayment($payment);
         $payment->setClient($invoice->getClient());
         $payment->setStatus($status);
         $payment->setCompleted($completed);

@@ -187,8 +187,25 @@ final readonly class LedgerFeeder
      * invoice was paid stays acquired, the next one is reduced by the same
      * amount, and the net is exact without anything being written here.
      *
-     * The entry is dated on the day the money moved, which is what keeps a
-     * refund out of a period that has already been sealed.
+     * The entry is dated on the receipt it takes back, not on the day the money
+     * went out. The Urssaf imputes a refund to the period of the sale it
+     * corrects: a €250 sale in March refunded €100 in April is €150 of March,
+     * and once March has been declared it is March that gets a corrective
+     * declaration — never April that gets a deduction. Dating the entry on the
+     * refund moved the correction into a period the sale was never in, which
+     * left both declarations wrong although the year came out right.
+     *
+     * Only when the receipt is unambiguous. An invoice paid in instalments has
+     * no single original, and the refund then keeps the day it happened rather
+     * than being attributed to a period by guesswork — the same condition
+     * {@see self::soleEntryFor()} already applied to the `reverses` link, so
+     * the date and the link now come from one answer instead of two.
+     *
+     * A date inside a sealed period needs no avoiding here:
+     * {@see AccountingPeriodManager::assignPeriod()} keeps the date truthful
+     * and files the entry into the earliest period still open, flagged late.
+     * That flag is precisely the case where the Urssaf expects a corrective
+     * declaration, so it is worth seeing rather than worth hiding.
      *
      * @throws MathException
      */
@@ -221,12 +238,13 @@ final readonly class LedgerFeeder
 
         $amount = BigInteger::of((string) $allocation->getAmount());
         $client = $creditNote->getClient();
+        $reversed = $this->soleEntryFor($creditNote);
 
         $entry = new LedgerEntry()
             ->setBook(LedgerBook::Revenue)
             ->setSource(LedgerEntrySource::InvoiceRefund)
             ->setSourceId($id)
-            ->setEntryDate($allocation->getAllocatedOn())
+            ->setEntryDate($reversed?->getEntryDate() ?? $allocation->getAllocatedOn())
             ->setLabel($this->label('accounting.entry.label.invoice_refund', $company))
             ->setDocumentReference($creditNote->getCreditNoteId())
             // Negative: this is revenue going back out. Stored positive on the
@@ -235,7 +253,7 @@ final readonly class LedgerFeeder
             ->setCurrencyCode($client->getCurrency()->getCode())
             ->setActivityNature($profile->primaryActivity)
             ->setCounterparty($client)
-            ->setReverses($this->soleEntryFor($creditNote));
+            ->setReverses($reversed);
 
         $entry->setCompany($company);
 
