@@ -1,0 +1,41 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% import '@AugiasDashboard/Widget/_stat_value.html.twig' as stat %}
+{% import '@AugiasDashboard/money.html.twig' as money %}
+
+{#
+ # Neutral throughout, like the revenue tile and for the same reason: credit
+ # issued is an aggregate, not a state. Red would read as a problem — crediting a
+ # client is ordinary trade — and green would read as money earned, which is the
+ # opposite of what this is.
+ #}
+<div class="stat-card">
+    <div class="stat-card-content">
+        <div class="stat-icon stat-icon--info">
+            {{ ux_icon('tabler:receipt-refund', {width: 24, height: 24}) }}
+        </div>
+        <div class="stat-info">
+            <span class="stat-label">{{ 'dashboard.hero.credit_notes'|trans }}</span>
+            {{ stat.statValue(issued, defaultCurrency, ['total']) }}
+            {#
+             # Only when money actually went back. An offset never appears here:
+             # it costs nothing on its own, the next payment is simply smaller.
+             #}
+            {% if refunded is not empty %}
+                <span class="stat-subvalue">
+                    {{ 'dashboard.hero.credit_notes_refunded'|trans }}
+                    {% for currency, amount in refunded %}
+                        {{ money.money(amount, currency, ['total']) }}
+                    {% endfor %}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+</div>

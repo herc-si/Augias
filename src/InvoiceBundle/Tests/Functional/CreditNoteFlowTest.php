@@ -254,6 +254,35 @@ final class CreditNoteFlowTest extends WebTestCase
      * installed by a #[Before] hook, and ordering the two reliably is not worth
      * the trouble when a lazy accessor says the same thing.
      */
+    /**
+     * The tile reaches the page it was written for.
+     *
+     * Its own test proves the numbers and the markup; this proves the part
+     * neither of them can — that the widget registers, that the resolver puts
+     * it in the top zone for a user who has never customised anything, and that
+     * it appears at all once a credit note has been issued.
+     */
+    public function testTheCreditTileAppearsOnTheDashboardOnceACreditNoteIsIssued(): void
+    {
+        $this->browser()
+            ->actingAs($this->createUser())
+            ->visit('/dashboard')
+            ->assertSuccessful()
+            ->assertNotSeeElement('[data-widget-id="credit_notes_total"]');
+
+        CreditNoteFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => CreditNoteStatus::Issued,
+        ]);
+
+        $this->browser()
+            ->actingAs($this->createUser('credit-tile@example.com'))
+            ->visit('/dashboard')
+            ->assertSuccessful()
+            ->assertSeeElement('[data-widget-id="credit_notes_total"][data-widget-width="quarter"]');
+    }
+
     private function client(): Client
     {
         // Pinned: ClientFactory leaves the currency to Faker, which happily
