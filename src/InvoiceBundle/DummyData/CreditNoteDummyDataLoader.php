@@ -19,10 +19,14 @@ use Augias\CoreBundle\Generator\BillingIdGenerator;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\InvoiceBundle\Enum\AllocationKind;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\CreditReason;
+use Augias\InvoiceBundle\Exception\AllocationException;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
+use Augias\InvoiceBundle\Service\CreditNoteAllocator;
 use Brick\Math\BigDecimal;
+use Brick\Math\RoundingMode;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,6 +55,7 @@ final readonly class CreditNoteDummyDataLoader implements DummyDataLoaderInterfa
     public function __construct(
         private ManagerRegistry $registry,
         private BillingIdGenerator $billingIdGenerator,
+        private CreditNoteAllocator $allocator,
     ) {
         $this->faker = Factory::create();
     }
@@ -78,13 +83,15 @@ final readonly class CreditNoteDummyDataLoader implements DummyDataLoaderInterfa
         $reasons = CreditReason::cases();
 
         // Weighted on purpose: most credit notes in a real set have been handed
-        // over, a few are still being prepared, and a few have been used up.
+        // over, a few are still being prepared. Settled is not in the list —
+        // a credit note becomes settled by being used up, and the allocator is
+        // what says so. Setting the status by hand would produce a document
+        // that claims to be spent with an empty journal underneath it.
         $statuses = [
             CreditNoteStatus::Issued,
             CreditNoteStatus::Issued,
             CreditNoteStatus::Issued,
             CreditNoteStatus::Draft,
-            CreditNoteStatus::Settled,
         ];
 
         foreach ($invoices as $invoice) {
@@ -163,6 +170,60 @@ final readonly class CreditNoteDummyDataLoader implements DummyDataLoaderInterfa
 
             $em->persist($creditNote);
             $em->flush();
+
+            $this->useUpSomeOf($creditNote, $invoice, $status);
+        }
+    }
+
+    /**
+     * Half of the issued credit notes have been used, because a set where every
+     * credit note is still outstanding shows none of the machinery underneath:
+     * no allocation journal, no client balance coming back down, and — for a
+     * refund, which is money leaving — no entry in the books.
+     *
+     * Offsets are set against the invoice the credit note was raised on, which
+     * is the only invoice it is allowed to touch. Refunds take no invoice.
+     */
+    private function useUpSomeOf(CreditNote $creditNote, Invoice $invoice, CreditNoteStatus $status): void
+    {
+        if (CreditNoteStatus::Issued !== $status || ! $this->faker->boolean(50)) {
+            return;
+        }
+
+        $total = $creditNote->getTotal()->toBigDecimal();
+
+        // In full, so the credit note settles, or a slice of it, so the set has
+        // partly-used ones too. A slice is rounded to whole units: a fraction of
+        // a cent is not an amount anyone can allocate.
+        $amount = $this->faker->boolean(60) ? $total : $total->multipliedBy(4)->dividedBy(10, 0, RoundingMode::Down);
+
+        if ($amount->isNegativeOrZero()) {
+            return;
+        }
+
+        $kind = $this->faker->boolean(70) ? AllocationKind::Offset : AllocationKind::Refund;
+
+        // Recent, and never before the credit note existed: an allocation dated
+        // into a period the books have already shut is refused, as it should be.
+        $on = new DateTimeImmutable('-' . random_int(0, 20) . ' days');
+        $creditNoteDate = $creditNote->getCreditNoteDate();
+
+        if ($on < $creditNoteDate) {
+            $on = $creditNoteDate;
+        }
+
+        try {
+            $this->allocator->allocate(
+                $creditNote,
+                $kind,
+                $amount,
+                AllocationKind::Offset === $kind ? $invoice : null,
+                $on,
+            );
+        } catch (AllocationException) {
+            // A demo set is not worth failing a load over: the books may be shut
+            // past this date, or the rules may have moved on. The credit note
+            // stays issued and unused, which is a state the set already has.
         }
     }
 }
