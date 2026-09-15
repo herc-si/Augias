@@ -20,6 +20,7 @@ use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
+use Augias\SettingsBundle\SystemConfig;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -34,7 +35,8 @@ final readonly class PaymentDummyDataLoader implements DummyDataLoaderInterface
     private Generator $faker;
 
     public function __construct(
-        private ManagerRegistry $registry
+        private ManagerRegistry $registry,
+        private SystemConfig $config,
     ) {
         $this->faker = Factory::create();
     }
@@ -52,6 +54,8 @@ final readonly class PaymentDummyDataLoader implements DummyDataLoaderInterface
         /** @var InvoiceRepository $invoiceRepository */
         $invoiceRepository = $em->getRepository(Invoice::class);
 
+        $companyCurrency = $this->config->get(SystemConfig::CURRENCY_CONFIG_PATH, $company) ?: 'EUR';
+
         /** @var Invoice[] $paidInvoices */
         $paidInvoices = $invoiceRepository->findBy(['status' => InvoiceStatus::Paid]);
 
@@ -62,7 +66,7 @@ final readonly class PaymentDummyDataLoader implements DummyDataLoaderInterface
                 continue;
             }
 
-            $currencyCode = $client->getCurrencyCode() ?? 'USD';
+            $currencyCode = $client->getCurrencyCode() ?? $companyCurrency;
 
             $payment = new Payment();
             $payment->setInvoice($invoice)
