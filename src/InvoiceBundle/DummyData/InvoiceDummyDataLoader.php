@@ -167,9 +167,15 @@ final readonly class InvoiceDummyDataLoader implements DummyDataLoaderInterface
                 $invoice->setInvoiceId($this->billingIdGenerator->generate($invoice, ['field' => 'invoiceId']));
 
                 $em->persist($invoice);
-            }
 
-            $em->flush();
+                // Flushed one at a time on purpose: the generator reads the
+                // numbers already in the database, so five invoices persisted
+                // together all take the same one. That is how this set ended up
+                // with five FACT-1-2026 — a number is supposed to identify a
+                // document, and a demo that repeats it teaches the wrong thing
+                // about the numbering it is meant to show off.
+                $em->flush();
+            }
         }
     }
 }

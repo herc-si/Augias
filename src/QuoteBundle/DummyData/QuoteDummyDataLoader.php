@@ -148,9 +148,12 @@ final readonly class QuoteDummyDataLoader implements DummyDataLoaderInterface
                 $quote->setQuoteId($this->billingIdGenerator->generate($quote, ['field' => 'quoteId']));
 
                 $em->persist($quote);
-            }
 
-            $em->flush();
+                // One at a time: the generator reads the numbers already stored,
+                // so quotes persisted together all take the same one. See
+                // InvoiceDummyDataLoader, which had the same defect.
+                $em->flush();
+            }
         }
     }
 }
