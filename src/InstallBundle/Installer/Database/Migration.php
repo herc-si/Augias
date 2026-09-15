@@ -15,13 +15,17 @@ namespace Augias\InstallBundle\Installer\Database;
 
 use Carbon\CarbonImmutable;
 use Doctrine\Migrations\DependencyFactory;
+use Doctrine\Migrations\Metadata\MigrationPlanList;
+use Doctrine\Migrations\Metadata\Storage\MetadataStorage;
 use Doctrine\Migrations\Metadata\Storage\TableMetadataStorageConfiguration;
+use Doctrine\Migrations\MigratorConfiguration;
 use Doctrine\Migrations\Version\ExecutionResult;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
-use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\SqlFormatter\SqlFormatter;
 use Generator;
+use function count;
+use function sprintf;
 
 final readonly class Migration
 {
@@ -29,7 +33,7 @@ final readonly class Migration
 
     public function __construct(
         private DependencyFactory $migrationDependencyFactory,
-        private ManagerRegistry $registry,
+        private EntityManagerInterface $entityManager,
     ) {
         $this->sqlFormatter = new SqlFormatter();
     }
@@ -46,24 +50,79 @@ final readonly class Migration
         return $newMigrationsCount === 0 && $executedUnavailableMigrationsCount === 0;
     }
 
+    /**
+     * Brings the database up to the current version, by one of two routes.
+     *
+     * A database that has a migration history knows where it stands, so the
+     * migrations it has not run yet are *run*. That is the only way a data
+     * migration — a default to seed, a column to backfill, a value to rewrite —
+     * ever happens: {@see SchemaTool} compares structure and knows nothing of
+     * rows, so recording those migrations as executed without executing them
+     * silently drops every change they carry.
+     *
+     * A database with no history has none that can be replayed: the migrations
+     * of this project do not run end to end against an empty database (the
+     * oldest of them expect a schema that predates them), and there would be no
+     * point, since the schema they add up to is the one the ORM metadata
+     * already describes. So it is built in one pass from that metadata and the
+     * history is written to match — the usual baseline of a fresh install.
+     */
     public function migrate(?callable $callback = null): Generator
     {
         $metadataStorage = $this->migrationDependencyFactory->getMetadataStorage();
 
         $metadataStorage->ensureInitialized();
 
-        $em = $this->registry->getManager();
-        assert($em instanceof EntityManagerInterface);
-        $tables = $em->getMetadataFactory()->getAllMetadata();
+        $plan = $this->planToLatestVersion();
+        $tracked = count($metadataStorage->getExecutedMigrations()->getItems()) > 0;
 
-        $planCalculator = $this->migrationDependencyFactory->getMigrationPlanCalculator();
+        if ($tracked) {
+            yield from $this->runPlan($plan, $callback);
+        }
 
+        // Still checked on a tracked database: a schema change that shipped
+        // without a migration would otherwise never reach it.
+        yield from $this->updateSchema($callback);
+
+        if (! $tracked) {
+            $this->recordAsExecuted($plan, $metadataStorage);
+        }
+    }
+
+    private function planToLatestVersion(): MigrationPlanList
+    {
         $version = $this->migrationDependencyFactory->getVersionAliasResolver()->resolveVersionAlias('latest');
 
-        $plan = $planCalculator->getPlanUntilVersion($version);
+        return $this->migrationDependencyFactory->getMigrationPlanCalculator()->getPlanUntilVersion($version);
+    }
 
-        $schemaTool = new SchemaTool($em);
-        $conn = $em->getConnection();
+    private function runPlan(MigrationPlanList $plan, ?callable $callback): Generator
+    {
+        if (0 === count($plan)) {
+            return;
+        }
+
+        $executed = $this->migrationDependencyFactory->getMigrator()->migrate($plan, new MigratorConfiguration());
+
+        if (null === $callback) {
+            return;
+        }
+
+        foreach ($executed as $version => $queries) {
+            yield from $callback(sprintf('-- %s', $version));
+
+            foreach ($queries as $query) {
+                yield from $callback($this->sqlFormatter->format($query->getStatement()));
+            }
+        }
+    }
+
+    private function updateSchema(?callable $callback): Generator
+    {
+        $tables = $this->entityManager->getMetadataFactory()->getAllMetadata();
+
+        $schemaTool = new SchemaTool($this->entityManager);
+        $conn = $this->entityManager->getConnection();
 
         // ORM 3's SchemaTool::getUpdateSchemaSql() no longer has a "save mode" (the
         // boolean second argument was removed in ORM 3), so it now emits DROP TABLE
@@ -103,12 +162,6 @@ final readonly class Migration
         } elseif (null !== $callback) {
             yield from $callback('Database schema is already up to date.');
         }
-
-        $now = CarbonImmutable::now();
-
-        foreach ($plan->getItems() as $item) {
-            $metadataStorage->complete(new ExecutionResult($item->getVersion(), $item->getDirection(), $now));
-        }
     }
 
     private function migrationsTableName(): ?string
@@ -118,5 +171,14 @@ final readonly class Migration
         return $storageConfiguration instanceof TableMetadataStorageConfiguration
             ? $storageConfiguration->getTableName()
             : null;
+    }
+
+    private function recordAsExecuted(MigrationPlanList $plan, MetadataStorage $metadataStorage): void
+    {
+        $now = CarbonImmutable::now();
+
+        foreach ($plan->getItems() as $item) {
+            $metadataStorage->complete(new ExecutionResult($item->getVersion(), $item->getDirection(), $now));
+        }
     }
 }
