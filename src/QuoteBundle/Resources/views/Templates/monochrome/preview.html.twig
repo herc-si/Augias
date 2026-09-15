@@ -21,10 +21,10 @@
                 </div>
                 <div class="col-md-4">
                     <div class="text-muted small text-uppercase mb-1" style="letter-spacing: 2px;">{{ 'quote.pdf.date'|trans }}</div>
-                    <div>{{ quote.created|date('M j, Y') }}</div>
+                    <div>{{ quote.created|format_date('medium') }}</div>
                     {% if quote.due %}
                         <div class="text-muted small text-uppercase mb-1 mt-2" style="letter-spacing: 2px;">{{ 'quote.pdf.valid_until'|trans }}</div>
-                        <div>{{ quote.due|date('M j, Y') }}</div>
+                        <div>{{ quote.due|format_date('medium') }}</div>
                     {% endif %}
                 </div>
                 <div class="col-md-4 text-end">

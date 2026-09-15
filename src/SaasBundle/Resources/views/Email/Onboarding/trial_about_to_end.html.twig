@@ -20,7 +20,7 @@
         <div class="onb-days">{{ '%02d'|format(days_remaining) }}</div>
         <div class="onb-days-label">{{ 'onboarding.trial_about_to_end.days_label'|trans({}, 'email') }}</div>
         <div class="onb-days-sub">
-            {{ 'onboarding.trial_about_to_end.trial_ends'|trans({'%date%': trial_end|date('F j, Y \\a\\t g:ia')}, 'email')|raw }}
+            {{ 'onboarding.trial_about_to_end.trial_ends'|trans({'%date%': trial_end|format_datetime('long', 'short')}, 'email')|raw }}
         </div>
     </div>
 

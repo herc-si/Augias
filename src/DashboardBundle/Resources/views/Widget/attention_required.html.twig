@@ -53,7 +53,7 @@
                                     </span>
                                     {% if invoice.due %}
                                         <span class="attention-item-date text-danger">
-                                            {{ invoice.due|date('M j') }}
+                                            {{ invoice.due|format_date_skeleton('dMMM') }}
                                         </span>
                                     {% endif %}
                                 </div>
@@ -123,7 +123,7 @@
                                     <span class="attention-item-amount">
                                         {{ money.money(quote.total, quote.client.currency) }}
                                     </span>
-                                    <span class="attention-item-date">{{ quote.created|date('M j') }}</span>
+                                    <span class="attention-item-date">{{ quote.created|format_date_skeleton('dMMM') }}</span>
                                 </div>
                             </a>
                         {% endfor %}
@@ -151,7 +151,7 @@
                                     <span class="attention-item-amount">
                                         {{ money.money(recurring.total, recurring.client.currency) }}
                                     </span>
-                                    <span class="attention-item-date">{{ recurring.dateStart|date('M j') }}</span>
+                                    <span class="attention-item-date">{{ recurring.dateStart|format_date_skeleton('dMMM') }}</span>
                                 </div>
                             </a>
                         {% endfor %}

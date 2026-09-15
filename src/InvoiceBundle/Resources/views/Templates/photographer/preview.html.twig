@@ -19,7 +19,7 @@
                 <div style="font-size: 28px; color: #a2492b;">{{ 'invoice.number_prefix'|trans }} {{ invoice.invoiceId }}</div>
                 <div class="text-end">
                     <div class="text-muted small text-uppercase">{{ 'invoice.date'|trans }}</div>
-                    <div>{{ invoice.invoiceDate|date('F j, Y') }}</div>
+                    <div>{{ invoice.invoiceDate|format_date('long') }}</div>
                 </div>
             </div>
 

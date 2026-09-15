@@ -259,7 +259,7 @@
                             </li>
                             <li>
                                 <code>{month}</code>
-                                <span class="variable-description">{{ 'invoice.recurring.variables.month'|trans({"%month%": 'now'|date('F')}) }}</span>
+                                <span class="variable-description">{{ 'invoice.recurring.variables.month'|trans({"%month%": 'now'|format_date_skeleton('MMMM')}) }}</span>
                             </li>
                             <li>
                                 <code>{year}</code>
@@ -268,7 +268,7 @@
                         </ul>
                         <div class="variable-example">
                             <strong>{{ 'invoice.recurring.variables.example_label'|trans }}:</strong>
-                            <span class="example-text">"{{ 'invoice.recurring.variables.example_input'|trans }}" → "{{ 'invoice.recurring.variables.example_output'|trans({"%month%": 'now'|date('F')}) }}"</span>
+                            <span class="example-text">"{{ 'invoice.recurring.variables.example_input'|trans }}" → "{{ 'invoice.recurring.variables.example_output'|trans({"%month%": 'now'|format_date_skeleton('MMMM')}) }}"</span>
                         </div>
                     </div>
                 </details>

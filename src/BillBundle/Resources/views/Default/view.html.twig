@@ -80,13 +80,13 @@
                         {% if bill.issueDate %}
                             <div class="summary-item">
                                 <span class="summary-label">{{ 'bill.form.issue_date.label'|trans }}</span>
-                                <span class="summary-value">{{ bill.issueDate|date('d F Y') }}</span>
+                                <span class="summary-value">{{ bill.issueDate|format_date('long') }}</span>
                             </div>
                         {% endif %}
                         {% if bill.dueDate %}
                             <div class="summary-item">
                                 <span class="summary-label">{{ 'bill.form.due_date.label'|trans }}</span>
-                                <span class="summary-value">{{ bill.dueDate|date('d F Y') }}</span>
+                                <span class="summary-value">{{ bill.dueDate|format_date('long') }}</span>
                             </div>
                         {% endif %}
                         {% if bill.category %}
@@ -149,7 +149,7 @@
                             <tbody>
                                 {% for payment in bill.payments %}
                                     <tr>
-                                        <td>{{ payment.paidDate|date('d F Y') }}</td>
+                                        <td>{{ payment.paidDate|format_date('long') }}</td>
                                         <td>{{ payment.method.label|trans }}</td>
                                         <td>{{ payment.reference }}</td>
                                         <td class="text-end">{{ payment.amount|formatCurrency(payment.currencyCode) }}</td>

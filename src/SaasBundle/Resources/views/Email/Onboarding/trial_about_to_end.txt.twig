@@ -4,7 +4,7 @@
 {{ 'onboarding.trial_about_to_end.lede'|trans({}, 'email') }}
 
 {{ 'onboarding.trial_about_to_end.days_label'|trans({}, 'email') }}: {{ days_remaining }}
-{{ 'onboarding.trial_about_to_end.trial_ends'|trans({'%date%': trial_end|date('F j, Y \\a\\t g:ia')}, 'email')|striptags }}
+{{ 'onboarding.trial_about_to_end.trial_ends'|trans({'%date%': trial_end|format_datetime('long', 'short')}, 'email')|striptags }}
 
 {{ 'onboarding.trial_about_to_end.body_intro'|trans({}, 'email') }}
 

@@ -40,12 +40,12 @@
         <tr>
             <td style="background-color: #fff1e0; padding: 16px 18px; vertical-align: top; width: 33%;">
                 <div style="font-size: 8pt; color: #94704a; text-transform: uppercase; letter-spacing: 1px;">{{ 'quote.pdf.date'|trans }}</div>
-                <div style="font-size: 11pt; font-weight: 600; color: #1e293b;">{{ quote.created|date('F j, Y') }}</div>
+                <div style="font-size: 11pt; font-weight: 600; color: #1e293b;">{{ quote.created|format_date('long') }}</div>
             </td>
             <td style="width: 4px;"></td>
             <td style="background-color: #fff1e0; padding: 16px 18px; vertical-align: top; width: 33%;">
                 <div style="font-size: 8pt; color: #94704a; text-transform: uppercase; letter-spacing: 1px;">{{ 'quote.pdf.valid_until'|trans }}</div>
-                <div style="font-size: 11pt; font-weight: 600; color: #1e293b;">{% if quote.due %}{{ quote.due|date('F j, Y') }}{% else %}—{% endif %}</div>
+                <div style="font-size: 11pt; font-weight: 600; color: #1e293b;">{% if quote.due %}{{ quote.due|format_date('long') }}{% else %}—{% endif %}</div>
                 {% if quote.due %}
                     <div style="margin-top: 2px;">{{ q.validity_indicator(quote) }}</div>
                 {% endif %}

@@ -49,7 +49,7 @@
                     <span class="attention-item-amount">
                         {{ alert.amount|formatCurrency(alert.currencyCode) }}
                     </span>
-                    <span class="attention-item-date">{{ alert.triggeredAt|date('M j') }}</span>
+                    <span class="attention-item-date">{{ alert.triggeredAt|format_date_skeleton('dMMM') }}</span>
                 </span>
             </a>
         {% endfor %}

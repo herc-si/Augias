@@ -29,7 +29,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="text-muted small text-uppercase mb-1">{{ 'invoice.date'|trans }}</div>
-                    <div>{{ invoice.invoiceDate|date('F j, Y') }}</div>
+                    <div>{{ invoice.invoiceDate|format_date('long') }}</div>
                 </div>
             </div>
 

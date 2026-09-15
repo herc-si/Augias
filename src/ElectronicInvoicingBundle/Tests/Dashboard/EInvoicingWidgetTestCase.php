@@ -68,8 +68,15 @@ abstract class EInvoicingWidgetTestCase extends KernelTestCase
         // that have nothing to do with the markup, the second one only once the
         // date rolled over.
         $html = (string) preg_replace('#[0-9A-HJKMNP-TV-Z]{26}#', '01JBYEQCR7DJ2YW4EXP6FYJZCR', $html);
+        // Either order: ICU puts the month first in English and the day first
+        // in French, and this has to keep matching whichever locale the suite
+        // runs in — a normaliser that silently stops normalising leaves a real
+        // date in the snapshot, which passes today and fails when the month
+        // turns over.
+        $months = 'Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec';
+
         $html = (string) preg_replace(
-            '#\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) \d{1,2}\b#',
+            '#\b(?:(?:' . $months . ')\.? \d{1,2}|\d{1,2} (?:' . $months . ')\.?)\b#',
             'MONTH DAY',
             $html,
         );

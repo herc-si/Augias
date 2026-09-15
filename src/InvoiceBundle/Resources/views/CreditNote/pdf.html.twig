@@ -35,7 +35,7 @@
         </td>
         <td align="right">
             <strong>{{ 'credit_note.field.date'|trans }}</strong><br />
-            {{ creditNote.creditNoteDate|date('d/m/Y') }}
+            {{ creditNote.creditNoteDate|format_date('short') }}
         </td>
     </tr>
 </table>

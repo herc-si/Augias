@@ -30,7 +30,7 @@
                     {{ quote_label(quote.status) }}
                     <span class="doc-view-meta-item">
                         {{ ux_icon('tabler:calendar', {width: 14, height: 14}) }}
-                        {{ 'quote.created'|trans }}: {{ quote.created|date('M d, Y') }}
+                        {{ 'quote.created'|trans }}: {{ quote.created|format_date('medium') }}
                     </span>
                 </div>
             </div>
@@ -425,7 +425,7 @@
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">{{ 'quote.created'|trans }}</span>
-                            <span class="summary-value">{{ quote.created|date('M d, Y') }}</span>
+                            <span class="summary-value">{{ quote.created|format_date('medium') }}</span>
                         </div>
                     </div>
                 </div>

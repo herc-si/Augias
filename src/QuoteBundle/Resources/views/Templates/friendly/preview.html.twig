@@ -33,13 +33,13 @@
                 <div class="col-md-4 mb-2">
                     <div class="p-3 rounded" style="background: #fff1e0;">
                         <div class="text-uppercase small mb-1" style="color: #94704a; letter-spacing: 1px;">{{ 'quote.pdf.date'|trans }}</div>
-                        <strong>{{ quote.created|date('M j, Y') }}</strong>
+                        <strong>{{ quote.created|format_date('medium') }}</strong>
                     </div>
                 </div>
                 <div class="col-md-4 mb-2">
                     <div class="p-3 rounded" style="background: #fff1e0;">
                         <div class="text-uppercase small mb-1" style="color: #94704a; letter-spacing: 1px;">{{ 'quote.pdf.valid_until'|trans }}</div>
-                        <strong>{% if quote.due %}{{ quote.due|date('M j, Y') }}{% else %}—{% endif %}</strong>
+                        <strong>{% if quote.due %}{{ quote.due|format_date('medium') }}{% else %}—{% endif %}</strong>
                     </div>
                 </div>
                 <div class="col-md-4 mb-2">

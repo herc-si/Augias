@@ -14,9 +14,9 @@
                 </div>
                 <div class="text-end">
                     <div class="fst-italic fs-4">{{ company_name() }}</div>
-                    <div class="text-muted small">{{ quote.created|date('F j, Y') }}</div>
+                    <div class="text-muted small">{{ quote.created|format_date('long') }}</div>
                     {% if quote.due %}
-                        <div class="text-muted small">{{ 'quote.pdf.valid_until'|trans }} {{ quote.due|date('F j, Y') }}</div>
+                        <div class="text-muted small">{{ 'quote.pdf.valid_until'|trans }} {{ quote.due|format_date('long') }}</div>
                     {% endif %}
                 </div>
             </div>
