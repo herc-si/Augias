@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\DataGridBundle\Tests\GridBuilder\Formatter;
 
+use Augias\CoreBundle\Intl\LocalisedDate;
 use Augias\DataGridBundle\GridBuilder\Column\RelativeDateColumn;
 use Augias\DataGridBundle\GridBuilder\Column\StringColumn;
 use Augias\DataGridBundle\GridBuilder\Formatter\RelativeDateFormatter;
@@ -27,7 +28,7 @@ final class RelativeDateFormatterTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->formatter = new RelativeDateFormatter();
+        $this->formatter = new RelativeDateFormatter(new LocalisedDate());
         // Set a fixed "now" time for consistent testing
         CarbonImmutable::setTestNow(CarbonImmutable::create(2026, 1, 2, 12, 0, 0));
     }
@@ -74,8 +75,10 @@ final class RelativeDateFormatterTest extends TestCase
 
         self::assertStringContainsString('<time', $result);
         self::assertStringNotContainsString('class="datagrid-relative-date"', $result);
-        // Should show absolute date format (Jan 2, 2026 - 10 days = Dec 23, 2025)
-        self::assertStringContainsString('Dec 2025', $result);
+        // Beyond the threshold the cell carries the date itself, written the way
+        // the reader's locale writes a medium one — "Dec 23, 2025" in en_US.
+        self::assertStringContainsString($date->format('Y'), $result);
+        self::assertMatchesRegularExpression('#>\w{3} \d{1,2}, \d{4}</time>#', $result);
     }
 
     public function testFormatUsesCustomThreshold(): void
@@ -94,7 +97,7 @@ final class RelativeDateFormatterTest extends TestCase
     {
         $column = RelativeDateColumn::new('created')
             ->threshold(3)
-            ->absoluteFormat('Y-m-d');
+            ->absoluteWidth('short');
         $date = CarbonImmutable::now()->subDays(5);
 
         $result = $this->formatter->format($column, $date);
@@ -137,7 +140,7 @@ final class RelativeDateFormatterTest extends TestCase
     public function testFormatEscapesHtmlInOutput(): void
     {
         $column = RelativeDateColumn::new('created')
-            ->absoluteFormat('<script>d M Y</script>');
+            ->absoluteWidth('<script>bad</script>');
         $date = CarbonImmutable::now()->subDays(10);
 
         $result = $this->formatter->format($column, $date);

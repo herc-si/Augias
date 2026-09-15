@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace Augias\DataGridBundle\GridBuilder\Formatter;
 
+use Augias\CoreBundle\Intl\LocalisedDate;
 use Augias\DataGridBundle\GridBuilder\Column\Column;
 use Augias\DataGridBundle\GridBuilder\Column\RelativeDateColumn;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
 use Exception;
+use Locale;
 use function htmlspecialchars;
 use function sprintf;
 
@@ -31,6 +33,11 @@ use function sprintf;
  */
 final class RelativeDateFormatter implements FormatterInterface
 {
+    public function __construct(
+        private readonly LocalisedDate $dates,
+    ) {
+    }
+
     public function format(Column $column, mixed $value): string
     {
         if (! $column instanceof RelativeDateColumn) {
@@ -55,7 +62,7 @@ final class RelativeDateFormatter implements FormatterInterface
         $now = CarbonImmutable::now();
         $diff = $value->diff($now);
 
-        $absoluteDate = $value->format($column->getAbsoluteFormat());
+        $absoluteDate = $this->dates->format($value, $column->getAbsoluteWidth());
         $isoDate = $value->format(DateTimeInterface::ATOM);
 
         // If beyond threshold, show absolute date
@@ -72,7 +79,7 @@ final class RelativeDateFormatter implements FormatterInterface
             '<time class="datagrid-relative-date" datetime="%s" title="%s">%s</time>',
             htmlspecialchars($isoDate, ENT_QUOTES, 'UTF-8'),
             htmlspecialchars($absoluteDate, ENT_QUOTES, 'UTF-8'),
-            htmlspecialchars($diff->forHumans(syntax: CarbonInterface::DIFF_RELATIVE_TO_NOW, parts: 1), ENT_QUOTES, 'UTF-8')
+            htmlspecialchars($diff->locale(Locale::getDefault())->forHumans(syntax: CarbonInterface::DIFF_RELATIVE_TO_NOW, parts: 1), ENT_QUOTES, 'UTF-8')
         );
     }
 }

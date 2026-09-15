@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Tests\Twig\Extension;
 
+use Augias\CoreBundle\Intl\LocalisedDate;
 use Augias\CoreBundle\Twig\Extension\DateExtension;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -26,7 +27,7 @@ final class DateExtensionTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->extension = new DateExtension();
+        $this->extension = new DateExtension(new LocalisedDate());
     }
 
     /**

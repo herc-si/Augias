@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\SaasBundle\Tests\EventSubscriber;
 
 use Augias\CoreBundle\Company\CompanySelector;
+use Augias\CoreBundle\Intl\LocalisedDate;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\SaasBundle\EventSubscriber\RequestListener;
@@ -482,6 +483,7 @@ final class RequestListenerTest extends KernelTestCase
 
         $trialBannerResolver = new TrialBannerResolver(
             $clock,
+            new LocalisedDate(),
             couponCode: $couponCode,
             couponPercent: $couponPercent,
             bannerDays: 7,

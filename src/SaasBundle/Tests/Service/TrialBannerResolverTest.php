@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\Tests\Service;
 
+use Augias\CoreBundle\Intl\LocalisedDate;
 use Augias\SaasBundle\Service\TrialBanner;
 use Augias\SaasBundle\Service\TrialBannerResolver;
 use Carbon\CarbonImmutable;
@@ -144,6 +145,7 @@ final class TrialBannerResolverTest extends TestCase
 
         $resolver = new TrialBannerResolver(
             $clock,
+            new LocalisedDate(),
             couponCode: $couponCode,
             couponPercent: 30,
             bannerDays: 7,

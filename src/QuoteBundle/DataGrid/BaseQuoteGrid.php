@@ -83,7 +83,7 @@ abstract class BaseQuoteGrid extends Grid
                 }),
             DateTimeColumn::new('created')
                 ->label('quote.grid.created')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('created'))
         ];
     }

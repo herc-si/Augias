@@ -68,7 +68,7 @@ final class LedgerEntryGrid extends Grid
                 ->searchable(false),
             DateTimeColumn::new('entryDate')
                 ->label('accounting.entry.grid.date')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('entryDate')),
             StringColumn::new('label')
                 ->label('accounting.entry.grid.label'),

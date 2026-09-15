@@ -65,17 +65,17 @@ abstract class BaseRecurringInvoiceGrid extends Grid
                 ->formatValue(fn (RecurringInvoice $recurringInvoice): string => $this->schedule->getFrequency($recurringInvoice->getRecurringOptions())),
             DateTimeColumn::new('dateStart')
                 ->label('invoice.grid.date_start')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('dateStart')),
             DateTimeColumn::new('endDate')
                 ->label('invoice.grid.end_date')
-                ->format('d F Y')
+                ->width('long')
                 ->formatValue(fn (RecurringInvoice $recurringInvoice) => $this->schedule->getEndDate($recurringInvoice->getRecurringOptions()))
                 ->filter(new DateRangeFilter('endDate')),
             DateTimeColumn::new('nextRunDate')
                 ->label('invoice.grid.next_run_date')
                 ->formatValue(fn (RecurringInvoice $recurringInvoice): ?DateTimeInterface => $this->schedule->getNextRunDate($recurringInvoice->getRecurringOptions()))
-                ->format('d F Y'),
+                ->width('long'),
             StringColumn::new('status')
                 ->label('invoice.grid.status')
                 ->twigFunction('invoice_label')

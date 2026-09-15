@@ -54,7 +54,7 @@ final class TaxGrid extends Grid
                 ->filter(ChoiceFilter::new('category', array_column(array_map(static fn (TaxCategory $c) => [$c->value, $c->getLabel()], TaxCategory::cases()), 1, 0))->multiple()),
             DateTimeColumn::new('created')
                 ->label('tax.grid.created')
-                ->format('d F Y'),
+                ->width('long'),
         ];
     }
 

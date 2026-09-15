@@ -82,7 +82,7 @@ final class CreditNoteGrid extends Grid
                 ->formatValue(static fn (BigNumber $value, CreditNote $creditNote): Money => new Money((string) $value, $creditNote->getClient()->getCurrency())),
             RelativeDateColumn::new('creditNoteDate')
                 ->label('credit_note.grid.date')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('creditNoteDate')),
 
             StringColumn::new('reason')

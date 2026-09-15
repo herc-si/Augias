@@ -23,6 +23,7 @@ use Augias\MoneyBundle\Calculator;
 use Augias\SettingsBundle\SystemConfig;
 use Carbon\Carbon;
 use DateTimeInterface;
+use Locale;
 use Override;
 use SolidWorx\Toggler\ToggleInterface;
 use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
@@ -195,6 +196,10 @@ class GlobalExtension extends AbstractExtension implements GlobalsInterface
      */
     public function dateDiff(DateTimeInterface $date): string
     {
-        return Carbon::instance($date)->diffForHumans();
+        // Per call rather than through Carbon::setLocale(): the locale also
+        // decides which day a week starts on, and setting it globally moved the
+        // end date of every weekly recurring invoice by a day. The suite caught
+        // it — see RecurringScheduleTest.
+        return Carbon::instance($date)->locale(Locale::getDefault())->diffForHumans();
     }
 }

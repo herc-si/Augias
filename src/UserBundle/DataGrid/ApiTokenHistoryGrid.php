@@ -54,7 +54,7 @@ final class ApiTokenHistoryGrid extends Grid
         return [
             DateTimeColumn::new('created')
                 ->label('user.api_token.history.grid.date')
-                ->format('d M Y H:i')
+                ->width('medium', 'short')
                 ->sortable(true)
                 ->filter(new DateRangeFilter('created')),
             StringColumn::new('method')

@@ -24,7 +24,18 @@ final class DateTimeColumnTest extends TestCase
     {
         $column = DateTimeColumn::new('date');
 
-        self::assertSame('Y-m-d H:i:s', $column->format('Y-m-d H:i:s')->getFormat());
-        self::assertSame('d F Y H:i:s', $column->format('d F Y H:i:s')->getFormat());
+        self::assertSame('medium', $column->getDateWidth());
+        self::assertSame('short', $column->getTimeWidth());
+
+        $column->width('long');
+
+        self::assertSame('long', $column->getDateWidth());
+        // A width given on its own drops the time: a column that wants one says so.
+        self::assertSame('none', $column->getTimeWidth());
+
+        $column->width('short', 'medium');
+
+        self::assertSame('short', $column->getDateWidth());
+        self::assertSame('medium', $column->getTimeWidth());
     }
 }

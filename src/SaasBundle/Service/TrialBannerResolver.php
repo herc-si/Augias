@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\Service;
 
+use Augias\CoreBundle\Intl\LocalisedDate;
 use Carbon\CarbonInterval;
 use DateInterval;
 use Psr\Clock\ClockInterface;
@@ -33,6 +34,7 @@ final readonly class TrialBannerResolver
 {
     public function __construct(
         private ClockInterface $clock,
+        private LocalisedDate $dates,
         #[Autowire(env: 'AUGIAS_SAAS_ONBOARDING_COUPON_CODE')]
         private string $couponCode = '',
         #[Autowire(env: 'int:AUGIAS_SAAS_ONBOARDING_COUPON_PERCENT')]
@@ -58,7 +60,7 @@ final readonly class TrialBannerResolver
                 'tabler:alert-circle',
                 'saas.trial_banner.cancelled.title',
                 'saas.trial_banner.cancelled.message',
-                ['%date%' => $subscription->getEndDate()->format('F j, Y')],
+                ['%date%' => $this->dates->format($subscription->getEndDate(), 'long')],
                 'saas.trial_banner.cancelled.cta',
             );
         }

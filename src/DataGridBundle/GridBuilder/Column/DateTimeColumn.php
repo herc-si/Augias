@@ -27,16 +27,30 @@ class DateTimeColumn extends Column
             ->cellClass('col-date');
     }
 
-    private string $format = 'Y-m-d H:i:s';
+    /**
+     * ICU widths rather than a PHP format string: a format string spells the
+     * month out in English whatever language the page is in, which is what this
+     * replaced. One of none, short, medium, long, full.
+     */
+    private string $dateWidth = 'medium';
 
-    public function format(string $format): self
+    private string $timeWidth = 'short';
+
+    public function width(string $date, string $time = 'none'): self
     {
-        $this->format = $format;
+        $this->dateWidth = $date;
+        $this->timeWidth = $time;
+
         return $this;
     }
 
-    public function getFormat(): string
+    public function getDateWidth(): string
     {
-        return $this->format;
+        return $this->dateWidth;
+    }
+
+    public function getTimeWidth(): string
+    {
+        return $this->timeWidth;
     }
 }

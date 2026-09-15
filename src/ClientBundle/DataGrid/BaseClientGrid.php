@@ -101,7 +101,7 @@ abstract class BaseClientGrid extends Grid
                 }),
             DateTimeColumn::new('created')
                 ->label('client.grid.created')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('created')),
         ];
     }
