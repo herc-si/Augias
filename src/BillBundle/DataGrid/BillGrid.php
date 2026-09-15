@@ -74,7 +74,7 @@ final class BillGrid extends Grid
                 ->sortableField('totalAmount'),
             RelativeDateColumn::new('dueDate')
                 ->label('bill.grid.due_date')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('dueDate'))
                 ->hiddenByDefault(),
             StringColumn::new('category')
@@ -83,7 +83,7 @@ final class BillGrid extends Grid
                 ->hiddenByDefault(),
             RelativeDateColumn::new('issueDate')
                 ->label('bill.grid.issue_date')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('issueDate'))
                 ->hiddenByDefault(),
         ];

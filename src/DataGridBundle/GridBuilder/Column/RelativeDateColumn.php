@@ -24,7 +24,7 @@ use Override;
  * Usage:
  *   RelativeDateColumn::new('created')
  *       ->threshold(7)  // Show relative for dates within 7 days
- *       ->absoluteFormat('d M Y')  // Format for absolute date tooltip
+ *       ->absoluteWidth('long')  // Width of the absolute date in the tooltip
  * @see \Augias\DataGridBundle\Tests\GridBuilder\Column\RelativeDateColumnTest
  */
 final class RelativeDateColumn extends DateTimeColumn
@@ -43,9 +43,9 @@ final class RelativeDateColumn extends DateTimeColumn
     private int $threshold = 7;
 
     /**
-     * Format for the absolute date shown in the tooltip.
+     * Width of the absolute date shown in the tooltip.
      */
-    private string $absoluteFormat = 'd M Y';
+    private string $absoluteWidth = 'medium';
 
     /**
      * Set the threshold in days for showing relative dates.
@@ -60,9 +60,10 @@ final class RelativeDateColumn extends DateTimeColumn
     /**
      * Set the format for the absolute date shown in the tooltip.
      */
-    public function absoluteFormat(string $format): self
+    public function absoluteWidth(string $width): self
     {
-        $this->absoluteFormat = $format;
+        $this->absoluteWidth = $width;
+
         return $this;
     }
 
@@ -71,8 +72,8 @@ final class RelativeDateColumn extends DateTimeColumn
         return $this->threshold;
     }
 
-    public function getAbsoluteFormat(): string
+    public function getAbsoluteWidth(): string
     {
-        return $this->absoluteFormat;
+        return $this->absoluteWidth;
     }
 }

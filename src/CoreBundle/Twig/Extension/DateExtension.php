@@ -13,11 +13,9 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Twig\Extension;
 
+use Augias\CoreBundle\Intl\LocalisedDate;
 use DateTimeImmutable;
 use DateTimeInterface;
-use IntlDateFormatter;
-use IntlDatePatternGenerator;
-use Locale;
 use Override;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
@@ -37,6 +35,11 @@ use function is_int;
  */
 final class DateExtension extends AbstractExtension
 {
+    public function __construct(
+        private readonly LocalisedDate $dates,
+    ) {
+    }
+
     /**
      * @return TwigFilter[]
      */
@@ -58,17 +61,6 @@ final class DateExtension extends AbstractExtension
             $date = new DateTimeImmutable(is_int($date) ? '@' . $date : $date);
         }
 
-        $locale ??= Locale::getDefault();
-
-        $formatter = new IntlDateFormatter(
-            $locale,
-            IntlDateFormatter::NONE,
-            IntlDateFormatter::NONE,
-            $date->getTimezone(),
-            null,
-            new IntlDatePatternGenerator($locale)->getBestPattern($skeleton),
-        );
-
-        return (string) $formatter->format($date);
+        return $this->dates->skeleton($date, $skeleton, $locale);
     }
 }

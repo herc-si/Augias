@@ -82,7 +82,7 @@ final class PaymentsGrid extends Grid
                 ->filter(ChoiceFilter::new('status', array_column(array_map(static fn (PaymentStatus $s) => [$s->value, $s->getLabel()], PaymentStatus::cases()), 1, 0))->multiple()),
             DateTimeColumn::new('completed')
                 ->label('payment.grid.completed_date')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('completed')),
             StringColumn::new('message')
                 ->label('payment.grid.message'),
@@ -92,7 +92,7 @@ final class PaymentsGrid extends Grid
                 ->sortableField('totalAmount'),
             DateTimeColumn::new('created')
                 ->label('payment.grid.created')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('created')),
         ];
     }

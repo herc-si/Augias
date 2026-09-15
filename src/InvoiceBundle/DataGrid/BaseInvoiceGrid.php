@@ -80,18 +80,18 @@ abstract class BaseInvoiceGrid extends Grid
                 ->formatValue(fn (BigNumber $value, Invoice $invoice) => new Money((string) $value, $invoice->getClient()?->getCurrency())),
             RelativeDateColumn::new('due')
                 ->label('invoice.grid.due_date')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('due')),
 
             // Hidden by default: secondary detail, one toggle away.
             RelativeDateColumn::new('invoiceDate')
                 ->label('invoice.grid.invoice_date')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('invoiceDate'))
                 ->hiddenByDefault(),
             RelativeDateColumn::new('paidDate')
                 ->label('invoice.grid.paid_date')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('paidDate'))
                 ->hiddenByDefault(),
             MoneyColumn::new('tax')

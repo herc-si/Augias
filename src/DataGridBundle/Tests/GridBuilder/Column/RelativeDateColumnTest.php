@@ -45,30 +45,30 @@ final class RelativeDateColumnTest extends TestCase
         self::assertSame(30, $this->column->getThreshold());
     }
 
-    public function testGetAbsoluteFormatReturnsDefaultFormat(): void
+    public function testGetAbsoluteWidthReturnsDefaultWidth(): void
     {
-        self::assertSame('d M Y', $this->column->getAbsoluteFormat());
+        self::assertSame('medium', $this->column->getAbsoluteWidth());
     }
 
-    public function testAbsoluteFormatSetsAndGetsCorrectly(): void
+    public function testAbsoluteWidthSetsAndGetsCorrectly(): void
     {
-        $result = $this->column->absoluteFormat('Y-m-d H:i');
+        $result = $this->column->absoluteWidth('long');
 
         self::assertSame($this->column, $result);
-        self::assertSame('Y-m-d H:i', $this->column->getAbsoluteFormat());
+        self::assertSame('long', $this->column->getAbsoluteWidth());
     }
 
     public function testFluentInterface(): void
     {
         $result = $this->column
             ->threshold(14)
-            ->absoluteFormat('F j, Y')
+            ->absoluteWidth('full')
             ->label('Created At')
             ->sortable(true);
 
         self::assertSame($this->column, $result);
         self::assertSame(14, $this->column->getThreshold());
-        self::assertSame('F j, Y', $this->column->getAbsoluteFormat());
+        self::assertSame('full', $this->column->getAbsoluteWidth());
     }
 
     public function testInheritsFromDateTimeColumn(): void

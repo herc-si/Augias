@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\DataGridBundle\GridBuilder\Formatter;
 
+use Augias\CoreBundle\Intl\LocalisedDate;
 use Augias\DataGridBundle\GridBuilder\Column\Column;
 use Augias\DataGridBundle\GridBuilder\Column\DateTimeColumn;
 use DateTime;
@@ -24,6 +25,11 @@ use Symfony\Component\Translation\TranslatableMessage;
  */
 class DateTimeFormatter implements FormatterInterface
 {
+    public function __construct(
+        private readonly LocalisedDate $dates,
+    ) {
+    }
+
     public function format(Column $column, mixed $value): string | TranslatableMessage
     {
         if (null === $value) {
@@ -36,6 +42,6 @@ class DateTimeFormatter implements FormatterInterface
             $value = new DateTime($value);
         }
 
-        return $value->format($column->getFormat());
+        return $this->dates->format($value, $column->getDateWidth(), $column->getTimeWidth());
     }
 }

@@ -54,7 +54,7 @@ final class IncomingElectronicInvoiceGrid extends Grid
                 ->formatValue(static fn (string $value): string => ucwords(str_replace('_', ' ', $value))),
             DateTimeColumn::new('issueDate')
                 ->label('einvoicing.grid.issue_date')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('issueDate')),
             MoneyColumn::new('amount')
                 ->label('einvoicing.grid.amount')
@@ -62,7 +62,7 @@ final class IncomingElectronicInvoiceGrid extends Grid
                 ->sortableField('totalAmount'),
             DateTimeColumn::new('created')
                 ->label('einvoicing.grid.received')
-                ->format('d F Y')
+                ->width('long')
                 ->filter(new DateRangeFilter('created')),
         ];
     }
