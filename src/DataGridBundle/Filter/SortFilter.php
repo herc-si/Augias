@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Augias\DataGridBundle\Filter;
 
+use Augias\DataGridBundle\GridBuilder\Order\NumberedOrder;
 use Augias\DataGridBundle\Source\ORMSource;
 use Doctrine\ORM\QueryBuilder;
 use function explode;
-use function sprintf;
 use function str_contains;
 
 /**
@@ -52,13 +52,6 @@ final readonly class SortFilter implements FilterInterface
             return;
         }
 
-        // A numbered value sorts one character at a time, which puts "FACT-10"
-        // between "FACT-1" and "FACT-2". Ordering by length first groups the
-        // numbers by how many digits they have, and within a group the plain
-        // comparison is already the numeric one. LENGTH() is DQL's own, so this
-        // stays the same SQL on every platform the project supports.
-        $queryBuilder
-            ->orderBy(sprintf('LENGTH(%s)', $field), $this->direction)
-            ->addOrderBy($field, $this->direction);
+        NumberedOrder::apply($queryBuilder, $field, $this->direction, replace: true);
     }
 }

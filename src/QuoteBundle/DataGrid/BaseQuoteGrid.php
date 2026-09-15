@@ -24,11 +24,15 @@ use Augias\DataGridBundle\GridBuilder\Column\MoneyColumn;
 use Augias\DataGridBundle\GridBuilder\Column\StringColumn;
 use Augias\DataGridBundle\GridBuilder\Filter\ChoiceFilter;
 use Augias\DataGridBundle\GridBuilder\Filter\DateRangeFilter;
+use Augias\DataGridBundle\GridBuilder\Order\NumberedOrder;
+use Augias\DataGridBundle\GridBuilder\Query;
+use Augias\DataGridBundle\Source\ORMSource;
 use Augias\MoneyBundle\Calculator;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\QuoteBundle\Enum\QuoteStatus;
 use Augias\QuoteBundle\Repository\QuoteRepository;
 use Brick\Math\BigNumber;
+use Doctrine\ORM\EntityManagerInterface;
 use Money\Money;
 use Override;
 
@@ -94,6 +98,25 @@ abstract class BaseQuoteGrid extends Grid
             ViewAction::new('_quotes_view', ['id' => 'id']),
             EditAction::new('_quotes_edit', ['id' => 'id']),
         ];
+    }
+
+    /**
+     * A quote list had no order of its own, so it came back in whatever order
+     * the database chose — which is stable enough to look deliberate and
+     * arbitrary enough to be wrong. Newest first, most recent number first
+     * within a day, as invoices and credit notes already do. Quotes carry no
+     * date of their own, so it is the one they were created on.
+     */
+    #[Override]
+    public function query(EntityManagerInterface $entityManager, Query $query): Query
+    {
+        $queryBuilder = $query->getQueryBuilder();
+
+        $queryBuilder->orderBy(ORMSource::ALIAS . '.created', 'DESC');
+
+        NumberedOrder::apply($queryBuilder, ORMSource::ALIAS . '.quoteId', 'DESC');
+
+        return $query;
     }
 
     #[Override]

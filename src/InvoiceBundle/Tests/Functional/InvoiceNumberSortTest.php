@@ -14,10 +14,13 @@ declare(strict_types=1);
 namespace Augias\InvoiceBundle\Tests\Functional;
 
 use Augias\DataGridBundle\Filter\SortFilter;
+use Augias\DataGridBundle\GridBuilder\Order\NumberedOrder;
 use Augias\DataGridBundle\Source\ORMSource;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use Augias\InvoiceBundle\DataGrid\InvoiceGrid;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -30,6 +33,7 @@ use function array_map;
  * platform the project supports has to agree.
  */
 #[CoversClass(SortFilter::class)]
+#[CoversClass(NumberedOrder::class)]
 final class InvoiceNumberSortTest extends KernelTestCase
 {
     use EnsureApplicationInstalled;
@@ -44,6 +48,35 @@ final class InvoiceNumberSortTest extends KernelTestCase
 
         // What the grid did before, and what the report was about.
         self::assertSame(['FACT-1', 'FACT-10', 'FACT-11', 'FACT-2'], $this->sortedNumbers(natural: false));
+    }
+
+    /**
+     * The list has to open on something; before this it opened on whatever the
+     * database returned for invoices sharing a date, which is stable enough to
+     * look deliberate and arbitrary enough to be wrong.
+     */
+    public function testTheDefaultOrderBreaksATieOnTheDateWithTheNumber(): void
+    {
+        $sameDay = new DateTimeImmutable('2026-03-01');
+
+        foreach (['FACT-1', 'FACT-10', 'FACT-2'] as $number) {
+            InvoiceFactory::createOne(['invoiceId' => $number, 'invoiceDate' => $sameDay]);
+        }
+
+        $grid = self::getContainer()->get(InvoiceGrid::class);
+        self::assertInstanceOf(InvoiceGrid::class, $grid);
+        $grid->initialize([]);
+
+        $source = self::getContainer()->get(ORMSource::class);
+        self::assertInstanceOf(ORMSource::class, $source);
+
+        /** @var list<Invoice> $invoices */
+        $invoices = $source->fetch($grid)->getQueryBuilder()->getQuery()->getResult();
+
+        self::assertSame(
+            ['FACT-10', 'FACT-2', 'FACT-1'],
+            array_map(static fn (Invoice $invoice): string => $invoice->getInvoiceId(), $invoices),
+        );
     }
 
     /**

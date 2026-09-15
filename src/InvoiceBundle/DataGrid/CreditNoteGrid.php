@@ -23,6 +23,7 @@ use Augias\DataGridBundle\GridBuilder\Column\RelativeDateColumn;
 use Augias\DataGridBundle\GridBuilder\Column\StringColumn;
 use Augias\DataGridBundle\GridBuilder\Filter\ChoiceFilter;
 use Augias\DataGridBundle\GridBuilder\Filter\DateRangeFilter;
+use Augias\DataGridBundle\GridBuilder\Order\NumberedOrder;
 use Augias\DataGridBundle\GridBuilder\Query;
 use Augias\DataGridBundle\Source\ORMSource;
 use Augias\InvoiceBundle\Entity\CreditNote;
@@ -118,6 +119,9 @@ final class CreditNoteGrid extends Grid
             ->leftJoin(ORMSource::ALIAS . '.creditedInvoice', 'creditedInvoice')
             ->addSelect('creditedInvoice')
             ->orderBy(ORMSource::ALIAS . '.creditNoteDate', 'DESC');
+
+        // Same date, highest number first — see BaseInvoiceGrid.
+        NumberedOrder::apply($query->getQueryBuilder(), ORMSource::ALIAS . '.creditNoteId', 'DESC');
 
         if (array_key_exists('client_id', $this->context)) {
             $builder
