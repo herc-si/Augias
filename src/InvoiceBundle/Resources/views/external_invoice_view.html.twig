@@ -90,13 +90,13 @@
                             <div class="row">
                                 <div class="col-sm-4 mb-3 mb-sm-0">
                                     <div class="ext-doc-metadata-label text-uppercase small mb-1">{{ 'invoice.date'|trans }}</div>
-                                    <div class="ext-doc-metadata-value fw-medium">{{ invoice.invoiceDate|date('M d, Y') }}</div>
+                                    <div class="ext-doc-metadata-value fw-medium">{{ invoice.invoiceDate|format_date('medium') }}</div>
                                 </div>
                                 {% if invoice.due is not empty %}
                                     <div class="col-sm-4 mb-3 mb-sm-0">
                                         <div class="ext-doc-metadata-label text-uppercase small mb-1">{{ 'invoice.due_date'|trans }}</div>
                                         <div class="ext-doc-metadata-value fw-medium {{ invoice.status == enum('Augias\\InvoiceBundle\\Enum\\InvoiceStatus').Overdue ? 'text-danger' : '' }}">
-                                            {{ invoice.due|date('M d, Y') }}
+                                            {{ invoice.due|format_date('medium') }}
                                             {% if invoice.status == enum('Augias\\InvoiceBundle\\Enum\\InvoiceStatus').Overdue %}
                                                 <span class="badge bg-danger-lt ms-1">{{ 'invoice.invoice_status.overdue'|trans }}</span>
                                             {% endif %}

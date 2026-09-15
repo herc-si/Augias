@@ -22,8 +22,8 @@
                     {% for addr in quote.client.addresses %}<div class="text-muted small">{{ addr }}</div>{% endfor %}
                 </div>
                 <div class="col-md-6">
-                    <div><span class="text-muted small">{{ 'quote.pdf.date'|trans }}:</span> <strong>{{ quote.created|date('M j, Y') }}</strong></div>
-                    {% if quote.due %}<div><span class="text-muted small">{{ 'quote.pdf.valid_until'|trans }}:</span> <strong>{{ quote.due|date('M j, Y') }}</strong></div>{% endif %}
+                    <div><span class="text-muted small">{{ 'quote.pdf.date'|trans }}:</span> <strong>{{ quote.created|format_date('medium') }}</strong></div>
+                    {% if quote.due %}<div><span class="text-muted small">{{ 'quote.pdf.valid_until'|trans }}:</span> <strong>{{ quote.due|format_date('medium') }}</strong></div>{% endif %}
                 </div>
             </div>
 

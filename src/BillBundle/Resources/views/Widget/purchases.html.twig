@@ -84,7 +84,7 @@
                         </span>
                         {% if bill.dueDate %}
                             <span class="attention-item-date{{ isOverdue ? ' text-danger' }}">
-                                {{ bill.dueDate|date('M j') }}
+                                {{ bill.dueDate|format_date_skeleton('dMMM') }}
                             </span>
                         {% endif %}
                     </span>

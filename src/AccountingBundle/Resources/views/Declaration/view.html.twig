@@ -122,7 +122,7 @@
 
                     {% if declaration.isSubmitted %}
                         <p class="text-muted">
-                            {{ 'accounting.declaration.submitted_on'|trans({'%date%': declaration.submittedAt|date('d F Y')}) }}
+                            {{ 'accounting.declaration.submitted_on'|trans({'%date%': declaration.submittedAt|format_date('long')}) }}
                         </p>
                         {% if declaration.reference is not null %}
                             <dl class="row mb-0">
@@ -174,7 +174,7 @@
                         {% endif %}
                     {% else %}
                         <p class="text-muted mb-0">
-                            {{ 'accounting.period.still_running'|trans({'%date%': period.endDate|date('d F Y')}) }}
+                            {{ 'accounting.period.still_running'|trans({'%date%': period.endDate|format_date('long')}) }}
                         </p>
                     {% endif %}
                 </twig:Ui:Card>

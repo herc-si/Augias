@@ -25,7 +25,7 @@
                     {{ credit_note_label(creditNote.status) }}
                     <span class="doc-view-meta-item">
                         {{ ux_icon('tabler:calendar', {width: 14, height: 14}) }}
-                        {{ creditNote.creditNoteDate|date('M d, Y') }}
+                        {{ creditNote.creditNoteDate|format_date('medium') }}
                     </span>
                     <span class="doc-view-meta-item">
                         {{ ux_icon('tabler:tag', {width: 14, height: 14}) }}
@@ -174,7 +174,7 @@
                                             </a>
                                         {% endif %}
                                         <br />
-                                        <small class="text-muted">{{ allocation.allocatedOn|date('M d, Y') }}</small>
+                                        <small class="text-muted">{{ allocation.allocatedOn|format_date('medium') }}</small>
                                     </td>
                                     <td class="text-end">{{ allocation.amount|formatCurrency(currency) }}</td>
                                 </tr>
@@ -208,7 +208,7 @@
                 </p>
                 {% if creditNote.issuedAt %}
                     <p class="text-muted mb-0">
-                        {{ 'credit_note.issued_at'|trans }}: {{ creditNote.issuedAt|date('M d, Y H:i') }}
+                        {{ 'credit_note.issued_at'|trans }}: {{ creditNote.issuedAt|format_datetime('medium', 'short') }}
                     </p>
                 {% endif %}
             </twig:Ui:Card>

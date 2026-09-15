@@ -84,7 +84,7 @@
                                 <div class="row">
                                     <div class="col-sm-6 mb-3 mb-sm-0">
                                         <div class="ext-doc-metadata-label text-uppercase small mb-1">{{ 'quote.pdf.date'|trans }}</div>
-                                        <div class="ext-doc-metadata-value fw-medium">{{ quote.created|date('M d, Y') }}</div>
+                                        <div class="ext-doc-metadata-value fw-medium">{{ quote.created|format_date('medium') }}</div>
                                     </div>
                                     <div class="col-sm-6">
                                         <div class="ext-doc-metadata-label text-uppercase small mb-1">{{ 'quote.total'|trans }}</div>

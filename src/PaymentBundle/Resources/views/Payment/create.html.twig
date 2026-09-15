@@ -87,13 +87,13 @@
                                     </div>
                                     <div class="detail-item">
                                         <span class="detail-label">{{ 'payment.create.invoice_date'|trans }}</span>
-                                        <span class="detail-value">{{ invoice.invoiceDate|date('d M Y') }}</span>
+                                        <span class="detail-value">{{ invoice.invoiceDate|format_date('medium') }}</span>
                                     </div>
                                     {% if invoice.due is not empty %}
                                         <div class="detail-item">
                                             <span class="detail-label">{{ 'billing.due_date'|trans }}</span>
                                             <span class="detail-value{% if invoice.due < date() %} text-danger{% endif %}">
-                                                {{ invoice.due|date('d M Y') }}
+                                                {{ invoice.due|format_date('medium') }}
                                             </span>
                                         </div>
                                     {% endif %}
@@ -196,7 +196,7 @@
                                                 {% if payment.completed is not empty %}
                                                     <div class="payment-detail">
                                                         {{ ux_icon('tabler:calendar', {width: 14, height: 14}) }}
-                                                        <span>{{ payment.completed|date('M d, Y \\a\\t H:i') }}</span>
+                                                        <span>{{ payment.completed|format_datetime('medium', 'short') }}</span>
                                                     </div>
                                                 {% endif %}
                                                 {% if payment.reference is not empty %}

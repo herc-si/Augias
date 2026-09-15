@@ -373,13 +373,13 @@
                             </div>
                             <div class="schedule-item">
                                 <span class="recurring-schedule-label">{{ 'invoice.recurring.start_date'|trans }}:</span>
-                                <span class="schedule-value">{{ invoice.dateStart|date('M d, Y') }}</span>
+                                <span class="schedule-value">{{ invoice.dateStart|format_date('medium') }}</span>
                             </div>
                             {% set endDate = recurring_end_date(invoice.recurringOptions) %}
                             {% if endDate %}
                                 <div class="schedule-item">
                                     <span class="recurring-schedule-label">{{ 'invoice.recurring.end_date'|trans }}:</span>
-                                    <span class="schedule-value">{{ endDate|date('M d, Y') }}</span>
+                                    <span class="schedule-value">{{ endDate|format_date('medium') }}</span>
                                 </div>
                             {% endif %}
                         </div>
@@ -401,7 +401,7 @@
                             {% for occurrence in nextOccurrences %}
                                 <div class="occurrence-item">
                                     {{ ux_icon('tabler:calendar', {width: 14, height: 14}) }}
-                                    <span class="occurrence-date">{{ occurrence|date('l, M d, Y') }}</span>
+                                    <span class="occurrence-date">{{ occurrence|format_date('full') }}</span>
                                 </div>
                             {% endfor %}
                         </div>
@@ -467,12 +467,12 @@
                         </div>
                         <div class="summary-item">
                             <span class="summary-label">{{ 'invoice.recurring.start_date'|trans }}</span>
-                            <span class="summary-value">{{ invoice.dateStart|date('M d, Y') }}</span>
+                            <span class="summary-value">{{ invoice.dateStart|format_date('medium') }}</span>
                         </div>
                         {% if invoice.dateEnd %}
                             <div class="summary-item">
                                 <span class="summary-label">{{ 'invoice.recurring.end_date'|trans }}</span>
-                                <span class="summary-value">{{ invoice.dateEnd|date('M d, Y') }}</span>
+                                <span class="summary-value">{{ invoice.dateEnd|format_date('medium') }}</span>
                             </div>
                         {% endif %}
                         <div class="summary-item">

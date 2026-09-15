@@ -100,7 +100,7 @@
                              #}
                             <p class="text-muted small">
                                 {{ ux_icon('tabler:lock', {width: 14, height: 14, class: 'me-1'}) }}
-                                {{ 'accounting.period.books_shut_until'|trans({'%date%': lockDate|date('d F Y')}) }}
+                                {{ 'accounting.period.books_shut_until'|trans({'%date%': lockDate|format_date('long')}) }}
                             </p>
                         {% endif %}
 
@@ -124,11 +124,11 @@
                              # be closed beats offering a button that is refused.
                              #}
                             <p class="text-muted mb-0">
-                                {{ 'accounting.period.still_running'|trans({'%date%': period.endDate|date('d F Y')}) }}
+                                {{ 'accounting.period.still_running'|trans({'%date%': period.endDate|format_date('long')}) }}
                             </p>
                         {% else %}
                             <p class="text-muted mb-0">
-                                {{ 'accounting.period.closed_on'|trans({'%date%': period.closedAt|date('d F Y')}) }}
+                                {{ 'accounting.period.closed_on'|trans({'%date%': period.closedAt|format_date('long')}) }}
                             </p>
                         {% endif %}
                     {% endif %}
@@ -161,7 +161,7 @@
                                                 '%amount%': alert.thresholdMoney|formatCurrency(alert.currencyCode),
                                             }) }}
                                         </span>
-                                        <span class="text-muted">{{ alert.triggeredAt|date('d F Y') }}</span>
+                                        <span class="text-muted">{{ alert.triggeredAt|format_date('long') }}</span>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -198,7 +198,7 @@
 
                         {% if profile.activityStartDate is not null %}
                             <dt class="col-sm-5">{{ 'accounting.settings.activity_start_date.label'|trans }}</dt>
-                            <dd class="col-sm-7">{{ profile.activityStartDate|date('d F Y') }}</dd>
+                            <dd class="col-sm-7">{{ profile.activityStartDate|format_date('long') }}</dd>
                         {% endif %}
                     </dl>
 

@@ -69,7 +69,7 @@
                             </span>
                         {% endif %}
                         {% if receipt.issueDate %}
-                            <span class="attention-item-date">{{ receipt.issueDate|date('M j') }}</span>
+                            <span class="attention-item-date">{{ receipt.issueDate|format_date_skeleton('dMMM') }}</span>
                         {% endif %}
                     </span>
                 </a>

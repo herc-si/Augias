@@ -26,10 +26,10 @@
                 </div>
                 <div class="col-md-4">
                     <div class="text-muted small text-uppercase mb-1" style="letter-spacing: 1px;">{{ 'quote.pdf.date'|trans }}</div>
-                    <div>{{ quote.created|date('F j, Y') }}</div>
+                    <div>{{ quote.created|format_date('long') }}</div>
                     {% if quote.due %}
                         <div class="text-muted small text-uppercase mb-1 mt-2" style="letter-spacing: 1px;">{{ 'quote.pdf.valid_until'|trans }}</div>
-                        <div>{{ quote.due|date('F j, Y') }}</div>
+                        <div>{{ quote.due|format_date('long') }}</div>
                     {% endif %}
                 </div>
             </div>

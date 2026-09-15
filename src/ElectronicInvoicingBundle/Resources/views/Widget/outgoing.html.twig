@@ -64,7 +64,7 @@
                     </span>
                     <span class="attention-item-meta">
                         <span class="badge bg-{{ status.color }}-lt">{{ status.label }}</span>
-                        <span class="attention-item-date">{{ submission.created|date('M j') }}</span>
+                        <span class="attention-item-date">{{ submission.created|format_date_skeleton('dMMM') }}</span>
                     </span>
                 </a>
             {% endfor %}

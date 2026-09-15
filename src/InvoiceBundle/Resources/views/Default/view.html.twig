@@ -28,7 +28,7 @@
                     {% if invoice.due is not empty %}
                         <span class="doc-view-meta-item">
                             {{ ux_icon('tabler:calendar', {width: 14, height: 14}) }}
-                            {{ 'invoice.due_date'|trans }}: {{ invoice.due|date('M d, Y') }}
+                            {{ 'invoice.due_date'|trans }}: {{ invoice.due|format_date('medium') }}
                         </span>
                     {% endif %}
                 </div>
@@ -476,18 +476,18 @@
                         {% endif %}
                         <div class="summary-item">
                             <span class="summary-label">{{ 'invoice.date'|trans }}</span>
-                            <span class="summary-value">{{ invoice.invoiceDate|date('M d, Y') }}</span>
+                            <span class="summary-value">{{ invoice.invoiceDate|format_date('medium') }}</span>
                         </div>
                         {% if invoice.due is not empty %}
                             <div class="summary-item {{ invoice.status == enum('Augias\\InvoiceBundle\\Enum\\InvoiceStatus').Overdue ? 'summary-item-overdue' : '' }}">
                                 <span class="summary-label">{{ 'invoice.due_date'|trans }}</span>
-                                <span class="summary-value">{{ invoice.due|date('M d, Y') }}</span>
+                                <span class="summary-value">{{ invoice.due|format_date('medium') }}</span>
                             </div>
                         {% endif %}
                         {% if invoice.paidDate is not empty %}
                             <div class="summary-item summary-item-paid">
                                 <span class="summary-label">{{ 'invoice.paid_date'|trans }}</span>
-                                <span class="summary-value">{{ invoice.paidDate|date('M d, Y') }}</span>
+                                <span class="summary-value">{{ invoice.paidDate|format_date('medium') }}</span>
                             </div>
                         {% endif %}
                     </div>
@@ -521,7 +521,7 @@
                                         {% if payment.completed is not empty %}
                                             <div class="payment-date">
                                                 {{ ux_icon('tabler:calendar', {width: 14, height: 14}) }}
-                                                {{ payment.completed|date('M d, Y') }}
+                                                {{ payment.completed|format_date('medium') }}
                                             </div>
                                         {% endif %}
                                         {% if payment.message is not empty %}
@@ -560,7 +560,7 @@
                                             <div class="text-danger small mt-1">{{ submission.message|trans }}</div>
                                         {% endif %}
                                     </div>
-                                    <div class="text-muted small text-nowrap">{{ submission.created|date('M d, Y H:i') }}</div>
+                                    <div class="text-muted small text-nowrap">{{ submission.created|format_datetime('medium', 'short') }}</div>
                                 </div>
                             {% endfor %}
                         </div>

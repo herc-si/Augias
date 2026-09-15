@@ -262,7 +262,10 @@ final class AccountingPagesTest extends WebTestCase
 
         $text = $this->client->request('GET', '/accounting/')->filter('body')->text();
 
-        self::assertStringContainsString('Books shut up to 31 March 2026', $text);
+        // The suite runs in en_US, where a long date reads "March 31, 2026". The
+        // page used to hardcode a day-first English format, which was right in
+        // no locale at all.
+        self::assertStringContainsString('Books shut up to March 31, 2026', $text);
     }
 
     /**

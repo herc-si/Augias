@@ -26,7 +26,7 @@
                     </td>
                     <td style="padding: 4px 0; font-size: 9pt; color: #1e293b; vertical-align: top;">
                         {% if t == 'date' and row.raw is not empty %}
-                            {{ row.raw|date('M d, Y') }}
+                            {{ row.raw|format_date('medium') }}
                         {% elseif t == 'checkbox' %}
                             {{ row.raw == '1' ? 'pdf.yes'|trans : 'pdf.no'|trans }}
                         {% elseif t == 'textarea' %}

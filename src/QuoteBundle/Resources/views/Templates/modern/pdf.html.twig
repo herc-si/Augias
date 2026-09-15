@@ -31,9 +31,9 @@
         <td style="width: 33%; vertical-align: top;">{{ q.from_block() }}</td>
         <td style="width: 33%; vertical-align: top; padding: 0 12px;">{{ q.bill_to_block(quote) }}</td>
         <td style="width: 34%; vertical-align: top;">
-            {{ q.meta_pair('quote.pdf.date'|trans, quote.created|date('F j, Y')) }}
+            {{ q.meta_pair('quote.pdf.date'|trans, quote.created|format_date('long')) }}
             {% if quote.due %}
-                {{ q.meta_pair('quote.pdf.valid_until'|trans, quote.due|date('F j, Y')) }}
+                {{ q.meta_pair('quote.pdf.valid_until'|trans, quote.due|format_date('long')) }}
                 <div style="margin-top: 2px;">{{ q.validity_indicator(quote) }}</div>
             {% endif %}
         </td>

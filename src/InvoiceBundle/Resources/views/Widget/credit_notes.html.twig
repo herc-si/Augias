@@ -77,7 +77,7 @@
                             {{ money.money(creditNote.total, creditNote.client.currency.code, ['total']) }}
                         </span>
                         <span class="attention-item-date">
-                            {{ creditNote.creditNoteDate|date('M j') }}
+                            {{ creditNote.creditNoteDate|format_date_skeleton('dMMM') }}
                         </span>
                     </span>
                 </a>

@@ -34,13 +34,13 @@
                 <div class="col-md-4 mb-2">
                     <div class="p-3 rounded" style="background: #fff1e0;">
                         <div class="text-uppercase small mb-1" style="color: #94704a; letter-spacing: 1px;">{{ 'invoice.date'|trans }}</div>
-                        <strong>{{ invoice.invoiceDate|date('F j, Y') }}</strong>
+                        <strong>{{ invoice.invoiceDate|format_date('long') }}</strong>
                     </div>
                 </div>
                 <div class="col-md-4 mb-2">
                     <div class="p-3 rounded" style="background: #fff1e0;">
                         <div class="text-uppercase small mb-1" style="color: #94704a; letter-spacing: 1px;">{{ 'invoice.due_date'|trans }}</div>
-                        <strong>{% if invoice.due %}{{ invoice.due|date('F j, Y') }}{% else %}—{% endif %}</strong>
+                        <strong>{% if invoice.due %}{{ invoice.due|format_date('long') }}{% else %}—{% endif %}</strong>
                     </div>
                 </div>
                 <div class="col-md-4 mb-2">
