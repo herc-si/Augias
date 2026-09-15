@@ -1152,6 +1152,9 @@ datagrid:
         empty: 'Get started by creating your first item.'
         filtered: "Try adjusting your search or filters to find what you're looking for."
         label: 'No results found'
+    pagination:
+        next: "Next page"
+        previous: "Previous page"
     per_page: Show
     search:
         label: Search

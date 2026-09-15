@@ -1,0 +1,41 @@
+{#
+    Pagination that stays inside the live component.
+
+    Pagerfanta builds real hrefs from the *current* route. Inside a live
+    component that route is `ux_live_component`, so after any live re-render the
+    page links pointed at /_components/DataGrid?page=2 — and clicking one
+    navigated the browser there. That endpoint only answers requests carrying
+    the live component's own headers, so a plain navigation got
+    "Unable to find the controller for path", which is a confusing way to say
+    "this URL was never meant to be visited".
+
+    `page` is a writable LiveProp, so the links say so directly, the same way the
+    sortable column headers do.
+#}
+{% set current = paginator.currentPage %}
+{% set last = paginator.nbPages %}
+{% set window = 2 %}
+
+<ul class="pagination m-0 ms-auto">
+    <li class="page-item {{ paginator.hasPreviousPage ? '' : 'disabled' }}">
+        <a class="page-link" href="#" data-model="page" data-value="{{ paginator.hasPreviousPage ? paginator.previousPage : current }}" data-action="live#update:prevent" aria-label="{{ 'datagrid.pagination.previous'|trans }}">
+            {{ ux_icon('tabler:chevron-left', {width: 16, height: 16}) }}
+        </a>
+    </li>
+
+    {% for page in 1..last %}
+        {% if page == 1 or page == last or (page >= current - window and page <= current + window) %}
+            <li class="page-item {{ page == current ? 'active' : '' }}">
+                <a class="page-link" href="#" data-model="page" data-value="{{ page }}" data-action="live#update:prevent">{{ page }}</a>
+            </li>
+        {% elseif page == current - window - 1 or page == current + window + 1 %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+    {% endfor %}
+
+    <li class="page-item {{ paginator.hasNextPage ? '' : 'disabled' }}">
+        <a class="page-link" href="#" data-model="page" data-value="{{ paginator.hasNextPage ? paginator.nextPage : current }}" data-action="live#update:prevent" aria-label="{{ 'datagrid.pagination.next'|trans }}">
+            {{ ux_icon('tabler:chevron-right', {width: 16, height: 16}) }}
+        </a>
+    </li>
+</ul>

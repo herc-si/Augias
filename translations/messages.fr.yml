@@ -1152,6 +1152,9 @@ datagrid:
         empty: 'Commencez par créer votre premier élément.'
         filtered: "Essayez d'ajuster votre recherche ou vos filtres pour trouver ce que vous cherchez."
         label: 'Aucun résultat trouvé'
+    pagination:
+        next: "Page suivante"
+        previous: "Page précédente"
     per_page: Afficher
     search:
         label: Rechercher

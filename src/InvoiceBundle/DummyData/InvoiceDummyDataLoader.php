@@ -87,7 +87,12 @@ final readonly class InvoiceDummyDataLoader implements DummyDataLoaderInterface
                 $status = $statuses[array_rand($statuses)];
                 $invoice->setStatus($status);
 
-                $daysAgo = random_int(1, 365);
+                // A fifth of them inside the last few weeks. Spread evenly over a
+                // year, a demo set has almost nothing in the current month, so
+                // every "this month" figure on the dashboard reads zero and the
+                // running accounting period looks empty — which is exactly what
+                // someone opening a demo wants to see working.
+                $daysAgo = $this->faker->boolean(20) ? random_int(1, 25) : random_int(1, 365);
                 $invoiceDate = new DateTimeImmutable('-' . $daysAgo . ' days');
                 $invoice->setInvoiceDate($invoiceDate);
 
@@ -162,9 +167,15 @@ final readonly class InvoiceDummyDataLoader implements DummyDataLoaderInterface
                 $invoice->setInvoiceId($this->billingIdGenerator->generate($invoice, ['field' => 'invoiceId']));
 
                 $em->persist($invoice);
-            }
 
-            $em->flush();
+                // Flushed one at a time on purpose: the generator reads the
+                // numbers already in the database, so five invoices persisted
+                // together all take the same one. That is how this set ended up
+                // with five FACT-1-2026 — a number is supposed to identify a
+                // document, and a demo that repeats it teaches the wrong thing
+                // about the numbering it is meant to show off.
+                $em->flush();
+            }
         }
     }
 }

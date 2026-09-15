@@ -509,10 +509,7 @@
                 </div>
 
                 <div class="datagrid-pagination">
-                    {{ pagerfanta(paginator, 'twitter_bootstrap5', {
-                        'prev_message': ux_icon('tabler:chevron-left', {width: 16, height: 16}),
-                        'next_message': ux_icon('tabler:chevron-right', {width: 16, height: 16})
-                    }) }}
+                    {{ include('@AugiasDataGrid/Components/_pagination.html.twig') }}
                 </div>
             </div>
         {% endif %}
