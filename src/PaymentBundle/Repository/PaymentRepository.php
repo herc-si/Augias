@@ -16,6 +16,7 @@ namespace Augias\PaymentBundle\Repository;
 use Augias\ClientBundle\Entity\Client;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\PaymentBundle\Entity\Payment;
+use Augias\PaymentBundle\Entity\PaymentMethod;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Brick\Math\BigInteger;
 use Brick\Math\BigNumber;
@@ -48,6 +49,33 @@ class PaymentRepository extends EntityRepository
     }
 
     /**
+     * Narrows a query to payments that actually brought money in.
+     *
+     * An invoice settled out of the client's credit balance produces a captured
+     * payment like any other, and has to: that is how a credit note gets used
+     * up, and the invoice has to be able to close. But no money arrived, so it
+     * is not income — every total that answers "what came in" excludes it, and
+     * the books do the same in
+     * {@see \Augias\AccountingBundle\Service\LedgerFeeder::recordInvoicePayment()}.
+     *
+     * Deliberately not applied to {@see self::getTotalPaidForInvoice()} or to
+     * the payment lists: what an invoice has been paid, and what the client can
+     * see they paid, both include credit. The distinction is income, not
+     * settlement.
+     *
+     * The join is a LEFT one and the null arm is not defensive padding: the
+     * method is nullable and payments written before a method existed have
+     * none, so an inner join would quietly drop them from every total.
+     */
+    private function onlyIncome(QueryBuilder $qb, string $alias = 'p'): void
+    {
+        $qb
+            ->leftJoin($alias . '.method', 'incomeMethod')
+            ->andWhere('incomeMethod.gatewayName IS NULL OR incomeMethod.gatewayName <> :clientCreditGateway')
+            ->setParameter('clientCreditGateway', PaymentMethod::GATEWAY_CREDIT);
+    }
+
+    /**
      * Gets the total income that was received.
      *
      * @return BigInteger[]
@@ -61,6 +89,8 @@ class PaymentRepository extends EntityRepository
             ->where('p.status = :status')
             ->groupBy('p.currencyCode')
             ->setParameter('status', PaymentStatus::Captured->value);
+
+        $this->onlyIncome($qb);
 
         $query = $qb->getQuery();
 
@@ -320,6 +350,8 @@ class PaymentRepository extends EntityRepository
             ->setParameter('client', $client->getId(), UlidType::NAME)
             ->setParameter('status', PaymentStatus::Captured->value);
 
+        $this->onlyIncome($qb);
+
         $query = $qb->getQuery();
 
         $result = $query->getResult();
@@ -347,6 +379,8 @@ class PaymentRepository extends EntityRepository
             ->setParameter('date', new DateTime(sprintf('-%d months', $months)))
             ->setParameter('status', PaymentStatus::Captured->value)
             ->orderBy('p.created', 'ASC');
+
+        $this->onlyIncome($qb);
 
         /** @var array<string, array<non-empty-string, BigInteger>> $results */
         $results = [];
@@ -400,6 +434,8 @@ class PaymentRepository extends EntityRepository
             ->setParameter('status', PaymentStatus::Captured->value)
             ->setParameter('start', $startOfMonth)
             ->setParameter('end', $endOfMonth);
+
+        $this->onlyIncome($qb);
 
         $results = [];
         foreach ($qb->getQuery()->getArrayResult() as $result) {
