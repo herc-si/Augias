@@ -152,6 +152,12 @@ jobs:
       - name: Run SaaS kernel tests
         run: bin/phpunit --group=saas-kernel
 
+      # Excluded by default as well, and for the least satisfying reason of the three: this
+      # one leaks something into the tests that follow it that has not been identified yet.
+      # See the comment in phpunit.xml.dist. Runs on its own until it is understood.
+      - name: Run migration tests
+        run: bin/phpunit --group=migrations
+
       - name: Upload coverage results to Codecov
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
         if: matrix.coverage

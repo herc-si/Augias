@@ -222,4 +222,15 @@ jobs:
         # Installation currently only runs with SQLite,
         # so let's skip it to prevent unneeded errors
         # @TODO: Fix installation to work with other DBs
-        run: bin/paratest --exclude-group=installation
+        #
+        # migrations too, and note that naming any --exclude-group here overrides the list in
+        # phpunit.xml.dist rather than adding to it: leaving it out would run the group that
+        # file excludes. That test carries its own SQLite file whatever this matrix connects
+        # to, so it has nothing to prove here, and it poisons the tests that follow it.
+        #
+        # One flag per group. A comma-separated list is read as a single group name, so
+        # `--exclude-group=installation,migrations` excludes neither, and the counts are the
+        # only thing that says so: 3037 tests with one group excluded, 3053 with "both", 3035
+        # with the two flags below. On SQLite the installation tests then pass anyway, so this
+        # only shows up here, on the fourteen jobs that cannot run them.
+        run: bin/paratest --exclude-group=installation --exclude-group=migrations
