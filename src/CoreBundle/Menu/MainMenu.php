@@ -94,7 +94,9 @@ class MainMenu
             'menu.top.logout',
             [
                 'route' => '_logout',
-                'extras' => ['icon' => 'power-off'],
+                // `power-off` is not a Tabler icon and never was, so this
+                // entry has been rendering without one.
+                'extras' => ['icon' => 'power'],
             ],
         );
     }
