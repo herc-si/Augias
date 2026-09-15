@@ -64,6 +64,37 @@ final class ClientCreditTest extends LiveComponentTest
         );
     }
 
+    /**
+     * The field invites a reading it does not honour: money handed over in cash
+     * or as an advance looks like something to enter here, and entered here it
+     * reaches no revenue figure and no book at all — a credit is not a receipt.
+     * The warning is the only thing standing between that reading and money
+     * counted nowhere, so it has to be on screen and it has to be readable.
+     */
+    public function testTheModalWarnsThatCreditIsNotAPayment(): void
+    {
+        $client = ClientFactory::createOne([
+            'currencyCode' => 'USD',
+            'company' => $this->company,
+        ]);
+
+        $html = $this
+            ->createLiveComponent(
+                name: ClientCredit::class,
+                data: ['client' => $client],
+                client: $this->client,
+            )
+            ->actingAs($this->getUser())
+            ->render()
+            ->toString();
+
+        self::assertStringContainsString('This is not a payment', $html);
+        self::assertStringContainsString('record a payment on their invoice instead', $html);
+
+        // A key on screen is worse than the sentence it was meant to replace.
+        self::assertStringNotContainsString('client.modal.credit.not_a_receipt', $html);
+    }
+
     public function testSaveAddsCredit(): void
     {
         $client = ClientFactory::createOne([

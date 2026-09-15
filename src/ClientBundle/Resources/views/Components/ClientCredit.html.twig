@@ -9,6 +9,19 @@
 
     {{ form_start(form, {attr: {'data-action': 'live#action:prevent', 'data-live-action-param': 'save'}}) }}
     <twig:Ui:Modal id="add-client-credit" title="{{ 'client.modal.add_credit'|trans }}">
+        {#
+         # Credit granted here has no document behind it and writes nothing to
+         # the books — which is right, because nothing was received. The warning
+         # exists because the field invites the opposite reading: money handed
+         # over in cash or as an advance looks like something to record here,
+         # and recorded here it would never reach the revenue figures at all.
+         # The one legitimate use is the credit a credit note creates, and that
+         # one never comes through this form.
+         #}
+        <twig:Ui:Alert type="warning" icon="tabler:alert-triangle" title="{{ 'client.modal.credit.not_a_receipt.title'|trans }}">
+            <p class="mb-0">{{ 'client.modal.credit.not_a_receipt.body'|trans }}</p>
+        </twig:Ui:Alert>
+
         {{ form_row(form) }}
 
         <twig:block name="footer">
