@@ -20,6 +20,7 @@ use Augias\DataGridBundle\GridInterface;
 use Doctrine\ORM\QueryBuilder;
 use function array_filter;
 use function array_map;
+use function array_pad;
 use function explode;
 
 /**
@@ -45,7 +46,9 @@ final class GridQueryService
         // already treats as a no-op. The early return keeps intent obvious and
         // avoids constructing a throw-away filter when sort is unset.
         if ($sort !== '') {
-            new SortFilter(...explode(',', $sort, 2))->filter($builder, null);
+            [$sortField, $direction] = array_pad(explode(',', $sort, 2), 2, 'ASC');
+
+            new SortFilter($sortField, $direction, $this->sortsNaturally($grid, $sortField))->filter($builder, null);
         }
 
         $searchFields = array_filter($grid->columns(), static fn (Column $column): bool => $column->isSearchable());
@@ -61,5 +64,20 @@ final class GridQueryService
 
             $filter->filter($builder, $filterValue);
         }
+    }
+
+    /**
+     * A column says whether its values are numbered; the sort state only
+     * carries the field it was raised on.
+     */
+    private function sortsNaturally(GridInterface $grid, string $sortField): bool
+    {
+        foreach ($grid->columns() as $column) {
+            if ($column->getSortableField() === $sortField) {
+                return $column->hasNaturalSort();
+            }
+        }
+
+        return false;
     }
 }

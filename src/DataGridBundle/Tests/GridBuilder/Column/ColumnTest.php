@@ -240,4 +240,16 @@ final class ColumnTest extends TestCase
 
         self::assertFalse($this->column->isHiddenByDefault());
     }
+
+    public function testDoesNotSortNaturallyByDefault(): void
+    {
+        self::assertFalse($this->column->hasNaturalSort());
+    }
+
+    public function testNaturalSortCanBeEnabled(): void
+    {
+        $this->column->naturalSort();
+
+        self::assertTrue($this->column->hasNaturalSort());
+    }
 }

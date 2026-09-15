@@ -64,4 +64,32 @@ final class SortFilterTest extends TestCase
 
         $sortFilter->filter($this->queryBuilder, null);
     }
+
+    public function testANaturalSortOrdersByLengthBeforeValue(): void
+    {
+        $sortFilter = new SortFilter('invoiceId', 'ASC', true);
+
+        $this->queryBuilder
+            ->expects($this->once())
+            ->method('orderBy')
+            ->with('LENGTH(d.invoiceId)', 'ASC')
+            ->willReturnSelf();
+
+        $this->queryBuilder
+            ->expects($this->once())
+            ->method('addOrderBy')
+            ->with('d.invoiceId', 'ASC')
+            ->willReturnSelf();
+
+        $sortFilter->filter($this->queryBuilder, null);
+    }
+
+    public function testAPlainSortDoesNotAddASecondOrdering(): void
+    {
+        $this->queryBuilder
+            ->expects($this->never())
+            ->method('addOrderBy');
+
+        $this->filter->filter($this->queryBuilder, null);
+    }
 }

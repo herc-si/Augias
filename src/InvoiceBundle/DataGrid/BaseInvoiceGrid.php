@@ -24,6 +24,7 @@ use Augias\DataGridBundle\GridBuilder\Column\RelativeDateColumn;
 use Augias\DataGridBundle\GridBuilder\Column\StringColumn;
 use Augias\DataGridBundle\GridBuilder\Filter\ChoiceFilter;
 use Augias\DataGridBundle\GridBuilder\Filter\DateRangeFilter;
+use Augias\DataGridBundle\GridBuilder\Order\NumberedOrder;
 use Augias\DataGridBundle\GridBuilder\Query;
 use Augias\DataGridBundle\Source\ORMSource;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -61,7 +62,8 @@ abstract class BaseInvoiceGrid extends Grid
             // with all 11 columns visible at once the row actions were only
             // reachable after scrolling the table horizontally.
             StringColumn::new('invoiceId')
-                ->label('invoice.grid.invoice_number'),
+                ->label('invoice.grid.invoice_number')
+                ->naturalSort(),
             StringColumn::new('client')
                 ->label('invoice.grid.client')
                 ->searchable(false)
@@ -148,7 +150,14 @@ abstract class BaseInvoiceGrid extends Grid
     #[Override]
     public function query(EntityManagerInterface $entityManager, Query $query): Query
     {
-        $query->getQueryBuilder()->orderBy(ORMSource::ALIAS . '.invoiceDate', 'DESC');
+        $queryBuilder = $query->getQueryBuilder();
+
+        // Most recent first, and within a day the highest number first: a list
+        // of invoices issued on the same date was otherwise in whatever order
+        // the database felt like returning them.
+        $queryBuilder->orderBy(ORMSource::ALIAS . '.invoiceDate', 'DESC');
+
+        NumberedOrder::apply($queryBuilder, ORMSource::ALIAS . '.invoiceId', 'DESC');
 
         return $query;
     }

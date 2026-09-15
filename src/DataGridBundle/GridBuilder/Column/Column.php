@@ -52,6 +52,8 @@ abstract class Column
 
     private bool $hiddenByDefault = false;
 
+    private bool $naturalSort = false;
+
     final public function __construct(
         protected string $field
     ) {
@@ -92,6 +94,17 @@ abstract class Column
     public function formatValue(Closure $format): static
     {
         $this->format = $format;
+        return $this;
+    }
+
+    /**
+     * Orders the column by the number inside its values rather than character
+     * by character, so that "FACT-2" comes before "FACT-10".
+     */
+    public function naturalSort(bool $natural = true): static
+    {
+        $this->naturalSort = $natural;
+
         return $this;
     }
 
@@ -183,6 +196,11 @@ abstract class Column
     public function getFormatValue(): Closure
     {
         return $this->format ?? static fn (mixed $value): mixed => $value;
+    }
+
+    public function hasNaturalSort(): bool
+    {
+        return $this->naturalSort;
     }
 
     public function getSortableField(): string
