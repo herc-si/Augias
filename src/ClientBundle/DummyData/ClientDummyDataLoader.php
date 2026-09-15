@@ -19,6 +19,7 @@ use Augias\ClientBundle\Entity\Contact;
 use Augias\ClientBundle\Enum\ClientStatus;
 use Augias\CoreBundle\DummyData\DummyDataLoaderInterface;
 use Augias\CoreBundle\Entity\Company;
+use Augias\SettingsBundle\SystemConfig;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Faker\Factory;
@@ -34,7 +35,8 @@ final readonly class ClientDummyDataLoader implements DummyDataLoaderInterface
     private Generator $faker;
 
     public function __construct(
-        private ManagerRegistry $registry
+        private ManagerRegistry $registry,
+        private SystemConfig $config,
     ) {
         $this->faker = Factory::create();
     }
@@ -49,15 +51,20 @@ final readonly class ClientDummyDataLoader implements DummyDataLoaderInterface
         $em = $this->registry->getManager();
         assert($em instanceof EntityManagerInterface);
 
-        // $currencies = ['USD', 'EUR', 'GBP', 'AUD', 'CAD'];
-        $currencies = ['USD'];
+        // The currency the company itself bills in. A demo client invoiced in
+        // a currency its company does not use demonstrates nothing, and the
+        // fixed 'USD' this replaced outlived the product it was written for.
+        $currency = $this->config->get(SystemConfig::CURRENCY_CONFIG_PATH, $company) ?: 'EUR';
 
         for ($i = 0; $i < 10; ++$i) {
             $client = new Client();
-            $client->setName(substr($this->faker->company(), 0, 125))
+            // clients is unique on (name, company_id), and Faker repeats itself
+            // often enough over ten draws to have broken a CI run on two of the
+            // fourteen database jobs while the rest went green.
+            $client->setName(substr($this->faker->unique()->company(), 0, 125))
                 ->setWebsite(substr($this->faker->url(), 0, 125))
                 ->setStatus(ClientStatus::Active)
-                ->setCurrencyCode($currencies[array_rand($currencies)])
+                ->setCurrencyCode($currency)
                 ->setCompany($company);
 
             $contactCount = random_int(1, 3);
