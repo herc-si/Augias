@@ -41,6 +41,7 @@ use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\PaymentBundle\Entity\Payment;
+use Augias\PaymentBundle\Entity\PaymentMethod;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\LineTax;
@@ -109,6 +110,45 @@ final class LedgerBookkeepingTest extends KernelTestCase
         self::assertSame('Johnston PLC', $entry->getCounterpartyName());
         self::assertFalse($entry->isLateEntry());
         self::assertNull($entry->getSequenceNumber(), 'An entry in an open period is not numbered yet.');
+    }
+
+    /**
+     * An invoice settled out of the client's own credit balance pays the
+     * invoice off but earns nothing, and the books have to say so.
+     *
+     * Under cash-basis books the receipt is the taxable event, so a captured
+     * payment is declared turnover. A €1,000 invoice settled as €800 received
+     * plus €200 of credit the client was already owed would otherwise be
+     * declared as €1,000 — the €200 counted twice, once when the invoice it
+     * came from was paid and once again here.
+     */
+    public function testAnInvoicePaidOutOfClientCreditIsNotBooked(): void
+    {
+        $this->capturedPayment(
+            20_000,
+            new DateTimeImmutable('2026-02-10'),
+            method: $this->paymentMethod(PaymentMethod::GATEWAY_CREDIT),
+        );
+
+        self::assertSame([], $this->entries(), 'Credit settles an invoice; it does not earn anything.');
+    }
+
+    /**
+     * The guard is on the one gateway the application gives meaning to, not on
+     * having a method at all: every other gateway is money arriving.
+     */
+    public function testAPaymentThroughAnyOtherMethodIsStillBooked(): void
+    {
+        $this->capturedPayment(
+            20_000,
+            new DateTimeImmutable('2026-02-10'),
+            method: $this->paymentMethod('bank_transfer'),
+        );
+
+        $entries = $this->entries();
+
+        self::assertCount(1, $entries);
+        self::assertSame('20000', (string) $entries[0]->getAmount());
     }
 
     /**
@@ -474,6 +514,7 @@ final class LedgerBookkeepingTest extends KernelTestCase
         DateTimeImmutable $completed,
         PaymentStatus $status = PaymentStatus::Captured,
         ?string $invoiceTax = null,
+        ?PaymentMethod $method = null,
     ): Payment {
         $invoice = $this->invoice($invoiceTax);
 
@@ -484,6 +525,10 @@ final class LedgerBookkeepingTest extends KernelTestCase
         $payment->setClient($invoice->getClient());
         $payment->setStatus($status);
         $payment->setCompleted($completed);
+
+        if ($method instanceof PaymentMethod) {
+            $payment->setMethod($method);
+        }
         // Re-read: the identity map is cleared between assertions, which
         // leaves the company held by the test case detached.
         $payment->setCompany($this->entityManager->find(Company::class, $this->company->getId()));
@@ -525,6 +570,22 @@ final class LedgerBookkeepingTest extends KernelTestCase
         $this->entityManager->flush();
 
         return $invoice;
+    }
+
+    private function paymentMethod(string $gatewayName): PaymentMethod
+    {
+        $method = new PaymentMethod();
+        $method->setName($gatewayName);
+        $method->setGatewayName($gatewayName);
+        $method->setFactoryName(PaymentMethod::FACTORY_OFFLINE);
+        $method->setInternal(true);
+        $method->setEnabled(true);
+        $method->setCompany($this->entityManager->find(Company::class, $this->company->getId()));
+
+        $this->entityManager->persist($method);
+        $this->entityManager->flush();
+
+        return $method;
     }
 
     /**

@@ -981,6 +981,8 @@ dashboard:
         retry: 'Try again'
         title: "This didn't load"
     hero:
+        credit_notes: 'Credit Issued'
+        credit_notes_refunded: 'Refunded:'
         currency_breakdown: '{1} in 1 currency|]1,Inf] shown separately, one line per currency'
         outstanding: Outstanding
         overdue: Overdue
@@ -1066,6 +1068,7 @@ dashboard:
         overdue_invoices: 'Overdue Invoices'
         payments_this_month: 'Received This Month'
         credit_notes: 'Credit notes owed'
+        credit_notes_total: 'Credit Issued'
         purchases: 'Purchases'
         quick_actions: 'Quick Actions'
         recent_activity: 'Recent Activity'

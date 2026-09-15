@@ -41,6 +41,18 @@ class PaymentMethod implements GatewayConfigInterface, Stringable
 
     final public const string FACTORY_OFFLINE = 'offline';
 
+    /**
+     * The one gateway name the application itself gives meaning to.
+     *
+     * Every other gateway is named by whoever configured it and means nothing
+     * here. This one is created for every company by
+     * {@see \Augias\CoreBundle\Company\DefaultData} and settles an invoice out
+     * of the client's own credit balance — no money moves, which is why four
+     * places have to be able to recognise it. It was a bare 'credit' string in
+     * each of them.
+     */
+    final public const string GATEWAY_CREDIT = 'credit';
+
     use TimeStampable;
     use CompanyAware;
 
@@ -230,6 +242,18 @@ class PaymentMethod implements GatewayConfigInterface, Stringable
     public function isOffline(): bool
     {
         return self::FACTORY_OFFLINE === $this->factoryName;
+    }
+
+    /**
+     * Settled out of the client's credit balance rather than by money arriving.
+     *
+     * A payment made this way still pays the invoice off — the balance drops
+     * and the invoice can reach "paid" — but it is not income, and anything
+     * that reports what the company earned has to leave it out.
+     */
+    public function isClientCredit(): bool
+    {
+        return self::GATEWAY_CREDIT === $this->gatewayName;
     }
 
     public function __toString(): string

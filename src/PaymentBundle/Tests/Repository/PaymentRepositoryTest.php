@@ -19,6 +19,7 @@ use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Augias\PaymentBundle\Entity\Payment;
+use Augias\PaymentBundle\Entity\PaymentMethod;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\PaymentBundle\Repository\PaymentRepository;
 use Augias\PaymentBundle\Test\Factory\PaymentFactory;
@@ -346,6 +347,111 @@ final class PaymentRepositoryTest extends KernelTestCase
                 ->em
                 ->getRepository(Payment::class)
                 ->getTotalIncome()
+        );
+    }
+
+    /**
+     * Settling an invoice out of the client's credit balance is not income:
+     * the money it stands for came in when the invoice that produced the credit
+     * note was paid, and counting it again would state it twice.
+     *
+     * @throws MathException
+     */
+    public function testGetTotalIncomeExcludesPaymentsSettledFromClientCredit(): void
+    {
+        $client = ClientFactory::createOne(['currencyCode' => 'EUR']);
+
+        PaymentFactory::createOne([
+            'invoice' => InvoiceFactory::new(['client' => $client]),
+            'client' => $client,
+            'currencyCode' => 'EUR',
+            'totalAmount' => 80_000,
+            'status' => PaymentStatus::Captured,
+            'created' => Carbon::now(),
+            'method' => PaymentMethodFactory::new(['gatewayName' => 'bank_transfer']),
+        ]);
+
+        PaymentFactory::createOne([
+            'invoice' => InvoiceFactory::new(['client' => $client]),
+            'client' => $client,
+            'currencyCode' => 'EUR',
+            'totalAmount' => 20_000,
+            'status' => PaymentStatus::Captured,
+            'created' => Carbon::now(),
+            'method' => PaymentMethodFactory::new(['gatewayName' => PaymentMethod::GATEWAY_CREDIT]),
+        ]);
+
+        self::assertEquals(
+            ['EUR' => BigInteger::of(80_000)],
+            $this->em->getRepository(Payment::class)->getTotalIncome()
+        );
+
+        self::assertEquals(
+            ['EUR' => BigInteger::of(80_000)],
+            $this->em->getRepository(Payment::class)->getPaymentsThisMonth(),
+            'The monthly tile reads the same money as the lifetime one.'
+        );
+
+        self::assertEquals(
+            BigInteger::of(80_000),
+            $this->em->getRepository(Payment::class)->getTotalIncomeForClient($client)
+        );
+    }
+
+    /**
+     * The other half of the same rule, and the one that would break silently:
+     * a credit payment has to keep counting towards the invoice it settles, or
+     * the invoice it closed would reopen and the credit note could never be
+     * used up.
+     *
+     * @throws MathException
+     */
+    public function testGetTotalPaidForInvoiceCountsPaymentsSettledFromClientCredit(): void
+    {
+        $client = ClientFactory::createOne(['currencyCode' => 'EUR']);
+        $invoice = InvoiceFactory::createOne(['client' => $client]);
+
+        PaymentFactory::createOne([
+            'invoice' => $invoice,
+            'client' => $client,
+            'currencyCode' => 'EUR',
+            'totalAmount' => 20_000,
+            'status' => PaymentStatus::Captured,
+            'method' => PaymentMethodFactory::new(['gatewayName' => PaymentMethod::GATEWAY_CREDIT]),
+        ]);
+
+        self::assertTrue(
+            $this
+                ->em
+                ->getRepository(Payment::class)
+                ->getTotalPaidForInvoice($invoice)
+                ->isEqualTo(20_000)
+        );
+    }
+
+    /**
+     * A payment with no method at all — every payment written before methods
+     * existed, and every one the demo data creates — is ordinary income. The
+     * exclusion joins on a nullable association, so this is the case an inner
+     * join would have quietly dropped.
+     *
+     * @throws MathException
+     */
+    public function testGetTotalIncomeCountsPaymentsWithNoMethod(): void
+    {
+        $client = ClientFactory::createOne(['currencyCode' => 'EUR']);
+
+        PaymentFactory::createOne([
+            'invoice' => InvoiceFactory::new(['client' => $client]),
+            'client' => $client,
+            'currencyCode' => 'EUR',
+            'totalAmount' => 50_000,
+            'status' => PaymentStatus::Captured,
+        ]);
+
+        self::assertEquals(
+            ['EUR' => BigInteger::of(50_000)],
+            $this->em->getRepository(Payment::class)->getTotalIncome()
         );
     }
 

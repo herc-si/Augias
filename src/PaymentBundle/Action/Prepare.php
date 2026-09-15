@@ -131,7 +131,7 @@ final class Prepare
             };
         }
 
-        $preferredChoices = $this->paymentMethodRepository->findBy(['gatewayName' => 'credit']);
+        $preferredChoices = $this->paymentMethodRepository->findBy(['gatewayName' => PaymentMethod::GATEWAY_CREDIT]);
 
         $offlinePaymentGateways = array_map(
             static fn (PaymentMethod $paymentMethod) => $paymentMethod->getGatewayName(),
@@ -166,7 +166,7 @@ final class Prepare
             $paymentName = $paymentMethod->getGatewayName();
 
             // @TODO: credit should be a gateway on it's own
-            if ('credit' === $paymentName) {
+            if (PaymentMethod::GATEWAY_CREDIT === $paymentName) {
                 $clientCredit = $invoice->getClient()->getCredit()->getValue();
 
                 $invalid = '';

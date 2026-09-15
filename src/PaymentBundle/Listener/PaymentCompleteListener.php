@@ -56,7 +56,7 @@ class PaymentCompleteListener implements EventSubscriberInterface
         $payment = $event->getPayment();
         $status = $payment->getStatus()?->value ?? '';
 
-        if ('credit' === $payment->getMethod()?->getGatewayName()) {
+        if (true === $payment->getMethod()?->isClientCredit()) {
             $creditRepository = $this->registry->getRepository(Credit::class);
             $creditRepository->deductCredit(
                 $payment->getClient(),

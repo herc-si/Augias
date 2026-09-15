@@ -981,6 +981,8 @@ dashboard:
         retry: 'Réessayer'
         title: "Le chargement a échoué"
     hero:
+        credit_notes: 'Avoirs émis'
+        credit_notes_refunded: 'Remboursés :'
         currency_breakdown: '{1} dans 1 devise|]1,Inf] affichées séparément, une ligne par devise'
         outstanding: Impayé
         overdue: 'En retard'
@@ -1066,6 +1068,7 @@ dashboard:
         overdue_invoices: 'Factures en retard'
         payments_this_month: 'Encaissé ce mois-ci'
         credit_notes: 'Avoirs à régler'
+        credit_notes_total: 'Avoirs émis'
         purchases: 'Achats'
         quick_actions: 'Actions rapides'
         recent_activity: 'Activité récente'

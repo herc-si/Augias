@@ -15,6 +15,7 @@ namespace Augias\InvoiceBundle\Repository;
 
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
+use Augias\InvoiceBundle\Enum\AllocationKind;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Brick\Math\BigInteger;
 use Brick\Math\Exception\MathException;
@@ -121,5 +122,68 @@ final class CreditNoteRepository extends EntityRepository
             ->setParameter('status', $status)
             ->getQuery()
             ->getSingleScalarResult();
+    }
+
+    /**
+     * What the company has credited its clients, and how much of that it paid
+     * back, kept apart by currency for the reason
+     * {@see self::getOutstandingByCurrency()} keeps them apart.
+     *
+     * "Credited" is every credit note that was handed over — {@see
+     * CreditNoteStatus::Issued} and {@see CreditNoteStatus::Settled} both. A
+     * total that counted only the first would shrink every time a client
+     * actually used their credit, which is the opposite of what it measures.
+     *
+     * Two queries rather than one, again: joining the allocations to the credit
+     * notes multiplies each credit note's row by the number of times it was
+     * drawn on, and the issued total comes out inflated.
+     *
+     * @return array<string, array{issued: BigInteger, refunded: BigInteger}>
+     */
+    public function getIssuedTotalsByCurrency(): array
+    {
+        $issued = $this->createQueryBuilder('cn')
+            ->select('c.currencyCode AS currencyCode', 'SUM(cn.total) AS total')
+            ->innerJoin('cn.client', 'c')
+            ->andWhere('cn.status IN (:handedOver)')
+            ->setParameter('handedOver', [CreditNoteStatus::Issued, CreditNoteStatus::Settled])
+            ->groupBy('c.currencyCode')
+            ->getQuery()
+            ->getArrayResult();
+
+        $refunded = $this->getEntityManager()
+            ->createQueryBuilder()
+            ->select('c.currencyCode AS currencyCode', 'SUM(a.amount) AS total')
+            ->from(CreditNoteAllocation::class, 'a')
+            ->innerJoin('a.creditNote', 'cn')
+            ->innerJoin('cn.client', 'c')
+            ->andWhere('a.kind = :refund')
+            ->setParameter('refund', AllocationKind::Refund)
+            ->groupBy('c.currencyCode')
+            ->getQuery()
+            ->getArrayResult();
+
+        $refundedByCurrency = [];
+
+        foreach ($refunded as $row) {
+            $refundedByCurrency[(string) $row['currencyCode']] = BigInteger::of($row['total'] ?? 0);
+        }
+
+        $totals = [];
+
+        foreach ($issued as $row) {
+            $currency = (string) $row['currencyCode'];
+
+            if ('' === $currency || null === $row['total']) {
+                continue;
+            }
+
+            $totals[$currency] = [
+                'issued' => BigInteger::of($row['total']),
+                'refunded' => $refundedByCurrency[$currency] ?? BigInteger::zero(),
+            ];
+        }
+
+        return $totals;
     }
 }
