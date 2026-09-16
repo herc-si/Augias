@@ -25,6 +25,7 @@ use Augias\AccountingBundle\Regime\RegimeRegistry;
 use Augias\AccountingBundle\Repository\DeclarationRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use function in_array;
 
 /**
  * Turns a period's turnover into the declaration the user has to file.
@@ -99,7 +100,19 @@ final readonly class DeclarationBuilder
     {
         $kinds = [];
 
-        if ($period->getType() === $profile->declarationPeriodicity) {
+        // Which returns the regime itself produces. Not every regime produces
+        // one: under the réel normal, contributions are assessed on profit, so
+        // there is no turnover return to owe and offering an empty one would be
+        // worse than offering none. A regime this deployment no longer has is
+        // treated as owing the turnover return — what every regime did before
+        // the question could be asked.
+        $regime = $this->registry->forProfile($profile);
+        $produced = $regime instanceof RegimeInterface
+            ? $regime->declarationKinds()
+            : [DeclarationKind::SocialContributions];
+
+        if (in_array(DeclarationKind::SocialContributions, $produced, true)
+            && $period->getType() === $profile->declarationPeriodicity) {
             $kinds[] = DeclarationKind::SocialContributions;
         }
 

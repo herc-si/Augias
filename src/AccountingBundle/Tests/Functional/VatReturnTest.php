@@ -22,6 +22,7 @@ use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Enum\PeriodType;
 use Augias\AccountingBundle\Model\DeclarationLine;
 use Augias\AccountingBundle\Regime\Fr\MicroEntrepriseRegime;
+use Augias\AccountingBundle\Regime\Fr\ReelNormalRegime;
 use Augias\AccountingBundle\Service\AccountingPeriodManager;
 use Augias\AccountingBundle\Service\AccountingProfileProvider;
 use Augias\AccountingBundle\Service\DeclarationBuilder;
@@ -85,6 +86,25 @@ final class VatReturnTest extends KernelTestCase
         $kinds = self::getContainer()->get(DeclarationBuilder::class)->kindsOwed($profile, $this->period);
 
         self::assertSame([DeclarationKind::SocialContributions, DeclarationKind::Vat], $kinds);
+    }
+
+    /**
+     * Under the réel normal the same quarter owes only the VAT return. The
+     * regime computes nothing on turnover — contributions there are assessed on
+     * profit, which these cash-basis books do not produce — so offering a
+     * turnover return would mean offering an empty one.
+     */
+    public function testAPeriodOnTheReelNormalOwesTheVatReturnAlone(): void
+    {
+        $config = self::getContainer()->get(SystemConfig::class);
+        $config->set(AccountingSettings::REGIME, ReelNormalRegime::CODE);
+        $config->set(AccountingSettings::DECLARATION_PERIODICITY, PeriodType::Quarter->value);
+
+        $profile = self::getContainer()->get(AccountingProfileProvider::class)->forCompany($this->companyReference());
+
+        $kinds = self::getContainer()->get(DeclarationBuilder::class)->kindsOwed($profile, $this->period);
+
+        self::assertSame([DeclarationKind::Vat], $kinds);
     }
 
     public function testCollectedVatIsReportedPerRateAndDeductedAsOneFigure(): void

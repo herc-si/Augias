@@ -77,21 +77,32 @@ final readonly class TurnoverAgainstLimitsWidget implements WidgetInterface
     }
 
     /**
-     * Nothing to say until a regime has been chosen.
+     * Nothing to say until a regime has been chosen — or when the regime chosen
+     * has no limits to be measured against.
      *
      * An unconfigured company has no business being told its turnover is within
      * a limit it never picked, and this runs before getData(), so a company that
      * keeps no books pays for none of the queries below. The picker does not
      * offer the card either — which is the honest answer, since putting it back
      * would not make it render.
+     *
+     * The same goes for a company on the réel normal: it is past every ceiling
+     * the micro regime watches, so a card headed "turnover against limits" would
+     * have no limits to show. Resolving the thresholds here costs the rate-table
+     * read that getData() would do anyway, and only for a configured company.
      */
     public function supports(): bool
     {
         $profile = $this->profileProvider->forCompany();
 
-        return $profile->isConfigured()
-            && $this->registry->forProfile($profile) instanceof RegimeInterface
-            && $this->company() instanceof Company;
+        if (! $profile->isConfigured() || ! $this->company() instanceof Company) {
+            return false;
+        }
+
+        $regime = $this->registry->forProfile($profile);
+
+        return $regime instanceof RegimeInterface
+            && count($regime->thresholds($profile, new DateTimeImmutable('today'))) > 0;
     }
 
     /**

@@ -25,12 +25,16 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
  * Empty — the default — means the two coincide, which is what most companies
  * want and what the module did before this existed.
  *
- * {@see PeriodType::Year} is offered here and nowhere else. The régime réel
- * simplifié wants one VAT return a year while URSSAF still wants turnover every
- * quarter, and that mismatch is the ordinary situation of a micro-entrepreneur
- * who has grown past the franchise threshold — not an edge case. It is safe
- * here because a VAT cycle only groups figures for a return; the books are
- * still sealed on the rhythm above it.
+ * {@see PeriodType::Year} used to be offered here, and nowhere else, for the
+ * régime réel simplifié: it wanted one VAT return a year on the CA12 while
+ * URSSAF still wanted turnover every quarter. That regime is abolished on
+ * 1 January 2027 by article 38 of the loi de finances pour 2025, and the CA12
+ * goes with it — leaving nothing that declares VAT annually. The option is
+ * gone rather than left to rot as a choice no one can lawfully make.
+ *
+ * A month or a quarter still differ from the books' rhythm, and that remains
+ * safe: a VAT cycle only groups figures for a return, the books are still
+ * sealed on the rhythm above it.
  *
  * @extends AbstractType<string>
  */
@@ -44,7 +48,6 @@ final class VatPeriodicityChoiceType extends AbstractType
             'choices' => [
                 PeriodType::Month->translationKey() => PeriodType::Month->value,
                 PeriodType::Quarter->translationKey() => PeriodType::Quarter->value,
-                PeriodType::Year->translationKey() => PeriodType::Year->value,
             ],
         ]);
     }
