@@ -25,8 +25,8 @@ use Doctrine\Migrations\Version\Comparator;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
-use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Uid\Ulid;
 use function count;
@@ -43,24 +43,22 @@ use function uniqid;
  * where DDL commits the surrounding transaction it would end the one that keeps
  * the rest of the suite isolated, taking every test that follows down with it.
  *
- * A database of its own turned out not to be enough. With this class in the
+ * A database of its own was not enough by itself. With this class in the
  * default run, about one run in five failed somewhere else entirely — ledger
  * lock dates not enforced, a deleted company's security token still present —
- * in whichever tests the random order happened to put afterwards. Bisecting the
- * merges found this class; running the suite without it was green eight times
- * out of eight. What exactly escapes is not identified: it is not the shared ORM
- * configuration (cloning it changed nothing), and it survives a second entity
- * manager and a connection of its own.
+ * in whichever tests the random order happened to put afterwards. What escaped
+ * is the ORM's caches: metadata, query and hydration all hang off the
+ * configuration, and under dama/doctrine-test-bundle they are static, outliving
+ * every kernel reboot for the life of the process. Cloning the configuration
+ * does not help, a clone being shallow. So setUp() gives the isolated entity
+ * manager caches of its own, and what this class reflects against a throwaway
+ * SQLite file stops being handed back to tests running against the real one.
  *
- * So it joins `installation` and `saas-kernel` in the groups excluded by
- * default and run in an invocation of their own — the same answer this project
- * already gives to a test that cannot share a process with the rest. Process
- * isolation per test is not an option here: tests/bootstrap.php clears
+ * Process isolation per test is not an option here: tests/bootstrap.php clears
  * var/cache/test and rebuilds the schema in every process, so a child spawned
  * mid-run destroys the database the parent is still using.
  */
 #[CoversClass(Migration::class)]
-#[Group('migrations')]
 final class MigrationTest extends KernelTestCase
 {
     /**
@@ -100,8 +98,15 @@ final class MigrationTest extends KernelTestCase
         $entityManager = self::getContainer()->get('doctrine')->getManager();
         self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
 
-        // The mapping of the application, pointed at a database of its own.
-        $isolated = new EntityManager($this->connection, $entityManager->getConfiguration());
+        // The mapping of the application, pointed at a database of its own and
+        // — see the class docblock — at caches of its own. The clone is
+        // shallow, so the three caches have to be replaced by hand.
+        $configuration = clone $entityManager->getConfiguration();
+        $configuration->setMetadataCache(new ArrayAdapter());
+        $configuration->setQueryCache(new ArrayAdapter());
+        $configuration->setHydrationCache(new ArrayAdapter());
+
+        $isolated = new EntityManager($this->connection, $configuration);
 
         $this->dependencyFactory = DependencyFactory::fromConnection(
             new ConfigurationArray([
