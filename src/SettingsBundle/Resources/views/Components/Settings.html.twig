@@ -14,6 +14,7 @@
     'system': {'title': 'settings.page.tab.system'|trans, 'icon': 'tabler:building'},
     'invoice': {'title': 'settings.page.tab.invoice'|trans, 'icon': 'tabler:file-invoice'},
     'quote': {'title': 'settings.page.tab.quote'|trans, 'icon': 'tabler:file-text'},
+    'credit_note': {'title': 'settings.page.tab.credit_note'|trans, 'icon': 'tabler:receipt-refund'},
     'email': {'title': 'settings.page.tab.email'|trans, 'icon': 'tabler:mail'},
     'design': {'title': 'settings.page.tab.design'|trans, 'icon': 'tabler:palette'},
     'accounting': {'title': 'settings.page.tab.accounting'|trans, 'icon': 'tabler:calculator'}
@@ -208,50 +209,52 @@
                     </div>
                 {% endif %}
 
-            {% elseif section == 'invoice' or section == 'quote' %}
-                {# Invoice/Quote Settings - Custom Layout #}
+            {% elseif section == 'invoice' or section == 'quote' or section == 'credit_note' %}
+                {# Invoice/Quote/Credit Note Settings - Custom Layout #}
 
-                {# Display Settings #}
-                <div class="mb-4 pb-4 border-bottom">
-                    <h3 class="d-flex align-items-center gap-2 mb-3">
-                        {{ ux_icon('tabler:eye', {width: 22, height: 22, class: 'text-primary', 'aria-hidden': 'true'}) }}
-                        {{ 'settings.page.display.title'|trans }}
-                    </h3>
-                    {% if form.watermark is defined %}
+                {% if form.watermark is defined %}
+                    {# Display Settings #}
+                    <div class="mb-4 pb-4 border-bottom">
+                        <h3 class="d-flex align-items-center gap-2 mb-3">
+                            {{ ux_icon('tabler:eye', {width: 22, height: 22, class: 'text-primary', 'aria-hidden': 'true'}) }}
+                            {{ 'settings.page.display.title'|trans }}
+                        </h3>
                         {{ form_row(form.watermark, {
                             label: 'settings.page.display.watermark'|trans,
                             help: 'settings.watermark.help'|trans({'%type%': ('label.' ~ section)|trans})
                         }) }}
-                    {% endif %}
-                </div>
-
-                {# Email Settings #}
-                <div class="mb-4 pb-4 border-bottom">
-                    <h3 class="d-flex align-items-center gap-2 mb-3">
-                        {{ ux_icon('tabler:mail', {width: 22, height: 22, class: 'text-primary', 'aria-hidden': 'true'}) }}
-                        {{ 'settings.page.email.notifications'|trans }}
-                    </h3>
-                    <div class="row g-3">
-                        {% if form.email_subject is defined %}
-                            <div class="col-12">
-                                {{ form_row(form.email_subject, {
-                                    label: 'settings.page.email.subject'|trans,
-                                    help: 'settings.email_subject.help'|trans({'%type%': ('label.' ~ section)|trans}),
-                                    attr: {placeholder: 'settings.email_subject.placeholder'|trans({'%type%': ('label.' ~ section)|trans|title})}
-                                }) }}
-                            </div>
-                        {% endif %}
-                        {% if form.bcc_address is defined %}
-                            <div class="col-12">
-                                {{ form_row(form.bcc_address, {
-                                    label: 'settings.page.email.bcc'|trans,
-                                    help: 'settings.bcc_address.help'|trans({'%type%': ('label.' ~ section)|trans}),
-                                    attr: {placeholder: 'bcc@yourcompany.com'}
-                                }) }}
-                            </div>
-                        {% endif %}
                     </div>
-                </div>
+                {% endif %}
+
+                {% if form.email_subject is defined or form.bcc_address is defined %}
+                    {# Email Settings #}
+                    <div class="mb-4 pb-4 border-bottom">
+                        <h3 class="d-flex align-items-center gap-2 mb-3">
+                            {{ ux_icon('tabler:mail', {width: 22, height: 22, class: 'text-primary', 'aria-hidden': 'true'}) }}
+                            {{ 'settings.page.email.notifications'|trans }}
+                        </h3>
+                        <div class="row g-3">
+                            {% if form.email_subject is defined %}
+                                <div class="col-12">
+                                    {{ form_row(form.email_subject, {
+                                        label: 'settings.page.email.subject'|trans,
+                                        help: 'settings.email_subject.help'|trans({'%type%': ('label.' ~ section)|trans}),
+                                        attr: {placeholder: 'settings.email_subject.placeholder'|trans({'%type%': ('label.' ~ section)|trans|title})}
+                                    }) }}
+                                </div>
+                            {% endif %}
+                            {% if form.bcc_address is defined %}
+                                <div class="col-12">
+                                    {{ form_row(form.bcc_address, {
+                                        label: 'settings.page.email.bcc'|trans,
+                                        help: 'settings.bcc_address.help'|trans({'%type%': ('label.' ~ section)|trans}),
+                                        attr: {placeholder: 'bcc@yourcompany.com'}
+                                    }) }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
 
                 {# ID Generation Settings #}
                 {% if form.id_generation is defined %}
@@ -277,7 +280,7 @@
                                     {{ form_row(form.id_generation.id_prefix, {
                                         label: 'settings.page.numbering.prefix'|trans,
                                         help: 'settings.page.numbering.prefix_help'|trans,
-                                        attr: {placeholder: section == 'invoice' ? 'INV-' : 'QUO-'}
+                                        attr: {placeholder: {'invoice': 'INV-', 'quote': 'QUO-', 'credit_note': 'AV-'}[section]|default('')}
                                     }) }}
                                 </div>
                             {% endif %}
