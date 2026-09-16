@@ -30,6 +30,7 @@ use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\RedirectionExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 use function is_object;
 
 /**
@@ -90,7 +91,7 @@ abstract class ApiTestCase extends ApiPlatformTestCase
             ...$headers
         ];
 
-        $response = self::$client->request(
+        $response = $this->requestExpectingSuccess(
             method: Request::METHOD_POST,
             url: $uri,
             options: [
@@ -127,7 +128,7 @@ abstract class ApiTestCase extends ApiPlatformTestCase
             ...$headers
         ];
 
-        $response = self::$client->request(
+        $response = $this->requestExpectingSuccess(
             method: Request::METHOD_PATCH,
             url: $uri,
             options: [
@@ -164,7 +165,7 @@ abstract class ApiTestCase extends ApiPlatformTestCase
             ...$headers
         ];
 
-        $response = self::$client->request(
+        $response = $this->requestExpectingSuccess(
             method: Request::METHOD_PUT,
             url: $uri,
             options: [
@@ -198,7 +199,7 @@ abstract class ApiTestCase extends ApiPlatformTestCase
             ...$headers
         ];
 
-        $response = self::$client->request(
+        $response = $this->requestExpectingSuccess(
             method: Request::METHOD_GET,
             url: $uri,
             options: [
@@ -231,7 +232,7 @@ abstract class ApiTestCase extends ApiPlatformTestCase
             ...$headers
         ];
 
-        $response = self::$client->request(
+        $response = $this->requestExpectingSuccess(
             method: Request::METHOD_GET,
             url: $uri,
             options: [
@@ -266,7 +267,7 @@ abstract class ApiTestCase extends ApiPlatformTestCase
             ...$headers
         ];
 
-        $response = self::$client->request(
+        $response = $this->requestExpectingSuccess(
             method: Request::METHOD_POST,
             url: $uri,
             options: [
@@ -297,7 +298,7 @@ abstract class ApiTestCase extends ApiPlatformTestCase
             ...$headers
         ];
 
-        $response = self::$client->request(
+        $response = $this->requestExpectingSuccess(
             method: Request::METHOD_DELETE,
             url: $uri,
             options: [
@@ -315,5 +316,35 @@ abstract class ApiTestCase extends ApiPlatformTestCase
         $contextBuilder = static::getContainer()->get('api_platform.jsonld.context_builder');
 
         return $contextBuilder->getResourceContextUri(is_object($resource) ? $resource::class : $resource);
+    }
+
+    /**
+     * Issues a request for the helpers above, with the kernel rethrowing instead
+     * of rendering an error page.
+     *
+     * Every one of them asserts a 2xx, so a 500 is never their expected outcome —
+     * it is a failure whose cause the assertion cannot show. "Expected 201, got
+     * 500" is all the evidence a flake has ever left here, which is why
+     * QuoteTransitionTest::testSendQuote went undiagnosed on MariaDB 11.0. With
+     * the exception rethrown, the next occurrence carries its stack trace into the
+     * test output.
+     *
+     * Deliberately not set once in setUp(): tests that assert a 4xx call the
+     * client directly, and for them an error page is the right shape. Hence the
+     * restore in the finally — the toggle lives on the browser and outlives the
+     * call.
+     *
+     * @param array<string, mixed> $options
+     */
+    private function requestExpectingSuccess(string $method, string $url, array $options): ResponseInterface
+    {
+        $browser = self::$client->getKernelBrowser();
+        $browser->catchExceptions(false);
+
+        try {
+            return self::$client->request(method: $method, url: $url, options: $options);
+        } finally {
+            $browser->catchExceptions(true);
+        }
     }
 }
