@@ -1919,6 +1919,7 @@ invoice_status_update: 'Mise à jour du statut de la facture'
 invoices: Factures
 label:
     client: Client
+    credit_note: Avoir
     invoice: Facture
     'no': Non
     optional: Facultatif
@@ -3201,6 +3202,7 @@ settings:
         save: 'Enregistrer les paramètres'
         tab:
             accounting: Comptabilité
+            credit_note: Avoirs
             design: Design
             email: E-mail
             invoice: Factures

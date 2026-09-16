@@ -14,12 +14,14 @@ declare(strict_types=1);
 namespace Augias\SettingsBundle\Tests\Twig\Components;
 
 use Augias\CoreBundle\Test\LiveComponentTest;
+use Augias\SettingsBundle\Repository\SettingsRepository;
 use Augias\SettingsBundle\Twig\Components\Settings;
 use PHPUnit\Framework\Attributes\CoversNothing;
-use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\UX\LiveComponent\Test\TestLiveComponent;
+use function array_keys;
 use function preg_match_all;
 use function sprintf;
+use function strstr;
 
 /**
  * A key with no entry in the catalogue renders as the key itself, and the
@@ -43,33 +45,47 @@ final class SettingsHasNoUntranslatedKeyTest extends LiveComponentTest
             ->actingAs($this->getUser());
     }
 
-    /**
-     * @return iterable<string, array{string}>
-     */
-    public static function sections(): iterable
+    public function testNoSectionShowsATranslationKeyToTheReader(): void
     {
-        foreach (['system', 'invoice', 'quote', 'email', 'design', 'accounting'] as $section) {
-            yield $section => [$section];
+        $shown = [];
+
+        foreach ($this->sections() as $section) {
+            $this->ensureSessionIsSet();
+
+            $this->component->set('section', $section);
+
+            $html = (string) $this->component->render();
+
+            // Text nodes only: attributes are full of dotted values that are not
+            // translation keys at all — class names, icon names, hostnames.
+            preg_match_all('#>\s*([a-z][a-z0-9_]*(?:\.[a-z0-9_]+){2,})\s*<#', $html, $matches);
+
+            foreach ($matches[1] as $key) {
+                $shown[] = sprintf('%s: %s', $section, $key);
+            }
         }
+
+        self::assertSame([], $shown, 'The settings screen shows translation keys instead of text.');
     }
 
-    #[DataProvider('sections')]
-    public function testNoSectionShowsATranslationKeyToTheReader(string $section): void
+    /**
+     * The sections are whatever the first segment of a setting key happens to
+     * be, so a bundle that seeds `credit_note/...` gets a tab whether or not
+     * anyone taught the page about it. Reading them back instead of naming them
+     * is the point: the list here used to be written out by hand, `credit_note`
+     * was never added to it, and that section reached the screen with an
+     * English tab title and a raw form dump under it.
+     *
+     * @return list<string>
+     */
+    private function sections(): array
     {
-        $this->ensureSessionIsSet();
+        $sections = [];
 
-        $this->component->set('section', $section);
+        foreach (self::getContainer()->get(SettingsRepository::class)->findAll() as $setting) {
+            $sections[strstr($setting->getKey(), '/', true) ?: $setting->getKey()] = true;
+        }
 
-        $html = (string) $this->component->render();
-
-        // Text nodes only: attributes are full of dotted values that are not
-        // translation keys at all — class names, icon names, hostnames.
-        preg_match_all('#>\s*([a-z][a-z0-9_]*(?:\.[a-z0-9_]+){2,})\s*<#', $html, $matches);
-
-        self::assertSame(
-            [],
-            $matches[1],
-            sprintf('The "%s" section shows translation keys instead of text.', $section),
-        );
+        return array_keys($sections);
     }
 }

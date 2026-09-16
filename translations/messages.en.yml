@@ -1919,6 +1919,7 @@ invoice_status_update: 'Invoice Status Update'
 invoices: Invoices
 label:
     client: Client
+    credit_note: 'Credit Note'
     invoice: Invoice
     'no': 'No'
     optional: Optional
@@ -3201,6 +3202,7 @@ settings:
         save: 'Save Settings'
         tab:
             accounting: Accounting
+            credit_note: 'Credit Notes'
             design: Design
             email: Email
             invoice: Invoices
