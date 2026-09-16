@@ -110,6 +110,38 @@ final class MicroContributionCalculatorTest extends TestCase
         self::assertSame('3000', (string) $this->line($result, 'training.services_bic')->amount);
     }
 
+    /**
+     * The relief drops from 50% to 25% for micro-entreprises created on or after
+     * 1 July 2026. Two companies declaring the *same* quarter therefore owe
+     * different rates, because what decides is when each was created — not when
+     * the quarter falls.
+     *
+     * Resolving on the period instead would have repriced the June company in
+     * July, taking back half a relief it is entitled to for twelve months.
+     */
+    public function testAcreFollowsTheDateOfCreationNotTheQuarterDeclared(): void
+    {
+        $quarter = $this->period('2026-10-01', '2026-12-31');
+        $turnover = $this->turnover([ActivityNature::ServicesBic->value => self::TEN_THOUSAND_EUROS]);
+
+        $createdInJune = $this->calculate(
+            $turnover,
+            $this->profile(['acre' => '1'], new DateTimeImmutable('2026-06-15')),
+            $quarter,
+        );
+
+        $createdInJuly = $this->calculate(
+            $turnover,
+            $this->profile(['acre' => '1'], new DateTimeImmutable('2026-07-15')),
+            $quarter,
+        );
+
+        // 21.2 less half of it.
+        self::assertSame('10.6000', (string) $this->line($createdInJune, 'social.services_bic')->rate);
+        // 21.2 less a quarter of it.
+        self::assertSame('15.9000', (string) $this->line($createdInJuly, 'social.services_bic')->rate);
+    }
+
     public function testAcreStopsApplyingOnceItsWindowHasPassed(): void
     {
         $result = $this->calculate(
@@ -211,14 +243,20 @@ final class MicroContributionCalculatorTest extends TestCase
         self::assertSame('2026-01-01', $q1_2026->rateVersion);
     }
 
-    public function testWarnsThatTheShippedRatesAreUnverified(): void
+    /**
+     * The shipped rates have been checked against their official sources, so the
+     * warning stays off. It is the mechanism that matters and is kept: a
+     * deployment pointing `rates_file` at its own table still gets told when
+     * that table admits to being unchecked.
+     */
+    public function testDoesNotWarnNowThatTheShippedRatesAreVerified(): void
     {
         $result = $this->calculate(
             $this->turnover([ActivityNature::ServicesBic->value => self::TEN_THOUSAND_EUROS]),
             $this->profile(),
         );
 
-        self::assertContains('accounting.declaration.warning.rates_unverified', $result->warnings);
+        self::assertNotContains('accounting.declaration.warning.rates_unverified', $result->warnings);
     }
 
     public function testWarnsWhenEntriesWereBookedInAnotherCurrency(): void

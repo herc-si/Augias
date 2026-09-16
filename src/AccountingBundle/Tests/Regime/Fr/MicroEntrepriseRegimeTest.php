@@ -28,8 +28,8 @@ use function dirname;
 #[CoversClass(MicroEntrepriseRegime::class)]
 final class MicroEntrepriseRegimeTest extends TestCase
 {
-    /** The BNC and BIC services ceiling, in cents. */
-    private const int SERVICES_CEILING = 7_770_000;
+    /** The BNC and BIC services ceiling for 2026-2028, in cents. */
+    private const int SERVICES_CEILING = 8_360_000;
 
     /**
      * The purchase register is only required of resale and accommodation
@@ -83,7 +83,7 @@ final class MicroEntrepriseRegimeTest extends TestCase
 
         self::assertNotNull($ceiling);
         self::assertTrue($ceiling->prorated);
-        self::assertSame('3916932', (string) $ceiling->amount);
+        self::assertSame('4214356', (string) $ceiling->amount);
     }
 
     /**

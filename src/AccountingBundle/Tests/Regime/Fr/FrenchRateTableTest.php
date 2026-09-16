@@ -22,6 +22,7 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use function dirname;
 use function file_put_contents;
+use function sprintf;
 use function sys_get_temp_dir;
 use function tempnam;
 use function unlink;
@@ -81,18 +82,26 @@ final class FrenchRateTableTest extends TestCase
     }
 
     /**
-     * Nothing in the shipped table has been checked against an official source
-     * yet. If someone verifies it, they should flip the flags AND this test, so
-     * the promise stays honest either way.
+     * Every figure in the shipped table has now been checked against an official
+     * source: the BOFiP barème BOI-BAREME-000036 for the thresholds, décret
+     * n° 2024-484 du 30 mai 2024 for the contribution rates. The flags were
+     * flipped, and so was this test — which the version that asserted the
+     * opposite asked for in as many words.
+     *
+     * It earns its keep the other way round now: it fails if an entry is added
+     * without being checked, which is how the table would quietly go back to
+     * shipping guesses under a flag that says otherwise.
      */
-    public function testShippedTableIsStillMarkedUnverified(): void
+    public function testEveryShippedEntryIsMarkedVerified(): void
     {
         $table = $this->shippedTable();
 
-        self::assertFalse(
-            $table->isVerified(new DateTimeImmutable('2026-06-30')),
-            'The rate table now claims to be verified — update this test if that is deliberate.',
-        );
+        foreach (['2024-03-31', '2024-12-31', '2025-12-31', '2026-06-30', '2026-12-31'] as $date) {
+            self::assertTrue(
+                $table->isVerified(new DateTimeImmutable($date)),
+                sprintf('The rates in force on %s are not marked verified.', $date),
+            );
+        }
     }
 
     public function testResolvesTheEntryInForceOnTheDate(): void
