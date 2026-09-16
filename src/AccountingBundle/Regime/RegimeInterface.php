@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\AccountingBundle\Regime;
 
 use Augias\AccountingBundle\Enum\ActivityNature;
+use Augias\AccountingBundle\Enum\DeclarationKind;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Enum\PeriodType;
 use Augias\AccountingBundle\Model\AccountingProfile;
@@ -75,6 +76,21 @@ interface RegimeInterface extends ThresholdProviderInterface, ContributionCalcul
      * @return list<PeriodType>
      */
     public function declarationPeriodicities(): array;
+
+    /**
+     * The declaration kinds this regime produces of its own accord.
+     *
+     * VAT is deliberately absent from every regime's answer: it is an
+     * obligation that attaches to a company *on top of* its regime, decided by
+     * whether it is in scope rather than by which regime it is on — the rule
+     * {@see DeclarationKind} states and this method is careful not to undo.
+     * What a regime answers here is what it computes itself: contributions on
+     * gross takings under the micro regime, nothing at all under the réel
+     * normal, where they are assessed on profit that these books do not hold.
+     *
+     * @return list<DeclarationKind>
+     */
+    public function declarationKinds(): array;
 
     /**
      * Whether companies on this regime are, by default, outside the scope of

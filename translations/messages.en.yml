@@ -159,6 +159,10 @@ accounting:
         fr_micro:
             description: 'Cash-basis bookkeeping: a revenue book, a purchase register for resale activities, and turnover declared to URSSAF.'
             label: 'France — Micro-entreprise'
+        fr_reel_normal:
+            contributions_not_computed: 'Contributions under this regime are assessed on profit, which these books do not compute. Only VAT is worked out here.'
+            description: 'Cash accounting with VAT: revenue book, purchase register, VAT charged on sales and reclaimed on purchases, declared on the CA3.'
+            label: 'France — Réel normal'
     settings:
         fiscal_year_start_month:
             description: 'The month your financial year opens on. January for most, and always for a French micro-entrepreneur. It decides what a yearly period covers — an exercice opening in April runs to the following March.'

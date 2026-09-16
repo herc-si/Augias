@@ -18,8 +18,10 @@ use Augias\AccountingBundle\Dashboard\TurnoverAgainstLimitsWidget;
 use Augias\AccountingBundle\Entity\LedgerEntry;
 use Augias\AccountingBundle\Enum\ActivityNature;
 use Augias\AccountingBundle\Enum\LedgerBook;
+use Augias\AccountingBundle\Enum\PeriodType;
 use Augias\AccountingBundle\Model\LimitUsage;
 use Augias\AccountingBundle\Model\TurnoverSummary;
+use Augias\AccountingBundle\Regime\Fr\ReelNormalRegime;
 use Brick\Math\BigInteger;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -57,6 +59,21 @@ final class TurnoverAgainstLimitsWidgetTest extends AccountingWidgetTestCase
         $this->configureMicroEntreprise();
 
         self::assertTrue($this->widget()->supports());
+    }
+
+    /**
+     * A company on the réel normal is past every ceiling the micro regime
+     * watches, so a card headed "turnover against limits" would have no limits
+     * to put in it. Same answer as an unconfigured company: the card does not
+     * apply, and the picker stops offering it.
+     */
+    public function testDoesNotApplyToARegimeWithNoLimitsToMeasureAgainst(): void
+    {
+        $this->config->set(AccountingSettings::REGIME, ReelNormalRegime::CODE);
+        $this->config->set(AccountingSettings::PRIMARY_ACTIVITY, ActivityNature::ServicesBic->value);
+        $this->config->set(AccountingSettings::DECLARATION_PERIODICITY, PeriodType::Month->value);
+
+        self::assertFalse($this->widget()->supports());
     }
 
     public function testReportsAnEmptyRevenueBookRatherThanCeilingsAgainstZero(): void

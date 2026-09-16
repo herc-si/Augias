@@ -159,6 +159,10 @@ accounting:
         fr_micro:
             description: 'Comptabilité de trésorerie : livre des recettes, registre des achats pour les activités de revente, et déclaration du chiffre d''affaires à l''URSSAF.'
             label: 'France — Micro-entreprise'
+        fr_reel_normal:
+            contributions_not_computed: 'Les cotisations de ce régime portent sur le résultat, que ces livres ne calculent pas. Seule la TVA est établie ici.'
+            description: 'Comptabilité de trésorerie avec TVA : livre des recettes, registre des achats, TVA collectée sur les ventes et déduite sur les achats, déclarée sur la CA3.'
+            label: 'France — Réel normal'
     settings:
         fiscal_year_start_month:
             description: "Le mois d'ouverture de votre exercice. Janvier pour la plupart, et toujours pour un micro-entrepreneur. Il décide de ce que couvre une période annuelle : un exercice ouvert en avril court jusqu'au mois de mars suivant."

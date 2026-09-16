@@ -15,6 +15,7 @@ namespace Augias\AccountingBundle\Regime\Fr;
 
 use Augias\AccountingBundle\Entity\AccountingPeriod;
 use Augias\AccountingBundle\Enum\ActivityNature;
+use Augias\AccountingBundle\Enum\DeclarationKind;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Enum\PeriodType;
 use Augias\AccountingBundle\Model\AccountingProfile;
@@ -110,6 +111,18 @@ final readonly class MicroEntrepriseRegime implements RegimeInterface
     public function declarationPeriodicities(): array
     {
         return [PeriodType::Month, PeriodType::Quarter];
+    }
+
+    /**
+     * Turnover to URSSAF. VAT is added on top when the company is in scope,
+     * which is the ordinary situation of a micro-entrepreneur past the
+     * franchise threshold.
+     *
+     * @return list<DeclarationKind>
+     */
+    public function declarationKinds(): array
+    {
+        return [DeclarationKind::SocialContributions];
     }
 
     /**
