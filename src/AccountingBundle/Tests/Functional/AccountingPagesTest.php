@@ -323,10 +323,16 @@ final class AccountingPagesTest extends WebTestCase
         // The tax is contained in the 120 €, not added to it.
         self::assertSame('2000', (string) $entry->getTaxAmount());
         self::assertSame('10000', (string) $entry->getNetAmount());
-        self::assertSame(
-            [['rate' => '20.0000', 'category' => 'Standard', 'base' => '10000', 'tax' => '2000']],
-            $entry->getTaxBreakdown(),
-        );
+        // Key by key, for the reason LedgerBookkeepingTest already gives: a JSON
+        // column is a document, and MySQL reorders an object's keys as it
+        // stores one.
+        $breakdown = $entry->getTaxBreakdown() ?? [];
+
+        self::assertCount(1, $breakdown);
+        self::assertSame('20.0000', $breakdown[0]['rate']);
+        self::assertSame('Standard', $breakdown[0]['category']);
+        self::assertSame('10000', $breakdown[0]['base']);
+        self::assertSame('2000', $breakdown[0]['tax']);
     }
 
     /**
