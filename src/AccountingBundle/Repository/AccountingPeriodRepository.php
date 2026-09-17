@@ -19,6 +19,7 @@ use Augias\AccountingBundle\Enum\PeriodStatus;
 use Augias\AccountingBundle\Enum\PeriodType;
 use Augias\CoreBundle\Entity\Company;
 use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -73,7 +74,7 @@ class AccountingPeriodRepository extends EntityRepository
             ->setParameter('company', $period->getCompany()->getId(), UlidType::NAME)
             ->setParameter('type', $period->getType()->value)
             ->setParameter('status', PeriodStatus::Open->value)
-            ->setParameter('start', $period->getStartDate())
+            ->setParameter('start', $period->getStartDate(), Types::DATE_IMMUTABLE)
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -202,7 +203,15 @@ class AccountingPeriodRepository extends EntityRepository
             ->andWhere('d.id IS NULL OR d.status != :submitted')
             ->setParameter('company', $company->getId(), UlidType::NAME)
             ->setParameter('type', $type->value)
-            ->setParameter('on', $on)
+            // Bound as a date, like every other bound below. `end_date` is a
+            // DATE column, and a datetime parameter renders as
+            // `2026-03-31 00:00:00`: SQLite compares that as a string against
+            // `2026-03-31`, finds the column smaller, and reports the quarter
+            // as ended on its own last day — a day on which entries can still
+            // be booked into it. MissingPeriod::hasEnded() has always used the
+            // strict rule, so the same quarter counted as ended when it had a
+            // row and as still running when it did not.
+            ->setParameter('on', $on, Types::DATE_IMMUTABLE)
             ->setParameter('submitted', DeclarationStatus::Submitted->value)
             ->orderBy('p.endDate', 'ASC')
             ->setMaxResults($limit)
@@ -231,8 +240,8 @@ class AccountingPeriodRepository extends EntityRepository
             ->andWhere('p.startDate <= :to')
             ->setParameter('company', $company->getId(), UlidType::NAME)
             ->setParameter('type', $type->value)
-            ->setParameter('from', $from)
-            ->setParameter('to', $to)
+            ->setParameter('from', $from, Types::DATE_IMMUTABLE)
+            ->setParameter('to', $to, Types::DATE_IMMUTABLE)
             ->orderBy('p.startDate', 'ASC')
             ->getQuery()
             ->getResult();
