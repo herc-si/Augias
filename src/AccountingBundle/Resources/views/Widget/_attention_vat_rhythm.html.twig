@@ -1,0 +1,48 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) HERC SI <opensource@herc-si.fr>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # Quarterly VAT filing outgrown, as a section of the Attention Required card.
+ #
+ # One row, never a list: there is a single fact here, and it is the same fact
+ # every day until the setting is changed. So it carries no count badge — a "1"
+ # next to a statement would only be furniture — and it links to the settings
+ # screen, which is the one place the rhythm can actually be changed.
+ #
+ # Warning rather than danger: nothing is late. What has happened is that the
+ # tolerance the current setting relies on has closed, and the next return is
+ # the one that has to be filed differently.
+ #
+ # The window is spelled out because "the last four quarters" is not the same
+ # twelve months as "last year", and a user checking the figure against their
+ # own records needs to know which twelve are being counted.
+ #}
+<div class="attention-section">
+    <div class="attention-section-header attention-section-header--warning">
+        {{ ux_icon('tabler:calendar-repeat', {width: 16, height: 16}) }}
+        <span>{{ 'dashboard.accounting.vat_rhythm_title'|trans }}</span>
+    </div>
+    <div class="attention-items">
+        <a href="{{ path('_settings') }}" class="attention-item">
+            <span class="attention-item-main">
+                <span class="attention-item-id">{{ 'dashboard.accounting.vat_rhythm_monthly_due'|trans }}</span>
+                <span class="attention-item-client">
+                    {{ 'dashboard.accounting.vat_rhythm_line'|trans({
+                        '%from%': from|format_date_skeleton('yMMM'),
+                        '%to%': to|format_date_skeleton('yMMM'),
+                        '%ceiling%': ceiling|formatCurrency(currencyCode),
+                    }) }}
+                </span>
+            </span>
+            <span class="attention-item-meta">
+                <span class="attention-item-amount">{{ tax|formatCurrency(currencyCode) }}</span>
+            </span>
+        </a>
+    </div>
+</div>

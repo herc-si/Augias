@@ -22,6 +22,7 @@ use Augias\CoreBundle\Entity\Company;
 use Brick\Math\BigInteger;
 use Brick\Math\BigNumber;
 use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -164,8 +165,14 @@ class LedgerEntryRepository extends EntityRepository
             ->andWhere('e.entryDate <= :to')
             ->setParameter('company', $company->getId(), UlidType::NAME)
             ->setParameter('book', $book->value)
-            ->setParameter('from', $from->setTime(0, 0))
-            ->setParameter('to', $to->setTime(0, 0))
+            // Bound as dates, not as datetimes — here and in every range below.
+            // `entry_date` is a DATE column, and a datetime parameter renders as
+            // `2026-01-01 00:00:00`, which SQLite compares as a string against
+            // `2026-01-01` and finds greater: every entry booked on the first
+            // day of a range was silently dropped. MySQL and PostgreSQL coerce
+            // the two and hid it.
+            ->setParameter('from', $from, Types::DATE_IMMUTABLE)
+            ->setParameter('to', $to, Types::DATE_IMMUTABLE)
             ->groupBy('e.activityNature')
             ->addGroupBy('e.currencyCode')
             ->getQuery()
@@ -194,8 +201,8 @@ class LedgerEntryRepository extends EntityRepository
             ->setParameter('company', $company->getId(), UlidType::NAME)
             ->setParameter('book', $book->value)
             ->setParameter('currency', $currencyCode)
-            ->setParameter('from', $from->setTime(0, 0))
-            ->setParameter('to', $to->setTime(0, 0))
+            ->setParameter('from', $from, Types::DATE_IMMUTABLE)
+            ->setParameter('to', $to, Types::DATE_IMMUTABLE)
             ->getQuery()
             ->getSingleScalarResult();
 
@@ -243,8 +250,8 @@ class LedgerEntryRepository extends EntityRepository
             ->andWhere('e.entryDate <= :to')
             ->andWhere('e.taxAmount IS NOT NULL')
             ->setParameter('company', $company->getId(), UlidType::NAME)
-            ->setParameter('from', $from->setTime(0, 0))
-            ->setParameter('to', $to->setTime(0, 0))
+            ->setParameter('from', $from, Types::DATE_IMMUTABLE)
+            ->setParameter('to', $to, Types::DATE_IMMUTABLE)
             ->orderBy('e.entryDate', 'ASC')
             ->getQuery()
             ->getResult();

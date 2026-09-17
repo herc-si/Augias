@@ -168,6 +168,22 @@ final class ThresholdMonitorTest extends KernelTestCase
     }
 
     /**
+     * The first of January is inside the year, which sounds too obvious to test
+     * until you see how it was lost: the range was bound as a datetime against
+     * a DATE column, so on SQLite `2026-01-01` compared as a string against
+     * `2026-01-01 00:00:00` fell outside its own year.
+     */
+    public function testTurnoverBookedOnTheOpeningDayOfTheYearIsCounted(): void
+    {
+        $this->revenue(30_000_00, new DateTimeImmutable('2026-01-01'));
+
+        $turnover = $this->turnoverCalculator()
+            ->yearToDate($this->companyReference(), 'EUR', new DateTimeImmutable('2026-06-30'));
+
+        self::assertSame('3000000', (string) $turnover->total());
+    }
+
+    /**
      * Converting would invent an exchange rate the books never recorded, so
      * turnover in another currency is left out of the totals and named instead.
      */

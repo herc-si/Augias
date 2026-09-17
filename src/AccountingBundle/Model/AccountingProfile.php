@@ -49,11 +49,6 @@ final readonly class AccountingProfile
     }
 
     /**
-     * Whether a regime has been chosen at all. Until one is, the module shows
-     * a setup prompt rather than empty books — an unconfigured company has no
-     * business being told its turnover is within a limit it never picked.
-     */
-    /**
      * The rhythm VAT is declared on: its own when one is set, the books' rhythm
      * otherwise.
      */
@@ -72,6 +67,11 @@ final readonly class AccountingProfile
             && $this->vatPeriodicity !== $this->declarationPeriodicity;
     }
 
+    /**
+     * Whether a regime has been chosen at all. Until one is, the module shows
+     * a setup prompt rather than empty books — an unconfigured company has no
+     * business being told its turnover is within a limit it never picked.
+     */
     public function isConfigured(): bool
     {
         return null !== $this->regimeCode && '' !== $this->regimeCode;
