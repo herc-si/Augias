@@ -20,6 +20,7 @@ use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\TaxBundle\Calculator\Result\TaxSummaryRow;
 use Augias\TaxBundle\Calculator\TaxCalculatorInterface;
+use Augias\TaxBundle\Entity\Tax;
 use Augias\TaxBundle\Enum\TaxCategory;
 use Augias\TaxBundle\Enum\TaxDirection;
 use Brick\Math\BigDecimal;
@@ -79,6 +80,43 @@ final readonly class LedgerTaxSplitter
     public function forCreditNoteRefund(CreditNote $creditNote, BigNumber $refunded): ?LedgerTaxSplit
     {
         return $this->forDocument($creditNote, $refunded);
+    }
+
+    /**
+     * The split for an entry written by hand, from the rate the user picked.
+     *
+     * There is no document to read the tax off, so the rate is applied to the
+     * amount — and the tax is taken *out* of it rather than added to it. What a
+     * book entry records is money that actually moved, which is a gross figure
+     * whatever convention the rate carries for invoice lines: a receipt of
+     * 120 € at 20 % contains 20 € of tax, it does not attract 24 €.
+     *
+     * One rate, one share. A hand-written entry records one receipt or one
+     * payment, and the arithmetic that spreads a settlement across several
+     * rates has nothing to spread here — which is also why no residual has to
+     * be settled: net plus tax is the amount by construction.
+     *
+     * A zero rate still produces a share. Zero-rated and exempt operations are
+     * declared, on lines of their own, and dropping the share would leave the
+     * books unable to tell a zero-rated sale from one outside the scope of VAT
+     * — a distinction CGI art. 286-I-3° requires them to make.
+     *
+     * @throws MathException
+     */
+    public function forManualEntry(BigNumber $amount, Tax $tax): LedgerTaxSplit
+    {
+        $rate = BigDecimal::of((string) ($tax->getRate() ?? 0));
+        $gross = BigDecimal::of($amount);
+
+        $taxAmount = $rate->isZero()
+            ? BigInteger::zero()
+            : $this->round($gross->multipliedBy($rate)->dividedBy($rate->plus(100), 10, RoundingMode::HalfEven));
+
+        $net = $gross->toBigInteger()->minus($taxAmount);
+
+        return new LedgerTaxSplit($net, $taxAmount, [
+            new TaxShare($rate->toScale(4)->__toString(), $tax->getCategory(), $net, $taxAmount),
+        ]);
     }
 
     /**

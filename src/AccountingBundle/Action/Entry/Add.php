@@ -85,6 +85,7 @@ final readonly class Add
         $form = $this->formFactory->create(LedgerEntryType::class, $entry, [
             'book' => $ledgerBook,
             'currency' => $this->systemConfig->getCurrency(),
+            'vat_exempt' => $profile->vatExempt,
         ]);
         $form->handleRequest($request);
 

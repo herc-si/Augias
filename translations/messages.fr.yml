@@ -105,6 +105,9 @@ accounting:
             section_description: 'Les colonnes que le livre doit porter : la date du mouvement, sa nature, le tiers et la pièce justificative.'
             section_title: 'Détail de l''écriture'
             settlement_method: Mode de règlement
+            tax: TVA
+            tax_help: 'Le taux contenu dans le montant encaissé ou payé, et non ajouté à celui-ci. À laisser vide pour une opération hors du champ de la TVA.'
+            tax_help_exempt: 'Sans objet : cette entreprise est en franchise en base, ses livres ne portent donc aucune taxe.'
         grid:
             amount: Montant
             counterparty: Tiers

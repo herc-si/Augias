@@ -1,3 +1,6 @@
+accounting:
+    entry:
+        document_reference_required_for_tax: 'Deducting VAT requires holding the invoice that carries it, so name the supporting document.'
 bill:
     constraint:
         supplier_required: 'Choose an existing supplier, or type a name below to create a new one.'

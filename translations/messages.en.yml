@@ -105,6 +105,9 @@ accounting:
             section_description: 'The columns the book has to carry: the date the money moved, what it was for, the counterparty and the supporting document.'
             section_title: Entry details
             settlement_method: Settlement method
+            tax: VAT
+            tax_help: 'The rate contained in the amount received or paid — not added to it. Leave empty for an operation outside the scope of VAT.'
+            tax_help_exempt: 'Not applicable: this company is under the VAT exemption scheme, so its books carry no tax.'
         grid:
             amount: Amount
             counterparty: Counterparty

@@ -51,6 +51,12 @@
                         <div class="form-grid">
                             <div class="form-field">{{ form_row(form.entryDate) }}</div>
                             <div class="form-field">{{ form_row(form.amount) }}</div>
+                            {#
+                             # Beside the amount, because that is what it is a
+                             # share of: the rate here is the tax *contained* in
+                             # the money that moved, never added to it.
+                             #}
+                            <div class="form-field">{{ form_row(form.tax) }}</div>
                             <div class="form-field form-field-wide">{{ form_row(form.label) }}</div>
                             <div class="form-field">{{ form_row(form.counterpartyName) }}</div>
                             <div class="form-field">{{ form_row(form.documentReference) }}</div>
