@@ -22,6 +22,7 @@ use Augias\AccountingBundle\Action\Entry\Edit;
 use Augias\AccountingBundle\Action\Index;
 use Augias\AccountingBundle\Entity\AccountingPeriod;
 use Augias\AccountingBundle\Entity\LedgerEntry;
+use Augias\AccountingBundle\Entity\ThresholdAlert;
 use Augias\AccountingBundle\Enum\ActivityNature;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Enum\PeriodType;
@@ -101,6 +102,24 @@ final class AccountingPagesTest extends WebTestCase
 
         self::assertSame(200, $this->client->getResponse()->getStatusCode());
         self::assertStringContainsString('1,200.00', $crawler->filter('body')->text());
+    }
+
+    /**
+     * A crossed limit is listed on the page, with the limit it crossed.
+     *
+     * This card only renders for a company that has crossed something, which is
+     * why nothing caught it passing the alert's `Money` object to a filter that
+     * takes minor units: the page threw, and only for the users it matters to.
+     */
+    public function testTheHomePageListsALimitThatHasBeenCrossed(): void
+    {
+        $this->configureRegime();
+        $this->alert();
+
+        $crawler = $this->client->request('GET', '/accounting/');
+
+        self::assertSame(200, $this->client->getResponse()->getStatusCode());
+        self::assertStringContainsString('77,700.00', $crawler->filter('body')->text());
     }
 
     /**
@@ -297,6 +316,23 @@ final class AccountingPagesTest extends WebTestCase
         $config->set(AccountingSettings::REGIME, 'fr_micro');
         $config->set(AccountingSettings::PRIMARY_ACTIVITY, ActivityNature::ServicesBnc->value);
         $config->set(AccountingSettings::DECLARATION_PERIODICITY, PeriodType::Quarter->value);
+    }
+
+    private function alert(): void
+    {
+        $alert = new ThresholdAlert()
+            ->setThresholdKey('vat_franchise.base.services_bnc')
+            ->setYear((int) new DateTimeImmutable('today')->format('Y'))
+            ->setStep(80)
+            ->setAmount(BigInteger::of(6_500_000))
+            ->setThresholdAmount(BigInteger::of(7_770_000))
+            ->setCurrencyCode('EUR')
+            ->setTriggeredAt(new DateTimeImmutable('today'));
+
+        $alert->setCompany($this->entityManager->find(Company::class, $this->company->getId()));
+
+        $this->entityManager->persist($alert);
+        $this->entityManager->flush();
     }
 
     private function entry(int $amount, string $on = '2026-01-15'): void
