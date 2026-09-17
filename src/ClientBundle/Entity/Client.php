@@ -26,6 +26,7 @@ use ApiPlatform\Metadata\Post;
 use Augias\ClientBundle\Enum\ClientStatus;
 use Augias\ClientBundle\Repository\ClientRepository;
 use Augias\ClientBundle\Validator\Constraints\WithinPlanClientLimit;
+use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Traits\Entity\Archivable;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
@@ -522,6 +523,31 @@ class Client implements Stringable
     public function getAddresses(): Collection
     {
         return $this->addresses;
+    }
+
+    /**
+     * Carries the company down to the credit balance the constructor made.
+     *
+     * {@see CompanyListener} fills `company` on any entity that has not had one
+     * set, from whichever company the request is for — which works for every
+     * client created through a screen and for none created without a session.
+     * A cron importing an electronic invoice from an unknown supplier creates
+     * one, sets its company explicitly, and the credit created inside
+     * `__construct()` used to be left behind: `NOT NULL constraint failed:
+     * client_credit.company_id`, then a closed EntityManager taking the rest of
+     * the batch with it.
+     *
+     * A client's credit balance cannot belong to another company than the
+     * client, so the two are set together rather than left to each caller to
+     * remember.
+     */
+    public function setCompany(Company $company): self
+    {
+        $this->company = $company;
+
+        $this->credit?->setCompany($company);
+
+        return $this;
     }
 
     public function getCredit(): Credit
