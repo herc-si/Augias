@@ -17,9 +17,17 @@ use Augias\AccountingBundle\Entity\LedgerEntry;
 use Augias\AccountingBundle\Enum\ActivityNature;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Enum\SettlementMethod;
+use Augias\AccountingBundle\Service\LedgerTaxSplitter;
 use Augias\SettingsBundle\SystemConfig;
+use Augias\TaxBundle\Entity\Tax;
+use Augias\TaxBundle\Enum\TaxCategory;
+use Augias\TaxBundle\Repository\TaxRepository;
+use Brick\Math\BigDecimal;
+use Doctrine\ORM\EntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Money\Currency;
 use Override;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
@@ -27,7 +35,13 @@ use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use function sprintf;
+use function trim;
 
 /**
  * The form behind a hand-written book entry — money that moved without passing
@@ -50,6 +64,9 @@ final class LedgerEntryType extends AbstractType
 {
     public function __construct(
         private readonly SystemConfig $systemConfig,
+        private readonly LedgerTaxSplitter $taxSplitter,
+        private readonly TaxRepository $taxes,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -110,6 +127,123 @@ final class LedgerEntryType extends AbstractType
             'label' => 'accounting.entry.form.notes',
             'required' => false,
         ]);
+
+        // Added here rather than above because what it holds is read off the
+        // entry: the rate is not a property, it is recovered from the split
+        // already recorded — see storedTax().
+        $builder->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) use ($options, $mirrorsAPayment): void {
+            $entry = $event->getData();
+            $stored = $entry instanceof LedgerEntry ? $this->storedTax($entry) : null;
+
+            $event->getForm()->add('tax', EntityType::class, [
+                'label' => 'accounting.entry.form.tax',
+                'help' => $options['vat_exempt']
+                    ? 'accounting.entry.form.tax_help_exempt'
+                    : 'accounting.entry.form.tax_help',
+                'class' => Tax::class,
+                // Flat-rate taxes are an absolute amount, not a percentage, so
+                // there is nothing to take out of a receipt with one. They are
+                // left out rather than offered and then refused.
+                'query_builder' => static fn (EntityRepository $repository): QueryBuilder => $repository
+                    ->createQueryBuilder('t')
+                    ->andWhere('t.type != :flat')
+                    ->setParameter('flat', Tax::TYPE_FLAT_RATE)
+                    ->orderBy('t.rate', 'ASC'),
+                'choice_label' => static fn (Tax $tax): string => self::rateLabel($tax),
+                'required' => false,
+                'placeholder' => '',
+                'mapped' => false,
+                'data' => $stored['tax'] ?? null,
+                // Locked in three cases, and each keeps what is already in the
+                // books: a company outside the scope of VAT has none to record,
+                // an entry mirroring a payment carries the payment's own split,
+                // and a rate that has since been deleted can no longer be shown
+                // as the choice it was — but the entry still holds it.
+                'disabled' => $options['vat_exempt']
+                    || $mirrorsAPayment
+                    || ($stored['unresolved'] ?? false),
+            ]);
+        });
+
+        $builder->addEventListener(FormEvents::POST_SUBMIT, function (FormEvent $event) use ($options): void {
+            $entry = $event->getData();
+            $form = $event->getForm();
+
+            if (! $entry instanceof LedgerEntry || ! $form->has('tax') || $form->get('tax')->isDisabled()) {
+                return;
+            }
+
+            $tax = $form->get('tax')->getData();
+
+            if (! $tax instanceof Tax) {
+                $entry->clearTax();
+
+                return;
+            }
+
+            // Deducting tax requires holding the invoice that carries it
+            // (CGI, art. 271-II), so a purchase claiming some has to say which
+            // document it is claiming it from.
+            if ($options['book'] === LedgerBook::Purchase && '' === trim((string) $entry->getDocumentReference())) {
+                // Translated here rather than left as a key: a message added by
+                // hand does not pass through the form theme's translator the
+                // way a constraint violation does.
+                $form->get('documentReference')->addError(new FormError(
+                    $this->translator->trans('accounting.entry.document_reference_required_for_tax', [], 'validators'),
+                ));
+
+                return;
+            }
+
+            $split = $this->taxSplitter->forManualEntry($entry->getAmount(), $tax);
+
+            $entry->setTax($split->net, $split->tax, $split->toArray());
+        });
+    }
+
+    /**
+     * The rate an entry was written with, recovered from its own split.
+     *
+     * The books record the figures, not the rate row that produced them — by
+     * design, since a rate can be edited or deleted afterwards and the entry
+     * must still say what was declared. So the choice is matched back by rate
+     * and category, and `unresolved` says the entry holds a split no current
+     * rate accounts for: the field is then shown locked rather than empty,
+     * because an empty select that saves would quietly rewrite the books.
+     *
+     * @return array{tax: Tax|null, unresolved: bool}
+     */
+    private function storedTax(LedgerEntry $entry): array
+    {
+        $breakdown = $entry->getTaxBreakdown() ?? [];
+
+        if ([] === $breakdown) {
+            return ['tax' => null, 'unresolved' => false];
+        }
+
+        $share = $breakdown[0];
+
+        foreach ($this->taxes->findAll() as $tax) {
+            if (! $tax instanceof Tax || $tax->getCategory()->value !== $share['category']) {
+                continue;
+            }
+
+            if (BigDecimal::of((string) ($tax->getRate() ?? 0))->toScale(4)->__toString() === $share['rate']) {
+                return ['tax' => $tax, 'unresolved' => false];
+            }
+        }
+
+        return ['tax' => null, 'unresolved' => true];
+    }
+
+    private static function rateLabel(Tax $tax): string
+    {
+        $label = sprintf('%s (%s%%)', $tax->getName() ?? '', $tax->getRate() ?? 0);
+
+        return match ($tax->getCategory()) {
+            TaxCategory::Standard => $label,
+            default => sprintf('%s [%s]', $label, $tax->getCategory()->getLabel()),
+        };
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -118,6 +252,10 @@ final class LedgerEntryType extends AbstractType
             'data_class' => LedgerEntry::class,
             'book' => LedgerBook::Revenue,
             'mirrors_a_payment' => false,
+            // A company in franchise en base has no tax to separate out, so the
+            // field is shown locked rather than hidden: the reason it cannot be
+            // filled in is worth saying.
+            'vat_exempt' => true,
             // The company's own currency: the money field scales by the
             // currency's decimal count, so the wrong one misplaces the decimal
             // point for JPY and BHD.
@@ -126,6 +264,7 @@ final class LedgerEntryType extends AbstractType
 
         $resolver->setAllowedTypes('book', LedgerBook::class);
         $resolver->setAllowedTypes('mirrors_a_payment', 'bool');
+        $resolver->setAllowedTypes('vat_exempt', 'bool');
         $resolver->setAllowedTypes('currency', Currency::class);
     }
 

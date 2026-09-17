@@ -376,6 +376,22 @@ class LedgerEntry
         return $this;
     }
 
+    /**
+     * Back to no tax at all, which is not the same as a tax of zero.
+     *
+     * Needed because a hand-written entry can be corrected: a rate entered by
+     * mistake has to be removable, and leaving a zero behind would state that
+     * the operation was taxable and bore nothing — see {@see $netAmount}.
+     */
+    public function clearTax(): self
+    {
+        $this->netAmount = null;
+        $this->taxAmount = null;
+        $this->taxBreakdown = null;
+
+        return $this;
+    }
+
     public function getCurrencyCode(): string
     {
         return $this->currencyCode;

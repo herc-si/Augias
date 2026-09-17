@@ -24,6 +24,7 @@ use Augias\TaxBundle\Calculator\Result\InvoiceLevelBreakdown;
 use Augias\TaxBundle\Calculator\Result\LineBreakdown;
 use Augias\TaxBundle\Calculator\Result\TaxSummaryRow;
 use Augias\TaxBundle\Calculator\TaxCalculatorInterface;
+use Augias\TaxBundle\Entity\Tax;
 use Augias\TaxBundle\Enum\TaxCategory;
 use Augias\TaxBundle\Enum\TaxDirection;
 use Augias\TaxBundle\Enum\TaxType;
@@ -50,6 +51,64 @@ final class LedgerTaxSplitterTest extends TestCase
         )->forInvoicePayment($this->invoice(100_000), BigInteger::of(100_000));
 
         self::assertNull($split);
+    }
+
+    /**
+     * A hand-written entry has no document to read the tax off, so the rate is
+     * applied to the money that moved — and the tax comes *out* of it. 120 €
+     * received at 20 % contains 20 € of tax; it does not attract 24 €.
+     */
+    public function testAManualEntryContainsItsTaxRatherThanAttractingIt(): void
+    {
+        $split = $this->splitter()->forManualEntry(BigInteger::of(120_000), self::tax(20.0));
+
+        self::assertSame('20000', (string) $split->tax);
+        self::assertSame('100000', (string) $split->net);
+        self::assertCount(1, $split->shares);
+        self::assertSame('20.0000', $split->shares[0]->rate);
+        self::assertSame('100000', (string) $split->shares[0]->base);
+        self::assertSame(TaxCategory::Standard, $split->shares[0]->category);
+    }
+
+    /**
+     * Net plus tax is the amount that moved, whatever the rate does to the
+     * arithmetic. 5.5 % of 105.50 € is not a round figure, and the two parts
+     * still have to add back up to what was received.
+     */
+    public function testAManualEntrySplitAddsBackUpToTheAmount(): void
+    {
+        $split = $this->splitter()->forManualEntry(BigInteger::of(10_550), self::tax(5.5));
+
+        self::assertSame('550', (string) $split->tax);
+        self::assertSame('10000', (string) $split->net);
+        self::assertSame('10550', (string) $split->net->plus($split->tax));
+    }
+
+    /**
+     * A refund is negative money, and the tax given back with it is negative
+     * too — otherwise the return would show tax collected on a refund.
+     */
+    public function testAManualEntryCarriesTheSignOfTheAmount(): void
+    {
+        $split = $this->splitter()->forManualEntry(BigInteger::of(-120_000), self::tax(20.0));
+
+        self::assertSame('-20000', (string) $split->tax);
+        self::assertSame('-100000', (string) $split->net);
+    }
+
+    /**
+     * Zero-rated is not "no tax". The operation is declared, on a line of its
+     * own, so the share is kept with a tax of zero rather than dropped — which
+     * is what tells it apart from an operation outside the scope of VAT.
+     */
+    public function testAZeroRatedManualEntryStillRecordsItsShare(): void
+    {
+        $split = $this->splitter()->forManualEntry(BigInteger::of(100_000), self::tax(0.0, TaxCategory::ZeroRated));
+
+        self::assertSame('0', (string) $split->tax);
+        self::assertSame('100000', (string) $split->net);
+        self::assertCount(1, $split->shares);
+        self::assertSame(TaxCategory::ZeroRated, $split->shares[0]->category);
     }
 
     public function testAPaymentInFullCarriesTheWholeTax(): void
@@ -195,11 +254,23 @@ final class LedgerTaxSplitterTest extends TestCase
         self::assertSame('110000', (string) $split->net);
     }
 
+    private static function tax(float $rate, TaxCategory $category = TaxCategory::Standard): Tax
+    {
+        return new Tax()
+            ->setName('VAT')
+            ->setRate($rate)
+            ->setType(Tax::TYPE_INCLUSIVE)
+            ->setCategory($category);
+    }
+
     /**
+     * The document-side cases build a calculator result to read from;
+     * forManualEntry() reads nothing, so it takes the defaults.
+     *
      * @param list<array{0: int, 1: list<array{0: string, 1: int, 2?: TaxCategory, 3?: TaxDirection}>}> $lines
      * @param list<array{0: string, 1: int, 2?: TaxCategory, 3?: TaxDirection}>                         $invoiceLevel
      */
-    private function splitter(int $subTotal, array $lines, array $invoiceLevel = []): LedgerTaxSplitter
+    private function splitter(int $subTotal = 0, array $lines = [], array $invoiceLevel = []): LedgerTaxSplitter
     {
         $breakdowns = [];
         $lineTax = BigDecimal::zero();

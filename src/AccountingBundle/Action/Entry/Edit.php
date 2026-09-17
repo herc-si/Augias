@@ -16,6 +16,7 @@ namespace Augias\AccountingBundle\Action\Entry;
 use Augias\AccountingBundle\Entity\LedgerEntry;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Form\Type\LedgerEntryType;
+use Augias\AccountingBundle\Service\AccountingProfileProvider;
 use Augias\AccountingBundle\Service\LedgerLockDate;
 use Augias\SettingsBundle\SystemConfig;
 use Doctrine\Persistence\ManagerRegistry;
@@ -49,6 +50,7 @@ final readonly class Edit
         private ManagerRegistry $doctrine,
         private SystemConfig $systemConfig,
         private LedgerLockDate $lockDate,
+        private AccountingProfileProvider $profileProvider,
     ) {
     }
 
@@ -73,6 +75,7 @@ final readonly class Edit
             'book' => $entry->getBook(),
             'mirrors_a_payment' => $entry->getSource()->isAutomatic(),
             'currency' => $this->systemConfig->getCurrency(),
+            'vat_exempt' => $this->profileProvider->forCompany()->vatExempt,
         ]);
         $form->handleRequest($request);
 

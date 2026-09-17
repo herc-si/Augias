@@ -26,11 +26,14 @@ use Augias\AccountingBundle\Entity\ThresholdAlert;
 use Augias\AccountingBundle\Enum\ActivityNature;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Enum\PeriodType;
+use Augias\AccountingBundle\Regime\Fr\ReelNormalRegime;
 use Augias\AccountingBundle\Repository\LedgerEntryRepository;
 use Augias\AccountingBundle\Service\AccountingPeriodManager;
 use Augias\CoreBundle\Entity\Company;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\SettingsBundle\SystemConfig;
+use Augias\TaxBundle\Entity\Tax;
+use Augias\TaxBundle\Enum\TaxCategory;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Test\Factory\UserFactory;
 use Brick\Math\BigInteger;
@@ -309,11 +312,175 @@ final class AccountingPagesTest extends WebTestCase
         self::assertSame('/accounting/book/revenue', $this->client->getResponse()->headers->get('Location'));
     }
 
-    private function configureRegime(): void
+    /**
+     * A receipt written by hand carries the VAT it contains, or the return
+     * filed from these books is short by it.
+     */
+    public function testAManualReceiptRecordsTheVatItContains(): void
+    {
+        $this->configureRegime();
+        $this->config()->set(AccountingSettings::VAT_EXEMPT, '0');
+        $tax = $this->tax(20.0);
+
+        $crawler = $this->client->request('GET', '/accounting/book/revenue/entry/add');
+
+        $this->client->submit($crawler->selectButton('Save')->form([
+            'ledger_entry[entryDate]' => '2026-02-10',
+            'ledger_entry[label]' => 'Cash sale',
+            'ledger_entry[counterpartyName]' => 'A passer-by',
+            'ledger_entry[documentReference]' => 'REC-002',
+            'ledger_entry[amount]' => '120.00',
+            'ledger_entry[settlementMethod]' => 'cash',
+            'ledger_entry[activityNature]' => 'services_bnc',
+            'ledger_entry[tax]' => (string) $tax->getId(),
+        ]));
+
+        self::assertSame(302, $this->client->getResponse()->getStatusCode());
+
+        $entry = $this->entries()[0];
+
+        // The tax is contained in the 120 €, not added to it.
+        self::assertSame('2000', (string) $entry->getTaxAmount());
+        self::assertSame('10000', (string) $entry->getNetAmount());
+        // Key by key, for the reason LedgerBookkeepingTest already gives: a JSON
+        // column is a document, and MySQL reorders an object's keys as it
+        // stores one.
+        $breakdown = $entry->getTaxBreakdown() ?? [];
+
+        self::assertCount(1, $breakdown);
+        self::assertSame('20.0000', $breakdown[0]['rate']);
+        self::assertSame('Standard', $breakdown[0]['category']);
+        self::assertSame('10000', $breakdown[0]['base']);
+        self::assertSame('2000', $breakdown[0]['tax']);
+    }
+
+    /**
+     * The rate is not stored on the entry — only the split it produced — so
+     * editing has to recover the choice from the books and be able to take it
+     * back off, without leaving a tax of zero behind.
+     */
+    public function testTheVatOnAnEntryCanBeRecoveredAndRemoved(): void
+    {
+        $this->configureRegime();
+        $this->config()->set(AccountingSettings::VAT_EXEMPT, '0');
+        $tax = $this->tax(20.0);
+        $this->entry(120_00);
+
+        $entry = $this->entries()[0];
+        $crawler = $this->client->request('GET', '/accounting/entry/' . $entry->getId() . '/edit');
+
+        // Nothing recorded yet, so nothing is preselected.
+        self::assertCount(0, $crawler->filter('select[name="ledger_entry[tax]"] option[selected]'));
+
+        $form = $crawler->selectButton('Save')->form();
+        $form['ledger_entry[tax]'] = (string) $tax->getId();
+        $this->client->submit($form);
+
+        self::assertSame('2000', (string) $this->entries()[0]->getTaxAmount());
+
+        // Reopened, the rate it was written with comes back as the selection.
+        $crawler = $this->client->request('GET', '/accounting/entry/' . $entry->getId() . '/edit');
+
+        $selected = $crawler->filter('select[name="ledger_entry[tax]"] option[selected]');
+
+        self::assertCount(1, $selected);
+        self::assertSame((string) $tax->getId(), $selected->attr('value'));
+
+        $form = $crawler->selectButton('Save')->form();
+        $form['ledger_entry[tax]'] = '';
+        $this->client->submit($form);
+
+        // Back to no tax at all, which is not a tax of zero: a zero would say
+        // the operation was taxable and bore nothing.
+        self::assertNull($this->entries()[0]->getTaxAmount());
+        self::assertNull($this->entries()[0]->getNetAmount());
+    }
+
+    /**
+     * A company in franchise en base has no VAT to record. The field is shown
+     * locked rather than hidden, because why it cannot be filled in is worth
+     * saying.
+     */
+    public function testTheVatFieldIsLockedForACompanyInFranchiseEnBase(): void
+    {
+        $this->configureRegime();
+        $this->config()->set(AccountingSettings::VAT_EXEMPT, '1');
+        $this->tax(20.0);
+
+        $crawler = $this->client->request('GET', '/accounting/book/revenue/entry/add');
+
+        self::assertSame(200, $this->client->getResponse()->getStatusCode());
+        self::assertCount(1, $crawler->filter('select[name="ledger_entry[tax]"][disabled]'));
+    }
+
+    /**
+     * Deducting VAT supposes holding the invoice that carries it (CGI,
+     * art. 271-II), so a purchase claiming some has to name its document.
+     */
+    public function testAPurchaseClaimingVatMustNameItsDocument(): void
+    {
+        $this->configureRegime(ReelNormalRegime::CODE);
+        $this->config()->set(AccountingSettings::VAT_EXEMPT, '0');
+        $tax = $this->tax(20.0);
+
+        $crawler = $this->client->request('GET', '/accounting/book/purchase/entry/add');
+
+        self::assertSame(200, $this->client->getResponse()->getStatusCode());
+
+        $this->client->submit($crawler->selectButton('Save')->form([
+            'ledger_entry[entryDate]' => '2026-02-10',
+            'ledger_entry[label]' => 'Office supplies',
+            'ledger_entry[counterpartyName]' => 'A supplier',
+            'ledger_entry[documentReference]' => '',
+            'ledger_entry[amount]' => '120.00',
+            'ledger_entry[settlementMethod]' => 'cash',
+            'ledger_entry[tax]' => (string) $tax->getId(),
+        ]));
+
+        // Redisplayed rather than saved, and nothing written.
+        self::assertSame(200, $this->client->getResponse()->getStatusCode());
+        self::assertSame([], $this->entries());
+        self::assertStringContainsString(
+            'requires holding the invoice',
+            $this->client->getResponse()->getContent() ?: '',
+        );
+    }
+
+    /**
+     * And it saves once the document is named — the rule asks for the reference,
+     * it does not refuse the deduction.
+     */
+    public function testAPurchaseRecordsTheVatItPaidOnceItsDocumentIsNamed(): void
+    {
+        $this->configureRegime(ReelNormalRegime::CODE);
+        $this->config()->set(AccountingSettings::VAT_EXEMPT, '0');
+        $tax = $this->tax(20.0);
+
+        $crawler = $this->client->request('GET', '/accounting/book/purchase/entry/add');
+
+        $this->client->submit($crawler->selectButton('Save')->form([
+            'ledger_entry[entryDate]' => '2026-02-10',
+            'ledger_entry[label]' => 'Office supplies',
+            'ledger_entry[counterpartyName]' => 'A supplier',
+            'ledger_entry[documentReference]' => 'FA-2026-114',
+            'ledger_entry[amount]' => '120.00',
+            'ledger_entry[settlementMethod]' => 'cash',
+            'ledger_entry[tax]' => (string) $tax->getId(),
+        ]));
+
+        self::assertSame(302, $this->client->getResponse()->getStatusCode());
+
+        $entry = $this->entries()[0];
+
+        self::assertSame('2000', (string) $entry->getTaxAmount());
+        self::assertSame('10000', (string) $entry->getNetAmount());
+    }
+
+    private function configureRegime(string $regime = 'fr_micro'): void
     {
         $config = self::getContainer()->get(SystemConfig::class);
         $config->set(SystemConfig::CURRENCY_CONFIG_PATH, 'EUR');
-        $config->set(AccountingSettings::REGIME, 'fr_micro');
+        $config->set(AccountingSettings::REGIME, $regime);
         $config->set(AccountingSettings::PRIMARY_ACTIVITY, ActivityNature::ServicesBnc->value);
         $config->set(AccountingSettings::DECLARATION_PERIODICITY, PeriodType::Quarter->value);
     }
@@ -354,6 +521,33 @@ final class AccountingPagesTest extends WebTestCase
         $this->entityManager->flush();
     }
 
+    private function tax(float $rate): Tax
+    {
+        $tax = new Tax()
+            ->setName('VAT')
+            ->setRate($rate)
+            ->setType(Tax::TYPE_INCLUSIVE)
+            ->setCategory(TaxCategory::Standard);
+
+        $tax->setCompany($this->entityManager->find(Company::class, $this->company->getId()));
+
+        $this->entityManager->persist($tax);
+        $this->entityManager->flush();
+
+        return $tax;
+    }
+
+    private function config(): SystemConfig
+    {
+        $config = self::getContainer()->get(SystemConfig::class);
+        self::assertInstanceOf(SystemConfig::class, $config);
+
+        return $config;
+    }
+
+    /**
+     * @return list<LedgerEntry>
+     */
     /**
      * @return list<LedgerEntry>
      */

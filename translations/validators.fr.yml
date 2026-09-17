@@ -1,3 +1,6 @@
+accounting:
+    entry:
+        document_reference_required_for_tax: 'La déduction de la TVA suppose de détenir la facture qui la porte : indiquez la pièce justificative.'
 bill:
     constraint:
         supplier_required: 'Choisissez un fournisseur existant, ou saisissez un nom ci-dessous pour en créer un nouveau.'
