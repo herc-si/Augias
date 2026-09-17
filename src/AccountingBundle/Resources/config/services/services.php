@@ -15,9 +15,11 @@ use Augias\AccountingBundle\AugiasAccountingBundle;
 use Augias\AccountingBundle\Config\AccountingConfigProvider;
 use Augias\AccountingBundle\DependencyInjection\AugiasAccountingExtension;
 use Augias\AccountingBundle\Regime\Fr\FrenchRateTable;
+use Augias\AccountingBundle\Service\AttachmentStorage;
 use Augias\DashboardBundle\Attention\AttentionSourceInterface;
 use Augias\SettingsBundle\Config\ProviderInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use function Symfony\Component\DependencyInjection\Loader\Configurator\env;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
@@ -53,6 +55,11 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services
         ->set(FrenchRateTable::class)
         ->arg('$ratesFile', param(AugiasAccountingExtension::RATES_FILE_PARAMETER));
+
+    // Same for where supporting documents are written: a path, not a service.
+    $services
+        ->set(AttachmentStorage::class)
+        ->arg('$root', env('AUGIAS_ATTACHMENTS_DIR'));
 
     // Settings are stored, and then read back, in the order their providers ran
     // — and the settings screen turns the first one into the landing tab. Left

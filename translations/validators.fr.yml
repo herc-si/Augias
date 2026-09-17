@@ -1,5 +1,6 @@
 accounting:
     entry:
+        attachment_unsupported_type: 'Une pièce justificative doit être un PDF ou une image.'
         document_reference_required_for_tax: 'La déduction de la TVA suppose de détenir la facture qui la porte : indiquez la pièce justificative.'
 bill:
     constraint:

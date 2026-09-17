@@ -14,9 +14,16 @@ services:
     ports:
       - "8765:8765"
     restart: always
+    environment:
+      # Supporting documents outlive the container they were uploaded from —
+      # the retention obligation is counted in years — so they are written to a
+      # volume rather than to the image's own filesystem.
+      AUGIAS_ATTACHMENTS_DIR: /var/augias/attachments
     volumes:
       - app_data:/etc/augias
+      - attachments_data:/var/augias/attachments
 
 volumes:
   db_data: {}
   app_data: {}
+  attachments_data: {}

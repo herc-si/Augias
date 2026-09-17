@@ -1,5 +1,6 @@
 accounting:
     entry:
+        attachment_unsupported_type: 'A supporting document has to be a PDF or an image.'
         document_reference_required_for_tax: 'Deducting VAT requires holding the invoice that carries it, so name the supporting document.'
 bill:
     constraint:

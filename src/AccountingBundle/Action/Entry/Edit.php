@@ -17,12 +17,14 @@ use Augias\AccountingBundle\Entity\LedgerEntry;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Form\Type\LedgerEntryType;
 use Augias\AccountingBundle\Service\AccountingProfileProvider;
+use Augias\AccountingBundle\Service\AttachmentStorage;
 use Augias\AccountingBundle\Service\LedgerLockDate;
 use Augias\SettingsBundle\SystemConfig;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormView;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -51,6 +53,7 @@ final readonly class Edit
         private SystemConfig $systemConfig,
         private LedgerLockDate $lockDate,
         private AccountingProfileProvider $profileProvider,
+        private AttachmentStorage $storage,
     ) {
     }
 
@@ -80,6 +83,12 @@ final readonly class Edit
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            foreach ($form->get('files')->getData() ?? [] as $file) {
+                if ($file instanceof UploadedFile) {
+                    $entry->addAttachment($this->storage->store($file, $entry->getCompany()));
+                }
+            }
+
             $this->doctrine->getManager()->flush();
 
             $session->getFlashBag()->add('success', 'accounting.entry.flash.updated');

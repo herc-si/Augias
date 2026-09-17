@@ -79,6 +79,7 @@ accounting:
     entry:
         add: New entry
         flash:
+            attachment_deleted: The document has been removed.
             automatic: This entry mirrors a payment recorded in the application and cannot be deleted here.
             created: The entry has been recorded.
             deleted: The entry has been deleted.
@@ -90,15 +91,20 @@ accounting:
             activity_nature_help: Decides which ceiling and contribution rate this receipt counts towards.
             add_title: New entry
             amount: Amount
+            attachments_description: 'The invoice, receipt or bank slip behind this entry. Kept with the books, and downloadable from here.'
+            attachments_title: Supporting documents
             automatic_notice: This entry mirrors a payment recorded in the application. Only the activity and the notes can be changed here; the rest follows the payment.
             cancel: Cancel
             counterparty: Counterparty
             delete: Delete
+            delete_attachment: Remove this document
             document_reference: Supporting document
             document_reference_help: The invoice or receipt number.
             edit_title: Edit entry
             entry_date: Date
             entry_date_help: 'The date the money moved, not the invoice date.'
+            files: 'Add documents'
+            files_help: 'PDF or image, 10 MB each at most.'
             label: Nature of the operation
             notes: Notes
             save: Save

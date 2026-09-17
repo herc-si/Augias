@@ -19,6 +19,8 @@ use Augias\AccountingBundle\Action\Declaration\Submit as DeclarationSubmit;
 use Augias\AccountingBundle\Action\Declaration\View as DeclarationView;
 use Augias\AccountingBundle\Action\Entry\Add;
 use Augias\AccountingBundle\Action\Entry\Delete;
+use Augias\AccountingBundle\Action\Entry\DeleteAttachment;
+use Augias\AccountingBundle\Action\Entry\DownloadAttachment;
 use Augias\AccountingBundle\Action\Entry\Edit;
 use Augias\AccountingBundle\Action\Index;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
@@ -47,6 +49,16 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_accounting_entry_delete', '/entry/{id}/delete')
         ->controller(Delete::class)
+        ->methods(['DELETE', 'POST']);
+
+    $routingConfigurator
+        ->add('_accounting_attachment_download', '/entry/attachment/{id}')
+        ->controller(DownloadAttachment::class)
+        ->methods(['GET']);
+
+    $routingConfigurator
+        ->add('_accounting_attachment_delete', '/entry/attachment/{id}/delete')
+        ->controller(DeleteAttachment::class)
         ->methods(['DELETE', 'POST']);
 
     $routingConfigurator

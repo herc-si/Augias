@@ -79,6 +79,7 @@ accounting:
     entry:
         add: Nouvelle écriture
         flash:
+            attachment_deleted: 'La pièce a été supprimée.'
             automatic: 'Cette écriture reflète un paiement enregistré dans l''application et ne peut pas être supprimée ici.'
             created: 'L''écriture a été enregistrée.'
             deleted: 'L''écriture a été supprimée.'
@@ -90,15 +91,20 @@ accounting:
             activity_nature_help: Détermine le plafond et le taux de cotisations appliqués à cette recette.
             add_title: Nouvelle écriture
             amount: Montant
+            attachments_description: 'La facture, le reçu ou le relevé derrière cette écriture. Conservés avec les livres, et téléchargeables ici.'
+            attachments_title: 'Pièces justificatives'
             automatic_notice: 'Cette écriture reflète un paiement enregistré dans l''application. Seules l''activité et les notes sont modifiables ici ; le reste suit le paiement.'
             cancel: Annuler
             counterparty: Tiers
             delete: Supprimer
+            delete_attachment: 'Supprimer cette pièce'
             document_reference: Pièce justificative
             document_reference_help: Numéro de la facture ou du reçu.
             edit_title: 'Modifier l''écriture'
             entry_date: Date
             entry_date_help: 'Date à laquelle l''argent a circulé, et non la date de la facture.'
+            files: 'Ajouter des pièces'
+            files_help: 'PDF ou image, 10 Mo maximum par fichier.'
             label: 'Nature de l''opération'
             notes: Notes
             save: Enregistrer
