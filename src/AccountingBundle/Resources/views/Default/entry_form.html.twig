@@ -68,6 +68,57 @@
                         </div>
                     </div>
                 </section>
+                <section class="form-page-section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            {{ ux_icon('tabler:paperclip', {width: 20, height: 20}) }}
+                        </div>
+                        <div class="section-header-text">
+                            <h2 class="section-title">{{ 'accounting.entry.form.attachments_title'|trans }}</h2>
+                            <p class="section-description">{{ 'accounting.entry.form.attachments_description'|trans }}</p>
+                        </div>
+                    </div>
+
+                    <div class="section-content">
+                        {% if entry.attachments is not empty %}
+                            <div class="attention-items mb-3">
+                                {% for attachment in entry.attachments %}
+                                    <div class="attention-item">
+                                        <a class="attention-item-main" href="{{ path('_accounting_attachment_download', {'id': attachment.id}) }}">
+                                            <span class="attention-item-id">{{ attachment.filename }}</span>
+                                            <span class="attention-item-client">
+                                                {{ (attachment.size / 1024)|round }} kB · {{ attachment.uploadedAt|format_date('long') }}
+                                            </span>
+                                        </a>
+
+                                        {#
+                                         # A submit button carrying its own formaction rather than a
+                                         # nested form: this markup already sits inside the entry's
+                                         # form, and a form inside a form is not something a browser
+                                         # will parse. The delete button at the foot of the page does
+                                         # the same.
+                                         #}
+                                        {% if entry.isEditable %}
+                                            <button
+                                                type="submit"
+                                                class="btn btn-ghost btn-sm"
+                                                formaction="{{ path('_accounting_attachment_delete', {'id': attachment.id}) }}"
+                                                formnovalidate
+                                                name="_token"
+                                                value="{{ csrf_token('delete_attachment' ~ attachment.id) }}"
+                                            >
+                                                {{ ux_icon('tabler:trash', {width: 16, height: 16}) }}
+                                                <span class="visually-hidden">{{ 'accounting.entry.form.delete_attachment'|trans }}</span>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <div class="form-field form-field-wide">{{ form_row(form.files) }}</div>
+                    </div>
+                </section>
             </div>
 
             {{ form_rest(form) }}

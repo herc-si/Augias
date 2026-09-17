@@ -71,8 +71,15 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     if ($containerConfigurator->env() === 'test') {
         $parameters->set('env(AUGIAS_CONFIG_DIR)', param('kernel.project_dir') . '/var/cache/test/config');
+        $parameters->set('env(AUGIAS_ATTACHMENTS_DIR)', param('kernel.project_dir') . '/var/cache/test/attachments');
     } else {
         $parameters->set('env(AUGIAS_CONFIG_DIR)', param('kernel.project_dir') . '/config/env');
+        // Supporting documents, on disk rather than in the database: they are
+        // whole PDFs and photographs, and a backup that has to carry them
+        // inside every dump is a backup nobody runs. Overridable because the
+        // directory that holds six years of accounting records is exactly the
+        // kind of thing an install wants on its own volume.
+        $parameters->set('env(AUGIAS_ATTACHMENTS_DIR)', param('kernel.project_dir') . '/var/attachments');
     }
 
     $parameters->set('application_version', AugiasCoreBundle::VERSION);

@@ -17,6 +17,7 @@ use Augias\AccountingBundle\Entity\LedgerEntry;
 use Augias\AccountingBundle\Enum\ActivityNature;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Enum\SettlementMethod;
+use Augias\AccountingBundle\Service\AttachmentStorage;
 use Augias\AccountingBundle\Service\LedgerTaxSplitter;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\Tax;
@@ -31,6 +32,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -39,7 +41,10 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\All;
+use Symfony\Component\Validator\Constraints\File;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function array_keys;
 use function sprintf;
 use function trim;
 
@@ -122,6 +127,26 @@ final class LedgerEntryType extends AbstractType
                 'placeholder' => '',
             ]);
         }
+
+        // Unmapped: the files are not a property of the entry, and what happens
+        // to them — written to disk, hashed, tied to a row — happens in the
+        // action once the entry itself is known to be valid.
+        $builder->add('files', FileType::class, [
+            'label' => 'accounting.entry.form.files',
+            'help' => 'accounting.entry.form.files_help',
+            'mapped' => false,
+            'required' => false,
+            'multiple' => true,
+            'constraints' => [
+                new All([
+                    new File(
+                        maxSize: AttachmentStorage::MAX_SIZE,
+                        mimeTypes: array_keys(AttachmentStorage::ALLOWED_TYPES),
+                        mimeTypesMessage: 'accounting.entry.attachment_unsupported_type',
+                    ),
+                ]),
+            ],
+        ]);
 
         $builder->add('notes', TextareaType::class, [
             'label' => 'accounting.entry.form.notes',

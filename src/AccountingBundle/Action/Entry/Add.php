@@ -21,12 +21,14 @@ use Augias\AccountingBundle\Regime\RegimeInterface;
 use Augias\AccountingBundle\Regime\RegimeRegistry;
 use Augias\AccountingBundle\Service\AccountingPeriodManager;
 use Augias\AccountingBundle\Service\AccountingProfileProvider;
+use Augias\AccountingBundle\Service\AttachmentStorage;
 use Augias\AccountingBundle\Service\CurrentCompany;
 use Augias\SettingsBundle\SystemConfig;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormView;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -56,6 +58,7 @@ final readonly class Add
         private AccountingPeriodManager $periodManager,
         private CurrentCompany $currentCompany,
         private SystemConfig $systemConfig,
+        private AttachmentStorage $storage,
     ) {
     }
 
@@ -98,6 +101,12 @@ final readonly class Add
             $entry->setCompany($this->currentCompany->require());
 
             $this->periodManager->assignPeriod($entry, $profile->declarationPeriodicity, $profile->fiscalYearStartMonth);
+
+            foreach ($form->get('files')->getData() ?? [] as $file) {
+                if ($file instanceof UploadedFile) {
+                    $entry->addAttachment($this->storage->store($file, $entry->getCompany()));
+                }
+            }
 
             $entityManager->persist($entry);
             $entityManager->flush();

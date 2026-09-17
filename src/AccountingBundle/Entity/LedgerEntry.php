@@ -25,6 +25,8 @@ use Augias\CoreBundle\Traits\Entity\TimeStampable;
 use Brick\Math\BigInteger;
 use Brick\Math\BigNumber;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Money\Currency;
@@ -159,6 +161,21 @@ class LedgerEntry
     private ?array $taxBreakdown = null;
 
     /**
+     * The documents behind this entry.
+     *
+     * Cascaded rather than left to the foreign key alone: the row would go with
+     * the entry either way, but the file on disk only goes when the ORM removes
+     * each attachment and {@see \Augias\AccountingBundle\Listener\Doctrine\AttachmentFileListener}
+     * hears about it. A database cascade would leave the disk full of documents
+     * belonging to entries that no longer exist.
+     *
+     * @var Collection<int, EntryAttachment>
+     */
+    #[ORM\OneToMany(targetEntity: EntryAttachment::class, mappedBy: 'entry', cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['created' => 'ASC'])]
+    private Collection $attachments;
+
+    /**
      * Only meaningful on the revenue side, where ceilings and contribution
      * rates depend on it. Always null for a purchase.
      */
@@ -221,6 +238,7 @@ class LedgerEntry
     {
         $this->amount = BigInteger::zero();
         $this->entryDate = new DateTimeImmutable('today');
+        $this->attachments = new ArrayCollection();
     }
 
     public function getId(): ?Ulid
@@ -574,6 +592,36 @@ class LedgerEntry
      * bookkeeping-side fields (activity nature, notes) are ever editable —
      * see {@see \Augias\AccountingBundle\Form\Type\LedgerEntryType}.
      */
+    /**
+     * @return Collection<int, EntryAttachment>
+     */
+    public function getAttachments(): Collection
+    {
+        return $this->attachments;
+    }
+
+    public function addAttachment(EntryAttachment $attachment): self
+    {
+        if (! $this->attachments->contains($attachment)) {
+            $this->attachments->add($attachment);
+            $attachment->setEntry($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAttachment(EntryAttachment $attachment): self
+    {
+        $this->attachments->removeElement($attachment);
+
+        return $this;
+    }
+
+    public function hasAttachments(): bool
+    {
+        return ! $this->attachments->isEmpty();
+    }
+
     public function isEditable(): bool
     {
         return ! $this->isLocked() && $this->source === LedgerEntrySource::Manual;
