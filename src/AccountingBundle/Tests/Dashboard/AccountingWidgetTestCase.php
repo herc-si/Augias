@@ -17,6 +17,7 @@ use Augias\AccountingBundle\AccountingSettings;
 use Augias\AccountingBundle\Enum\ActivityNature;
 use Augias\AccountingBundle\Enum\PeriodType;
 use Augias\AccountingBundle\Regime\Fr\MicroEntrepriseRegime;
+use Augias\AccountingBundle\Regime\Fr\ReelNormalRegime;
 use Augias\CoreBundle\Entity\Company;
 use Augias\DashboardBundle\Widgets\WidgetInterface;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
@@ -63,6 +64,19 @@ abstract class AccountingWidgetTestCase extends KernelTestCase
         $this->config->set(AccountingSettings::REGIME, MicroEntrepriseRegime::CODE);
         $this->config->set(AccountingSettings::PRIMARY_ACTIVITY, ActivityNature::ServicesBnc->value);
         $this->config->set(AccountingSettings::DECLARATION_PERIODICITY, PeriodType::Quarter->value);
+    }
+
+    /**
+     * The réel normal, filing VAT on the books' own quarterly rhythm — the
+     * setting the filing-rhythm section has something to say about.
+     */
+    protected function configureReelNormal(): void
+    {
+        $this->config->set(AccountingSettings::REGIME, ReelNormalRegime::CODE);
+        $this->config->set(AccountingSettings::PRIMARY_ACTIVITY, ActivityNature::ServicesBnc->value);
+        $this->config->set(AccountingSettings::DECLARATION_PERIODICITY, PeriodType::Quarter->value);
+        $this->config->set(AccountingSettings::VAT_PERIODICITY, '');
+        $this->config->set(AccountingSettings::VAT_EXEMPT, '0');
     }
 
     protected function companyReference(): Company

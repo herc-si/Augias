@@ -856,6 +856,9 @@ dashboard:
         no_limits: 'No limit applies to the activities you have taken money in this year.'
         no_turnover: 'Nothing recorded in the revenue book for %year% yet.'
         turnover_title: 'Turnover %year%'
+        vat_rhythm_line: 'VAT payable from %from% to %to%, against the %ceiling% limit that quarterly filing depends on'
+        vat_rhythm_monthly_due: 'Monthly VAT returns are now owed'
+        vat_rhythm_title: 'VAT filing rhythm'
         view_books: 'The books'
     active_clients: 'Active Clients'
     activity:

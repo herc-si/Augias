@@ -856,6 +856,9 @@ dashboard:
         no_limits: "Aucune limite ne s'applique aux activités dans lesquelles vous avez encaissé cette année."
         no_turnover: 'Rien enregistré au livre des recettes pour %year% pour le moment.'
         turnover_title: "Chiffre d'affaires %year%"
+        vat_rhythm_line: 'TVA due de %from% à %to%, au-delà du plafond de %ceiling% qui ouvre le trimestriel'
+        vat_rhythm_monthly_due: 'La TVA est désormais à déclarer tous les mois'
+        vat_rhythm_title: 'Rythme de déclaration de TVA'
         view_books: 'Les livres'
     active_clients: 'Clients actifs'
     activity:
