@@ -99,6 +99,50 @@ final class BillWorkflowTest extends KernelTestCase
         self::assertSame(BillStatus::Paid, $persisted->getStatus());
     }
 
+    /**
+     * A bill is not late on the day it falls due — it is late the day after.
+     *
+     * The query behind this bound its date as a datetime against a DATE column,
+     * which on SQLite made today's bills overdue from midnight. Nothing showed
+     * it, because nothing calls the method: there is a MarkOverdueInvoicesCommand
+     * and no equivalent for bills. This is the spec it never had.
+     */
+    public function testABillIsOverdueOnlyOnceItsDueDateHasPassed(): void
+    {
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+
+        $supplier = new Client();
+        $supplier->setCompany($this->company)->setName('Acme Supplies')->setIsClient(false)->setIsSupplier(true);
+        $entityManager->persist($supplier);
+
+        $dueToday = $this->pendingBill($supplier, new DateTimeImmutable('today'));
+        $dueYesterday = $this->pendingBill($supplier, new DateTimeImmutable('yesterday'));
+        $entityManager->flush();
+
+        $overdue = self::getContainer()->get(BillRepository::class)->getPendingOverdueBills();
+
+        self::assertCount(1, $overdue);
+        self::assertSame($dueYesterday->getId(), $overdue[0]->getId());
+        self::assertNotSame($dueToday->getId(), $overdue[0]->getId());
+    }
+
+    private function pendingBill(Client $supplier, DateTimeImmutable $dueDate): Bill
+    {
+        $bill = new Bill();
+        $bill->setCompany($this->company)
+            ->setSupplier($supplier)
+            ->setBillNumber('SUP-' . $dueDate->format('Ymd'))
+            ->setIssueDate($dueDate->modify('-1 month'))
+            ->setDueDate($dueDate)
+            ->setTotalAmount(BigInteger::of(10000))
+            ->setCurrencyCode('EUR')
+            ->setStatus(BillStatus::Pending);
+
+        self::getContainer()->get('doctrine')->getManager()->persist($bill);
+
+        return $bill;
+    }
+
     public function testConfirmingAnAlreadyPendingBillIsRejected(): void
     {
         $entityManager = self::getContainer()->get('doctrine')->getManager();
