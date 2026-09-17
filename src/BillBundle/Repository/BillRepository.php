@@ -18,6 +18,7 @@ use Augias\BillBundle\Entity\BillPayment;
 use Augias\BillBundle\Enum\BillStatus;
 use Brick\Math\BigInteger;
 use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
 
@@ -36,6 +37,16 @@ class BillRepository extends EntityRepository
      * cron, meant to run with the company filter disabled, the same as
      * {@see \Augias\InvoiceBundle\Repository\InvoiceRepository::getPendingOverdueInvoices()}.
      *
+     * Nothing calls this yet: there is a `MarkOverdueInvoicesCommand` and no
+     * equivalent for bills, so no supplier invoice is ever marked overdue. That
+     * is a feature that was never finished rather than one that broke, and it
+     * is noted here rather than in a commit message nobody will read again.
+     *
+     * Passed, not reached: a bill is not late on the day it falls due. The date
+     * is bound as a date for that to hold — `due_date` is a DATE column, and a
+     * datetime parameter renders as `2026-03-31 00:00:00`, which SQLite
+     * compares as a string against `2026-03-31` and finds greater.
+     *
      * @return list<Bill>
      */
     public function getPendingOverdueBills(): array
@@ -45,7 +56,7 @@ class BillRepository extends EntityRepository
             ->andWhere('b.dueDate IS NOT NULL')
             ->andWhere('b.dueDate < :today')
             ->setParameter('status', BillStatus::Pending->value)
-            ->setParameter('today', new DateTimeImmutable('today'))
+            ->setParameter('today', new DateTimeImmutable('today'), Types::DATE_IMMUTABLE)
             ->getQuery()
             ->getResult();
     }

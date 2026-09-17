@@ -33,6 +33,7 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @see \Augias\BillBundle\Tests\Form\Type\BillTypeTest
@@ -42,6 +43,7 @@ final class BillType extends AbstractType
 {
     public function __construct(
         private readonly SystemConfig $systemConfig,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -123,11 +125,17 @@ final class BillType extends AbstractType
         // into `newSupplierName` instead of picked from the list (handled by
         // the Action once the form is valid) — but exactly one of the two is
         // required, which plain field-level constraints can't express.
-        $builder->addEventListener(FormEvents::SUBMIT, static function (FormEvent $event): void {
+        $builder->addEventListener(FormEvents::SUBMIT, function (FormEvent $event): void {
             $form = $event->getForm();
 
             if ($form->get('supplier')->getData() === null && trim((string) $form->get('newSupplierName')->getData()) === '') {
-                $form->get('supplier')->addError(new FormError('bill.constraint.supplier_required'));
+                // Translated here, not left as a key: the form theme puts a
+                // constraint violation through the translator on its way to the
+                // page, but not a FormError added by hand — so the key was what
+                // the user read.
+                $form->get('supplier')->addError(new FormError(
+                    $this->translator->trans('bill.constraint.supplier_required', [], 'validators'),
+                ));
             }
         });
     }

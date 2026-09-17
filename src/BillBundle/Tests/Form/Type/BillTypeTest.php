@@ -21,6 +21,7 @@ use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\SettingsBundle\SystemConfig;
 use Money\Currency;
 use Symfony\Component\Form\FormTypeInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @see \Augias\BillBundle\Form\Type\BillType
@@ -66,7 +67,14 @@ final class BillTypeTest extends FormTestCase
         $form = $this->factory->create(BillType::class, new Bill(), ['currency' => new Currency('USD')]);
         $form->submit($formData, false);
 
-        self::assertGreaterThan(0, $form->get('supplier')->getErrors()->count());
+        $errors = $form->get('supplier')->getErrors();
+
+        self::assertGreaterThan(0, $errors->count());
+        // The sentence, not the key. A FormError added by hand does not pass
+        // through the form theme's translator the way a constraint violation
+        // does, so `bill.constraint.supplier_required` was what reached the
+        // page.
+        self::assertStringContainsString('existing supplier', $errors[0]->getMessage());
     }
 
     public function testSubmitAcceptsANewSupplierNameWithoutAnExistingSupplierSelected(): void
@@ -88,13 +96,17 @@ final class BillTypeTest extends FormTestCase
     }
 
     /**
-     * BillType takes SystemConfig now (for the currency default), so the bare form
-     * factory used here can no longer build it from its class name alone.
+     * BillType takes SystemConfig (for the currency default) and a translator
+     * (for the one error it raises by hand), so the bare form factory used here
+     * cannot build it from its class name alone.
      *
      * @return list<FormTypeInterface<Bill>>
      */
     protected function getTypes(): array
     {
-        return [...parent::getTypes(), new BillType(self::getContainer()->get(SystemConfig::class))];
+        return [...parent::getTypes(), new BillType(
+            self::getContainer()->get(SystemConfig::class),
+            self::getContainer()->get(TranslatorInterface::class),
+        )];
     }
 }
