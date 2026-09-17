@@ -147,6 +147,13 @@
                 </twig:Ui:Card>
             </div>
 
+            {#
+             # The figures here are counts of minor units, which is what
+             # `formatCurrency` takes. ThresholdAlert also offers `getMoney()`
+             # and `getThresholdMoney()`, which return a Money object the filter
+             # does not accept — passing one throws, and this card only renders
+             # for a company that has actually crossed something.
+             #}
             {% if alerts is not empty %}
                 <div class="col-12">
                     <twig:Ui:Card title="{{ 'accounting.alerts.title'|trans({'%year%': year}) }}">
@@ -158,7 +165,7 @@
                                             {{ ux_icon('tabler:alert-triangle', {width: 18, height: 18, class: 'me-2 text-' ~ (alert.step >= 100 ? 'danger' : 'warning')}) }}
                                             {{ 'accounting.alerts.line'|trans({
                                                 '%percent%': alert.step,
-                                                '%amount%': alert.thresholdMoney|formatCurrency(alert.currencyCode),
+                                                '%amount%': alert.thresholdAmount|formatCurrency(alert.currencyCode),
                                             }) }}
                                         </span>
                                         <span class="text-muted">{{ alert.triggeredAt|format_date('long') }}</span>
