@@ -98,6 +98,29 @@ final class PeriodCalendarTest extends KernelTestCase
     }
 
     /**
+     * A company that started trading on the last day of a quarter still has a
+     * row for that quarter, and it is not missing.
+     *
+     * The walk begins on the first day of trading, so that date is also the
+     * lower bound of the lookup — and the existing row ends on it exactly. The
+     * bound was a datetime against a DATE column, which on SQLite put the row
+     * outside its own range: the quarter was reported missing for ever, on a
+     * screen that offers to create what already exists.
+     */
+    public function testAQuarterEndingOnTheFirstDayOfTradingIsNotMissing(): void
+    {
+        $this->config->set(AccountingSettings::ACTIVITY_START_DATE, '2026-03-31');
+        $this->period(2026, 1, '2026-01-01', '2026-03-31');
+
+        $missing = $this->calendar()->missing($this->company, $this->profile(), new DateTimeImmutable('2026-05-10'));
+
+        self::assertSame(
+            ['2026-Q2'],
+            array_map(static fn (MissingPeriod $period): string => $period->getLabel(), $missing),
+        );
+    }
+
+    /**
      * Without a declared start date the oldest entry is the earliest date there
      * is evidence the business was trading on.
      */

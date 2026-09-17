@@ -53,6 +53,23 @@ final class DeclarationsDueWidgetTest extends AccountingWidgetTestCase
     }
 
     /**
+     * A quarter is not over on its last day: entries can still be booked into
+     * it until midnight, and nothing can be declared before that.
+     *
+     * `MissingPeriod::hasEnded()` has always taken that line for a quarter with
+     * no row. The query behind this one disagreed on SQLite, because it bound
+     * its date as a datetime — so the same quarter counted as ended if it had a
+     * row and as still running if it did not.
+     */
+    public function testAPeriodEndingTodayIsNotYetOutstanding(): void
+    {
+        $this->configureMicroEntreprise();
+        $this->period(PeriodStatus::Closed, new DateTimeImmutable('today'));
+
+        self::assertSame([], $this->widget()->getData()['pending']);
+    }
+
+    /**
      * An ended period whose books are still open is reported as needing closing,
      * not as needing filing: they are different jobs on different screens.
      */
