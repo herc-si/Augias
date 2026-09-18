@@ -2,7 +2,7 @@
     "_comment": "PLACEHOLDER: This manifest requires Windows binary support. See https://github.com/SolidInvoice/SolidInvoice/issues for tracking.",
     "version": "${AUGIAS_VERSION}",
     "description": "Simple and elegant invoicing solution",
-    "homepage": "https://solidinvoice.co",
+    "homepage": "https://augias.herc-si.fr",
     "license": "MIT",
     "architecture": {
         "64bit": {

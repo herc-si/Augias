@@ -1,5 +1,5 @@
-# Maintainer: SolidInvoice <open-source@solidworx.co>
-# AUR package for SolidInvoice (pre-built binary)
+# Maintainer: HERC SI <opensource@herc-si.fr>
+# AUR package for Augias (pre-built binary)
 #
 # This PKGBUILD downloads the pre-built binary from GitHub Releases.
 # For the automated AUR publishing workflow, version and checksums
@@ -8,9 +8,9 @@
 pkgname=augias-bin
 pkgver=${AUGIAS_VERSION:-0.0.0}
 pkgrel=1
-pkgdesc="Simple and elegant invoicing solution"
+pkgdesc="The open-source invoicing platform for freelancers and small businesses"
 arch=('x86_64' 'aarch64')
-url="https://solidinvoice.co"
+url="https://augias.herc-si.fr"
 license=('MIT')
 depends=()
 provides=('augias')

@@ -482,26 +482,31 @@ jobs:
             git rm -rf . --quiet
           fi
 
-          # Copy packaged chart into the gh-pages root
-          cp /tmp/helm-packages/*.tgz .
+          # The charts live under /charts/ rather than at the root, so that this
+          # same Pages site can serve the documentation at /docs/.
+          mkdir -p charts
+          cp /tmp/helm-packages/*.tgz charts/
 
           # Ensure the custom domain CNAME is in place
-          echo "charts.solidinvoice.co" > CNAME
+          echo "augias.herc-si.fr" > CNAME
 
           # Copy Artifact Hub repository configuration
-          cp /tmp/artifacthub-repo.yml . 2>/dev/null || true
+          cp /tmp/artifacthub-repo.yml charts/ 2>/dev/null || true
 
           # Regenerate index.yaml, merging with any existing entries
-          if [ -f index.yaml ]; then
-            helm repo index . \
-              --url "https://charts.solidinvoice.co" \
-              --merge index.yaml
+          if [ -f charts/index.yaml ]; then
+            helm repo index charts \
+              --url "https://augias.herc-si.fr/charts" \
+              --merge charts/index.yaml
           else
-            helm repo index . \
-              --url "https://charts.solidinvoice.co"
+            helm repo index charts \
+              --url "https://augias.herc-si.fr/charts"
           fi
 
-          git add index.yaml *.tgz CNAME
-          [ -f artifacthub-repo.yml ] && git add artifacthub-repo.yml
+          # `git add charts` covers index.yaml, the packages and artifacthub-repo.yml.
+          # The line this replaces ended in `[ -f artifacthub-repo.yml ] && git add …`,
+          # which returns 1 when the file is absent — and `run:` blocks are `bash -e`,
+          # so a release without that file would have failed on its own guard.
+          git add charts CNAME
           git commit -m "chore: release Helm chart ${CHART_VERSION}"
           git push origin gh-pages

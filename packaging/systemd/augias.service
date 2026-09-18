@@ -1,6 +1,6 @@
 [Unit]
-Description=SolidInvoice - Simple and elegant invoicing solution
-Documentation=https://solidinvoice.co/docs
+Description=Augias - The open-source invoicing platform for freelancers and small businesses
+Documentation=https://augias.herc-si.fr/docs
 After=network-online.target
 Wants=network-online.target
 

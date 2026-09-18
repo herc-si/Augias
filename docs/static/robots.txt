@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://solidinvoice.co/docs/sitemap.xml
+Sitemap: https://augias.herc-si.fr/docs/sitemap.xml

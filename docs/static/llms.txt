@@ -4,32 +4,32 @@
 
 ## Getting Started
 
-- [Augias Documentation](https://solidinvoice.co/docs/intro): Overview of Augias, key features, and entry points to the rest of the docs.
+- [Augias Documentation](https://augias.herc-si.fr/docs/intro): Overview of Augias, key features, and entry points to the rest of the docs.
 
 ## Installation
 
-- [Installation Guide](https://solidinvoice.co/docs/installation-guide): Overview of all installation methods with a decision matrix to pick the right one.
-- [Quick install](https://solidinvoice.co/docs/installation-guide/quick-install): Recommended install — self-contained executable that bundles PHP, the webserver, and the messenger consumer. SSL via Let's Encrypt or custom certs.
-- [Homebrew](https://solidinvoice.co/docs/installation-guide/homebrew): Install via the SolidWorx Homebrew tap on macOS or Linux.
-- [Docker](https://solidinvoice.co/docs/installation-guide/docker): Run as a container, with a Docker Compose example covering app + MySQL.
-- [Distribution package](https://solidinvoice.co/docs/installation-guide/distribution-package): Install on an existing PHP webserver (Nginx/Apache) — covers webserver config, cron, and the messenger consumer.
-- [Cron job setup](https://solidinvoice.co/docs/installation-guide/distribution-package/cron-job-setup): Recurring task cron on Linux, Windows, cPanel, or Plesk. Only needed for distribution-package and Git installs.
-- [Git (advanced)](https://solidinvoice.co/docs/installation-guide/git): Clone the source for contributors or developers — not for production use.
-- [System Installation](https://solidinvoice.co/docs/installation-guide/system-installation): Running the web-based installation wizard to configure database, admin user, locale, and currency.
+- [Installation Guide](https://augias.herc-si.fr/docs/installation-guide): Overview of all installation methods with a decision matrix to pick the right one.
+- [Quick install](https://augias.herc-si.fr/docs/installation-guide/quick-install): Recommended install — self-contained executable that bundles PHP, the webserver, and the messenger consumer. SSL via Let's Encrypt or custom certs.
+- [Homebrew](https://augias.herc-si.fr/docs/installation-guide/homebrew): Install via the SolidWorx Homebrew tap on macOS or Linux.
+- [Docker](https://augias.herc-si.fr/docs/installation-guide/docker): Run as a container, with a Docker Compose example covering app + PostgreSQL.
+- [Distribution package](https://augias.herc-si.fr/docs/installation-guide/distribution-package): Install on an existing PHP webserver (Nginx/Apache) — covers webserver config, cron, and the messenger consumer.
+- [Cron job setup](https://augias.herc-si.fr/docs/installation-guide/distribution-package/cron-job-setup): Recurring task cron on Linux, Windows, cPanel, or Plesk. Only needed for distribution-package and Git installs.
+- [Git (advanced)](https://augias.herc-si.fr/docs/installation-guide/git): Clone the source for contributors or developers — not for production use.
+- [System Installation](https://augias.herc-si.fr/docs/installation-guide/system-installation): Running the web-based installation wizard to configure database, admin user, locale, and currency.
 
 ## Companies
 
-- [Overview](https://solidinvoice.co/docs/companies/overview): Augias supports multiple companies per user; each company has isolated clients, invoices, and settings.
-- [Creating a company](https://solidinvoice.co/docs/companies/creating-a-company): Step-by-step guide to creating a new company entity from the company dropdown.
-- [Switching between companies](https://solidinvoice.co/docs/companies/switching-between-companies): How to switch the active company context.
+- [Overview](https://augias.herc-si.fr/docs/companies/overview): Augias supports multiple companies per user; each company has isolated clients, invoices, and settings.
+- [Creating a company](https://augias.herc-si.fr/docs/companies/creating-a-company): Step-by-step guide to creating a new company entity from the company dropdown.
+- [Switching between companies](https://augias.herc-si.fr/docs/companies/switching-between-companies): How to switch the active company context.
 
 ## Managing Clients
 
-- [Create new Client](https://solidinvoice.co/docs/managing-clients/create-new-client): Adding a new client to your company.
+- [Create new Client](https://augias.herc-si.fr/docs/managing-clients/create-new-client): Adding a new client to your company.
 
 ## Integrations
 
-- [Sentry](https://solidinvoice.co/docs/integrations/sentry): Configuring Sentry error tracking via the `SENTRY_DSN` environment variable, for both Docker and distribution-package deployments.
+- [Sentry](https://augias.herc-si.fr/docs/integrations/sentry): Configuring Sentry error tracking via the `SENTRY_DSN` environment variable, for both Docker and distribution-package deployments.
 
 ## External Resources
 

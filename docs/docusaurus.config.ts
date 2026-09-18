@@ -11,10 +11,9 @@ const config: Config = {
     v4: true,
   },
 
-  // TODO: replace once Augias has a domain. Docusaurus needs `url` for canonical
-  // tags and the sitemap, so it cannot be dropped — but pointing it at the old
-  // project's site would publish canonicals nobody here controls.
-  url: 'https://example.invalid',
+  // The docs are one subpath of the project's own domain; the Helm repository
+  // is another, published to /charts/ by release.yml onto the same Pages site.
+  url: 'https://augias.herc-si.fr',
   baseUrl: '/docs/',
 
   // The host serves every docs page at its trailing-slash URL and 307-redirects

@@ -1016,9 +1016,9 @@ bun run lint:css # StyleLint
 
 ### Project Links
 
-- [**Homepage:**](https://solidinvoice.co)
-- [**Repository:**](https://github.com/herc-si/SolidInvoice)
-- [**Issues:**](https://github.com/herc-si/SolidInvoice/issues)
+- [**Homepage:**](https://augias.herc-si.fr)
+- [**Repository:**](https://github.com/herc-si/Augias)
+- [**Issues:**](https://github.com/herc-si/Augias/issues)
 - [**Docker Hub:**](https://hub.docker.com/r/augias/augias/)
 
 ---
