@@ -1,4 +1,5 @@
 {
+    "name": "herc-si/augias",
     "description": "General Billing Application",
     "license": "MIT",
     "type": "project",
@@ -12,6 +13,10 @@
         {
             "name": "SolidWorx",
             "email": "open-source@solidworx.co"
+        },
+        {
+            "name": "HERC SI",
+            "email": "opensource@herc-si.fr"
         }
     ],
     "require": {

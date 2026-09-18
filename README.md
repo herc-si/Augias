@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/herc-si/SolidInvoice/assets/144858/6f45c11d-d73e-423e-be4a-30cdf2fe819d" alt="Augias" width="100%" />
+<img src="https://github.com/user-attachments/assets/6f45c11d-d73e-423e-be4a-30cdf2fe819d" alt="Augias" width="100%" />
 
 # Augias
 
@@ -9,15 +9,15 @@
 Send beautiful quotes and invoices, accept online payments, automate recurring billing — and own every byte of your data.
 
 <p>
-  <a href="https://github.com/herc-si/SolidInvoice/blob/3.0.x/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" /></a>
-  <a href="https://github.com/herc-si/SolidInvoice/releases"><img alt="Latest Release" src="https://img.shields.io/github/v/release/herc-si/SolidInvoice?include_prereleases&style=flat-square" /></a>
+  <a href="https://github.com/herc-si/Augias/blob/HEAD/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" /></a>
+  <a href="https://github.com/herc-si/Augias/releases"><img alt="Latest Release" src="https://img.shields.io/github/v/release/herc-si/Augias?include_prereleases&style=flat-square" /></a>
   <a href="https://www.php.net/"><img alt="PHP 8.4+" src="https://img.shields.io/badge/php-8.4%2B-777BB4?style=flat-square&logo=php&logoColor=white" /></a>
   <a href="https://symfony.com/"><img alt="Symfony 7" src="https://img.shields.io/badge/symfony-7.1-000000?style=flat-square&logo=symfony" /></a>
-  <a href="https://github.com/herc-si/SolidInvoice/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/herc-si/SolidInvoice?style=flat-square" /></a>
+  <a href="https://github.com/herc-si/Augias/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/herc-si/Augias?style=flat-square" /></a>
 </p>
 
 <p>
-  <a href="https://github.com/herc-si/SolidInvoice"><img src="https://img.shields.io/badge/Star-on%20GitHub-181717?style=for-the-badge&logo=github" alt="Star on GitHub" /></a>
+  <a href="https://github.com/herc-si/Augias"><img src="https://img.shields.io/badge/Star-on%20GitHub-181717?style=for-the-badge&logo=github" alt="Star on GitHub" /></a>
 </p>
 
 <img src="docs/static/img/dashboard.png" alt="Augias Dashboard" width="100%" />
@@ -119,8 +119,8 @@ Both versions ship the same codebase and feature set. Pick whichever fits your w
 ### Option 1 — Docker Compose from source (recommended)
 
 ```bash
-git clone https://github.com/herc-si/SolidInvoice.git
-cd SolidInvoice
+git clone https://github.com/herc-si/Augias.git
+cd Augias
 docker compose -f docker-compose.dev.yml up
 ```
 
@@ -134,7 +134,7 @@ Get up and running in seconds with a self-contained binary — no PHP, no web se
 
 **Direct binary download:**
 
-Grab the latest binary for your platform from the [releases page](https://github.com/herc-si/SolidInvoice/releases), make it executable, and run it:
+Grab the latest binary for your platform from the [releases page](https://github.com/herc-si/Augias/releases), make it executable, and run it:
 
 ```bash
 chmod +x augias
@@ -146,7 +146,7 @@ That's it — open `http://localhost:8765` and you're invoicing.
 ### Option 4 — From source (for developers)
 
 ```bash
-git clone https://github.com/herc-si/SolidInvoice.git
+git clone https://github.com/herc-si/Augias.git
 cd Augias
 composer install
 bun install && bun run dev
@@ -180,7 +180,7 @@ bun run build
 
 ## 🤝 Contributing
 
-We love contributions of every shape — code, docs, translations, bug reports, ideas. Look for the [`good first issue`](https://github.com/herc-si/SolidInvoice/labels/good%20first%20issue) label to get started, then read the [contributing guide](CONTRIBUTING.md) and our [code of conduct](CODE_OF_CONDUCT.md).
+We love contributions of every shape — code, docs, translations, bug reports, ideas. Look for the [`good first issue`](https://github.com/herc-si/Augias/labels/good%20first%20issue) label to get started, then read the [contributing guide](CONTRIBUTING.md) and our [code of conduct](CODE_OF_CONDUCT.md).
 
 ---
 
@@ -213,7 +213,7 @@ retained in `LICENSE` and in every source file, as the licence requires.
 
 <div align="center">
 
-**[Releases](https://github.com/herc-si/SolidInvoice/releases)** · **[Docs](docs/)** · **[Upstream project](https://github.com/SolidInvoice/SolidInvoice)**
+**[Releases](https://github.com/herc-si/Augias/releases)** · **[Docs](docs/)** · **[Upstream project](https://github.com/SolidInvoice/SolidInvoice)**
 
 Built on [SolidInvoice](https://github.com/SolidInvoice/SolidInvoice) by [SolidWorx](https://solidworx.co) and its [contributors](https://github.com/SolidInvoice/SolidInvoice/graphs/contributors).
 

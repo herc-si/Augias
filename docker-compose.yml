@@ -1,16 +1,33 @@
 services:
   db:
-    image: "mysql:8.0"
+    # PostgreSQL rather than MySQL. Both are supported and covered by CI, so a
+    # self-hosted install keeps the choice — but this file is the stack we
+    # recommend, and two defects found on 2026-09-17 decided it: date range
+    # bounds bind as `datetime` against `DATE` columns, and MySQL reorders the
+    # keys of a JSON column. PostgreSQL is strict where those bugs are silent.
+    image: "postgres:17"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
     restart: always
     environment:
-      MYSQL_DATABASE: augias
-      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      POSTGRES_DB: augias
+      POSTGRES_USER: augias
+      # No default on purpose: `docker compose up` stops with this message
+      # rather than starting a database anyone on the network can open.
+      POSTGRES_PASSWORD: ${AUGIAS_DB_PASSWORD:?set AUGIAS_DB_PASSWORD in a .env file next to this one}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U augias -d augias"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
   app:
     image: "augias/augias:latest"
     depends_on:
-      - db
+      # The first-run wizard asks for database details, so the database has to
+      # be accepting connections by the time someone reaches that screen —
+      # `service_started` would not guarantee it.
+      db:
+        condition: service_healthy
     ports:
       - "8765:8765"
     restart: always
