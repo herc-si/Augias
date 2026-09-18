@@ -23,6 +23,7 @@ use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use JsonException;
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\DecodingExceptionInterface;
@@ -201,5 +202,31 @@ final class ClientTest extends ApiTestCase
             'credit' => 0,
             'customFields' => [],
         ], $data);
+    }
+
+    /**
+     * The form never offered an unsupported currency, so nothing stopped one
+     * arriving here — and a stored code the money layer cannot format turns
+     * every page that shows an amount for this client into a 500.
+     */
+    public function testAClientCannotBeCreatedWithACurrencyTheBooksCannotFormat(): void
+    {
+        self::$client->request(
+            'POST',
+            '/api/clients',
+            [
+                'json' => [
+                    'name' => 'Havana Trading',
+                    'contacts' => [],
+                    'currencyCode' => 'CUC',
+                ],
+                'headers' => [
+                    'content-type' => 'application/ld+json',
+                    'accept' => 'application/ld+json',
+                ],
+            ]
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 }

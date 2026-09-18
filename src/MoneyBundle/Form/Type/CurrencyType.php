@@ -13,10 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\MoneyBundle\Form\Type;
 
-use Doctrine\Common\Collections\ArrayCollection;
+use Augias\MoneyBundle\Currency\SupportedCurrencies;
 use Generator;
-use Money\Currencies\ISOCurrencies;
-use Money\Currency;
 use Override;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -29,7 +27,12 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 class CurrencyType extends AbstractType
 {
     public function __construct(
-        private readonly string $locale
+        private readonly string $locale,
+        // Defaulted rather than required: the list is static data with no
+        // dependencies of its own, and every test that builds this type by hand
+        // would otherwise have to know about it. Autowiring still injects the
+        // service.
+        private readonly SupportedCurrencies $supportedCurrencies = new SupportedCurrencies(),
     ) {
     }
 
@@ -56,17 +59,10 @@ class CurrencyType extends AbstractType
      */
     private function getCurrencyChoices(): Generator
     {
-        $currencyList = Currencies::getNames($this->locale);
+        $currencyNames = Currencies::getNames($this->locale);
 
-        $collection = new ArrayCollection(iterator_to_array(new ISOCurrencies()->getIterator()))
-            ->filter(fn (Currency $currency): bool => array_key_exists($currency->getCode(), $currencyList));
-
-        foreach ($collection as $currency) {
-            if (empty($currency->getCode())) {
-                continue;
-            }
-
-            yield $currencyList[$currency->getCode()] => $currency->getCode();
+        foreach ($this->supportedCurrencies->codes() as $code) {
+            yield $currencyNames[$code] => $code;
         }
     }
 }

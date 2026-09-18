@@ -48,6 +48,9 @@ invoice:
         min: 'Vous devez ajouter au moins 1 ligne à la facture'
     users:
         min: 'Vous devez sélectionner au moins 1 utilisateur à associer à la facture'
+money:
+    constraint:
+        unsupported_currency: "{{ value }} n'est pas une devise que cette application sait traiter."
 notification:
     constraint:
         transport_setting:

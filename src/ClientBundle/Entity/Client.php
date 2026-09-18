@@ -34,6 +34,7 @@ use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
+use Augias\MoneyBundle\Validator\Constraints\SupportedCurrency;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\TaxBundle\Entity\TaxIdentifier;
@@ -176,6 +177,7 @@ class Client implements Stringable
     )
     ]
     #[Assert\Length(min: 3, max: 3, exactMessage: 'client.constraint.currency_code.exact_length')]
+    #[SupportedCurrency]
     private ?string $currencyCode = null;
 
     private Currency $currency;

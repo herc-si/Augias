@@ -16,6 +16,7 @@ namespace Augias\ClientBundle\Test\Factory;
 use Augias\ClientBundle\Entity\Credit;
 use Augias\ClientBundle\Repository\CreditRepository;
 use Augias\CoreBundle\Test\Factory\CompanyFactory;
+use Augias\MoneyBundle\Test\CurrencyCodes;
 use Money\Currency;
 use Money\Money;
 use Zenstruck\Foundry\FactoryCollection;
@@ -67,7 +68,7 @@ final class CreditFactory extends PersistentObjectFactory
     protected function defaults(): array
     {
         return [
-            'value' => new Money(self::faker()->randomNumber(), new Currency(self::faker()->currencyCode())),
+            'value' => new Money(self::faker()->randomNumber(), new Currency(CurrencyCodes::random(self::faker()))),
             'company' => CompanyFactory::random(),
         ];
     }

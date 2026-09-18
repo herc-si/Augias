@@ -17,6 +17,7 @@ use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Enum\ClientStatus;
 use Augias\ClientBundle\Repository\ClientRepository;
 use Augias\CoreBundle\Test\Factory\CompanyFactory;
+use Augias\MoneyBundle\Test\CurrencyCodes;
 use Zenstruck\Foundry\FactoryCollection;
 use Zenstruck\Foundry\Persistence\PersistentObjectFactory;
 use Zenstruck\Foundry\Persistence\RepositoryDecorator;
@@ -69,7 +70,7 @@ final class ClientFactory extends PersistentObjectFactory
             'name' => self::faker()->unique()->company(),
             'website' => 'https://' . self::faker()->domainName(),
             'status' => self::faker()->randomElement(ClientStatus::cases()),
-            'currencyCode' => self::faker()->currencyCode(),
+            'currencyCode' => CurrencyCodes::random(self::faker()),
             'archived' => null,
             'created' => self::faker()->dateTime('2014-02-25 08:37:17'),
             'updated' => self::faker()->dateTime('2014-02-25 08:37:17'),
