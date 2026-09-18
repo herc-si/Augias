@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\PaymentBundle\Test\Factory;
 
+use Augias\MoneyBundle\Test\CurrencyCodes;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\PaymentBundle\Repository\PaymentRepository;
@@ -69,7 +70,7 @@ final class PaymentFactory extends PersistentObjectFactory
             'description' => self::faker()->text(),
             'clientEmail' => self::faker()->text(),
             'totalAmount' => self::faker()->randomNumber(),
-            'currencyCode' => self::faker()->currencyCode(),
+            'currencyCode' => CurrencyCodes::random(self::faker()),
             'details' => [],
             'status' => self::faker()->randomElement(PaymentStatus::cases()),
             'message' => self::faker()->text(),

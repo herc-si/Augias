@@ -48,6 +48,9 @@ invoice:
         min: 'You need to add at least 1 line to the Invoice'
     users:
         min: 'You need to select at least 1 user to attach to the Invoice'
+money:
+    constraint:
+        unsupported_currency: '{{ value }} is not a currency this application can work with.'
 notification:
     constraint:
         transport_setting:
