@@ -32,37 +32,60 @@ For a complete stack (app + database), use a `docker-compose.yml` like the one s
 ```yaml title="docker-compose.yml"
 services:
   db:
-    image: "mysql:8.0"
+    image: "postgres:17"
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
     restart: always
     environment:
-      MYSQL_DATABASE: augias
-      MYSQL_ALLOW_EMPTY_PASSWORD: 1
+      POSTGRES_DB: augias
+      POSTGRES_USER: augias
+      POSTGRES_PASSWORD: ${AUGIAS_DB_PASSWORD:?set AUGIAS_DB_PASSWORD in a .env file next to this one}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U augias -d augias"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
   app:
     image: "augias/augias:latest"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
       - "8765:8765"
     restart: always
+    environment:
+      AUGIAS_ATTACHMENTS_DIR: /var/augias/attachments
     volumes:
       - app_data:/etc/augias
+      - attachments_data:/var/augias/attachments
 
 volumes:
   db_data: {}
   app_data: {}
+  attachments_data: {}
 ```
 
-Bring it up:
+Choose the database password first, in a `.env` file beside `docker-compose.yml`:
+
+```bash title=".env"
+AUGIAS_DB_PASSWORD=a-long-random-password
+```
+
+Then bring the stack up:
 
 ```bash
 docker compose up -d
 ```
 
-:::warning
-The example above uses an empty MySQL root password for simplicity. Set `MYSQL_ROOT_PASSWORD` and `MYSQL_PASSWORD` (and use `MYSQL_USER`) before running this in production.
+:::info
+The stack uses PostgreSQL. MySQL and MariaDB are supported too — the [first-run wizard](./system-installation.md) asks which one you are connecting to — so change the `db` service if you already run one of those.
 :::
+
+:::warning
+There is no default for `AUGIAS_DB_PASSWORD` on purpose. Without it `docker compose up` stops and tells you to set it, rather than starting a database with no password on it.
+:::
+
+Supporting documents attached to accounting entries are kept on their own volume, because the obligation to keep them is counted in years — longer than any container.
 
 ## Persisting data
 
