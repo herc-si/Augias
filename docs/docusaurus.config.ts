@@ -186,7 +186,19 @@ const config: Config = {
           items: [
             {
               label: 'GitHub',
-              href: 'https://github.com/herc-si/SolidInvoice',
+              href: 'https://github.com/herc-si/Augias',
+            },
+            {
+              label: 'Mentions légales',
+              to: '/legal/mentions-legales',
+            },
+            {
+              label: 'Conditions générales',
+              to: '/legal/conditions-generales',
+            },
+            {
+              label: 'Politique de confidentialité',
+              to: '/legal/politique-de-confidentialite',
             },
           ],
         },
