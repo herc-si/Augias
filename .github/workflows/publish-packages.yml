@@ -323,7 +323,7 @@ jobs:
           pkgname: augias-bin
           pkgbuild: packaging/aur/PKGBUILD
           commit_username: "Augias Bot"
-          commit_email: "bot@solidinvoice.co"
+          commit_email: "github-actions[bot]@users.noreply.github.com"
           ssh_private_key: ${{ secrets.AUR_SSH_KEY }}
           commit_message: "Update to ${{ needs.prepare.outputs.version }}"
           force_push: true

@@ -226,6 +226,6 @@ Augias on Kubernetes consists of the following components:
 ## Links
 
 - [Augias on GitHub](https://github.com/SolidWorx/Augias)
-- [Augias Documentation](https://solidinvoice.co/docs)
+- [Augias Documentation](https://augias.herc-si.fr/docs)
 - [Helm Documentation](https://helm.sh/docs/)
 - [Bitnami Charts](https://github.com/bitnami/charts)

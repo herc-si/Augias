@@ -18,13 +18,13 @@ epoch: 0
 section: web
 priority: optional
 
-maintainer: Pierre du Plessis <open-source@solidworx.co>
-vendor: SolidWorx
-homepage: https://solidinvoice.co
+maintainer: HERC SI <opensource@herc-si.fr>
+vendor: HERC SI
+homepage: https://augias.herc-si.fr
 license: MIT
 description: |
-  Simple and elegant invoicing solution.
-  SolidInvoice is an open-source invoicing application for small businesses
+  The open-source invoicing platform for freelancers and small businesses.
+  Augias is an open-source invoicing application for small businesses
   and freelancers. Features include client management, quotes, invoices
   (including recurring), payments, tax and discount management, a REST API,
   and notifications.
