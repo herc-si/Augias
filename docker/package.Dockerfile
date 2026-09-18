@@ -3,12 +3,12 @@
 #checkov:skip=CKV_DOCKER_3
 FROM alpine
 
-LABEL org.opencontainers.image.title=SolidInvoice
-LABEL org.opencontainers.image.description="Simple and elegant invoicing solution"
-LABEL org.opencontainers.image.url=https://solidinvoice.co
-LABEL org.opencontainers.image.source=https://github.com/SolidInvoice/SolidInvoice
+LABEL org.opencontainers.image.title=Augias
+LABEL org.opencontainers.image.description="The open-source invoicing platform for freelancers and small businesses"
+LABEL org.opencontainers.image.url=https://augias.herc-si.fr
+LABEL org.opencontainers.image.source=https://github.com/herc-si/Augias
 LABEL org.opencontainers.image.licenses=MIT
-LABEL org.opencontainers.image.vendor="SolidWorx"
+LABEL org.opencontainers.image.vendor="HERC SI"
 
 ARG AUGIAS_VERSION=''
 ENV AUGIAS_VERSION=${AUGIAS_VERSION}

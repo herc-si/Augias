@@ -12,7 +12,7 @@ annotations:
       email: open-source@solidworx.co
   artifacthub.io/links: |
     - name: Source Code
-      url: https://github.com/herc-si/SolidInvoice
+      url: https://github.com/herc-si/Augias
 
 dependencies:
   - name: mysql
