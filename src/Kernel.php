@@ -26,6 +26,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
+use function class_exists;
 use function preg_replace;
 
 class Kernel extends BaseKernel
@@ -78,6 +79,35 @@ class Kernel extends BaseKernel
         return \dirname(__DIR__);
     }
 
+    /**
+     * The operator console that HERC SI runs against its own tenants.
+     *
+     * It is a private Composer package, not part of Augias: it manages a
+     * hosted business rather than the product, and nobody self-hosting has
+     * any use for it. But it has to live *inside* this application rather
+     * than beside it, because its whole job is to read across tenants, and
+     * the one thing that makes that safe — the `company` Doctrine filter —
+     * is defined and tested here. A separate application on the same schema
+     * would put the most dangerous query in the codebase furthest from its
+     * guard.
+     *
+     * So the seam is a name, not a dependency. The class is referenced as a
+     * string and only instantiated when the package is installed, which
+     * means `composer.json` needs no entry a self-hosted install could not
+     * resolve, and this repository stays buildable without it.
+     *
+     * The class is deliberately *not* called AugiasAdminBundle, which is what
+     * its namespace would suggest. Symfony Flex derives candidate bundle
+     * classes from a package's PSR-4 namespace and, on `composer require`,
+     * writes whatever it finds into config/bundles.php — this repository's
+     * file, with `['all' => true]`. Committed, that line would break every
+     * self-hosted install on a class it does not have. A name Flex cannot
+     * derive keeps the registration here, where the mode is checked.
+     *
+     * @see \Augias\CoreBundle\Tests\KernelOperatorConsoleSeamTest
+     */
+    public const string OPERATOR_CONSOLE_BUNDLE = 'HercSi\\AugiasAdmin\\AugiasOperatorConsoleBundle';
+
     #[Override]
     public function registerBundles(): iterable
     {
@@ -86,6 +116,12 @@ class Kernel extends BaseKernel
         if ($this->mode === AppMode::SAAS) {
             yield new SolidWorxPlatformSaasBundle();
             yield new AugiasSaasBundle();
+
+            if (class_exists(self::OPERATOR_CONSOLE_BUNDLE)) {
+                $bundle = self::OPERATOR_CONSOLE_BUNDLE;
+
+                yield new $bundle();
+            }
         }
     }
 
@@ -132,6 +168,11 @@ class Kernel extends BaseKernel
             $configDir = preg_replace('{/config$}', '/{config}', $this->getConfigDir());
             $routes->import($configDir . '/{routes}/saas/*.{php,yaml}');
 
+            // A bundle cannot register its own routes, so the console's are
+            // imported from its package once it is registered.
+            if (class_exists(self::OPERATOR_CONSOLE_BUNDLE)) {
+                $routes->import('@AugiasOperatorConsoleBundle/config/routes.php');
+            }
         }
     }
 
