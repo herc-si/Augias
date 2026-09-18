@@ -114,9 +114,16 @@ final class AccountIsolationTest extends WebTestCase
         $this->em->clear();
 
         $this->browser()
+            // The visit below is the one that must succeed, and a bare 500 here
+            // would say only "expected 2xx, got 500" — which is exactly the
+            // evidence this test left behind when it failed on MariaDB 11 and
+            // nowhere else. Rethrowing puts the exception in the output instead.
+            ->throwExceptions()
             ->actingAs($userA)
             ->visit('/invoices/view/' . $ownInvoiceId)
             ->assertSuccessful()
+            // Back to error pages: the 404 below is the assertion itself.
+            ->catchExceptions()
             ->visit('/invoices/view/' . $foreignInvoiceId)
             ->assertStatus(404);
     }
@@ -136,9 +143,16 @@ final class AccountIsolationTest extends WebTestCase
         $this->em->clear();
 
         $this->browser()
+            // The visit below is the one that must succeed, and a bare 500 here
+            // would say only "expected 2xx, got 500" — which is exactly the
+            // evidence this test left behind when it failed on MariaDB 11 and
+            // nowhere else. Rethrowing puts the exception in the output instead.
+            ->throwExceptions()
             ->actingAs($userA)
             ->visit('/clients/view/' . $ownClientId)
             ->assertSuccessful()
+            // Back to error pages: the 404 below is the assertion itself.
+            ->catchExceptions()
             ->visit('/clients/view/' . $foreignClientId)
             ->assertStatus(404);
     }
