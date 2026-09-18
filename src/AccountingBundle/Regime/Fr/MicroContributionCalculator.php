@@ -59,7 +59,7 @@ final readonly class MicroContributionCalculator implements ContributionCalculat
         // old period after a rate change.
         $on = $period->getEndDate();
         $pensionFund = $this->pensionFund($profile);
-        $acreApplies = $this->acreApplies($profile, $period, $on);
+        $acreApplies = $this->acreApplies($profile, $period);
         $incomeTaxOption = $profile->boolOption('income_tax_option');
 
         $lines = [];
@@ -70,7 +70,7 @@ final readonly class MicroContributionCalculator implements ContributionCalculat
             $socialRate = $this->rates->socialRate($nature, $on, $pensionFund);
 
             if ($acreApplies) {
-                $socialRate = $this->applyAcre($socialRate, $on);
+                $socialRate = $this->applyAcre($socialRate, $profile->activityStartDate ?? $on);
             }
 
             $lines[] = DeclarationLine::fromRate(
@@ -124,10 +124,16 @@ final readonly class MicroContributionCalculator implements ContributionCalculat
     /**
      * ACRE takes a percentage off the social rate — not off the base, and not
      * off the training levy or the income-tax payment, which it never covers.
+     *
+     * Resolved on the date the activity started, not the period being declared.
+     * The terms of the relief are fixed when the company is created: the
+     * reduction falls from 50% to 25% for micro-entreprises created on or after
+     * 1 July 2026, and one created in June keeps its 50% for the twelve months
+     * that follow. Resolving on the period would quietly reprice it in July.
      */
-    private function applyAcre(BigDecimal $socialRate, DateTimeImmutable $on): BigDecimal
+    private function applyAcre(BigDecimal $socialRate, DateTimeImmutable $createdOn): BigDecimal
     {
-        $reduction = $this->rates->acreReductionPercent($on);
+        $reduction = $this->rates->acreReductionPercent($createdOn);
 
         if ($reduction->isZero()) {
             return $socialRate;
@@ -147,7 +153,6 @@ final readonly class MicroContributionCalculator implements ContributionCalculat
     private function acreApplies(
         AccountingProfile $profile,
         AccountingPeriod $period,
-        DateTimeImmutable $on,
     ): bool {
         if (! $profile->boolOption('acre')) {
             return false;
@@ -159,7 +164,9 @@ final readonly class MicroContributionCalculator implements ContributionCalculat
             return false;
         }
 
-        $months = $this->rates->acreDurationMonths($on);
+        // Same reasoning as applyAcre(): how long the relief runs is part of the
+        // terms fixed at creation, not of the period being declared.
+        $months = $this->rates->acreDurationMonths($start);
 
         if ($months <= 0) {
             return false;

@@ -48,7 +48,8 @@ final class ThresholdMonitorTest extends KernelTestCase
      * fixtures are sized against, and a test that fails when it changes is
      * doing its job.
      */
-    private const int SERVICES_CEILING = 7_770_000;
+    /** The BNC and BIC services ceiling for 2026-2028, in cents. */
+    private const int SERVICES_CEILING = 8_360_000;
 
     private EntityManagerInterface $entityManager;
 
