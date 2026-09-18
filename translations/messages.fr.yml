@@ -3024,7 +3024,7 @@ security:
         submit: "S'inscrire"
         success: 'Votre compte a été créé. Veuillez vérifier votre adresse e-mail avant de vous connecter.'
         terms_agreement: 'J''accepte les conditions générales et la politique de confidentialité'
-        terms_agreement_html: 'J''accepte les <a href="https://solidinvoice.co/terms-of-service" target="_blank" class="link-primary" rel="external noreferrer noopener">conditions générales</a> et la <a href="https://solidinvoice.co/privacy-policy" target="_blank" class="link-primary" rel="external noreferrer noopener">politique de confidentialité</a>'
+        terms_agreement_html: 'J''accepte les <a href="https://augias.herc-si.fr/docs/legal/conditions-generales" target="_blank" class="link-primary" rel="external noreferrer noopener">conditions générales</a> et la <a href="https://augias.herc-si.fr/docs/legal/politique-de-confidentialite" target="_blank" class="link-primary" rel="external noreferrer noopener">politique de confidentialité</a>'
         title: "S'inscrire"
         trust:
             control: 'Vos données, votre contrôle'
