@@ -16,12 +16,20 @@ namespace Augias\CoreBundle\Tests;
 use Augias\AppMode;
 use Augias\Kernel;
 use Augias\Test\SaasKernel;
+use FilesystemIterator;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use ReflectionClass;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
 use function class_exists;
 use function dirname;
+use function file_get_contents;
 use function in_array;
+use function str_contains;
+use function strlen;
+use function strrpos;
+use function substr;
 
 /**
  * The seam that lets a private operator console plug into this application.
@@ -47,18 +55,38 @@ final class KernelOperatorConsoleSeamTest extends TestCase
      * private has landed in this repository, or the constant was pointed at a
      * class that lives in Augias, which turns the seam into an ordinary
      * dependency.
+     *
+     * Asked of the files rather than of the autoloader, deliberately. Where an
+     * installed class came from is a fact about someone's vendor directory;
+     * what is committed here is a fact about this repository, and it is the
+     * one this test is named after. It is also the only form that says the
+     * same thing whether or not the console happens to be installed.
      */
     public function testTheConsoleIsNotPartOfThisRepository(): void
     {
-        // Not installed is the ordinary case, and an empty path is under no
-        // directory, so both cases answer the same single assertion.
-        $file = class_exists(Kernel::OPERATOR_CONSOLE_BUNDLE)
-            ? (string) (new ReflectionClass(Kernel::OPERATOR_CONSOLE_BUNDLE))->getFileName()
-            : '';
+        $source = dirname(__DIR__, 2);
+        $namespace = 'namespace ' . substr(
+            Kernel::OPERATOR_CONSOLE_BUNDLE,
+            0,
+            (int) strrpos(Kernel::OPERATOR_CONSOLE_BUNDLE, '\\'),
+        );
 
-        self::assertStringStartsNotWith(
-            dirname(__DIR__, 2) . DIRECTORY_SEPARATOR,
-            $file,
+        $offenders = [];
+
+        /** @var SplFileInfo $file */
+        foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source, FilesystemIterator::SKIP_DOTS)) as $file) {
+            if (! $file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
+
+            if (str_contains((string) file_get_contents($file->getPathname()), $namespace)) {
+                $offenders[] = substr($file->getPathname(), strlen($source) + 1);
+            }
+        }
+
+        self::assertSame(
+            [],
+            $offenders,
             Kernel::OPERATOR_CONSOLE_BUNDLE . ' is meant to live in a private package, not in this repository.',
         );
     }
