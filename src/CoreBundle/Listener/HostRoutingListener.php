@@ -80,6 +80,17 @@ final readonly class HostRoutingListener implements EventSubscriberInterface
             throw new NotFoundHttpException();
         }
 
+        // A host this deployment keeps for itself is served, and nothing about
+        // the request is made a tenant's: no company is switched into the
+        // session, and the router context is left on the canonical host. What
+        // such a host is *for* is decided by whatever routes answer on it,
+        // which is not this listener's business.
+        if ($resolved->isReserved()) {
+            $request->attributes->set(self::REQUEST_ATTR, $resolved);
+
+            return;
+        }
+
         // Defensive: when a company has been downgraded to a plan without
         // `custom_domain`, the row still carries `Company::customDomain` but
         // the gate refuses to honour it. Fall back to canonical-host routing
