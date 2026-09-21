@@ -24,8 +24,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\SqlFormatter\SqlFormatter;
 use Generator;
+use function array_filter;
+use function array_values;
 use function count;
 use function in_array;
+use function is_string;
 use function sprintf;
 
 final readonly class Migration
@@ -151,7 +154,10 @@ final readonly class Migration
         // request, because `UpgradeListener` runs this on one. `AUGIAS_PRESERVED_TABLES`
         // names them. It is deliberately a list of names and not a pattern:
         // a pattern is how a list of things not to destroy grows by accident.
-        $preserved = $this->preservedTables;
+        // `csv:` on an empty environment variable yields [null], not [], so the
+        // list is normalised rather than trusted — a null in there would be a
+        // value compared against every table name for no reason.
+        $preserved = array_values(array_filter($this->preservedTables, is_string(...)));
 
         $dbalConfiguration->setSchemaAssetsFilter(
             static function (string $assetName) use ($previousFilter, $migrationsTable, $preserved): bool {
