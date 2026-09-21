@@ -86,6 +86,79 @@ final class CompanyEventSubscriberTest extends TestCase
         self::assertNull($companySelector->getCompany());
     }
 
+    /**
+     * A route that works across companies, or none, must not be sent to the
+     * picker. Without this a user who belongs to no company — an operator
+     * account, say — is redirected on every request and can never arrive
+     * anywhere, because picking is the one thing they cannot do.
+     */
+    public function testItLeavesARouteThatOptedOutOfCompanyScopeAlone(): void
+    {
+        $router = M::mock(RouterInterface::class);
+        $companySelector = new CompanySelector(M::mock(ManagerRegistry::class));
+        $security = M::mock(Security::class);
+
+        $user = new User();
+        $user->addCompany(new Company());
+        $user->addCompany(new Company());
+
+        $security
+            ->shouldReceive('getUser')
+            ->andReturn($user);
+
+        $router
+            ->shouldNotReceive('generate');
+
+        $session = new Session(new MockArraySessionStorage());
+        $request = new Request();
+        $request->setSession($session);
+        $request->attributes->set('_company_scope', false);
+
+        $listener = new CompanyEventSubscriber($router, $companySelector, $security, Carbon::now()->format('Y'));
+
+        $event = new RequestEvent(M::mock(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST);
+        $listener->onKernelRequest($event);
+
+        self::assertNull($event->getResponse());
+        self::assertNull($companySelector->getCompany());
+    }
+
+    /**
+     * The default, spelled out: a route that says nothing is company-scoped,
+     * because nearly every route is.
+     */
+    public function testARouteThatSaysNothingIsStillCompanyScoped(): void
+    {
+        $router = M::mock(RouterInterface::class);
+        $companySelector = new CompanySelector(M::mock(ManagerRegistry::class));
+        $security = M::mock(Security::class);
+
+        $user = new User();
+        $user->addCompany(new Company());
+        $user->addCompany(new Company());
+
+        $security
+            ->shouldReceive('getUser')
+            ->andReturn($user);
+
+        $router
+            ->shouldReceive('generate')
+            ->with('_select_company')
+            ->once()
+            ->andReturn('/select-company');
+
+        $session = new Session(new MockArraySessionStorage());
+        $request = new Request();
+        $request->setSession($session);
+
+        $listener = new CompanyEventSubscriber($router, $companySelector, $security, Carbon::now()->format('Y'));
+
+        $event = new RequestEvent(M::mock(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST);
+        $listener->onKernelRequest($event);
+
+        self::assertInstanceOf(RedirectResponse::class, $event->getResponse());
+    }
+
     public function testItSetsTheCompanyWhenNoCompanyIsSetAndTheUserOnlyHasOneCompany(): void
     {
         // Test that it redirects to the company select page if a company is not set and the user has multiple companies

@@ -108,6 +108,10 @@ final readonly class CompanyEventSubscriber implements EventSubscriberInterface
 
     private function isOnCompanySelectionRoute(Request $request): bool
     {
+        if (! $this->isCompanyScoped($request)) {
+            return true;
+        }
+
         $routeName = $request->attributes->get('_route');
 
         return in_array(
@@ -121,5 +125,21 @@ final readonly class CompanyEventSubscriber implements EventSubscriberInterface
             ],
             true
         );
+    }
+
+    /**
+     * Whether this route reads or writes one company's data.
+     *
+     * Nearly every route does, which is why the default is true and why a
+     * route that does not has to say so, with `_company_scope` in its
+     * defaults. The exceptions above are the company-selection flow itself;
+     * this is for the other kind — a route that works *across* companies, or
+     * none, for which being asked to pick one is not a step but a dead end:
+     * a user who belongs to no company, or to several, would be redirected to
+     * the picker on every request and could never arrive.
+     */
+    private function isCompanyScoped(Request $request): bool
+    {
+        return false !== $request->attributes->get('_company_scope', true);
     }
 }
