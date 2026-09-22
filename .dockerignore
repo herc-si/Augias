@@ -1,2 +1,10 @@
 /frankenphp/dist
 .idea/
+/var/
+/node_modules/
+/vendor/
+/public/static/
+/build/
+/token
+/config/env/
+.git/

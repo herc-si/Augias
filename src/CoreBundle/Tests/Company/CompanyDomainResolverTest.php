@@ -54,6 +54,49 @@ final class CompanyDomainResolverTest extends TestCase
         self::assertSame('https', $resolved->scheme);
     }
 
+    /**
+     * A reserved host is served rather than refused, and is not a tenant's.
+     */
+    public function testResolvesAReservedHost(): void
+    {
+        $repository = M::mock(CompanyRepository::class);
+        $repository->shouldNotReceive('findOneByCustomDomain');
+
+        $resolver = new CompanyDomainResolver($repository, 'https://app.example.com', ['ops.example.com']);
+
+        $resolved = $resolver->resolve('OPS.Example.com.');
+
+        self::assertTrue($resolved->isReserved());
+        self::assertFalse($resolved->isCustomDomain());
+        self::assertNull($resolved->company);
+    }
+
+    /**
+     * The reservation is checked before the custom-domain lookup, so a name
+     * reserved after someone already claimed it stops being theirs. A
+     * reservation that only bound names nobody had taken yet would be no
+     * reservation at all.
+     */
+    public function testAReservedHostWinsOverACompanyThatClaimedIt(): void
+    {
+        $repository = M::mock(CompanyRepository::class);
+        $repository->shouldNotReceive('findOneByCustomDomain');
+
+        $resolver = new CompanyDomainResolver($repository, 'https://app.example.com', ['ops.example.com']);
+
+        self::assertTrue($resolver->resolve('ops.example.com')->isReserved());
+    }
+
+    public function testAHostThatIsNotReservedIsUnaffected(): void
+    {
+        $repository = M::mock(CompanyRepository::class);
+        $repository->shouldReceive('findOneByCustomDomain')->with('other.example.com')->andReturnNull();
+
+        $resolver = new CompanyDomainResolver($repository, 'https://app.example.com', ['ops.example.com']);
+
+        self::assertSame(HostType::Unknown, $resolver->resolve('other.example.com')->type);
+    }
+
     public function testResolvesCustomDomainCompany(): void
     {
         $company = new Company();

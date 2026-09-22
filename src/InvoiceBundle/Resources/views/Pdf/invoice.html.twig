@@ -345,7 +345,7 @@
             {% for payment in invoice.payments|filter((v) => v.status == enum('Augias\\PaymentBundle\\Enum\\PaymentStatus').Captured) %}
                 <tr class="payment-row">
                     <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
-                        {{ 'invoice.payment.label'|trans }}: {{ payment.method.name }}
+                        {{ 'invoice.payment.label'|trans }}: {{ payment.method ? payment.method.name : 'payment.method.none'|trans }}
                     </td>
                     <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #10b981;">
                         -{{ payment.totalAmount|formatCurrency(currency) }}

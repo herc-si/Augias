@@ -122,6 +122,42 @@ final class HostRoutingListenerTest extends TestCase
         self::assertSame(8080, $context->getHttpPort());
     }
 
+    /**
+     * A reserved host is served, not refused as unknown — that refusal is what
+     * would otherwise stop a deployment answering on a name of its own before
+     * any route on it is even reached, since this listener runs after routing
+     * but well before the firewall.
+     */
+    public function testServesAReservedHostAndLeavesTheRouterContextAlone(): void
+    {
+        $repository = M::mock(CompanyRepository::class);
+        $repository->shouldNotReceive('findOneByCustomDomain');
+
+        $context = new RequestContext('', 'GET', 'app.example.com', 'https', 80, 443);
+        $router = M::mock(RouterInterface::class);
+        $router->shouldNotReceive('getContext');
+
+        $listener = new HostRoutingListener(
+            $this->resolver($repository, 'https://app.example.com', ['ops.example.com']),
+            $router,
+            new NoopFeatureGate(),
+            '2025',
+        );
+
+        $request = Request::create('https://ops.example.com/anything');
+        $listener->onKernelRequest($this->event($request));
+
+        $resolved = $request->attributes->get(HostRoutingListener::REQUEST_ATTR);
+        self::assertInstanceOf(ResolvedHost::class, $resolved);
+        self::assertTrue($resolved->isReserved());
+
+        // Nothing about the request is a tenant's, so nothing is made to be:
+        // no company on the resolution, and the canonical host still generates
+        // the URLs.
+        self::assertNull($resolved->company);
+        self::assertSame('app.example.com', $context->getHost());
+    }
+
     public function testSyncsRouterContextForCustomDomain(): void
     {
         $repository = M::mock(CompanyRepository::class);
@@ -251,9 +287,12 @@ final class HostRoutingListenerTest extends TestCase
         return $router;
     }
 
-    private function resolver(CompanyRepository $repository, string $applicationUrl = ''): CompanyDomainResolver
+    /**
+     * @param list<string> $reservedHosts
+     */
+    private function resolver(CompanyRepository $repository, string $applicationUrl = '', array $reservedHosts = []): CompanyDomainResolver
     {
-        return new CompanyDomainResolver($repository, $applicationUrl);
+        return new CompanyDomainResolver($repository, $applicationUrl, $reservedHosts);
     }
 
     /**

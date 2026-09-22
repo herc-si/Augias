@@ -34,6 +34,8 @@ use Augias\ClientBundle\Entity\Contact;
 use Augias\CoreBundle\Doctrine\Type\BigIntegerType;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Entity\LineInterface;
+use Augias\CoreBundle\Enum\RecordKind;
+use Augias\CoreBundle\Journal\Journalled;
 use Augias\CoreBundle\Traits\Entity\Archivable;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
@@ -119,7 +121,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     ],
 )]
 #[ORM\AssociationOverrides([new ORM\AssociationOverride(name: 'company', inversedBy: 'quotes')])]
-class Quote
+class Quote implements Journalled
 {
     final public const string TABLE_NAME = 'quotes';
 
@@ -641,5 +643,15 @@ class Quote
         }
 
         return $this;
+    }
+
+    public function journalKind(): RecordKind
+    {
+        return RecordKind::Quote;
+    }
+
+    public function journalLabel(): string
+    {
+        return (string) $this->getQuoteId();
     }
 }

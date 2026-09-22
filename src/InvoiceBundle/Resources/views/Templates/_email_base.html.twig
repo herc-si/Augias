@@ -118,7 +118,7 @@
     {% if hasOutstandingBalance %}
         {% for payment in invoice_captured_payments(invoice) %}
             {{ email.spacer('xs') }}
-            {{ email.info_row('invoice.payment_method'|trans({'%method%': payment.method.name}, 'email'), '-' ~ payment.totalAmount|formatCurrency(invoice.client.currency)) }}
+            {{ email.info_row('invoice.payment_method'|trans({'%method%': payment.method ? payment.method.name : 'payment.method.none'|trans}, 'email'), '-' ~ payment.totalAmount|formatCurrency(invoice.client.currency)) }}
         {% endfor %}
     {% endif %}
 

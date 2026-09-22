@@ -17,11 +17,10 @@ use Augias\AccountingBundle\Entity\LedgerEntry;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Enum\LedgerEntrySource;
 use Augias\AccountingBundle\Form\Type\LedgerEntryType;
-use Augias\AccountingBundle\Regime\RegimeInterface;
-use Augias\AccountingBundle\Regime\RegimeRegistry;
 use Augias\AccountingBundle\Service\AccountingPeriodManager;
 use Augias\AccountingBundle\Service\AccountingProfileProvider;
 use Augias\AccountingBundle\Service\AttachmentStorage;
+use Augias\AccountingBundle\Service\CompanyBooks;
 use Augias\AccountingBundle\Service\CurrentCompany;
 use Augias\SettingsBundle\SystemConfig;
 use Doctrine\Persistence\ManagerRegistry;
@@ -36,7 +35,6 @@ use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\RouterInterface;
 use function assert;
-use function in_array;
 
 /**
  * Adds an entry by hand — money that moved without an invoice or a supplier
@@ -54,7 +52,7 @@ final readonly class Add
         private RouterInterface $router,
         private ManagerRegistry $doctrine,
         private AccountingProfileProvider $profileProvider,
-        private RegimeRegistry $registry,
+        private CompanyBooks $books,
         private AccountingPeriodManager $periodManager,
         private CurrentCompany $currentCompany,
         private SystemConfig $systemConfig,
@@ -70,9 +68,8 @@ final readonly class Add
     {
         $ledgerBook = LedgerBook::tryFrom($book);
         $profile = $this->profileProvider->forCompany();
-        $regime = $this->registry->forProfile($profile);
 
-        if (null === $ledgerBook || ! $regime instanceof RegimeInterface || ! in_array($ledgerBook, $regime->books($profile), true)) {
+        if (! $this->books->keeps($profile, $ledgerBook)) {
             throw new NotFoundHttpException('This company does not keep that book.');
         }
 

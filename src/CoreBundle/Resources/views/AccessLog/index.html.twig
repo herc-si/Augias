@@ -1,0 +1,65 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends '@AugiasCore/Layout/default.html.twig' %}
+
+{% block title %}
+    {{ ux_icon('tabler:history', {width: 24, height: 24, class: 'me-2'}) }}
+    {{ 'access_log.title'|trans }}
+{% endblock title %}
+
+{% block content %}
+    <twig:Ui:Card>
+        <twig:block name="header">
+            <h3 class="card-title mb-0">{{ 'access_log.card_title'|trans }}</h3>
+        </twig:block>
+
+        <p class="text-secondary">
+            {{ 'access_log.intro'|trans({'%days%': retentionDays}) }}
+        </p>
+
+        {% if records is empty %}
+            <div class="empty">
+                <div class="empty-icon">
+                    {{ ux_icon('tabler:history', {width: 48, height: 48, class: 'text-secondary'}) }}
+                </div>
+                <p class="empty-title">{{ 'access_log.empty.title'|trans }}</p>
+                <p class="empty-subtitle text-secondary">{{ 'access_log.empty.description'|trans }}</p>
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-vcenter">
+                    <thead>
+                        <tr>
+                            <th>{{ 'access_log.table.when'|trans }}</th>
+                            <th>{{ 'access_log.table.kind'|trans }}</th>
+                            <th>{{ 'access_log.table.record'|trans }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                            <tr>
+                                <td class="text-nowrap">{{ record.openedAt|format_datetime('medium', 'short') }}</td>
+                                <td>
+                                    {{ ux_icon('tabler:' ~ record.kind.icon, {width: 16, height: 16, class: 'me-1 text-secondary'}) }}
+                                    {{ record.kind.translationKey|trans }}
+                                </td>
+                                <td>
+                                    {# The label is what was on screen that day; the link leads
+                                     # back to the record while it still exists. #}
+                                    <a href="{{ path(record.kind.viewRoute, {id: record.recordId}) }}">{{ record.label }}</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </twig:Ui:Card>
+{% endblock %}

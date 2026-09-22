@@ -1,3 +1,20 @@
+access_log:
+    card_title: 'Ce que vous avez ouvert'
+    empty:
+        description: "Les factures, devis, avoirs et fiches clients que vous ouvrez apparaîtront ici."
+        title: 'Aucune consultation enregistrée'
+    intro: "Les dossiers que vous avez ouverts, sur les %days% derniers jours. Ce journal est le vôtre : personne d'autre dans l'entreprise ne le voit."
+    kind:
+        bill: "Facture d'achat"
+        client: Client
+        credit_note: Avoir
+        invoice: Facture
+        quote: Devis
+    table:
+        kind: Type
+        record: Dossier
+        when: Date
+    title: "Journal d'accès"
 accounting:
     month:
         1: 'Janvier'
@@ -20,7 +37,10 @@ accounting:
         line: 'Seuil atteint à %percent%% (limite : %amount%)'
         title: 'Alertes de seuil %year%'
     book:
+        expense: 'Notes de frais'
+        expense_notice: "Les dépenses que vous enregistrez ici ne sont pas un livre obligatoire : elles conservent vos justificatifs, leur TVA et leur date. En micro-entreprise elles ne se déduisent pas."
         purchase: 'Registre des achats'
+        revenue_is_automatic: "Chaque paiement encaissé dans l'application s'inscrit ici tout seul."
         revenue: 'Livre des recettes'
     books:
         title: Livres comptables
@@ -78,6 +98,10 @@ accounting:
         submitted: Déclarée
     entry:
         add: Nouvelle écriture
+        add_purchase: 'Nouvel achat'
+        add_expense: 'Nouvelle note de frais'
+        add_revenue: 'Nouvelle recette'
+        add_revenue_manual: 'Saisir une recette manuellement'
         flash:
             attachment_deleted: 'La pièce a été supprimée.'
             automatic: 'Cette écriture reflète un paiement enregistré dans l''application et ne peut pas être supprimée ici.'
@@ -136,7 +160,9 @@ accounting:
         cancel_blocked: "Cette facture a été émise et ne peut plus être annulée. Établissez un avoir qui s'y rapporte."
         edit_blocked: "Cette facture a été émise et ne peut plus être modifiée. Établissez un avoir qui s'y rapporte."
     menu:
+        declarations: Déclarations
         main: Comptabilité
+        overview: "Vue d'ensemble"
     pension_fund:
         cipav: CIPAV
         ssi: SSI
@@ -1993,6 +2019,7 @@ menu:
         create: Créer
     prestation: Prestation
     top:
+        access_log: "Journal d'accès"
         api: 'Jetons API'
         categories: Catégories
         custom_fields: 'Champs personnalisés'
@@ -2419,6 +2446,7 @@ payment:
             cash: Espèces
             credit: Crédit
         label: 'Moyen de paiement'
+        none: 'Non précisé'
         offline: 'Hors ligne'
         online: 'En ligne'
         updated: 'Moyen de paiement mis à jour avec succès !'
