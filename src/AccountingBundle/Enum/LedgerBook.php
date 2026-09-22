@@ -31,11 +31,24 @@ enum LedgerBook: string
 
     case Purchase = 'purchase';
 
+    /**
+     * Expenses, which no regime requires and every company may keep.
+     *
+     * Not a statutory book: a micro-entrepreneur deducts nothing, so the law
+     * asks for no record of what they spent. They still have receipts to
+     * file — proof of a purchase, the VAT on it once they are liable, and the
+     * beginnings of the charges a réel regime will deduct. Those went nowhere,
+     * and a livre des recettes holding expenses would no longer be a livre des
+     * recettes.
+     */
+    case Expense = 'expense';
+
     public function getLabel(): string
     {
         return match ($this) {
             self::Revenue => 'Revenue Book',
             self::Purchase => 'Purchase Register',
+            self::Expense => 'Expenses',
         };
     }
 
@@ -44,6 +57,33 @@ enum LedgerBook: string
         return match ($this) {
             self::Revenue => 'accounting.book.revenue',
             self::Purchase => 'accounting.book.purchase',
+            self::Expense => 'accounting.book.expense',
+        };
+    }
+
+    /**
+     * Whether the law asks for this book. Only the statutory ones count as
+     * turnover, feed a declaration or get sealed with a period.
+     */
+    public function isStatutory(): bool
+    {
+        return $this !== self::Expense;
+    }
+
+    /**
+     * What the person is about to write down, in their words rather than an
+     * accountant's.
+     *
+     * "New entry" is the word for whoever keeps books for a living. Someone
+     * running a micro-entreprise is recording a payment received or a purchase
+     * made, and the button should say so — the book already decides which.
+     */
+    public function addTranslationKey(): string
+    {
+        return match ($this) {
+            self::Revenue => 'accounting.entry.add_revenue',
+            self::Purchase => 'accounting.entry.add_purchase',
+            self::Expense => 'accounting.entry.add_expense',
         };
     }
 }

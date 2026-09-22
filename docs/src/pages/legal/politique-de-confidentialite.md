@@ -34,6 +34,7 @@ Concrètement : c'est à vous d'avoir une base légale pour traiter les données
 | Abonnement | plan, statut, dates, consommation des quotas | exécuter le contrat et facturer |
 | Invitations | adresse électronique des personnes que vous invitez dans votre équipe | leur ouvrir un accès |
 | Journaux techniques | adresse IP, date, page consultée, agent utilisateur, erreurs applicatives | sécurité, diagnostic de panne |
+| Journal de vos consultations | les dossiers que vous ouvrez — facture, devis, avoir, client, facture d'achat — avec leur nom et la date | vous permettre de retrouver ce que vous avez consulté ; ce journal est le vôtre et n'est visible que de vous |
 
 ### En tant que sous-traitant, pour votre compte
 
@@ -80,6 +81,7 @@ Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel
 | Journal des connexions au compte | **90 jours**, puis suppression automatique. Il est consultable depuis votre compte, et pour votre entreprise depuis la page des utilisateurs |
 | Journaux techniques du serveur | **[À COMPLÉTER : douze mois au plus est l'usage]** |
 | Rapports d'erreur | **[À COMPLÉTER : durée de rétention configurée chez Sentry]** |
+| Journal de vos consultations | **90 jours**, puis suppression automatique |
 | Demandes de réinitialisation de mot de passe | quelques heures, jusqu'à expiration du lien |
 
 ## 6. Sécurité
@@ -91,6 +93,7 @@ Les mesures effectivement en place :
 - **Cloisonnement entre entreprises** appliqué au niveau de la couche d'accès aux données, et non laissé à la vigilance de chaque écran : une requête ne peut pas atteindre les données d'une autre entreprise même si un identifiant est deviné.
 - **Jetons d'API et MCP** révocables à tout moment, avec un historique d'utilisation consultable.
 - **Journal des connexions** : chaque tentative de connexion à votre compte, réussie ou non, est consultable depuis votre compte pendant 90 jours, avec sa date, son adresse IP et son navigateur.
+- **Journal des consultations par HERC SI** : toute lecture de vos données dans le cadre de l'exploitation ou du support est inscrite dans votre propre dossier, avec sa date, son auteur et son motif. Le relevé vous est communiqué sur demande, et il figure dans l'export de vos données.
 - **Chiffrement des échanges** entre votre navigateur et le service.
 
 **[À COMPLÉTER : chiffrement au repos des disques et des sauvegardes — à confirmer auprès d'Infomaniak avant de l'affirmer ici. Ne rien écrire est préférable à une affirmation invérifiée.]**
@@ -155,4 +158,4 @@ Cette annexe vaut accord de sous-traitance entre le Client, responsable de trait
 
 **Accès administrateur.** HERC SI n'accède aux données d'un Client que lorsque l'exploitation ou une demande de support l'exige. **Il n'existe pas de fonction permettant à HERC SI de se connecter sous l'identité d'un utilisateur.**
 
-**[À COMPLÉTER : la console d'exploitation prévue devra tenir un journal des consultations — qui a consulté quel dossier et quand — et cette annexe devra alors le mentionner.]**
+**Journal des consultations.** Chaque lecture des données d'un Client par HERC SI est inscrite dans un journal conservé **dans la base du Client** : date, personne qui a consulté, motif. Le Client en obtient le relevé **sur demande**, et ce journal est compris dans l'export intégré de ses données, qu'il déclenche lui-même. Il est conservé aussi longtemps que le compte.

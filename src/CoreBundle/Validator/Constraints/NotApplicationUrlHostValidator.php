@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\CoreBundle\Validator\Constraints;
 
 use const PHP_URL_HOST;
+use Augias\CoreBundle\Company\CompanyDomainResolver;
 use Augias\CoreBundle\Entity\Company;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -30,6 +31,7 @@ use function strtolower;
 final class NotApplicationUrlHostValidator extends ConstraintValidator
 {
     public function __construct(
+        private readonly CompanyDomainResolver $resolver,
         private readonly string $applicationUrl = '',
     ) {
     }
@@ -48,6 +50,18 @@ final class NotApplicationUrlHostValidator extends ConstraintValidator
             throw new UnexpectedValueException($value, 'string');
         }
 
+        $candidate = Company::normalizeCustomDomain($value);
+
+        // A host this deployment keeps for itself is refused whatever the
+        // application URL says. The list and this check share one source, so a
+        // name added to the reservations is out of reach from that moment —
+        // rather than out of reach only for whoever has not claimed it yet.
+        if ($candidate !== null && $this->resolver->isReserved($candidate)) {
+            $this->context->buildViolation($constraint->message)->addViolation();
+
+            return;
+        }
+
         if ($this->applicationUrl === '') {
             return;
         }
@@ -59,7 +73,6 @@ final class NotApplicationUrlHostValidator extends ConstraintValidator
         }
 
         $applicationHost = rtrim(strtolower($applicationHost), '.');
-        $candidate = Company::normalizeCustomDomain($value);
 
         if ($candidate !== null && $candidate === $applicationHost) {
             $this->context->buildViolation($constraint->message)->addViolation();

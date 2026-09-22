@@ -156,6 +156,29 @@ final class AccountingPagesTest extends WebTestCase
     }
 
     /**
+     * The expenses book is nobody's register, so it holds nothing but its own
+     * entries. It listed the revenue book for a while: the page computed the
+     * grid's context and the template never passed it on, and the grid fell
+     * back to receipts rather than complaining — which showed invoices and
+     * credit notes under a heading that said "Notes de frais".
+     */
+    public function testTheExpensesBookDoesNotListReceipts(): void
+    {
+        $this->configureRegime();
+        $this->entry(120_000);
+        $this->expense(30_000);
+
+        $crawler = $this->client->request('GET', '/accounting/book/expense');
+
+        self::assertSame(200, $this->client->getResponse()->getStatusCode(), (string) $this->client->getResponse()->getContent());
+
+        $body = $crawler->filter('body')->text();
+
+        self::assertStringContainsString('Billet de train', $body);
+        self::assertStringNotContainsString('Consulting work', $body, 'A receipt has no business in the expenses book.');
+    }
+
+    /**
      * A services-only micro-entrepreneur keeps no purchase register, so the
      * page does not exist for them rather than existing and being empty.
      */
@@ -512,6 +535,24 @@ final class AccountingPagesTest extends WebTestCase
             ->setAmount(BigInteger::of($amount))
             ->setCurrencyCode('EUR')
             ->setActivityNature(ActivityNature::ServicesBnc);
+
+        $entry->setCompany($this->entityManager->find(Company::class, $this->company->getId()));
+
+        self::getContainer()->get(AccountingPeriodManager::class)->assignPeriod($entry, PeriodType::Quarter);
+
+        $this->entityManager->persist($entry);
+        $this->entityManager->flush();
+    }
+
+    private function expense(int $amount, string $on = '2026-01-15'): void
+    {
+        $entry = new LedgerEntry()
+            ->setBook(LedgerBook::Expense)
+            ->setEntryDate(new DateTimeImmutable($on))
+            ->setLabel('Billet de train')
+            ->setCounterpartyName('SNCF')
+            ->setAmount(BigInteger::of($amount))
+            ->setCurrencyCode('EUR');
 
         $entry->setCompany($this->entityManager->find(Company::class, $this->company->getId()));
 
