@@ -1,0 +1,41 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% set menuItem = 'login-history' %}
+
+{% extends "@AugiasUser/Layout/profile.html.twig" %}
+
+{% block title %}
+    {{ ux_icon('tabler:history', {width: 24, height: 24, class: 'me-2'}) }}
+    {{ 'login_history.title'|trans }}
+{% endblock title %}
+
+{% block profile_content %}
+    <twig:Ui:Card>
+        <twig:block name="header">
+            <h3 class="card-title mb-0">{{ 'login_history.card_title'|trans }}</h3>
+        </twig:block>
+
+        <p class="text-secondary">
+            {{ 'login_history.intro'|trans({'%days%': retentionDays}) }}
+        </p>
+
+        {% if records is empty %}
+            <div class="empty">
+                <div class="empty-icon">
+                    {{ ux_icon('tabler:history', {width: 48, height: 48, class: 'text-secondary'}) }}
+                </div>
+                <p class="empty-title">{{ 'login_history.empty.title'|trans }}</p>
+                <p class="empty-subtitle text-secondary">{{ 'login_history.empty.description'|trans }}</p>
+            </div>
+        {% else %}
+            {% include '@AugiasUser/LoginHistory/_table.html.twig' with {records, showWho: false} only %}
+        {% endif %}
+    </twig:Ui:Card>
+{% endblock profile_content %}

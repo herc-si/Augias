@@ -1960,6 +1960,29 @@ layout:
     profile: Profil
     unsplash_credit: 'Téléchargez gratuitement des photos haute résolution de Julian Zett'
     user_image: 'Photo de l''utilisateur'
+login_history:
+    card_title: 'Vos dernières connexions'
+    company:
+        card_title: 'Connexions aux comptes de votre entreprise'
+        empty: "Personne ne s'est encore connecté, ou les connexions sont plus anciennes que la durée de conservation."
+        intro: "Toutes les tentatives de connexion aux comptes qui ont accès à cette entreprise, sur les %days% derniers jours. Une tentative sur une adresse qui ne correspond à aucun compte n'apparaît pas ici : elle n'appartient à personne."
+        title: 'Connexions'
+    empty:
+        description: 'Les tentatives de connexion apparaîtront ici, réussies comme échouées.'
+        title: 'Aucune connexion enregistrée'
+    intro: "Chaque tentative de connexion à votre compte est inscrite ici pendant %days% jours : la vôtre comme celle de quelqu'un d'autre. Si vous ne reconnaissez pas une ligne, changez votre mot de passe et activez la double authentification."
+    outcome:
+        failure: 'Échec'
+        signed_out: Déconnexion
+        success: Connexion
+        two_factor_failure: 'Second facteur refusé'
+    table:
+        device: Appareil
+        outcome: Résultat
+        when: Date
+        where: 'Adresse IP'
+        who: Compte
+    title: 'Historique de connexion'
 mcp:
     connected_apps:
         empty: "Vous n'avez encore connecté aucun agent IA."
@@ -2537,6 +2560,7 @@ profile:
         change_password: 'Changer le mot de passe'
         connected_apps: 'Applications connectées'
         data_export: 'Export de données'
+        login_history: 'Historique de connexion'
         notifications: Notifications
         preferences: Préférences
         profile: Profil

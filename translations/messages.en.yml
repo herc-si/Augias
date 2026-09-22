@@ -1960,6 +1960,29 @@ layout:
     profile: Profile
     unsplash_credit: 'Download free do whatever you want high-resolution photos from Julian Zett'
     user_image: 'User Image'
+login_history:
+    card_title: 'Your recent sign-ins'
+    company:
+        card_title: "Sign-ins to your company's accounts"
+        empty: 'Nobody has signed in yet, or the sign-ins are older than the retention period.'
+        intro: 'Every sign-in attempt on the accounts with access to this company, over the last %days% days. An attempt on an address that matches no account is not shown here: it belongs to nobody.'
+        title: 'Sign-ins'
+    empty:
+        description: 'Sign-in attempts will show up here, successful or not.'
+        title: 'No sign-ins recorded'
+    intro: "Every attempt to sign in to your account is kept here for %days% days — yours and anyone else's. If you do not recognise a line, change your password and turn on two-factor authentication."
+    outcome:
+        failure: Failed
+        signed_out: 'Signed out'
+        success: 'Signed in'
+        two_factor_failure: 'Second factor refused'
+    table:
+        device: Device
+        outcome: Result
+        when: When
+        where: 'IP address'
+        who: Account
+    title: 'Sign-in history'
 mcp:
     connected_apps:
         empty: "You haven't connected any AI agents yet."
@@ -2537,6 +2560,7 @@ profile:
         change_password: 'Change Password'
         connected_apps: 'Connected Apps'
         data_export: 'Data Export'
+        login_history: 'Sign-in history'
         notifications: Notifications
         preferences: Preferences
         profile: Profile
