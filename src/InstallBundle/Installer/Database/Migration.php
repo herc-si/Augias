@@ -24,16 +24,25 @@ use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Tools\SchemaTool;
 use Doctrine\SqlFormatter\SqlFormatter;
 use Generator;
+use function array_filter;
+use function array_values;
 use function count;
+use function in_array;
+use function is_string;
 use function sprintf;
 
 final readonly class Migration
 {
     private SqlFormatter $sqlFormatter;
 
+    /**
+     * @param list<string> $preservedTables tables this instance does not map
+     *                                      and must not drop
+     */
     public function __construct(
         private DependencyFactory $migrationDependencyFactory,
         private EntityManagerInterface $entityManager,
+        private array $preservedTables = [],
     ) {
         $this->sqlFormatter = new SqlFormatter();
     }
@@ -135,9 +144,28 @@ final readonly class Migration
         $previousFilter = $dbalConfiguration->getSchemaAssetsFilter();
         $migrationsTable = $this->migrationsTableName();
 
+        // The same exclusion, for the same reason, applied to tables another
+        // application owns.
+        //
+        // A database can be shared — a deployment that runs Augias beside
+        // something of its own, a bundle installed on one instance and not the
+        // other. Every table that instance does not map is a table this update
+        // would drop, and it would drop it quietly, on an ordinary web
+        // request, because `UpgradeListener` runs this on one. `AUGIAS_PRESERVED_TABLES`
+        // names them. It is deliberately a list of names and not a pattern:
+        // a pattern is how a list of things not to destroy grows by accident.
+        // `csv:` on an empty environment variable yields [null], not [], so the
+        // list is normalised rather than trusted — a null in there would be a
+        // value compared against every table name for no reason.
+        $preserved = array_values(array_filter($this->preservedTables, is_string(...)));
+
         $dbalConfiguration->setSchemaAssetsFilter(
-            static function (string $assetName) use ($previousFilter, $migrationsTable): bool {
+            static function (string $assetName) use ($previousFilter, $migrationsTable, $preserved): bool {
                 if ($migrationsTable !== null && $assetName === $migrationsTable) {
+                    return false;
+                }
+
+                if (in_array($assetName, $preserved, true)) {
                     return false;
                 }
 

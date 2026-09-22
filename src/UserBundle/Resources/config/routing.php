@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 use Augias\UserBundle\Action\AcceptInvitation;
 use Augias\UserBundle\Action\ApiIndex;
+use Augias\UserBundle\Action\CompanyLoginHistory;
 use Augias\UserBundle\Action\DeleteUserInvite;
 use Augias\UserBundle\Action\EditProfile;
 use Augias\UserBundle\Action\ForgotPassword\Check;
 use Augias\UserBundle\Action\ForgotPassword\Request;
 use Augias\UserBundle\Action\ForgotPassword\Reset;
 use Augias\UserBundle\Action\InviteUser;
+use Augias\UserBundle\Action\LoginHistory;
 use Augias\UserBundle\Action\Notifications;
 use Augias\UserBundle\Action\Profile;
 use Augias\UserBundle\Action\Register;
@@ -37,9 +39,22 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->add('_api_keys_index', '/profile/api')
         ->controller(ApiIndex::class);
 
+    // The account's own sign-ins, under the profile: it is about the person,
+    // not about the company they happen to be looking at.
+    $routingConfigurator
+        ->add('_login_history', '/profile/sign-ins')
+        ->controller(LoginHistory::class)
+        ->methods(['GET']);
+
     $routingConfigurator
         ->add('_users_list', '/users')
         ->controller(Users::class);
+
+    // Everyone's, scoped to the company in play — see CompanyLoginHistory.
+    $routingConfigurator
+        ->add('_users_login_history', '/users/sign-ins')
+        ->controller(CompanyLoginHistory::class)
+        ->methods(['GET']);
 
     $routingConfigurator
         ->add('_user_invite', '/users/invite')

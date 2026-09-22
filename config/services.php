@@ -41,6 +41,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     // default, which trusts the Host header — the Symfony default, and the only
     // safe one when the deployment shape is unknown.
     $parameters->set('env(AUGIAS_TRUSTED_HOSTS)', '');
+    // Tables this instance does not map and must not drop. Empty by default:
+    // an ordinary install owns every table in its database.
+    $parameters->set('env(AUGIAS_PRESERVED_TABLES)', '');
     $parameters->set('env(AUGIAS_SESSION_NAME)', 'AUGIAS_APP');
     $parameters->set('env(AUGIAS_RUNTIME)', null);
     $parameters->set('env(AUGIAS_ALLOW_REGISTRATION)', '0');

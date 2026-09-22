@@ -27,6 +27,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->autowire()
         ->private()
         ->bind('$installed', env('AUGIAS_INSTALLED'))
+        ->bind('$preservedTables', env('csv:AUGIAS_PRESERVED_TABLES'))
         ->bind('$debug', param('kernel.debug'))
         ->bind('$vault', service('secrets.vault'))
     ;
