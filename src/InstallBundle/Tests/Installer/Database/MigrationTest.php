@@ -80,6 +80,8 @@ final class MigrationTest extends KernelTestCase
 
     private Migration $migration;
 
+    private EntityManager $isolatedEntityManager;
+
     private DependencyFactory $dependencyFactory;
 
     protected function setUp(): void
@@ -120,7 +122,52 @@ final class MigrationTest extends KernelTestCase
         // Version40000_9 runs after Version40000_10.
         $this->dependencyFactory->setDefinition(Comparator::class, static fn (): Comparator => new NaturalVersionComparator());
 
+        $this->isolatedEntityManager = $isolated;
         $this->migration = new Migration($this->dependencyFactory, $isolated);
+    }
+
+    /**
+     * A table this instance does not map is a table this update drops, and it
+     * drops it on an ordinary web request — UpgradeListener runs the update on
+     * one. A shared database, or a bundle installed on one instance and not
+     * another, is all it takes.
+     *
+     * The case that produced this test: two images against one database, one
+     * of them carrying the operator console and one not. The image without it
+     * removed the console's access log — the table a privacy policy promises
+     * to keep — on its first page load.
+     */
+    public function testATablePreservedByConfigurationIsNotDropped(): void
+    {
+        iterator_to_array($this->migration->migrate());
+
+        $this->connection->executeStatement('CREATE TABLE somebody_elses (id INTEGER PRIMARY KEY)');
+
+        $preserving = new Migration($this->dependencyFactory, $this->isolatedEntityManager, ['somebody_elses']);
+        iterator_to_array($preserving->migrate());
+
+        self::assertTrue(
+            $this->connection->createSchemaManager()->tablesExist(['somebody_elses']),
+            'A preserved table was dropped by a schema update that does not map it.',
+        );
+    }
+
+    /**
+     * The default, spelled out, so the protection stays something a deployment
+     * asks for rather than something it gets by accident.
+     */
+    public function testATableNobodyPreservedIsStillDropped(): void
+    {
+        iterator_to_array($this->migration->migrate());
+
+        $this->connection->executeStatement('CREATE TABLE nobody_asked_for_this (id INTEGER PRIMARY KEY)');
+
+        iterator_to_array($this->migration->migrate());
+
+        self::assertFalse(
+            $this->connection->createSchemaManager()->tablesExist(['nobody_asked_for_this']),
+            'A table nobody preserved survived a schema update, so the preserve list is doing nothing.',
+        );
     }
 
     protected function tearDown(): void
