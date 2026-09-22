@@ -11,6 +11,7 @@ access_log:
         self_hosted: "Ce journal recense les lectures de votre dossier par l'exploitant du service. Vous hébergez Augias vous-même : il n'y a pas d'exploitant en dehors de vous, et ce journal reste vide."
     reason:
         plan_list: 'Liste des abonnements'
+        sign_in_list: 'Journal des connexions'
         tenant_list: 'Liste des entreprises'
         user_list: 'Liste des comptes'
     table:

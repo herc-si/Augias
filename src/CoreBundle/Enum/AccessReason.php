@@ -41,6 +41,13 @@ enum AccessReason: string
     case PlanList = 'plan_list';
 
     /**
+     * The record of who has been signing in, read across companies. It names
+     * the people with access to a company and when they used it, which is the
+     * company's data even though the rows are about accounts.
+     */
+    case SignInList = 'sign_in_list';
+
+    /**
      * The key under which this reason is translated for the customer.
      */
     public function translationKey(): string

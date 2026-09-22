@@ -11,6 +11,7 @@ access_log:
         self_hosted: 'This log records reads of your file by whoever operates the service. You host Augias yourself: there is no operator but you, and this log stays empty.'
     reason:
         plan_list: 'Subscription list'
+        sign_in_list: 'Sign-in journal'
         tenant_list: 'Company list'
         user_list: 'Account list'
     table:
