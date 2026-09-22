@@ -11,7 +11,6 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
-use Augias\CoreBundle\Action\AccessLog;
 use Augias\CoreBundle\Action\Category\Add as CategoryAdd;
 use Augias\CoreBundle\Action\Category\Edit as CategoryEdit;
 use Augias\CoreBundle\Action\Category\Index as CategoryIndex;
@@ -91,13 +90,6 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_export_download', '/profile/exports/{id}/download')
         ->controller(DownloadExport::class)
-        ->methods(['GET']);
-
-    // Always routed, hosted or not: a page that only exists where there is
-    // something to report is one a customer has to be told about first.
-    $routingConfigurator
-        ->add('_access_log', '/access-log')
-        ->controller(AccessLog::class)
         ->methods(['GET']);
 
     // One list of categories for purchases and the catalogue alike; the two

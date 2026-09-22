@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Augias\CoreBundle\Entity;
 
 use Augias\CoreBundle\Enum\AccessReason;
-use Augias\CoreBundle\Repository\OperatorAccessRepository;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -28,30 +27,30 @@ use Symfony\Component\Uid\Ulid;
  *
  * Whoever operates a hosted Augias can read across companies — that is what
  * operating it means. This is the account of when they did, and it belongs to
- * the company that was read, not to the operator: the question it answers is
- * "who opened my file last March", and it is the customer asking.
+ * the company that was read: the question it answers is "who opened my file
+ * last March", and it is the customer asking, even though it is the operator
+ * who reads the page.
  *
- * Which is why it lives here rather than wherever the reading happens. A
- * promise that only exists in whatever private tooling a host runs is a
- * promise the customer cannot check. Here, the table, the page that shows it
- * and the list of reasons it can hold are in the application they were given —
- * and the rows leave with them in a company export, like everything else that
- * is theirs.
+ * Which is why it lives here rather than wherever the reading happens. The
+ * table, the fixed list of reasons and the migration are in the open-source
+ * application, so the shape of the promise can be checked by the people it is
+ * made to, and the rows leave with them in a company export like everything
+ * else that is theirs. What is *not* here is a screen: the operator console
+ * shows this journal, and a customer is answered from it on request.
  *
  * Nothing in this repository writes to it. A self-hosted install has no
  * operator but its owner, so the table stays empty, and an empty account of
  * access is the true one.
  *
  * `CompanyAware`, so the company filter scopes it without anyone remembering
- * to: a customer opening the page sees their own file and could not see
- * another's if the page tried. Operator tooling reads and writes across
- * companies with that filter disabled, deliberately, as it already must for
- * every other table. It also means the record dies with the company, which is
- * right — once there is nobody left to ask, there is nothing left to keep.
+ * to. Operator tooling reads and writes across companies with that filter
+ * disabled, deliberately, as it already must for every other table. It also
+ * means the record dies with the company, which is right — once there is
+ * nobody left to ask, there is nothing left to keep.
  */
 #[ORM\Table(name: OperatorAccess::TABLE_NAME)]
 #[ORM\Index(name: 'operator_access_company_time', columns: ['company_id', 'accessed_at'])]
-#[ORM\Entity(repositoryClass: OperatorAccessRepository::class)]
+#[ORM\Entity]
 class OperatorAccess
 {
     final public const string TABLE_NAME = 'operator_access';

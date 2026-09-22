@@ -1,24 +1,3 @@
-access_log:
-    bounded: 'Seules les consultations récentes sont affichées ici. L''historique complet est compris dans l''export de vos données :'
-    card_title: 'Consultations de votre dossier'
-    empty:
-        hosted: "Personne chez l'hébergeur n'a ouvert votre dossier depuis la mise en service de ce journal."
-        self_hosted: "Cette installation n'a pas d'exploitant : vous êtes le seul à pouvoir ouvrir ce dossier."
-        title: 'Aucune consultation'
-    export_link: 'demander un export'
-    intro:
-        hosted: "L'hébergeur de ce service peut avoir besoin de lire vos données pour l'exploiter ou répondre à une demande d'assistance. Chaque lecture est inscrite ici, avec sa date, son auteur et son motif. Il n'existe pas de fonction permettant de se connecter sous votre identité."
-        self_hosted: "Ce journal recense les lectures de votre dossier par l'exploitant du service. Vous hébergez Augias vous-même : il n'y a pas d'exploitant en dehors de vous, et ce journal reste vide."
-    reason:
-        plan_list: 'Liste des abonnements'
-        sign_in_list: 'Journal des connexions'
-        tenant_list: 'Liste des entreprises'
-        user_list: 'Liste des comptes'
-    table:
-        when: Date
-        who: Qui
-        why: Motif
-    title: "Journal d'accès"
 accounting:
     month:
         1: 'Janvier'
@@ -2014,7 +1993,6 @@ menu:
         create: Créer
     prestation: Prestation
     top:
-        access_log: "Journal d'accès"
         api: 'Jetons API'
         categories: Catégories
         custom_fields: 'Champs personnalisés'

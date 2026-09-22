@@ -88,7 +88,7 @@ Les mesures effectivement en place :
 - **Authentification à deux facteurs** disponible, par application d'authentification ou par courrier électronique.
 - **Cloisonnement entre entreprises** appliqué au niveau de la couche d'accès aux données, et non laissé à la vigilance de chaque écran : une requête ne peut pas atteindre les données d'une autre entreprise même si un identifiant est deviné.
 - **Jetons d'API et MCP** révocables à tout moment, avec un historique d'utilisation consultable.
-- **Journal des consultations par HERC SI** : toute lecture de vos données dans le cadre de l'exploitation ou du support est inscrite dans votre propre dossier, avec sa date, son auteur et son motif, et vous la consultez depuis votre compte.
+- **Journal des consultations par HERC SI** : toute lecture de vos données dans le cadre de l'exploitation ou du support est inscrite dans votre propre dossier, avec sa date, son auteur et son motif. Le relevé vous est communiqué sur demande, et il figure dans l'export de vos données.
 - **Chiffrement des échanges** entre votre navigateur et le service.
 
 **[À COMPLÉTER : chiffrement au repos des disques et des sauvegardes — à confirmer auprès d'Infomaniak avant de l'affirmer ici. Ne rien écrire est préférable à une affirmation invérifiée.]**
@@ -153,4 +153,4 @@ Cette annexe vaut accord de sous-traitance entre le Client, responsable de trait
 
 **Accès administrateur.** HERC SI n'accède aux données d'un Client que lorsque l'exploitation ou une demande de support l'exige. **Il n'existe pas de fonction permettant à HERC SI de se connecter sous l'identité d'un utilisateur.**
 
-**Journal des consultations.** Chaque lecture des données d'un Client par HERC SI est inscrite dans un journal conservé dans la base du Client : date, personne qui a consulté, motif. Ce journal est **consultable par le Client lui-même**, depuis son compte, à la page « Journal d'accès », et il est compris dans l'export intégré de ses données. Il est conservé aussi longtemps que le compte.
+**Journal des consultations.** Chaque lecture des données d'un Client par HERC SI est inscrite dans un journal conservé **dans la base du Client** : date, personne qui a consulté, motif. Le Client en obtient le relevé **sur demande**, et ce journal est compris dans l'export intégré de ses données, qu'il déclenche lui-même. Il est conservé aussi longtemps que le compte.
