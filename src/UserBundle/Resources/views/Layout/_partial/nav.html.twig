@@ -25,6 +25,12 @@
                 </span>
                 <span class="profile-nav-text">{{ 'profile.nav.notifications'|trans }}</span>
             </a>
+            <a href="{{ path('_login_history') }}" class="profile-nav-item{{ menuItem is defined and menuItem is same as('login-history') ? ' active' : '' }}">
+                <span class="profile-nav-icon">
+                    {{ ux_icon('tabler:history', {width: 20, height: 20}) }}
+                </span>
+                <span class="profile-nav-text">{{ 'profile.nav.login_history'|trans }}</span>
+            </a>
             <a href="{{ path('_api_keys_index') }}" class="profile-nav-item{{ menuItem is defined and menuItem is same as('api-tokens') ? ' active' : '' }}">
                 <span class="profile-nav-icon">
                     {{ ux_icon('tabler:key', {width: 20, height: 20}) }}

@@ -29,6 +29,7 @@ Concrètement : c'est à vous d'avoir une base légale pour traiter les données
 |---|---|---|
 | Compte utilisateur | adresse électronique, mot de passe (empreinte), nom affiché, langue, préférences | vous identifier et vous donner accès |
 | Sécurité du compte | secret d'authentification à deux facteurs, demandes de réinitialisation de mot de passe, jetons d'API et d'accès MCP avec leur historique d'utilisation | protéger le compte et vous permettre d'en auditer les accès |
+| Connexions | date, adresse électronique saisie, résultat (réussite, échec, second facteur refusé, déconnexion), adresse IP et navigateur | vous permettre de repérer un accès que vous ne reconnaissez pas, et à votre entreprise de voir qui accède à ses livres |
 | Entreprise | raison sociale, devise, identifiants fiscaux, régime comptable | paramétrer l'application |
 | Abonnement | plan, statut, dates, consommation des quotas | exécuter le contrat et facturer |
 | Invitations | adresse électronique des personnes que vous invitez dans votre équipe | leur ouvrir un accès |
@@ -77,7 +78,8 @@ Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel
 | Données après la fin du contrat | **[À COMPLÉTER : délai de rétention, voir l'article 10 des conditions générales]**, pour vous permettre de les exporter, puis suppression en production |
 | Sauvegardes | **[À COMPLÉTER : durée du cycle de rotation des sauvegardes]** ; une donnée supprimée en production disparaît des sauvegardes au terme de ce cycle |
 | Factures émises par HERC SI | dix ans, article L123-22 du code de commerce |
-| Journaux de connexion | **[À COMPLÉTER : douze mois au plus est l'usage]** |
+| Journal des connexions au compte | **90 jours**, puis suppression automatique. Il est consultable depuis votre compte, et pour votre entreprise depuis la page des utilisateurs |
+| Journaux techniques du serveur | **[À COMPLÉTER : douze mois au plus est l'usage]** |
 | Rapports d'erreur | **[À COMPLÉTER : durée de rétention configurée chez Sentry]** |
 | Journal de vos consultations | **90 jours**, puis suppression automatique |
 | Demandes de réinitialisation de mot de passe | quelques heures, jusqu'à expiration du lien |
@@ -90,6 +92,7 @@ Les mesures effectivement en place :
 - **Authentification à deux facteurs** disponible, par application d'authentification ou par courrier électronique.
 - **Cloisonnement entre entreprises** appliqué au niveau de la couche d'accès aux données, et non laissé à la vigilance de chaque écran : une requête ne peut pas atteindre les données d'une autre entreprise même si un identifiant est deviné.
 - **Jetons d'API et MCP** révocables à tout moment, avec un historique d'utilisation consultable.
+- **Journal des connexions** : chaque tentative de connexion à votre compte, réussie ou non, est consultable depuis votre compte pendant 90 jours, avec sa date, son adresse IP et son navigateur.
 - **Journal des consultations par HERC SI** : toute lecture de vos données dans le cadre de l'exploitation ou du support est inscrite dans votre propre dossier, avec sa date, son auteur et son motif. Le relevé vous est communiqué sur demande, et il figure dans l'export de vos données.
 - **Chiffrement des échanges** entre votre navigateur et le service.
 

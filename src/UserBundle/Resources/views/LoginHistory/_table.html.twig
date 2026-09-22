@@ -1,0 +1,44 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #
+ # One table for both readers: an account holder looking at their own
+ # sign-ins, and a company looking at everyone's. The only difference is the
+ # column naming the account, which would say the same thing on every row of
+ # the first.
+ #}
+
+<div class="table-responsive">
+    <table class="table table-vcenter">
+        <thead>
+            <tr>
+                <th>{{ 'login_history.table.when'|trans }}</th>
+                {% if showWho %}<th>{{ 'login_history.table.who'|trans }}</th>{% endif %}
+                <th>{{ 'login_history.table.outcome'|trans }}</th>
+                <th>{{ 'login_history.table.where'|trans }}</th>
+                <th>{{ 'login_history.table.device'|trans }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+                <tr>
+                    <td class="text-nowrap">{{ record.occurredAt|format_datetime('medium', 'short') }}</td>
+                    {% if showWho %}<td>{{ record.identifier }}</td>{% endif %}
+                    <td>
+                        <span class="badge {{ record.outcome.badgeClass }}">
+                            {{ record.outcome.translationKey|trans }}
+                        </span>
+                    </td>
+                    <td class="text-secondary font-monospace">{{ record.ipAddress ?? '—' }}</td>
+                    <td class="text-secondary text-truncate" style="max-width: 22rem;" title="{{ record.userAgent }}">
+                        {{ record.userAgent ?? '—' }}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
