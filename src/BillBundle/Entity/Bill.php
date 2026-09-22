@@ -18,6 +18,8 @@ use Augias\BillBundle\Repository\BillRepository;
 use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Doctrine\Type\BigIntegerType;
 use Augias\CoreBundle\Entity\Category;
+use Augias\CoreBundle\Enum\RecordKind;
+use Augias\CoreBundle\Journal\Journalled;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
@@ -45,7 +47,7 @@ use Symfony\Component\Uid\Ulid;
  */
 #[ORM\Table(name: Bill::TABLE_NAME)]
 #[ORM\Entity(repositoryClass: BillRepository::class)]
-class Bill
+class Bill implements Journalled
 {
     final public const string TABLE_NAME = 'bills';
 
@@ -395,5 +397,15 @@ class Bill
         }
 
         return $this;
+    }
+
+    public function journalKind(): RecordKind
+    {
+        return RecordKind::Bill;
+    }
+
+    public function journalLabel(): string
+    {
+        return (string) $this->getBillNumber();
     }
 }

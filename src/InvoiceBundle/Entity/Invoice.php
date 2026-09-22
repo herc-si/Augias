@@ -32,6 +32,8 @@ use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\CoreBundle\Doctrine\Type\BigIntegerType;
 use Augias\CoreBundle\Entity\LineInterface;
+use Augias\CoreBundle\Enum\RecordKind;
+use Augias\CoreBundle\Journal\Journalled;
 use Augias\CoreBundle\Traits\Entity\Archivable;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
@@ -109,7 +111,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 #[ORM\AssociationOverrides([new ORM\AssociationOverride(name: 'company', inversedBy: 'invoices')])]
 #[WithinPlanInvoiceLimit]
-class Invoice extends BaseInvoice implements Stringable
+class Invoice extends BaseInvoice implements Stringable, Journalled
 {
     final public const string TABLE_NAME = 'invoices';
 
@@ -582,5 +584,15 @@ class Invoice extends BaseInvoice implements Stringable
         }
 
         return $this;
+    }
+
+    public function journalKind(): RecordKind
+    {
+        return RecordKind::Invoice;
+    }
+
+    public function journalLabel(): string
+    {
+        return (string) $this->getInvoiceId();
     }
 }

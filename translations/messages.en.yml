@@ -1,3 +1,20 @@
+access_log:
+    card_title: 'What you opened'
+    empty:
+        description: 'The invoices, quotes, credit notes and client files you open will show up here.'
+        title: 'Nothing opened yet'
+    intro: 'The records you opened over the last %days% days. This journal is yours: nobody else in the company sees it.'
+    kind:
+        bill: 'Purchase invoice'
+        client: Client
+        credit_note: 'Credit note'
+        invoice: Invoice
+        quote: Quote
+    table:
+        kind: Type
+        record: Record
+        when: When
+    title: 'Access log'
 accounting:
     month:
         1: 'January'
@@ -1993,6 +2010,7 @@ menu:
         create: Create
     prestation: Services
     top:
+        access_log: 'Access log'
         api: 'API Tokens'
         categories: Categories
         custom_fields: 'Custom Fields'

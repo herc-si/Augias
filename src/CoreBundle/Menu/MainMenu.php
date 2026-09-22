@@ -50,6 +50,7 @@ class MainMenu
         self::einvoicing($section);
         self::api($section);
         self::users($section);
+        self::accessLog($section);
         self::settings($section);
         $this->addCustomFields($section);
     }
@@ -206,6 +207,24 @@ class MainMenu
             [
                 'route' => '_users_list',
                 'extras' => ['icon' => 'users'],
+            ],
+        );
+    }
+
+    /**
+     * Where the person has been: the records they opened.
+     *
+     * Listed on every install, hosted or not. It says nothing about the
+     * deployment and everything about one person's own work, which is a
+     * question a self-hosted owner asks as often as anybody.
+     */
+    public static function accessLog(ItemInterface $item): ItemInterface
+    {
+        return $item->addChild(
+            'menu.top.access_log',
+            [
+                'route' => '_access_log',
+                'extras' => ['icon' => 'history'],
             ],
         );
     }
