@@ -37,7 +37,10 @@ accounting:
         line: 'Threshold reached at %percent%% (limit: %amount%)'
         title: '%year% threshold alerts'
     book:
+        expense: Expenses
+        expense_notice: 'The expenses you record here are not a statutory book: they keep your receipts, their VAT and their date. Under the micro regime they are not deductible.'
         purchase: 'Purchase register'
+        revenue_is_automatic: 'Every payment the application captures files itself here.'
         revenue: 'Revenue book'
     books:
         title: Books
@@ -95,6 +98,10 @@ accounting:
         submitted: Filed
     entry:
         add: New entry
+        add_purchase: 'New purchase'
+        add_expense: 'New expense'
+        add_revenue: 'New revenue'
+        add_revenue_manual: 'Record a receipt by hand'
         flash:
             attachment_deleted: The document has been removed.
             automatic: This entry mirrors a payment recorded in the application and cannot be deleted here.
@@ -153,7 +160,9 @@ accounting:
         cancel_blocked: 'This invoice has been issued and can no longer be cancelled. Raise a credit note against it instead.'
         edit_blocked: 'This invoice has been issued and can no longer be edited. Raise a credit note against it instead.'
     menu:
+        declarations: Declarations
         main: Accounting
+        overview: Overview
     pension_fund:
         cipav: CIPAV
         ssi: SSI

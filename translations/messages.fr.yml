@@ -37,7 +37,10 @@ accounting:
         line: 'Seuil atteint à %percent%% (limite : %amount%)'
         title: 'Alertes de seuil %year%'
     book:
+        expense: 'Notes de frais'
+        expense_notice: "Les dépenses que vous enregistrez ici ne sont pas un livre obligatoire : elles conservent vos justificatifs, leur TVA et leur date. En micro-entreprise elles ne se déduisent pas."
         purchase: 'Registre des achats'
+        revenue_is_automatic: "Chaque paiement encaissé dans l'application s'inscrit ici tout seul."
         revenue: 'Livre des recettes'
     books:
         title: Livres comptables
@@ -95,6 +98,10 @@ accounting:
         submitted: Déclarée
     entry:
         add: Nouvelle écriture
+        add_purchase: 'Nouvel achat'
+        add_expense: 'Nouvelle note de frais'
+        add_revenue: 'Nouvelle recette'
+        add_revenue_manual: 'Saisir une recette manuellement'
         flash:
             attachment_deleted: 'La pièce a été supprimée.'
             automatic: 'Cette écriture reflète un paiement enregistré dans l''application et ne peut pas être supprimée ici.'
@@ -153,7 +160,9 @@ accounting:
         cancel_blocked: "Cette facture a été émise et ne peut plus être annulée. Établissez un avoir qui s'y rapporte."
         edit_blocked: "Cette facture a été émise et ne peut plus être modifiée. Établissez un avoir qui s'y rapporte."
     menu:
+        declarations: Déclarations
         main: Comptabilité
+        overview: "Vue d'ensemble"
     pension_fund:
         cipav: CIPAV
         ssi: SSI

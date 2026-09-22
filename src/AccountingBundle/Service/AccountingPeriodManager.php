@@ -248,6 +248,14 @@ final class AccountingPeriodManager
         $deductible = null;
 
         foreach ($entries as $entry) {
+            // Expenses are nobody's declaration: they are kept for the owner,
+            // not for the administration, and counting them here would put
+            // them in the turnover of a period and their VAT among the tax
+            // collected — the two numbers a return is made of.
+            if (! $entry->getBook()->isStatutory()) {
+                continue;
+            }
+
             $currencies[$entry->getCurrencyCode()] = true;
             $tax = $entry->getTaxAmount();
 
