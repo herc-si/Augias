@@ -1598,8 +1598,6 @@ installation:
         application_url_help: 'The URL where this Augias instance is accessible. Include the protocol (http:// or https://).'
         locale_help: 'The only currently supported locale is "en". To choose a different locale, please install the ''intl'' extension'
         locale_placeholder: 'Please select a locale'
-        telemetry: 'Send anonymous usage statistics'
-        telemetry_help: 'Help us improve Augias by sharing anonymous usage data. No personal or business information is ever collected.'
 invalid_file: 'Invalid File'
 invoice:
     action:

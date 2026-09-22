@@ -17,8 +17,6 @@ use Augias\CoreBundle\AugiasCoreBundle;
 use Augias\CoreBundle\ConfigWriter;
 use Augias\CoreBundle\Entity\Version;
 use Augias\CoreBundle\Repository\VersionRepository;
-use Augias\CoreBundle\Telemetry\Telemetry;
-use Augias\CoreBundle\Telemetry\TelemetryEvent;
 use Augias\InstallBundle\Config\DatabaseConfig;
 use Augias\InstallBundle\DTO\Installation;
 use Augias\InstallBundle\Exception\ApplicationInstalledException;
@@ -83,7 +81,6 @@ class InstallCommand extends Command
         #[AutowireLocator(InstallationStepInterface::DI_TAG)]
         private readonly ServiceLocator $installationSteps,
         private readonly KernelInterface $kernel,
-        private readonly Telemetry $telemetry,
         private readonly UserSettingRepositoryInterface $userSettingRepository,
         #[Autowire(env: 'AUGIAS_CONFIG_DIR')]
         private readonly string $configDir,
@@ -110,8 +107,7 @@ class InstallCommand extends Command
             ->addOption('admin-password', null, InputOption::VALUE_REQUIRED, 'The password of admin user')
             ->addOption('admin-email', null, InputOption::VALUE_REQUIRED, 'The email address of admin user')
             ->addOption('locale', null, InputOption::VALUE_REQUIRED, 'The locale to use')
-            ->addOption('application-url', null, InputOption::VALUE_REQUIRED, 'The URL where this Augias instance will be accessible (including protocol, e.g. https://invoices.example.com). Use `bin/console secrets:set AUGIAS_APPLICATION_URL` to update this after installation.')
-            ->addOption('disable-telemetry', null, InputOption::VALUE_NONE, 'Disable sending anonymous usage statistics');
+            ->addOption('application-url', null, InputOption::VALUE_REQUIRED, 'The URL where this Augias instance will be accessible (including protocol, e.g. https://invoices.example.com). Use `bin/console secrets:set AUGIAS_APPLICATION_URL` to update this after installation.');
     }
 
     /**
@@ -126,10 +122,6 @@ class InstallCommand extends Command
         $this->validate($input)
             ->saveConfig($input)
             ->install($input, $output);
-
-        if (! $input->getOption('disable-telemetry')) {
-            $this->telemetry->event(TelemetryEvent::InstallCompleted, ['method' => 'cli'], true);
-        }
 
         $success = new FormatterHelper()
             ->formatBlock('Application installed successfully!', 'bg=green;options=bold', true);
@@ -303,7 +295,6 @@ class InstallCommand extends Command
         $config = [
             'database_url' => DatabaseConfig::paramsToDatabaseUrl($params),
             'locale' => $input->getOption('locale'),
-            'enable_telemetry' => $input->getOption('disable-telemetry') ? '0' : '1',
             'app_secret' => Key::createNewRandomKey()->saveToAsciiSafeString(),
         ];
 

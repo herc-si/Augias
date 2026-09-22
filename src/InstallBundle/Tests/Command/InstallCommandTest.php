@@ -23,7 +23,6 @@ use Augias\InstallBundle\Step\InstallationStepInterface;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Repository\UserRepository;
 use Augias\UserBundle\Repository\UserSettingRepositoryInterface;
-use Doctrine\DBAL\Connection;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Persistence\ObjectManager;
 use Generator;
@@ -36,7 +35,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpKernel\KernelInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class InstallCommandTest extends TestCase
@@ -211,18 +209,16 @@ final class InstallCommandTest extends TestCase
         self::assertSame($hashedPassword, $disabledUser->getPassword());
     }
 
-    public function testDisableTelemetryOptionIsRegistered(): void
+    /**
+     * The installer no longer configures telemetry at all, so it no longer
+     * offers a flag to turn it off. An operator who wants it names a collector
+     * through AUGIAS_TELEMETRY_URL.
+     */
+    public function testItOffersNoTelemetryOption(): void
     {
-        $registry = M::mock(ManagerRegistry::class);
-        $command = $this->createCommand($registry);
+        $command = $this->createCommand(M::mock(ManagerRegistry::class));
 
-        $definition = $command->getDefinition();
-
-        self::assertTrue($definition->hasOption('disable-telemetry'));
-
-        $option = $definition->getOption('disable-telemetry');
-        self::assertFalse($option->acceptValue());
-        self::assertSame('Disable sending anonymous usage statistics', $option->getDescription());
+        self::assertFalse($command->getDefinition()->hasOption('disable-telemetry'));
     }
 
     public function testSaveConfigWritesDatabaseUrlForSqlite(): void
@@ -251,7 +247,6 @@ final class InstallCommandTest extends TestCase
         $input->shouldReceive('getOption')->with('database-password')->andReturnNull();
         $input->shouldReceive('getOption')->with('locale')->andReturn('en');
         $input->shouldReceive('getOption')->with('application-url')->andReturn('https://example.com');
-        $input->shouldReceive('getOption')->with('disable-telemetry')->andReturnTrue();
 
         $command = $this->createCommand(M::mock(ManagerRegistry::class), null, $configWriter, $configDir);
 
@@ -351,28 +346,12 @@ final class InstallCommandTest extends TestCase
     ): InstallCommand {
         $configWriter ??= new ConfigWriter($this->createStub(AbstractVault::class), '/tmp/test-secrets');
 
-        // Telemetry is disabled here (null build ID), so it no-ops and never
-        // touches the message bus or connection during the command tests.
-        $telemetry = new Telemetry(
-            $this->createStub(MessageBusInterface::class),
-            $configWriter,
-            $this->createStub(Connection::class),
-            null,
-            false,
-            'https://collector.example.com',
-            '',
-            false,
-            'en',
-            null,
-        );
-
         return new InstallCommand(
             $configWriter,
             $registry,
             $passwordHasher ?? M::mock(UserPasswordHasherInterface::class),
             $steps ?? new ServiceLocator([]),
             $this->createStub(KernelInterface::class),
-            $telemetry,
             $this->createStub(UserSettingRepositoryInterface::class),
             $configDir,
             null

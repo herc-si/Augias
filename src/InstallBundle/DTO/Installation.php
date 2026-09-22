@@ -24,7 +24,6 @@ final class Installation
         #[Valid(groups: ['user_account'])]
         public UserAccount $userAccount = new UserAccount(),
         public ?string $applicationUrl = null,
-        public bool $telemetryEnabled = true,
         public string $currentStep = 'start',
         #[SensitiveParameter]
         public ?string $token = '',
