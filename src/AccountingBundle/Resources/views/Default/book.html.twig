@@ -46,6 +46,6 @@
     {% endif %}
 
     <twig:Ui:Card>
-        <twig:DataGrid name="ledger_entry_grid" />
+        <twig:DataGrid name="ledger_entry_grid" :context="ledger_entry_grid_context" />
     </twig:Ui:Card>
 {% endblock %}
