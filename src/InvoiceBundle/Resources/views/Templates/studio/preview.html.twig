@@ -45,7 +45,7 @@
                 <tbody>
                     {% for line in invoice.lines %}
                         <tr>
-                            <td>{{ line.description|nl2br }}</td>
+                            <td>{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
                             <td class="text-end">{{ line.qty }}</td>
                             <td class="text-end">{{ line.price|formatCurrency(currency) }}</td>
                             <td class="text-end fw-bold">{{ line.total|formatCurrency(currency) }}</td>
@@ -61,6 +61,11 @@
                         <div class="display-5 fw-bold">{{ (hasOutstandingBalance ? invoice.balance : invoice.total)|formatCurrency(currency) }}</div>
                     </div>
                 </div>
+                {% if invoice.hasDisbursements %}
+                    <div class="small mt-3" style="opacity: 0.85; line-height: 1.4;">
+                        {{ 'invoice.disbursements'|trans }} : {{ invoice.disbursementTotal|formatCurrency(currency) }} — {{ 'invoice.disbursement.mention'|trans }}
+                    </div>
+                {% endif %}
             </div>
         </div>
     </div>

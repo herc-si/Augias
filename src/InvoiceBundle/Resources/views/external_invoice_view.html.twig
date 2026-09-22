@@ -175,7 +175,7 @@
                             <tbody>
                                 {% for item in invoice.lines %}
                                     <tr>
-                                        <td class="item-description">{{ item.description|nl2br }}</td>
+                                        <td class="item-description">{{ item.description|nl2br }}{% if item.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
                                         <td class="text-end item-amount">{{ item.price|formatCurrency(currency) }}</td>
                                         <td class="text-center">{{ item.qty }}</td>
                                         {% if invoice.tax.positive %}
@@ -239,6 +239,12 @@
                                             <div class="ext-doc-totals-value text-success">-{{ discount(invoice)|formatCurrency(currency) }}</div>
                                         </div>
                                     {% endif %}
+                                    {% if invoice.hasDisbursements %}
+                                        <div class="ext-doc-totals-row">
+                                            <div class="ext-doc-totals-label">{{ 'invoice.disbursements'|trans }}</div>
+                                            <div class="ext-doc-totals-value">{{ invoice.disbursementTotal|formatCurrency(currency) }}</div>
+                                        </div>
+                                    {% endif %}
                                     {% if invoice.payments|length > 0 and not invoice.balance.isZero %}
                                         {% for payment in invoice.payments|filter((v) => v.status == enum('Augias\\PaymentBundle\\Enum\\PaymentStatus').Captured) %}
                                             <div class="ext-doc-totals-row">
@@ -284,6 +290,10 @@
                     {% set vatMention = vat_exempt_mention() %}
                     {% if vatMention %}
                         <div class="opacity-75 mb-3">{{ vatMention }}</div>
+                    {% endif %}
+
+                    {% if invoice.hasDisbursements %}
+                        <div class="opacity-75 small mb-3">{{ 'invoice.disbursement.mention'|trans }}</div>
                     {% endif %}
 
                     {% if invoice.terms is not empty or invoice.notes is not empty %}

@@ -115,6 +115,10 @@
         {{ email.spacer('xs') }}
         {{ email.info_row('invoice.discount'|trans({}, 'email'), '-' ~ discount(invoice)|formatCurrency(invoice.client.currency)) }}
     {% endif %}
+    {%- if invoice.hasDisbursements %}
+        {{ email.spacer('xs') }}
+        {{ email.info_row('invoice.disbursements'|trans({}, 'email'), invoice.disbursementTotal|formatCurrency(invoice.client.currency)) }}
+    {% endif %}
     {% if hasOutstandingBalance %}
         {% for payment in invoice_captured_payments(invoice) %}
             {{ email.spacer('xs') }}

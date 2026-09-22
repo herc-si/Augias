@@ -195,6 +195,17 @@
                             <span class="totals-value">{{ discount(invoice)|formatCurrency(currency) }}</span>
                         </div>
 
+                        {# A recurring invoice can carry a disbursement line — the column is
+                         # on the shared table and the API can set it — and the invoices it
+                         # generates inherit the mark. The wording belongs on those, which
+                         # are the documents a client receives; this one is never sent. #}
+                        {% if invoice.hasDisbursements %}
+                            <div class="totals-row totals-row-disbursement">
+                                <span class="totals-label">{{ 'billing.disbursements'|trans }}</span>
+                                <span class="totals-value">{{ invoice.disbursementTotal|formatCurrency(currency) }}</span>
+                            </div>
+                        {% endif %}
+
                         <div class="totals-row totals-row-total">
                             <span class="totals-label">{{ 'billing.total'|trans }}</span>
                             <span class="totals-value">{{ invoice.total|formatCurrency(currency) }}</span>

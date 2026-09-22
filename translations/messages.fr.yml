@@ -375,6 +375,8 @@ bill:
         tax: 'TVA'
         total: Total
 billing:
+    disbursement:
+        mention: 'Les débours sont des sommes réglées au nom et pour le compte du client, refacturées à l''euro près et hors du champ de la TVA (CGI, art. 267-II-2°). Justificatifs disponibles sur demande.'
     disbursements: Débours
     discount: Remise
     due_date: 'Date d''échéance'

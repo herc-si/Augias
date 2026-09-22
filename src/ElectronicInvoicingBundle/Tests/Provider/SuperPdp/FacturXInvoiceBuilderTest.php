@@ -155,6 +155,60 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
     }
 
     /**
+     * A disbursement is money advanced in the client's name. It never entered
+     * the seller's taxable base, so it belongs to category "O" — outside the
+     * scope — and not to "Z", which claims a zero rate was applied to it.
+     *
+     * The two are a whole VAT breakdown group apart: "Z" puts the amount in the
+     * taxable basis at 0%, "O" keeps it out of it. Getting this wrong overstates
+     * every turnover figure the platform derives from the document.
+     */
+    public function testADisbursementLineIsOutsideTheScopeOfVatRatherThanZeroRated(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+
+        $invoice = new Invoice();
+        $invoice->setCompany($this->company);
+        $invoice->setClient($client);
+        $invoice->setInvoiceId('INV-DEB-1');
+        $invoice->setStatus(InvoiceStatus::Draft);
+
+        $fees = new Line();
+        $fees->setDescription('Consulting services')->setPrice(40000)->setQty(1)->updateTotal();
+        $vat = new LineTax();
+        $vat->setNameSnapshot('VAT');
+        $vat->setRateSnapshot('20.0000');
+        $fees->addTax($vat);
+        $invoice->addLine($fees);
+
+        $screen = new Line();
+        $screen->setDescription('Screen bought for the client')
+            ->setPrice(50000)
+            ->setQty(1)
+            ->setDisbursement(true)
+            ->updateTotal();
+        $invoice->addLine($screen);
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($invoice);
+        $entityManager->flush();
+
+        $xml = self::getContainer()->get(FacturXInvoiceBuilder::class)->buildDocument($invoice)->getContent();
+
+        // Category "O", with the ground it rests on rather than a bare "not
+        // subject to VAT" that says nothing about why.
+        self::assertStringContainsString('<ram:CategoryCode>O</ram:CategoryCode>', $xml);
+        self::assertStringContainsString('CGI art. 267-II-2', $xml);
+        self::assertStringNotContainsString('<ram:CategoryCode>Z</ram:CategoryCode>', $xml);
+
+        // 400 of fees is the taxable basis; the 500 advanced is not, though the
+        // client owes all 900 plus the 80 of tax.
+        self::assertStringContainsString('<ram:LineTotalAmount>900.00</ram:LineTotalAmount>', $xml);
+        self::assertStringContainsString('<ram:TaxTotalAmount currencyID="EUR">80.00</ram:TaxTotalAmount>', $xml);
+        self::assertStringContainsString('<ram:GrandTotalAmount>980.00</ram:GrandTotalAmount>', $xml);
+    }
+
+    /**
      * SUPER PDP's own sandbox test addresses (e.g. "315143296_92569") aren't
      * 14-digit SIRETs — buildDocument() must pass a value like that through to
      * the routing address unchanged rather than truncating it to 9 characters,

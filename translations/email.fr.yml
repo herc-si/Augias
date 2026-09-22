@@ -58,6 +58,7 @@ invoice:
     amount_payable: 'Montant à payer'
     balance: 'Solde dû'
     created: Créée
+    disbursements: Débours
     discount: Remise
     due: 'Date d''échéance'
     info: 'Vous avez reçu une facture de %company% générée le %created%'
