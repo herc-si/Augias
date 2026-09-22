@@ -15,8 +15,6 @@ namespace Augias\InstallBundle\Action;
 
 use const JSON_THROW_ON_ERROR;
 use Augias\CoreBundle\ConfigWriter;
-use Augias\CoreBundle\Telemetry\Telemetry;
-use Augias\CoreBundle\Telemetry\TelemetryEvent;
 use Augias\InstallBundle\DTO\Installation;
 use Augias\InstallBundle\Form\Type\InstallationType;
 use Augias\InstallBundle\Step\InstallationStepInterface;
@@ -58,7 +56,6 @@ final class Install extends AbstractController
         private readonly UserRepository $userRepository,
         private readonly UserSettingRepositoryInterface $userSettingRepository,
         private readonly Security $security,
-        private readonly Telemetry $telemetry,
         private readonly ?string $installed,
     ) {
     }
@@ -86,12 +83,7 @@ final class Install extends AbstractController
                 'locale' => $formData->userAccount->locale,
                 'installation_id' => Uuid::v4()->toString(),
                 'application_url' => (string) $formData->applicationUrl,
-                'enable_telemetry' => $formData->telemetryEnabled ? '1' : '0',
             ]);
-
-            if ($formData->telemetryEnabled) {
-                $this->telemetry->event(TelemetryEvent::InstallCompleted, ['method' => 'web'], $formData->telemetryEnabled);
-            }
 
             $form->reset();
 

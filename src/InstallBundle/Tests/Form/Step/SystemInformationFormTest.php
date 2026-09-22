@@ -106,16 +106,18 @@ final class SystemInformationFormTest extends FormTestCase
         self::assertArrayHasKey('lastName', $view->children);
         self::assertArrayHasKey('emailAddress', $view->children);
         self::assertArrayHasKey('password', $view->children);
-        self::assertArrayHasKey('telemetryEnabled', $view->children);
     }
 
-    public function testTelemetryFieldDefaultsToChecked(): void
+    /**
+     * The wizard asks nothing about telemetry. There is no collector to send
+     * to, and a question whose answer changes nothing is not worth a reader's
+     * attention on their first minute with the application.
+     */
+    public function testItDoesNotAskAboutTelemetry(): void
     {
-        $form = $this->factory->create(UserAccountStep::class);
-        $view = $form->createView();
+        $view = $this->factory->create(UserAccountStep::class)->createView();
 
-        self::assertArrayHasKey('telemetryEnabled', $view->children);
-        self::assertTrue($view->children['telemetryEnabled']->vars['checked']);
+        self::assertArrayNotHasKey('telemetryEnabled', $view->children);
     }
 
     public function testApplicationUrlFieldDefaultsToCurrentRequestHost(): void
