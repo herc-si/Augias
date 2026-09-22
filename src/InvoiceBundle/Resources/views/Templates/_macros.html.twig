@@ -159,7 +159,7 @@
             {% for payment in invoice_captured_payments(invoice) %}
                 <tr>
                     <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
-                        {{ 'invoice.payment.label'|trans }}: {{ payment.method.name }}
+                        {{ 'invoice.payment.label'|trans }}: {{ payment.method ? payment.method.name : 'payment.method.none'|trans }}
                     </td>
                     <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: {{ p.paymentColor }};">
                         -{{ payment.totalAmount|formatCurrency(currency) }}

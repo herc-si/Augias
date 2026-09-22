@@ -2437,6 +2437,7 @@ payment:
             cash: Espèces
             credit: Crédit
         label: 'Moyen de paiement'
+        none: 'Non précisé'
         offline: 'Hors ligne'
         online: 'En ligne'
         updated: 'Moyen de paiement mis à jour avec succès !'
