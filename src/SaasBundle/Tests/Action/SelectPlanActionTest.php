@@ -94,6 +94,7 @@ final class SelectPlanActionTest extends TestCase
             DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]),
             'build-123',
             true,
+            'https://collector.example.com',
             'manual',
             false,
             'en',

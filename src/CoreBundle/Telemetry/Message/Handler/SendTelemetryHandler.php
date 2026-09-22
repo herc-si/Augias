@@ -38,6 +38,16 @@ final readonly class SendTelemetryHandler
 
     public function __invoke(SendTelemetryMessage $message): void
     {
+        // No collector, nothing sent. Telemetry::isEnabled() already refuses to
+        // queue a message when none is configured, but this is the backstop for
+        // what goes round it: an event dispatched with $force — the installer
+        // reports itself that way, having just written the setting to disk —
+        // and any message still in the queue from a deployment that had a
+        // collector configured.
+        if ($this->telemetryUrl === '') {
+            return;
+        }
+
         $endpoint = rtrim($this->telemetryUrl, '/') . '/v1/' . $message->type;
 
         try {
@@ -64,7 +74,7 @@ final readonly class SendTelemetryHandler
         } catch (Throwable $e) {
             // Swallow ALL failures and return normally so the message is acked and
             // never retried or moved to the failed queue. A slow or unreachable
-            // Insights server must never degrade the app.
+            // collector must never degrade the app.
             $this->logger->debug('Telemetry request failed', [
                 'endpoint' => $endpoint,
                 'exception' => $e,

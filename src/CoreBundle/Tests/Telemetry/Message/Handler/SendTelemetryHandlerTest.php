@@ -36,18 +36,42 @@ final class SendTelemetryHandlerTest extends TestCase
             return new MockResponse('', ['http_code' => 200]);
         });
 
-        $handler = new SendTelemetryHandler($client, new NullLogger(), 'https://insights.solidworx.co');
+        $handler = new SendTelemetryHandler($client, new NullLogger(), 'https://collector.example.com');
 
         $handler(new SendTelemetryMessage('ping', ['build_id' => 'abc', 'app' => 'augias']));
 
         self::assertCount(1, $requests);
         self::assertSame('POST', $requests[0]['method']);
-        self::assertSame('https://insights.solidworx.co/v1/ping', $requests[0]['url']);
+        self::assertSame('https://collector.example.com/v1/ping', $requests[0]['url']);
         self::assertContains('Content-Type: application/json', $requests[0]['options']['headers']);
         self::assertSame(
             ['build_id' => 'abc', 'app' => 'augias'],
             json_decode((string) $requests[0]['options']['body'], true, 512, JSON_THROW_ON_ERROR),
         );
+    }
+
+    /**
+     * The case that matters for a fresh install. The installer reports itself
+     * with $force — it has to, since it has just written the telemetry setting
+     * to disk and the running process still holds the old value — and $force
+     * goes round Telemetry::isEnabled(). So for that one event the handler is
+     * the only thing left that can decline to send.
+     */
+    public function testItSendsNothingWithoutACollector(): void
+    {
+        $requests = [];
+
+        $client = new MockHttpClient(function (string $method, string $url) use (&$requests): MockResponse {
+            $requests[] = $url;
+
+            return new MockResponse('', ['http_code' => 200]);
+        });
+
+        $handler = new SendTelemetryHandler($client, new NullLogger(), '');
+
+        $handler(new SendTelemetryMessage('event', ['build_id' => 'abc', 'event' => 'install_completed']));
+
+        self::assertSame([], $requests);
     }
 
     public function testItPostsEventToTheCorrectUrl(): void
@@ -60,12 +84,12 @@ final class SendTelemetryHandlerTest extends TestCase
             return new MockResponse('', ['http_code' => 202]);
         });
 
-        $handler = new SendTelemetryHandler($client, new NullLogger(), 'https://insights.solidworx.co/');
+        $handler = new SendTelemetryHandler($client, new NullLogger(), 'https://collector.example.com/');
 
         $handler(new SendTelemetryMessage('event', ['build_id' => 'abc', 'app' => 'augias', 'event' => 'invoice_created']));
 
         self::assertCount(1, $requests);
-        self::assertSame('https://insights.solidworx.co/v1/event', $requests[0]['url']);
+        self::assertSame('https://collector.example.com/v1/event', $requests[0]['url']);
     }
 
     public function testItSwallowsTransportErrors(): void
@@ -86,7 +110,7 @@ final class SendTelemetryHandlerTest extends TestCase
     {
         $client = new MockHttpClient(static fn (): MockResponse => new MockResponse('error', ['http_code' => 500]));
 
-        $handler = new SendTelemetryHandler($client, new NullLogger(), 'https://insights.solidworx.co');
+        $handler = new SendTelemetryHandler($client, new NullLogger(), 'https://collector.example.com');
 
         // A non-2xx response must be swallowed without throwing.
         $handler(new SendTelemetryMessage('event', ['build_id' => 'abc']));

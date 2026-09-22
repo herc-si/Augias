@@ -176,6 +176,23 @@ final class TelemetryTest extends TestCase
         self::assertSame('ping', $this->bus->messages[0]->type);
     }
 
+    /**
+     * An installation with telemetry turned on but no collector named sends
+     * nothing: there is nowhere for it to go, and Augias ships no default
+     * destination of its own.
+     */
+    public function testItIsDisabledWithoutACollector(): void
+    {
+        $telemetry = $this->createTelemetry(telemetryUrl: '');
+
+        self::assertFalse($telemetry->isEnabled());
+
+        $telemetry->ping();
+        $telemetry->event(TelemetryEvent::CompanyCreated);
+
+        self::assertSame([], $this->bus->messages);
+    }
+
     private function createTelemetry(
         ?string $buildId = 'build-123',
         bool $enableTelemetry = true,
@@ -184,6 +201,7 @@ final class TelemetryTest extends TestCase
         string $locale = 'en',
         ?Connection $connection = null,
         ?string $lastVersion = null,
+        string $telemetryUrl = 'https://collector.example.com',
     ): Telemetry {
         $vault = $this->createStub(AbstractVault::class);
         $vault->method('generateKeys')->willReturn(true);
@@ -196,6 +214,7 @@ final class TelemetryTest extends TestCase
             $connection ?? DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]),
             $buildId,
             $enableTelemetry,
+            $telemetryUrl,
             $installType,
             $docker,
             $locale,
