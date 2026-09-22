@@ -50,7 +50,16 @@ return App::config([
             'x-forwarded-prefix',
         ],
         'session' => [
-            'name' => 'AUGIAS_APP',
+            // Named, because a cookie is scoped to a host and ignores the port.
+            // Two instances of Augias on one host — an operator console beside
+            // the application, a second deployment for a trial — otherwise
+            // share one cookie under one name, and signing in to either signs
+            // the other out.
+            //
+            // Separate names also mean a session stolen from one is not a
+            // session on the other, which matters most where the two instances
+            // are not equally exposed.
+            'name' => env('AUGIAS_SESSION_NAME'),
         ],
         'secrets' => [
             'enabled' => true,

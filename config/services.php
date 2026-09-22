@@ -44,6 +44,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     // Tables this instance does not map and must not drop. Empty by default:
     // an ordinary install owns every table in its database.
     $parameters->set('env(AUGIAS_PRESERVED_TABLES)', '');
+    $parameters->set('env(AUGIAS_SESSION_NAME)', 'AUGIAS_APP');
     $parameters->set('env(AUGIAS_RUNTIME)', null);
     $parameters->set('env(AUGIAS_ALLOW_REGISTRATION)', '0');
     $parameters->set('env(AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_ID)', null);
