@@ -1,3 +1,23 @@
+access_log:
+    bounded: 'Only recent reads are shown here. The full history is part of your data export:'
+    card_title: 'Access to your file'
+    empty:
+        hosted: 'Nobody at the host has opened your file since this log was put in place.'
+        self_hosted: 'This install has no operator: you are the only one who can open this file.'
+        title: 'No access recorded'
+    export_link: 'request an export'
+    intro:
+        hosted: 'Whoever operates this service may need to read your data to run it or to answer a support request. Every read is recorded here, with the date, who read it and why. There is no function that lets them sign in as you.'
+        self_hosted: 'This log records reads of your file by whoever operates the service. You host Augias yourself: there is no operator but you, and this log stays empty.'
+    reason:
+        plan_list: 'Subscription list'
+        tenant_list: 'Company list'
+        user_list: 'Account list'
+    table:
+        when: When
+        who: Who
+        why: Why
+    title: 'Access log'
 accounting:
     month:
         1: 'January'
@@ -1993,6 +2013,7 @@ menu:
         create: Create
     prestation: Services
     top:
+        access_log: 'Access log'
         api: 'API Tokens'
         categories: Categories
         custom_fields: 'Custom Fields'

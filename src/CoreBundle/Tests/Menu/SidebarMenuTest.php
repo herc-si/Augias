@@ -90,6 +90,21 @@ final class SidebarMenuTest extends KernelTestCase
         self::assertTrue($section->hasChildren());
     }
 
+    /**
+     * The access log answers on any install, but only a hosted one has an
+     * operator to account for. A self-hosted owner has nobody to ask about,
+     * and the entry would say "nobody" forever.
+     *
+     * @see \Augias\CoreBundle\Tests\Menu\AccessLogMenuEntryTest for the hosted side
+     */
+    public function testTheAccessLogIsNotListedOnASelfHostedInstall(): void
+    {
+        $section = $this->sidebar()->getChild('menu.top.system');
+
+        self::assertInstanceOf(ItemInterface::class, $section);
+        self::assertNotContains('menu.top.access_log', $this->names($section));
+    }
+
     private function sidebar(): ItemInterface
     {
         $provider = self::getContainer()->get(Provider::class);

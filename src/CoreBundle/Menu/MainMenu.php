@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Menu;
 
+use Augias\AppMode;
 use Augias\CoreBundle\Enum\Menu\MenuPriority;
 use Augias\CoreBundle\Feature\UpgradePromptProvider;
 use Augias\SaasBundle\Feature\Feature;
@@ -21,6 +22,7 @@ use Augias\UserBundle\Entity\User;
 use Knp\Menu\ItemInterface;
 use SolidWorx\Platform\PlatformBundle\Attributes\Menu\MenuBuilder;
 use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 class MainMenu
 {
@@ -28,6 +30,8 @@ class MainMenu
         private readonly SystemConfig $systemConfig,
         private readonly FeatureGate $featureGate,
         private readonly UpgradePromptProvider $upgradePromptProvider,
+        #[Autowire(param: 'app_mode')]
+        private readonly string $appMode = AppMode::SELF_HOSTED->value,
     ) {
     }
 
@@ -50,6 +54,7 @@ class MainMenu
         self::einvoicing($section);
         self::api($section);
         self::users($section);
+        $this->accessLog($section);
         self::settings($section);
         $this->addCustomFields($section);
     }
@@ -206,6 +211,29 @@ class MainMenu
             [
                 'route' => '_users_list',
                 'extras' => ['icon' => 'users'],
+            ],
+        );
+    }
+
+    /**
+     * Who, outside this company, opened its file.
+     *
+     * Listed only where there is an operator to account for. The page itself
+     * answers on any install — see CoreBundle\Action\AccessLog — but a
+     * self-hosted owner has nobody to ask about, and a menu entry that always
+     * says "nobody" is noise in the one section people go looking through.
+     */
+    public function accessLog(ItemInterface $item): ?ItemInterface
+    {
+        if (AppMode::tryFrom($this->appMode) !== AppMode::SAAS) {
+            return null;
+        }
+
+        return $item->addChild(
+            'menu.top.access_log',
+            [
+                'route' => '_access_log',
+                'extras' => ['icon' => 'eye'],
             ],
         );
     }

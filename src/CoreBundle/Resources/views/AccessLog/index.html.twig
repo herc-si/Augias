@@ -1,0 +1,73 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends '@AugiasCore/Layout/default.html.twig' %}
+
+{% block title %}
+    {{ ux_icon('tabler:eye', {width: 24, height: 24, class: 'me-2'}) }}
+    {{ 'access_log.title'|trans }}
+{% endblock title %}
+
+{% block content %}
+    <twig:Ui:Card>
+        <twig:block name="header">
+            <h3 class="card-title mb-0">{{ 'access_log.card_title'|trans }}</h3>
+        </twig:block>
+
+        <p class="text-secondary">
+            {{ (hosted ? 'access_log.intro.hosted' : 'access_log.intro.self_hosted')|trans }}
+        </p>
+
+        {% if records is empty %}
+            <div class="empty">
+                <div class="empty-icon">
+                    {{ ux_icon('tabler:eye-closed', {width: 48, height: 48, class: 'text-secondary'}) }}
+                </div>
+                <p class="empty-title">{{ 'access_log.empty.title'|trans }}</p>
+                <p class="empty-subtitle text-secondary">
+                    {{ (hosted ? 'access_log.empty.hosted' : 'access_log.empty.self_hosted')|trans }}
+                </p>
+            </div>
+        {% else %}
+            <table class="table table-vcenter">
+                <thead>
+                    <tr>
+                        <th>{{ 'access_log.table.when'|trans }}</th>
+                        <th>{{ 'access_log.table.who'|trans }}</th>
+                        <th>{{ 'access_log.table.why'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                        <tr>
+                            <td>{{ record.accessedAt|format_datetime('medium', 'short') }}</td>
+                            <td>{{ record.operator }}</td>
+                            <td>
+                                {# A reason written by tooling newer than this build is shown as it
+                                 # was written, rather than hidden behind a missing translation. #}
+                                {% if record.reasonKind is not null %}
+                                    {{ record.reasonKind.translationKey|trans }}
+                                {% else %}
+                                    <span class="text-secondary">{{ record.reason }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {# The table is capped; the whole history leaves with the company
+             # export, which carries this log like every other table of theirs. #}
+            <p class="text-secondary mt-3 mb-0">
+                {{ 'access_log.bounded'|trans }}
+                <a href="{{ path('_export_list') }}">{{ 'access_log.export_link'|trans }}</a>
+            </p>
+        {% endif %}
+    </twig:Ui:Card>
+{% endblock %}
