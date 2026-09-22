@@ -363,6 +363,9 @@
                                 <span class="totals-label">{{ 'invoice.disbursements'|trans }}</span>
                                 <span class="totals-value">{{ invoice.disbursementTotal|formatCurrency(currency) }}</span>
                             </div>
+                            <div class="totals-row totals-row-disbursement-note">
+                                <span class="totals-label totals-label-sub small text-muted">{{ 'invoice.disbursement.mention'|trans }}</span>
+                            </div>
                         {% endif %}
 
                         {# Show partial payments in totals #}

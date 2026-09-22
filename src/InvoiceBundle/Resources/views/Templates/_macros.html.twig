@@ -74,6 +74,18 @@
 {% endmacro %}
 
 {#
+ # disbursement_tag
+ #
+ # Marks a line that re-bills money advanced in the client's name. Renders
+ # nothing on an ordinary line, so every design can call it unconditionally.
+ #}
+{% macro disbursement_tag(line, color='#64748b') %}
+    {%- if line.disbursement -%}
+        <span style="margin-left: 6px; padding: 1px 6px; font-size: 7pt; text-transform: uppercase; letter-spacing: 0.5px; color: {{ color }}; border: 1px solid {{ color }}; border-radius: 3px; white-space: nowrap;">{{ 'invoice.item.disbursement.badge'|trans }}</span>
+    {%- endif -%}
+{% endmacro %}
+
+{#
  # totals_block
  #
  # palette keys: subtotalLabel, taxLabel, discountLabel, totalLabel, totalBg, totalColor,
@@ -155,6 +167,16 @@
                 </td>
             </tr>
         {% endif %}
+        {% if invoice.hasDisbursements %}
+            <tr>
+                <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
+                    {{ 'invoice.disbursements'|trans }}
+                </td>
+                <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: #1e293b;">
+                    {{ invoice.disbursementTotal|formatCurrency(currency) }}
+                </td>
+            </tr>
+        {% endif %}
         {% if hasOutstandingBalance %}
             {% for payment in invoice_captured_payments(invoice) %}
                 <tr>
@@ -215,6 +237,14 @@
     {% if vatMention %}
         <div style="margin-top: 12px; font-size: 9pt; color: {{ p.labelColor }};">
             {{ vatMention }}
+        </div>
+    {% endif %}
+
+    {# Same reasoning, and the same place. A disbursement is only outside the
+       taxable base if the invoice says on what ground it is one. #}
+    {% if invoice.hasDisbursements %}
+        <div style="margin-top: 12px; font-size: 8pt; color: {{ p.labelColor }}; line-height: 1.5;">
+            {{ 'invoice.disbursement.mention'|trans }}
         </div>
     {% endif %}
 {% endmacro %}

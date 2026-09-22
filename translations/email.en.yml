@@ -58,6 +58,7 @@ invoice:
     amount_payable: 'Amount payable'
     balance: 'Balance Due'
     created: Created
+    disbursements: Disbursements
     discount: Discount
     due: 'Due Date'
     info: 'You have received an invoice from %company% generated on %created%'

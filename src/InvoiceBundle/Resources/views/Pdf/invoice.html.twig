@@ -7,6 +7,8 @@
  # with this source code in the file LICENSE.
  #}
 
+{% import '@AugiasInvoice/Templates/_macros.html.twig' as inv %}
+
 {% set currency = invoice.client.currency %}
 {% set hasOutstandingBalance = invoice.payments|length > 0 and not invoice.balance.zero %}
 
@@ -240,7 +242,7 @@
         {% for line in invoice.lines %}
             <tr{% if loop.index is even %} style="background-color: #fafbfc;"{% endif %}>
                 <td class="col-description" style="padding: 12px 16px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: top;">
-                    {{ line.description|nl2br }}
+                    {{ line.description|nl2br }}{{ inv.disbursement_tag(line) }}
                 </td>
                 <td class="col-price" style="padding: 12px 16px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right; font-family: 'Courier New', monospace;">
                     {{ line.price|formatCurrency(currency) }}
@@ -336,6 +338,18 @@
                 </td>
                 <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #ef4444;">
                     -{{ discount(invoice)|formatCurrency(currency) }}
+                </td>
+            </tr>
+        {% endif %}
+
+        {# Disbursements - money advanced in the client's name, owed but not earned. #}
+        {% if invoice.hasDisbursements %}
+            <tr class="disbursement-row">
+                <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
+                    {{ 'invoice.disbursements'|trans }}
+                </td>
+                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #1e293b;">
+                    {{ invoice.disbursementTotal|formatCurrency(currency) }}
                 </td>
             </tr>
         {% endif %}
@@ -443,6 +457,10 @@
 {% set vatMention = vat_exempt_mention() %}
 {% if vatMention %}
     <div style="margin-top: 12px; font-size: 9pt; color: #64748b;">{{ vatMention }}</div>
+{% endif %}
+
+{% if invoice.hasDisbursements %}
+    <div style="margin-top: 12px; font-size: 8pt; color: #64748b; line-height: 1.5;">{{ 'invoice.disbursement.mention'|trans }}</div>
 {% endif %}
 
 {% if invoice.terms is not empty %}

@@ -35,7 +35,7 @@
                     {% for line in invoice.lines %}
                         <tr style="border-bottom: 1px solid #e8dcc4;">
                             <td>
-                                <em>{{ line.description|nl2br }}</em>
+                                <em>{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</em>
                                 <div class="text-muted small">{{ line.qty }} × {{ line.price|formatCurrency(currency) }}</div>
                             </td>
                             <td class="text-end fs-5">{{ line.total|formatCurrency(currency) }}</td>
@@ -49,6 +49,7 @@
                     <div style="color: #94704a; font-style: italic;" class="text-end mb-2">IV. {{ 'invoice.total'|trans }}</div>
                     <div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.subtotal'|trans }}</span><span>{{ invoice.baseTotal|formatCurrency(currency) }}</span></div>
                     {% if invoice.tax.positive %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.tax'|trans }}</span><span>{{ invoice.tax|formatCurrency(currency) }}</span></div>{% endif %}
+                    {% if invoice.hasDisbursements %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.disbursements'|trans }}</span><span>{{ invoice.disbursementTotal|formatCurrency(currency) }}</span></div><div class="text-muted small mb-2" style="line-height: 1.4;">{{ 'invoice.disbursement.mention'|trans }}</div>{% endif %}
                     <div class="d-flex justify-content-between p-3 rounded" style="background: #f5ebd9;">
                         <strong>{{ 'invoice.total'|trans }}</strong>
                         <strong class="fs-4" style="color: #94704a;">{{ invoice.total|formatCurrency(currency) }}</strong>
