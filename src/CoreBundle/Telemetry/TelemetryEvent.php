@@ -14,7 +14,8 @@ declare(strict_types=1);
 namespace Augias\CoreBundle\Telemetry;
 
 /**
- * The fixed vocabulary of named lifecycle events emitted to SolidWorx Insights.
+ * The fixed vocabulary of named lifecycle events emitted to the configured
+ * telemetry collector.
  *
  * The backing value is the wire format sent in the telemetry payload and must
  * remain stable.

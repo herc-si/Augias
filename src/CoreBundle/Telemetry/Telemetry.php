@@ -38,7 +38,12 @@ use function Sentry\captureException;
 use function strtolower;
 
 /**
- * Single entry point for emitting telemetry signals to SolidWorx Insights.
+ * Single entry point for emitting telemetry signals to the collector the
+ * operator configured.
+ *
+ * There is no default collector: {@see \Augias\CoreBundle\Telemetry\Message\Handler\SendTelemetryHandler}
+ * posts to AUGIAS_TELEMETRY_URL, and an installation that never named one sends
+ * nothing at all.
  *
  * Fully self-guarded: every public method swallows any failure so telemetry can
  * never break the request or persistence that triggered it. No PII is ever sent
@@ -57,6 +62,8 @@ final readonly class Telemetry
         private ?string $buildId,
         #[Autowire(env: 'bool:AUGIAS_ENABLE_TELEMETRY')]
         private bool $enableTelemetry,
+        #[Autowire(env: 'AUGIAS_TELEMETRY_URL')]
+        private string $telemetryUrl,
         #[Autowire(env: 'AUGIAS_INSTALL_TYPE')]
         private string $installType,
         #[Autowire(env: 'bool:default::AUGIAS_DOCKER')]
@@ -71,6 +78,13 @@ final readonly class Telemetry
     public function isEnabled(): bool
     {
         if ($this->buildId === null || $this->buildId === '') {
+            return false;
+        }
+
+        // Nowhere to send it is a reason not to collect it. Checked here rather
+        // than only in the handler so an installation with no collector does
+        // not queue messages that can never be delivered.
+        if ($this->telemetryUrl === '') {
             return false;
         }
 

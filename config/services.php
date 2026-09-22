@@ -77,7 +77,11 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('env(AUGIAS_MCP_REFRESH_TOKEN_TTL)', 'P90D');
     $parameters->set('env(AUGIAS_MCP_AUTH_CODE_TTL)', 'PT10M');
 
-    $parameters->set('env(AUGIAS_TELEMETRY_URL)', 'https://insights.solidworx.co');
+    // No default collector. Augias has none of its own, and inheriting the
+    // upstream project's would send an operator's installation figures to a
+    // third party they never chose. Empty means telemetry is off whatever else
+    // is configured; an operator who wants it names their own collector.
+    $parameters->set('env(AUGIAS_TELEMETRY_URL)', '');
     $parameters->set('env(AUGIAS_ENABLE_TELEMETRY)', '0'); // default OFF; '1' enables
     $parameters->set('env(AUGIAS_INSTALL_TYPE)', '');       // '' → auto-detect (docker vs manual)
 

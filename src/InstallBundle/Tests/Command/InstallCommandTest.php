@@ -359,6 +359,7 @@ final class InstallCommandTest extends TestCase
             $this->createStub(Connection::class),
             null,
             false,
+            'https://collector.example.com',
             '',
             false,
             'en',
