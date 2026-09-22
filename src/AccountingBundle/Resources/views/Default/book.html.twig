@@ -14,13 +14,31 @@
 {% endblock title %}
 
 {% block heading %}
-    <a class="btn btn-primary" href="{{ path('_accounting_entry_add', {'book': book.value}) }}">
-        {{ ux_icon('tabler:plus', {width: 18, height: 18}) }}
-        {{ book.addTranslationKey|trans }}
-    </a>
+    {# The revenue book writes itself: LedgerFeeder files an entry on every
+     # payment the application captures, so a button inviting the owner to do
+     # it by hand would mostly produce duplicates. The manual path stays, as a
+     # quiet link, for money that arrived outside the application — cash, a
+     # transfer never recorded here — without which a livre des recettes could
+     # not be complete. #}
+    {% if book.value == 'revenue' %}
+        <a class="btn btn-link text-secondary" href="{{ path('_accounting_entry_add', {'book': book.value}) }}">
+            {{ 'accounting.entry.add_revenue_manual'|trans }}
+        </a>
+    {% else %}
+        <a class="btn btn-primary" href="{{ path('_accounting_entry_add', {'book': book.value}) }}">
+            {{ ux_icon('tabler:plus', {width: 18, height: 18}) }}
+            {{ book.addTranslationKey|trans }}
+        </a>
+    {% endif %}
 {% endblock %}
 
 {% block content %}
+    {% if book.value == 'revenue' %}
+        <p class="text-secondary">{{ 'accounting.book.revenue_is_automatic'|trans }}</p>
+    {% elseif book.value == 'expense' %}
+        <p class="text-secondary">{{ 'accounting.book.expense_notice'|trans }}</p>
+    {% endif %}
+
     {% if period is not null and period.isClosed %}
         <twig:Ui:Alert type="info" icon="tabler:lock">
             {{ 'accounting.period.sealed_notice'|trans({'%period%': period.label}) }}

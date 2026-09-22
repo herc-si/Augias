@@ -55,7 +55,14 @@ final class AccountingMenuTest extends KernelTestCase
         $this->configureRegime('fr_micro', ActivityNature::ServicesBnc);
 
         self::assertSame(
-            ['accounting.menu.overview', 'accounting.book.revenue', 'accounting.menu.declarations'],
+            [
+                'accounting.menu.overview',
+                'accounting.book.revenue',
+                // Not a statutory book, and offered to everyone: somewhere to
+                // file a receipt is useful even where nothing is deductible.
+                'accounting.book.expense',
+                'accounting.menu.declarations',
+            ],
             array_keys($this->accounting()->getChildren()),
         );
     }

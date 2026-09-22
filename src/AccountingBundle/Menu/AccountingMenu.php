@@ -13,9 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\AccountingBundle\Menu;
 
-use Augias\AccountingBundle\Regime\RegimeInterface;
-use Augias\AccountingBundle\Regime\RegimeRegistry;
 use Augias\AccountingBundle\Service\AccountingProfileProvider;
+use Augias\AccountingBundle\Service\CompanyBooks;
 use Augias\AccountingBundle\Service\CurrentCompany;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Enum\Menu\MenuPriority;
@@ -45,14 +44,14 @@ final readonly class AccountingMenu
     public function __construct(
         private CurrentCompany $currentCompany,
         private AccountingProfileProvider $profileProvider,
-        private RegimeRegistry $registry,
+        private CompanyBooks $books,
     ) {
     }
 
     #[MenuBuilder(name: 'sidebar', priority: MenuPriority::PRIORITY_ACCOUNTING->value)]
     public function sidebar(ItemInterface $menu): void
     {
-        $books = $this->books();
+        $books = $this->companyBooks();
 
         if ($books === []) {
             $menu->addChild(
@@ -107,7 +106,7 @@ final readonly class AccountingMenu
      *
      * @return list<\Augias\AccountingBundle\Enum\LedgerBook>
      */
-    private function books(): array
+    private function companyBooks(): array
     {
         $company = $this->currentCompany->get();
 
@@ -115,9 +114,6 @@ final readonly class AccountingMenu
             return [];
         }
 
-        $profile = $this->profileProvider->forCompany($company);
-        $regime = $this->registry->forProfile($profile);
-
-        return $regime instanceof RegimeInterface ? $regime->books($profile) : [];
+        return $this->books->all($this->profileProvider->forCompany($company));
     }
 }
