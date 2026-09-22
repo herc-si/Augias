@@ -1,3 +1,20 @@
+access_log:
+    card_title: 'Ce que vous avez ouvert'
+    empty:
+        description: "Les factures, devis, avoirs et fiches clients que vous ouvrez apparaîtront ici."
+        title: 'Aucune consultation enregistrée'
+    intro: "Les dossiers que vous avez ouverts, sur les %days% derniers jours. Ce journal est le vôtre : personne d'autre dans l'entreprise ne le voit."
+    kind:
+        bill: "Facture d'achat"
+        client: Client
+        credit_note: Avoir
+        invoice: Facture
+        quote: Devis
+    table:
+        kind: Type
+        record: Dossier
+        when: Date
+    title: "Journal d'accès"
 accounting:
     month:
         1: 'Janvier'
@@ -1993,6 +2010,7 @@ menu:
         create: Créer
     prestation: Prestation
     top:
+        access_log: "Journal d'accès"
         api: 'Jetons API'
         categories: Catégories
         custom_fields: 'Champs personnalisés'

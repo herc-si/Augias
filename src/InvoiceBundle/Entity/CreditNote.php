@@ -15,6 +15,8 @@ namespace Augias\InvoiceBundle\Entity;
 
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
+use Augias\CoreBundle\Enum\RecordKind;
+use Augias\CoreBundle\Journal\Journalled;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\CreditReason;
@@ -55,7 +57,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Index(name: 'idx_credit_note_credited', columns: ['credited_invoice_id'])]
 #[ORM\Entity(repositoryClass: CreditNoteRepository::class)]
 #[ORM\AssociationOverrides([new ORM\AssociationOverride(name: 'company', inversedBy: 'creditNotes')])]
-class CreditNote extends BaseInvoice implements Stringable
+class CreditNote extends BaseInvoice implements Stringable, Journalled
 {
     final public const string TABLE_NAME = 'credit_notes';
 
@@ -366,5 +368,15 @@ class CreditNote extends BaseInvoice implements Stringable
     public function __toString(): string
     {
         return $this->creditNoteId;
+    }
+
+    public function journalKind(): RecordKind
+    {
+        return RecordKind::CreditNote;
+    }
+
+    public function journalLabel(): string
+    {
+        return (string) $this->getCreditNoteId();
     }
 }

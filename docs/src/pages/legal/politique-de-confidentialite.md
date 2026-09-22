@@ -33,6 +33,7 @@ Concrètement : c'est à vous d'avoir une base légale pour traiter les données
 | Abonnement | plan, statut, dates, consommation des quotas | exécuter le contrat et facturer |
 | Invitations | adresse électronique des personnes que vous invitez dans votre équipe | leur ouvrir un accès |
 | Journaux techniques | adresse IP, date, page consultée, agent utilisateur, erreurs applicatives | sécurité, diagnostic de panne |
+| Journal de vos consultations | les dossiers que vous ouvrez — facture, devis, avoir, client, facture d'achat — avec leur nom et la date | vous permettre de retrouver ce que vous avez consulté ; ce journal est le vôtre et n'est visible que de vous |
 
 ### En tant que sous-traitant, pour votre compte
 
@@ -78,6 +79,7 @@ Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel
 | Factures émises par HERC SI | dix ans, article L123-22 du code de commerce |
 | Journaux de connexion | **[À COMPLÉTER : douze mois au plus est l'usage]** |
 | Rapports d'erreur | **[À COMPLÉTER : durée de rétention configurée chez Sentry]** |
+| Journal de vos consultations | **90 jours**, puis suppression automatique |
 | Demandes de réinitialisation de mot de passe | quelques heures, jusqu'à expiration du lien |
 
 ## 6. Sécurité
