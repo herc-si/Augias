@@ -220,7 +220,7 @@
                                             <strong>
                                                 Payment:
                                             </strong>
-                                            {{ payment.method.name }}
+                                            {{ payment.method ? payment.method.name : 'payment.method.none'|trans }}
                                         </td>
                                         <td class="no-line text-right">
                                             <div class="text-danger invoice-total">

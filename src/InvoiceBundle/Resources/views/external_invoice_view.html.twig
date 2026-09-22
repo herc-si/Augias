@@ -244,7 +244,7 @@
                                             <div class="ext-doc-totals-row">
                                                 <div class="ext-doc-totals-label">
                                                     {{ 'invoice.payment.label'|trans }}
-                                                    {% if payment.method.name is not empty %}
+                                                    {% if payment.method and payment.method.name is not empty %}
                                                         <span class="small opacity-75">({{ payment.method.name }})</span>
                                                     {% endif %}
                                                 </div>

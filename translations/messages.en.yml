@@ -2419,6 +2419,7 @@ payment:
             cash: Cash
             credit: Credit
         label: 'Payment Method'
+        none: 'Not recorded'
         offline: Offline
         online: Online
         updated: 'Payment Method Successfully Updated!'
