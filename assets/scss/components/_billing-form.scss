@@ -436,6 +436,17 @@
         }
     }
 
+    .item-disbursement-check {
+        // Under the description rather than in a column of its own: a rare
+        // qualifier on a line, and a whole column for it would widen the grid
+        // on every invoice that never uses one.
+        margin-top: 0.5rem;
+
+        .form-text {
+            font-size: 0.75rem;
+        }
+    }
+
     .column-price,
     .column-qty,
     .column-tax {

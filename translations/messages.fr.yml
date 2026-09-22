@@ -375,6 +375,7 @@ bill:
         tax: 'TVA'
         total: Total
 billing:
+    disbursements: Débours
     discount: Remise
     due_date: 'Date d''échéance'
     notes_help: 'Les notes ne seront pas visibles par le client'
@@ -1384,6 +1385,8 @@ form:
         currency: "Devise"
         description: "Description"
         direction: "Sens"
+        disbursement: "Débours"
+        disbursement.help: "Somme avancée au nom de ce client, refacturée à l'euro près"
         domain: "Domaine"
         eid: "EID"
         email: "E-mail"
@@ -1635,6 +1638,7 @@ invoice:
     created: Créée
     custom_fields: 'Champs personnalisés'
     date: 'Date de facture'
+    disbursements: Débours
     discount: Remise
     due_date: 'Date d''échéance'
     edit:
@@ -1689,6 +1693,7 @@ invoice:
         add: 'Ajouter un article'
         description:
             placeholder: 'Décrivez le service ou le produit...'
+        disbursement.badge: Débours
         heading:
             description: Description
             price: Prix
@@ -1699,6 +1704,7 @@ invoice:
         remove: 'Supprimer l''article'
         tax:
             add: '+ Ajouter une taxe'
+            none_on_disbursement: 'Pas de taxe sur un débours'
             remove: 'Supprimer la taxe'
     items:
         empty:

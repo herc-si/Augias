@@ -30,6 +30,7 @@ use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
 use Augias\InvoiceBundle\Enum\InvoiceLineType;
 use Augias\InvoiceBundle\Repository\LineRepository;
+use Augias\InvoiceBundle\Validator\Constraints\DisbursementCarriesNoTax;
 use Augias\TaxBundle\Entity\LineTax;
 use Brick\Math\BigDecimal;
 use Brick\Math\BigNumber;
@@ -121,6 +122,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     ]
 )]
 #[ORM\AssociationOverrides([new ORM\AssociationOverride(name: 'company', inversedBy: 'invoiceLines')])]
+#[DisbursementCarriesNoTax]
 class Line implements LineInterface, Stringable
 {
     final public const string TABLE_NAME = 'invoice_lines';
@@ -198,6 +200,19 @@ class Line implements LineInterface, Stringable
         ]
     )]
     protected BigNumber $total;
+
+    /**
+     * Money advanced in the client's name, handed back to the euro.
+     *
+     * A flag rather than a kind of product, because the same thing bought for
+     * oneself would be an ordinary purchase: what makes it a disbursement is
+     * the mandate and the supplier's document made out to the client, not the
+     * thing that was bought. The same train ticket is a disbursement on one
+     * invoice and a cost on the next.
+     */
+    #[ORM\Column(name: 'disbursement', type: Types::BOOLEAN, options: ['default' => false])]
+    #[Groups(['invoice_api:read', 'invoice_api:write', 'recurring_invoice_api:read', 'recurring_invoice_api:write'])]
+    protected bool $disbursement = false;
 
     public function __construct()
     {
@@ -282,6 +297,18 @@ class Line implements LineInterface, Stringable
     public function getTotal(): BigNumber
     {
         return $this->total;
+    }
+
+    public function isDisbursement(): bool
+    {
+        return $this->disbursement;
+    }
+
+    public function setDisbursement(bool $disbursement): static
+    {
+        $this->disbursement = $disbursement;
+
+        return $this;
     }
 
     /**

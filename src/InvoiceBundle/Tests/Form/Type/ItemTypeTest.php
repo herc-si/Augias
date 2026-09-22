@@ -47,6 +47,32 @@ final class ItemTypeTest extends FormTestCase
         $this->assertFormData($this->factory->create(ItemType::class, null, ['currency' => $currency]), $formData, $object);
     }
 
+    public function testSubmitMarksTheLineAsADisbursement(): void
+    {
+        $description = 'Screen bought for the client';
+        $price = 500;
+        $qty = '1';
+
+        $formData = [
+            'description' => $description,
+            'price' => $price,
+            'qty' => $qty,
+            'disbursement' => true,
+        ];
+
+        $object = new Line();
+        $object->setDescription($description);
+        $object->setQty($qty);
+        $object->setPrice(BigDecimal::of($price * 100));
+        $object->setDisbursement(true);
+
+        $this->assertFormData(
+            $this->factory->create(ItemType::class, null, ['currency' => new Currency('USD')]),
+            $formData,
+            $object,
+        );
+    }
+
     public function testSubmitPreservesSpecialCharacters(): void
     {
         $description = 'Item + discount & "special" chars: 100% off';

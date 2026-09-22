@@ -40,6 +40,9 @@ use Brick\Math\RoundingMode;
  * - {@see TaxType::FlatRate} — a fixed currency amount, `rate_snapshot × 100` to convert
  *   major units to minor units. Compound + FlatRate is rejected by the same constraint.
  *
+ * A line marked as a disbursement short-circuits all of this: it carries no
+ * tax at all. See {@see LineInterface::isDisbursement()}.
+ *
  * Category branches:
  * - {@see TaxCategory::Exempt} rows are skipped entirely.
  * - {@see TaxCategory::ZeroRated}, {@see TaxCategory::OutOfScope},
@@ -56,6 +59,18 @@ final class LineTaxCalculator
     public function calculateLine(LineInterface $line, Rounder $rounder): LineBreakdown
     {
         $gross = BigNumber::of($line->getTotal())->toBigDecimal();
+
+        // A disbursement bears no tax, whatever rows are attached to the line.
+        // The money was advanced in the client's name and is handed back to the
+        // euro: charging tax on it would be charging tax on someone else's
+        // purchase, and the tax the supplier charged is the client's to deduct,
+        // on a document made out to them. Answered here rather than only in the
+        // validator so that a line marked after its rates were chosen — or one
+        // that arrived through the API — cannot produce tax either.
+        if ($line->isDisbursement()) {
+            return new LineBreakdown($gross, $gross, BigDecimal::zero(), []);
+        }
+
         $subtotal = $gross;
         $lineTotal = $gross;
         $totalTax = BigDecimal::zero();

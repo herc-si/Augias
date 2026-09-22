@@ -280,6 +280,19 @@ class Line implements LineInterface, Stringable
     }
 
     /**
+     * Never, on a quote.
+     *
+     * A disbursement is a fact about money that has already been advanced,
+     * proved by a supplier's document made out to the client. A quote is a
+     * proposal, and nothing has been advanced yet — the line becomes a
+     * disbursement on the invoice that follows, where the proof exists.
+     */
+    public function isDisbursement(): bool
+    {
+        return false;
+    }
+
+    /**
      * @return Collection<int, LineTax>
      */
     public function getTaxes(): Collection

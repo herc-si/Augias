@@ -18,7 +18,12 @@ use Brick\Math\BigDecimal;
 /**
  * Aggregate result of running the orchestrator across an invoice/quote.
  *
- * - {@see $subTotal} is the sum of line subtotals (tax-exclusive).
+ * - {@see $subTotal} is the sum of line subtotals (tax-exclusive), leaving out
+ *   disbursement lines — it is the base a document-level rate and a percentage
+ *   discount apply to, and neither may reach money advanced in the client's
+ *   name.
+ * - {@see $disbursementTotal} is what those left-out lines come to. It is part
+ *   of {@see $total}, since the client does owe it, and of nothing else.
  * - {@see $totalLineTax} is the sum of all line-level tax components.
  * - {@see $invoiceLevelBreakdown} contains invoice-wide taxes (additive
  *   contribute to {@see $total}; deductive contribute to
@@ -49,6 +54,7 @@ final readonly class CalculationResult
         public array $lineBreakdowns,
         public InvoiceLevelBreakdown $invoiceLevelBreakdown,
         public array $summaryRows,
+        public BigDecimal $disbursementTotal,
     ) {
         $this->totalWithholding = $invoiceLevelBreakdown->totalWithholding;
         $this->amountPayable = $this->total->minus($this->totalWithholding);

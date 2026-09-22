@@ -130,6 +130,7 @@ final class RecurringInvoiceTest extends ApiTestCase
                     'price' => 100.1,
                     'qty' => 1,
                     'total' => 100.1,
+                    'disbursement' => false,
                     'taxes' => [],
                 ],
             ],
@@ -154,6 +155,7 @@ final class RecurringInvoiceTest extends ApiTestCase
             'terms' => null,
             'notes' => null,
             'withholdingAmount' => 0,
+            'disbursementTotal' => 0,
             'payableAmount' => 90.09,
             'customFields' => [],
         ], $result);
@@ -224,6 +226,7 @@ final class RecurringInvoiceTest extends ApiTestCase
                     'price' => 1,
                     'qty' => 1,
                     'total' => 1,
+                    'disbursement' => false,
                     'taxes' => [],
                 ],
             ],
@@ -244,6 +247,7 @@ final class RecurringInvoiceTest extends ApiTestCase
             'terms' => $recurringInvoice->getTerms(),
             'notes' => $recurringInvoice->getNotes(),
             'withholdingAmount' => 0,
+            'disbursementTotal' => 0,
             'payableAmount' => 1,
             'customFields' => [],
         ], $data);
@@ -317,6 +321,7 @@ final class RecurringInvoiceTest extends ApiTestCase
                     'price' => 100,
                     'qty' => 1,
                     'total' => 100,
+                    'disbursement' => false,
                     'taxes' => [],
                 ],
             ],
@@ -337,6 +342,7 @@ final class RecurringInvoiceTest extends ApiTestCase
             'terms' => $recurringInvoice->getTerms(),
             'notes' => $recurringInvoice->getNotes(),
             'withholdingAmount' => 0,
+            'disbursementTotal' => 0,
             'payableAmount' => 90,
             'customFields' => [],
         ], $data);

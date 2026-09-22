@@ -87,6 +87,12 @@ final class InvoiceFormDTO
     public ?string $tax = '0';
 
     /**
+     * What the lines marked as disbursements come to, so the totals panel can
+     * show them on their own line while the form is being filled in.
+     */
+    public ?string $disbursementTotal = '0';
+
+    /**
      * @var Collection<int, Line>
      */
     #[Assert\Valid]

@@ -138,6 +138,7 @@ final class Create extends AbstractController
                 $dto->total = (string) $tempInvoice->getTotal();
                 $dto->baseTotal = (string) $tempInvoice->getBaseTotal();
                 $dto->tax = (string) $tempInvoice->getTax();
+                $dto->disbursementTotal = (string) $tempInvoice->getDisbursementTotal();
             } catch (InvalidArgumentException) {
                 // Client data incomplete — keep DTO totals as-is
             }

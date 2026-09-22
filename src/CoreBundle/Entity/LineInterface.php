@@ -46,4 +46,19 @@ interface LineInterface
      * @return Collection<int, LineTax>
      */
     public function getTaxes(): Collection;
+
+    /**
+     * Whether this line re-bills money advanced in the client's name.
+     *
+     * A disbursement — un débours — is not the company's turnover: the money
+     * was spent on the client's behalf, against a supplier document made out
+     * to the client, and is handed back to the euro. It therefore carries no
+     * tax of its own, takes no part in the base a document-level rate or a
+     * percentage discount applies to, and does not belong in the revenue book.
+     *
+     * Every line answers this so that the calculators do not have to ask what
+     * kind of document they are looking at. Only invoice lines can actually be
+     * marked; see {@see \Augias\InvoiceBundle\Entity\Line::isDisbursement()}.
+     */
+    public function isDisbursement(): bool;
 }

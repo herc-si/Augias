@@ -56,6 +56,7 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
         $rounder = new Rounder($options->rounding);
 
         $subTotal = BigDecimal::zero();
+        $disbursementTotal = BigDecimal::zero();
         $total = BigDecimal::zero();
         $totalLineTax = BigDecimal::zero();
         $lineBreakdowns = [];
@@ -67,9 +68,21 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
             $breakdown = $this->lineTaxCalculator->calculateLine($line, $rounder);
 
             $lineBreakdowns[] = $breakdown;
-            $subTotal = $subTotal->plus($breakdown->lineSubtotal);
             $total = $total->plus($breakdown->lineTotal);
             $totalLineTax = $totalLineTax->plus($breakdown->lineTax);
+
+            // A disbursement is owed — it is in the total — but it is not part
+            // of the subtotal, because the subtotal is what a document-level
+            // rate and a percentage discount are computed from. Money advanced
+            // in the client's name must come back to the euro: a 20% rate or a
+            // 10% discount reaching it would send back more or less than was
+            // paid out, and the operation stops being a disbursement.
+            if ($line->isDisbursement()) {
+                $disbursementTotal = $disbursementTotal->plus($breakdown->lineSubtotal);
+                continue;
+            }
+
+            $subTotal = $subTotal->plus($breakdown->lineSubtotal);
 
             foreach ($breakdown->taxRows as $row) {
                 $perLineSummary[] = $row;
@@ -94,6 +107,7 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
             lineBreakdowns: $lineBreakdowns,
             invoiceLevelBreakdown: $invoiceLevel,
             summaryRows: $summaryRows,
+            disbursementTotal: $disbursementTotal,
         );
     }
 
@@ -153,19 +167,32 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
     private function withoutTax(BaseInvoice | Quote $document): CalculationResult
     {
         $subTotal = BigDecimal::zero();
+        $disbursementTotal = BigDecimal::zero();
 
         foreach ($document->getLines() as $line) {
             $line->updateTotal();
-            $subTotal = $subTotal->plus(BigNumber::of($line->getTotal())->toBigDecimal());
+            $amount = BigNumber::of($line->getTotal())->toBigDecimal();
+
+            // Still kept apart with no tax in sight. A company in franchise en
+            // base charges none either way, but a disbursement is not its
+            // turnover, and the figure the books and the ceiling are read from
+            // is the subtotal — so the separation matters most exactly here.
+            if ($line->isDisbursement()) {
+                $disbursementTotal = $disbursementTotal->plus($amount);
+                continue;
+            }
+
+            $subTotal = $subTotal->plus($amount);
         }
 
         return new CalculationResult(
             subTotal: $subTotal,
             totalLineTax: BigDecimal::zero(),
-            total: $subTotal,
+            total: $subTotal->plus($disbursementTotal),
             lineBreakdowns: [],
             invoiceLevelBreakdown: InvoiceLevelBreakdown::empty(),
             summaryRows: [],
+            disbursementTotal: $disbursementTotal,
         );
     }
 }

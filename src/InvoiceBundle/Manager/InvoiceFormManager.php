@@ -159,6 +159,7 @@ final readonly class InvoiceFormManager
         $dto->total = (string) $invoice->getTotal();
         $dto->baseTotal = (string) $invoice->getBaseTotal();
         $dto->tax = (string) $invoice->getTax();
+        $dto->disbursementTotal = (string) $invoice->getDisbursementTotal();
 
         // Copy collections
         foreach ($invoice->getLines() as $line) {

@@ -81,6 +81,13 @@ class TotalCalculator
             $total = $this->applyDiscount($entity, $total);
         }
 
+        // Only invoices carry disbursements — a quote proposes, it advances
+        // nothing — and Quote has no such total to set. See
+        // Augias\QuoteBundle\Entity\Line::isDisbursement().
+        if ($entity instanceof BaseInvoice) {
+            $entity->setDisbursementTotal($result->disbursementTotal);
+        }
+
         $entity->setTotal($total);
         $entity->setWithholdingAmount($withholding);
         $entity->setPayableAmount(BigDecimal::of($total)->minus($withholding));
