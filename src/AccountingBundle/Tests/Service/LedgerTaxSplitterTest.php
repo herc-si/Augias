@@ -306,6 +306,7 @@ final class LedgerTaxSplitterTest extends TestCase
             $breakdowns,
             [] === $invoiceRows ? InvoiceLevelBreakdown::empty() : new InvoiceLevelBreakdown($invoiceTax, $invoiceRows),
             [],
+            BigDecimal::zero(),
         );
 
         // A fake rather than a stub: what is being tested is what the splitter

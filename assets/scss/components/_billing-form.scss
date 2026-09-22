@@ -436,6 +436,17 @@
         }
     }
 
+    // The disbursement switch sits under the description rather than in a
+    // column of its own: it is a rare qualifier on a line, and a whole column
+    // for it would widen the grid on every invoice that never uses one.
+    .item-disbursement-check {
+        margin-top: 0.5rem;
+
+        .form-text {
+            font-size: 0.75rem;
+        }
+    }
+
     .column-price,
     .column-qty,
     .column-tax {

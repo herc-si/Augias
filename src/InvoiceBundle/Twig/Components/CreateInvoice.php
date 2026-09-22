@@ -153,6 +153,7 @@ final class CreateInvoice extends AbstractController
             $this->dto->total = '0';
             $this->dto->baseTotal = '0';
             $this->dto->tax = '0';
+            $this->dto->disbursementTotal = '0';
             return;
         }
 
@@ -164,6 +165,7 @@ final class CreateInvoice extends AbstractController
         $this->dto->total = (string) $tempInvoice->getTotal();
         $this->dto->baseTotal = (string) $tempInvoice->getBaseTotal();
         $this->dto->tax = (string) $tempInvoice->getTax();
+        $this->dto->disbursementTotal = (string) $tempInvoice->getDisbursementTotal();
     }
 
     /**

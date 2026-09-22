@@ -125,6 +125,11 @@ final readonly class InvoiceCloner
             $invoiceLine->setDescription($line->getDescription());
             $invoiceLine->setPrice($line->getPrice());
             $invoiceLine->setQty($line->getQty());
+            // Carried over with the line: what was advanced in the client's
+            // name on the original is still advanced in their name on the copy,
+            // and a clone that quietly turned it into turnover would be the
+            // easiest way to lose the distinction.
+            $invoiceLine->setDisbursement($line->isDisbursement());
 
             $invoiceLine->getTaxes()->clear();
             foreach ($line->getTaxes() as $sourceLineTax) {

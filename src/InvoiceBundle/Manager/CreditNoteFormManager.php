@@ -107,6 +107,10 @@ final readonly class CreditNoteFormManager
                     ->setDescription($line->getDescription())
                     ->setPrice($line->getPrice())
                     ->setQty($line->getQty())
+                    // A credit note takes back what the invoice charged, in the
+                    // same terms. Dropping the mark here would credit a
+                    // disbursement as turnover and leave the books short.
+                    ->setDisbursement($line->isDisbursement())
                     ->updateTotal(),
             );
         }

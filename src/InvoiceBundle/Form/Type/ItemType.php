@@ -20,6 +20,7 @@ use Augias\TaxBundle\Service\TaxAvailability;
 use Money\Currency;
 use Override;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -80,6 +81,19 @@ class ItemType extends AbstractType
         $builder->get('qty')
             ->resetViewTransformers()
             ->addViewTransformer(new QuantityTransformer());
+
+        $builder->add(
+            'disbursement',
+            CheckboxType::class,
+            [
+                'label' => 'form.field.disbursement',
+                'help' => 'form.field.disbursement.help',
+                'required' => false,
+                'attr' => [
+                    'class' => 'invoice-item-disbursement',
+                ],
+            ]
+        );
 
         if ($this->taxAvailability->isOffered()) {
             $builder->add(

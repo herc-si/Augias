@@ -107,6 +107,61 @@ final class TotalCalculatorTest extends KernelTestCase
         self::assertEquals(BigDecimal::of(30000), $invoice->getBaseTotal());
     }
 
+    /**
+     * The document keeps the two apart, and the discount reaches only the fees.
+     *
+     * 300 € of work and a 500 € screen advanced in the client's name, less 15%.
+     * The discount comes off the work — 45 € — and not off the advance, which
+     * has to come back to the euro or stop being a disbursement.
+     *
+     * @throws MathException
+     * @throws NotSupported
+     */
+    public function testAPercentageDiscountLeavesADisbursementAlone(): void
+    {
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+
+        $invoice = new Invoice();
+        $invoice->setClient(ClientFactory::createOne(['currencyCode' => 'USD']));
+
+        $invoice->addLine(new Line()->setQty(1)->setPrice(30000));
+        $invoice->addLine(new Line()->setQty(1)->setPrice(50000)->setDisbursement(true));
+
+        $discount = new Discount();
+        $discount->setType(Discount::TYPE_PERCENTAGE);
+        $discount->setValue(15);
+        $invoice->setDiscount($discount);
+
+        $updater->calculateTotals($invoice);
+
+        self::assertEquals(BigDecimal::of(30000), $invoice->getBaseTotal());
+        self::assertEquals(BigDecimal::of(50000), $invoice->getDisbursementTotal());
+        self::assertEquals(BigDecimal::of(75500), $invoice->getTotal());
+        self::assertEquals(BigDecimal::of(75500), $invoice->getBalance());
+    }
+
+    /**
+     * An invoice with nothing advanced carries no disbursement total, so
+     * nothing about the figures it was issued with changes.
+     *
+     * @throws MathException
+     * @throws NotSupported
+     */
+    public function testAnInvoiceWithoutDisbursementsTotalsThemAtZero(): void
+    {
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+
+        $invoice = new Invoice();
+        $invoice->setClient(ClientFactory::createOne(['currencyCode' => 'USD']));
+        $invoice->addLine(new Line()->setQty(1)->setPrice(15000));
+
+        $updater->calculateTotals($invoice);
+
+        self::assertEquals(BigDecimal::of(0), $invoice->getDisbursementTotal());
+        self::assertFalse($invoice->hasDisbursements());
+        self::assertEquals(BigDecimal::of(15000), $invoice->getTotal());
+    }
+
     public function testUpdateWithMonetaryDiscount(): void
     {
         $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));

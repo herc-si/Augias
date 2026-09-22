@@ -44,6 +44,8 @@ install:
         password:
             not_blank: 'You must enter a secure password'
 invoice:
+    constraint:
+        disbursement_carries_no_tax: 'A disbursement is re-billed to the euro and carries no tax. Remove the rate, or untick the disbursement box.'
     lines:
         min: 'You need to add at least 1 line to the Invoice'
     users:

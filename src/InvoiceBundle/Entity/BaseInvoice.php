@@ -130,6 +130,31 @@ abstract class BaseInvoice
     )]
     protected BigNumber $withholdingAmount;
 
+    /**
+     * What the lines marked as disbursements come to.
+     *
+     * Kept on the document rather than summed from the lines each time it is
+     * needed, for the same reason every other total is: the books, the PDF and
+     * the e-invoice must all read the same figure, and a sealed period must
+     * still show what was invoiced even if a line is edited afterwards.
+     *
+     * It is part of {@see $total} — the client owes it — and of nothing else.
+     * {@see $baseTotal} leaves it out, which is what keeps it clear of tax and
+     * of a percentage discount.
+     */
+    #[ORM\Column(name: 'disbursement_amount', type: BigIntegerType::NAME, options: ['default' => 0])]
+    #[Groups(['invoice_api:read', 'recurring_invoice_api:read'])]
+    #[ApiProperty(
+        writable: false,
+        openapiContext: [
+            'type' => 'number',
+        ],
+        jsonSchemaContext: [
+            'type' => 'number',
+        ]
+    )]
+    protected BigNumber $disbursementTotal;
+
     #[ORM\Column(name: 'payable_amount', type: BigIntegerType::NAME, options: ['default' => 0])]
     #[Groups(['invoice_api:read', 'recurring_invoice_api:read'])]
     #[ApiProperty(
@@ -151,6 +176,7 @@ abstract class BaseInvoice
         $this->total = BigDecimal::zero();
         $this->withholdingAmount = BigInteger::zero();
         $this->payableAmount = BigInteger::zero();
+        $this->disbursementTotal = BigInteger::zero();
     }
 
     public function getTotal(): BigNumber
@@ -262,6 +288,29 @@ abstract class BaseInvoice
     public function getPayableAmount(): BigNumber
     {
         return $this->payableAmount;
+    }
+
+    public function getDisbursementTotal(): BigNumber
+    {
+        return $this->disbursementTotal;
+    }
+
+    /**
+     * @throws MathException
+     */
+    public function setDisbursementTotal(BigNumber | float | int | string $disbursementTotal): self
+    {
+        $this->disbursementTotal = BigNumber::of($disbursementTotal);
+
+        return $this;
+    }
+
+    /**
+     * @throws MathException
+     */
+    public function hasDisbursements(): bool
+    {
+        return $this->disbursementTotal->toBigDecimal()->isPositive();
     }
 
     /**

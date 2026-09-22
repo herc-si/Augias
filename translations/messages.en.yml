@@ -349,6 +349,7 @@ bill:
         tax: 'VAT'
         total: Total
 billing:
+    disbursements: Disbursements
     discount: Discount
     due_date: 'Due Date'
     notes_help: 'Notes will not be visible to the client'
@@ -1358,6 +1359,8 @@ form:
         currency: "Currency"
         description: "Description"
         direction: "Direction"
+        disbursement: "Disbursement"
+        disbursement.help: "Money advanced in this client's name, re-billed to the euro"
         domain: "Domain"
         eid: "EID"
         email: "Email"
@@ -1609,6 +1612,7 @@ invoice:
     created: Created
     custom_fields: 'Custom fields'
     date: 'Invoice Date'
+    disbursements: Disbursements
     discount: Discount
     due_date: 'Due Date'
     edit:
@@ -1663,6 +1667,7 @@ invoice:
         add: 'Add Item'
         description:
             placeholder: 'Describe the service or product...'
+        disbursement.badge: Disbursement
         heading:
             description: Description
             price: Price
@@ -1673,6 +1678,7 @@ invoice:
         remove: 'Remove Item'
         tax:
             add: '+ Add tax'
+            none_on_disbursement: 'No tax on a disbursement'
             remove: 'Remove tax'
     items:
         empty:

@@ -44,6 +44,8 @@ install:
         password:
             not_blank: 'Vous devez saisir un mot de passe sécurisé'
 invoice:
+    constraint:
+        disbursement_carries_no_tax: 'Un débours est refacturé à l''euro près et ne porte aucune taxe. Retirez le taux, ou décochez la case débours.'
     lines:
         min: 'Vous devez ajouter au moins 1 ligne à la facture'
     users:

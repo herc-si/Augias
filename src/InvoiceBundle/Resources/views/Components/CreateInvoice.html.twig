@@ -170,6 +170,15 @@
                                         <span class="mobile-label">{{ 'invoice.item.heading.description'|trans }}</span>
                                         {{ form_widget(item.description, {attr: {placeholder: 'invoice.item.description.placeholder'|trans, rows: 2}}) }}
                                         {{ form_errors(item.description) }}
+                                        {%- if item.disbursement is defined %}
+                                            <div class="item-disbursement-check">{{ form_row(item.disbursement) }}</div>
+                                            {# The violation is raised against `taxes`, and the tax column
+                                             # stops rendering that field the moment the box is ticked — so
+                                             # the message is shown here, next to what caused it. #}
+                                            {%- if item.taxes is defined and item.vars.value.disbursement %}
+                                                {{ form_errors(item.taxes) }}
+                                            {%- endif %}
+                                        {%- endif %}
                                     </div>
                                     <div class="column-price">
                                         <span class="mobile-label">{{ 'invoice.item.heading.price'|trans }}</span>
@@ -184,7 +193,15 @@
                                     {% if hasTax %}
                                         <div class="column-tax">
                                             <span class="mobile-label">{{ 'invoice.item.heading.tax'|trans }}</span>
-                                            {% if item.taxes is defined %}
+                                            {# A disbursement carries no tax, ever: the money was advanced in
+                                             # the client's name and comes back to the euro. The rates are not
+                                             # offered rather than offered and then ignored. #}
+                                            {% if item.vars.value.disbursement %}
+                                                <span class="text-muted">{{ 'invoice.item.tax.none_on_disbursement'|trans }}</span>
+                                                {%- if item.taxes is defined -%}
+                                                    {%- do item.taxes.setRendered() -%}
+                                                {%- endif -%}
+                                            {% elseif item.taxes is defined %}
                                                 <div class="line-tax-collection" {{ stimulus_controller('line-tax') }}>
                                                     {% if item.taxes|length > 0 %}
                                                         <div class="line-tax-list">
@@ -351,6 +368,16 @@
                             <span class="totals-label">{{ 'billing.discount'|trans }}</span>
                             <span class="totals-value">{{ this.discountAmount|formatCurrency(currency) }}</span>
                         </div>
+
+                        {%- if dto.disbursementTotal is not empty and dto.disbursementTotal != '0' %}
+                            {# Shown only once there is one: an invoice with no advance has no
+                             # reason to carry a line about them. Below the discount, because
+                             # neither the tax nor the discount reaches it. #}
+                            <div class="totals-row totals-row-disbursement">
+                                <span class="totals-label">{{ 'billing.disbursements'|trans }}</span>
+                                <span class="totals-value">{{ dto.disbursementTotal|formatCurrency(currency) }}</span>
+                            </div>
+                        {% endif %}
 
                         <div class="totals-row totals-row-total">
                             <span class="totals-label">{{ 'billing.total'|trans }}</span>
