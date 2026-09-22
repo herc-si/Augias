@@ -78,6 +78,8 @@ accounting:
         submitted: Filed
     entry:
         add: New entry
+        add_purchase: 'New purchase'
+        add_revenue: 'New revenue'
         flash:
             attachment_deleted: The document has been removed.
             automatic: This entry mirrors a payment recorded in the application and cannot be deleted here.
@@ -136,7 +138,9 @@ accounting:
         cancel_blocked: 'This invoice has been issued and can no longer be cancelled. Raise a credit note against it instead.'
         edit_blocked: 'This invoice has been issued and can no longer be edited. Raise a credit note against it instead.'
     menu:
+        declarations: Declarations
         main: Accounting
+        overview: Overview
     pension_fund:
         cipav: CIPAV
         ssi: SSI

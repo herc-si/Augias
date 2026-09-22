@@ -16,7 +16,7 @@
 {% block heading %}
     <a class="btn btn-primary" href="{{ path('_accounting_entry_add', {'book': book.value}) }}">
         {{ ux_icon('tabler:plus', {width: 18, height: 18}) }}
-        {{ 'accounting.entry.add'|trans }}
+        {{ book.addTranslationKey|trans }}
     </a>
 {% endblock %}
 

@@ -46,4 +46,20 @@ enum LedgerBook: string
             self::Purchase => 'accounting.book.purchase',
         };
     }
+
+    /**
+     * What the person is about to write down, in their words rather than an
+     * accountant's.
+     *
+     * "New entry" is the word for whoever keeps books for a living. Someone
+     * running a micro-entreprise is recording a payment received or a purchase
+     * made, and the button should say so — the book already decides which.
+     */
+    public function addTranslationKey(): string
+    {
+        return match ($this) {
+            self::Revenue => 'accounting.entry.add_revenue',
+            self::Purchase => 'accounting.entry.add_purchase',
+        };
+    }
 }

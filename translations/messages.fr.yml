@@ -78,6 +78,8 @@ accounting:
         submitted: Déclarée
     entry:
         add: Nouvelle écriture
+        add_purchase: 'Nouvel achat'
+        add_revenue: 'Nouvelle recette'
         flash:
             attachment_deleted: 'La pièce a été supprimée.'
             automatic: 'Cette écriture reflète un paiement enregistré dans l''application et ne peut pas être supprimée ici.'
@@ -136,7 +138,9 @@ accounting:
         cancel_blocked: "Cette facture a été émise et ne peut plus être annulée. Établissez un avoir qui s'y rapporte."
         edit_blocked: "Cette facture a été émise et ne peut plus être modifiée. Établissez un avoir qui s'y rapporte."
     menu:
+        declarations: Déclarations
         main: Comptabilité
+        overview: "Vue d'ensemble"
     pension_fund:
         cipav: CIPAV
         ssi: SSI
