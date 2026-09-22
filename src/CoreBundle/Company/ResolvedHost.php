@@ -35,4 +35,9 @@ final readonly class ResolvedHost
     {
         return $this->type === HostType::DefaultHost;
     }
+
+    public function isReserved(): bool
+    {
+        return $this->type === HostType::Reserved;
+    }
 }

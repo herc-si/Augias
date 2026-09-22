@@ -60,6 +60,7 @@ return static function (ContainerConfigurator $containerConfigurator, ContainerB
         ->bind('$cacheDir', param('kernel.cache_dir'))
         ->bind('$installed', env('AUGIAS_INSTALLED'))
         ->bind('$applicationUrl', env('AUGIAS_APPLICATION_URL'))
+        ->bind('$reservedHosts', env('csv:AUGIAS_RESERVED_HOSTS'))
         ->bind('$vault', service('secrets.vault'))
     ;
 
