@@ -370,7 +370,7 @@
                             {% for payment in invoice.payments|filter((v) => v.status == enum('Augias\\PaymentBundle\\Enum\\PaymentStatus').Captured) %}
                                 <div class="totals-row totals-row-payment">
                                     <span class="totals-label">
-                                        {{ 'invoice.payment.label'|trans }}: {{ payment.method.name }}
+                                        {{ 'invoice.payment.label'|trans }}: {{ payment.method ? payment.method.name : 'payment.method.none'|trans }}
                                     </span>
                                     <span class="totals-value">-{{ payment.amount.amount|formatCurrency(currency) }}</span>
                                 </div>

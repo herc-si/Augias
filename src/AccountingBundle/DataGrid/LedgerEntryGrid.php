@@ -28,6 +28,7 @@ use Augias\DataGridBundle\GridBuilder\Filter\DateRangeFilter;
 use Augias\DataGridBundle\GridBuilder\Query;
 use Augias\DataGridBundle\Source\ORMSource;
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 use Override;
 use function array_key_exists;
 use function is_string;
@@ -130,14 +131,24 @@ final class LedgerEntryGrid extends Grid
     }
 
     /**
-     * Which of the two registers is being rendered. Every route that shows the
-     * grid sets it; without one the grid would mix receipts and purchases into
-     * a list that is neither register.
+     * Which book is being rendered.
+     *
+     * Refused rather than guessed. This used to fall back to the revenue book
+     * when the context was missing, and the context was missing — the page
+     * computed it and the template never passed it on — so the purchase
+     * register quietly showed receipts, and so did the expenses book, which is
+     * how anyone noticed. A grid that shows a register other than the one
+     * named above it is worse than a grid that refuses to render.
      */
     private function book(): LedgerBook
     {
         $book = array_key_exists('book', $this->context) ? $this->context['book'] : null;
+        $ledgerBook = is_string($book) ? LedgerBook::tryFrom($book) : null;
 
-        return (is_string($book) ? LedgerBook::tryFrom($book) : null) ?? LedgerBook::Revenue;
+        if (! $ledgerBook instanceof LedgerBook) {
+            throw new LogicException('The ledger grid needs the book it renders: pass :context="ledger_entry_grid_context".');
+        }
+
+        return $ledgerBook;
     }
 }

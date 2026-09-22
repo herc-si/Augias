@@ -142,7 +142,7 @@
                                     {% for payment in invoice.payments|filter((v) => v.status == enum('Augias\\PaymentBundle\\Enum\\PaymentStatus').Captured) %}
                                         <div class="totals-row totals-row-payment">
                                             <span class="totals-label">
-                                                {{ 'payment.create.payment_label'|trans }}: {{ payment.method.name }}
+                                                {{ 'payment.create.payment_label'|trans }}: {{ payment.method ? payment.method.name : 'payment.method.none'|trans }}
                                             </span>
                                             <span class="totals-value">-{{ payment.amount.amount|formatCurrency(invoice.client.currency) }}</span>
                                         </div>
@@ -190,7 +190,7 @@
                                                 {% if payment.method is not empty %}
                                                     <div class="payment-detail">
                                                         {{ ux_icon('tabler:credit-card', {width: 14, height: 14}) }}
-                                                        <span>{{ payment.method.name }}</span>
+                                                        <span>{{ payment.method ? payment.method.name : 'payment.method.none'|trans }}</span>
                                                     </div>
                                                 {% endif %}
                                                 {% if payment.completed is not empty %}

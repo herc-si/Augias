@@ -259,7 +259,7 @@ class LedgerEntryRepository extends EntityRepository
         foreach ($entries as $entry) {
             $tax = $entry->getTaxAmount();
 
-            if (! $tax instanceof BigNumber) {
+            if (! $tax instanceof BigNumber || ! $entry->getBook()->isStatutory()) {
                 continue;
             }
 

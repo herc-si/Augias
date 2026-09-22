@@ -13,8 +13,11 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Tests\Validator\Constraints;
 
+use Augias\CoreBundle\Company\CompanyDomainResolver;
+use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\CoreBundle\Validator\Constraints\NotApplicationUrlHost;
 use Augias\CoreBundle\Validator\Constraints\NotApplicationUrlHostValidator;
+use Mockery as M;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
@@ -28,9 +31,63 @@ final class NotApplicationUrlHostValidatorTest extends ConstraintValidatorTestCa
 {
     private string $applicationUrl = 'https://app.example.com';
 
+    /**
+     * @var list<string>
+     */
+    private array $reservedHosts = [];
+
     protected function createValidator(): NotApplicationUrlHostValidator
     {
-        return new NotApplicationUrlHostValidator($this->applicationUrl);
+        return new NotApplicationUrlHostValidator(
+            new CompanyDomainResolver(
+                M::mock(CompanyRepository::class),
+                $this->applicationUrl,
+                $this->reservedHosts,
+            ),
+            $this->applicationUrl,
+        );
+    }
+
+    /**
+     * A tenant must not be able to take a name the deployment answers on for
+     * its own purposes — an operator console, a status page. Left claimable,
+     * the first person to ask for it owns it, and the deployment finds out when
+     * it tries to use its own name.
+     */
+    public function testAReservedHostIsRefused(): void
+    {
+        $this->reservedHosts = ['ops.example.com'];
+        $this->validator = $this->createValidator();
+        $this->validator->initialize($this->context);
+
+        $this->validator->validate('ops.example.com', new NotApplicationUrlHost());
+
+        $this->buildViolation((new NotApplicationUrlHost())->message)->assertRaised();
+    }
+
+    /**
+     * The reservation is on the name, however it is spelled.
+     */
+    public function testAReservedHostIsRefusedWhateverTheCase(): void
+    {
+        $this->reservedHosts = ['ops.example.com'];
+        $this->validator = $this->createValidator();
+        $this->validator->initialize($this->context);
+
+        $this->validator->validate('OPS.Example.COM.', new NotApplicationUrlHost());
+
+        $this->buildViolation((new NotApplicationUrlHost())->message)->assertRaised();
+    }
+
+    public function testAHostThatIsNotReservedStillPasses(): void
+    {
+        $this->reservedHosts = ['ops.example.com'];
+        $this->validator = $this->createValidator();
+        $this->validator->initialize($this->context);
+
+        $this->validator->validate('billing.acme.test', new NotApplicationUrlHost());
+
+        $this->assertNoViolation();
     }
 
     public function testNullValuePasses(): void

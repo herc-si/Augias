@@ -16,16 +16,14 @@ namespace Augias\AccountingBundle\Action;
 use Augias\AccountingBundle\Entity\AccountingPeriod;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Model\AccountingProfile;
-use Augias\AccountingBundle\Regime\RegimeInterface;
-use Augias\AccountingBundle\Regime\RegimeRegistry;
 use Augias\AccountingBundle\Repository\AccountingPeriodRepository;
 use Augias\AccountingBundle\Service\AccountingProfileProvider;
+use Augias\AccountingBundle\Service\CompanyBooks;
 use Augias\AccountingBundle\Service\CurrentCompany;
 use Augias\CoreBundle\Entity\Company;
 use DateTimeImmutable;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use function in_array;
 
 /**
  * One statutory book, with the period that is currently open above it.
@@ -38,7 +36,7 @@ final readonly class Book
 {
     public function __construct(
         private AccountingProfileProvider $profileProvider,
-        private RegimeRegistry $registry,
+        private CompanyBooks $books,
         private AccountingPeriodRepository $periodRepository,
         private CurrentCompany $currentCompany,
     ) {
@@ -57,9 +55,8 @@ final readonly class Book
     {
         $ledgerBook = LedgerBook::tryFrom($book);
         $profile = $this->profileProvider->forCompany();
-        $regime = $this->registry->forProfile($profile);
 
-        if (null === $ledgerBook || ! $regime instanceof RegimeInterface || ! in_array($ledgerBook, $regime->books($profile), true)) {
+        if (! $this->books->keeps($profile, $ledgerBook)) {
             throw new NotFoundHttpException('This company does not keep that book.');
         }
 

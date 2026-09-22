@@ -43,15 +43,35 @@ final class CompanyDomainResolver implements ResetInterface
 
     private int $defaultPort = 443;
 
+    /**
+     * @param list<string> $reservedHosts hosts this deployment answers on for
+     *                                    its own purposes, which no tenant may
+     *                                    claim
+     */
     public function __construct(
         private readonly CompanyRepository $companyRepository,
         private readonly string $applicationUrl = '',
+        private readonly array $reservedHosts = [],
     ) {
+    }
+
+    /**
+     * Whether a host is one this deployment keeps for itself.
+     *
+     * Public because two very different places need the same answer and must
+     * not disagree: routing, which has to serve such a host rather than refuse
+     * it, and validation, which has to stop a tenant claiming it as a custom
+     * domain. A second list would drift, and the drift would be silent until
+     * someone had already taken the name.
+     */
+    public function isReserved(string $host): bool
+    {
+        return in_array(self::normalize($host), $this->normalizedReservedHosts(), true);
     }
 
     public function resolve(string $host): ResolvedHost
     {
-        $host = rtrim(strtolower($host), '.');
+        $host = self::normalize($host);
 
         if (isset($this->cache[$host])) {
             return $this->cache[$host];
@@ -63,6 +83,19 @@ final class CompanyDomainResolver implements ResetInterface
             return $this->cache[$host] = new ResolvedHost(
                 HostType::DefaultHost,
                 $this->defaultHost ?? $host,
+                $this->defaultScheme,
+                $this->defaultPort,
+            );
+        }
+
+        // Ahead of the custom-domain lookup, deliberately. A name this
+        // deployment keeps for itself must resolve to itself even if a row
+        // somewhere claims it — a reservation added after the fact has to take
+        // effect, not lose to whoever got there first.
+        if ($this->isReserved($host)) {
+            return $this->cache[$host] = new ResolvedHost(
+                HostType::Reserved,
+                $host,
                 $this->defaultScheme,
                 $this->defaultPort,
             );
@@ -95,6 +128,29 @@ final class CompanyDomainResolver implements ResetInterface
         $this->defaultHost = null;
     }
 
+    /**
+     * @return list<string>
+     */
+    private function normalizedReservedHosts(): array
+    {
+        $hosts = [];
+
+        foreach ($this->reservedHosts as $host) {
+            $host = self::normalize($host);
+
+            if ($host !== '') {
+                $hosts[] = $host;
+            }
+        }
+
+        return $hosts;
+    }
+
+    private static function normalize(string $host): string
+    {
+        return rtrim(strtolower(trim($host)), '.');
+    }
+
     private function isLoopbackHost(string $host): bool
     {
         return in_array(trim($host, '[]'), ['localhost', '127.0.0.1', '::1'], true)
@@ -125,7 +181,7 @@ final class CompanyDomainResolver implements ResetInterface
             return;
         }
 
-        $this->defaultHost = rtrim(strtolower($host), '.');
+        $this->defaultHost = self::normalize($host);
 
         $scheme = $uri->getScheme();
         if ($scheme !== null && $scheme !== '') {

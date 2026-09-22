@@ -27,6 +27,8 @@ use Augias\ClientBundle\Enum\ClientStatus;
 use Augias\ClientBundle\Repository\ClientRepository;
 use Augias\ClientBundle\Validator\Constraints\WithinPlanClientLimit;
 use Augias\CoreBundle\Entity\Company;
+use Augias\CoreBundle\Enum\RecordKind;
+use Augias\CoreBundle\Journal\Journalled;
 use Augias\CoreBundle\Traits\Entity\Archivable;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
@@ -86,7 +88,7 @@ use function in_array;
 #[ORM\AssociationOverrides([new ORM\AssociationOverride(name: 'company', inversedBy: 'clients')])]
 #[WithinPlanClientLimit]
 #[RequiredFiscalIdentifierForElectronicInvoicing]
-class Client implements Stringable
+class Client implements Stringable, Journalled
 {
     final public const string TABLE_NAME = 'clients';
 
@@ -635,5 +637,15 @@ class Client implements Stringable
                 yield $invoice;
             }
         }
+    }
+
+    public function journalKind(): RecordKind
+    {
+        return RecordKind::Client;
+    }
+
+    public function journalLabel(): string
+    {
+        return (string) $this->getName();
     }
 }
