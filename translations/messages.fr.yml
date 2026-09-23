@@ -150,7 +150,9 @@ accounting:
         label:
             bill_payment: 'Règlement fournisseur'
             invoice_payment: 'Encaissement de facture'
+            invoice_payment_with_disbursement: 'Encaissement de facture, hors %disbursed% de débours'
             invoice_refund: 'Remboursement client'
+            invoice_refund_with_disbursement: 'Remboursement client, hors %disbursed% de débours'
         source:
             bill_payment: 'Paiement fournisseur'
             invoice_payment: 'Encaissement de facture'
