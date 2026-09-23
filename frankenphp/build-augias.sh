@@ -107,6 +107,15 @@ fi
 
 if [ -z "${PHP_EXTENSION_LIBS:-}" ]; then
 	export PHP_EXTENSION_LIBS="libavif,nghttp2,nghttp3,ngtcp2"
+
+	# On macOS the pre-built curl comes with HTTP/3 (ngtcp2), but the link
+	# never receives libngtcp2_crypto_ossl, so the static binary fails with
+	# undefined _ngtcp2_crypto_* symbols (arm64, seen on every 4.0 release
+	# run). PHP's curl has no use for HTTP/3 here: leave it out on macOS
+	# rather than patch static-php-cli's link line.
+	if [ "$(uname -s)" = "Darwin" ]; then
+		export PHP_EXTENSION_LIBS="libavif,nghttp2"
+	fi
 fi
 
 echo "PHP Configuration:"
