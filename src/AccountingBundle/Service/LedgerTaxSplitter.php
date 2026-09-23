@@ -47,6 +47,11 @@ use function count;
  * corrected so they add up exactly: cents lost to rounding go to the largest
  * share, and net plus tax is always the amount that actually moved.
  *
+ * Less any disbursement it carries. Money advanced on the client's behalf and
+ * invoiced back at cost is not the company's turnover (CGI art. 267-II-2°),
+ * so it is in the receipt but not in the entry: the tax is still the payment's
+ * share of the document's, and the net is what is left of the booked amount.
+ *
  * @see \Augias\AccountingBundle\Tests\Service\LedgerTaxSplitterTest
  */
 final readonly class LedgerTaxSplitter
@@ -61,11 +66,15 @@ final readonly class LedgerTaxSplitter
      * raises invoices with no tax rows, and recording a zero there would claim
      * the sale was taxable at nothing.
      *
+     * $disbursed is the part of $paid that goes to the disbursements, which
+     * the entry leaves out. It changes the net, never the tax: a disbursement
+     * line carries none.
+     *
      * @throws MathException
      */
-    public function forInvoicePayment(Invoice $invoice, BigNumber $paid): ?LedgerTaxSplit
+    public function forInvoicePayment(Invoice $invoice, BigNumber $paid, ?BigNumber $disbursed = null): ?LedgerTaxSplit
     {
-        return $this->forDocument($invoice, $paid);
+        return $this->forDocument($invoice, $paid, $disbursed);
     }
 
     /**
@@ -77,9 +86,9 @@ final readonly class LedgerTaxSplitter
      *
      * @throws MathException
      */
-    public function forCreditNoteRefund(CreditNote $creditNote, BigNumber $refunded): ?LedgerTaxSplit
+    public function forCreditNoteRefund(CreditNote $creditNote, BigNumber $refunded, ?BigNumber $disbursed = null): ?LedgerTaxSplit
     {
-        return $this->forDocument($creditNote, $refunded);
+        return $this->forDocument($creditNote, $refunded, $disbursed);
     }
 
     /**
@@ -122,7 +131,7 @@ final readonly class LedgerTaxSplitter
     /**
      * @throws MathException
      */
-    private function forDocument(BaseInvoice $document, BigNumber $settled): ?LedgerTaxSplit
+    private function forDocument(BaseInvoice $document, BigNumber $settled, ?BigNumber $disbursed): ?LedgerTaxSplit
     {
         $result = $this->taxCalculator->calculate($document);
 
@@ -148,7 +157,7 @@ final readonly class LedgerTaxSplitter
             return null;
         }
 
-        return $this->prorate($groups, $settled, $this->documentTotal($document));
+        return $this->prorate($groups, $settled, $this->documentTotal($document), $disbursed ?? BigInteger::zero());
     }
 
     /**
@@ -196,7 +205,7 @@ final readonly class LedgerTaxSplitter
      *
      * @throws MathException
      */
-    private function prorate(array $groups, BigNumber $paid, BigDecimal $total): LedgerTaxSplit
+    private function prorate(array $groups, BigNumber $paid, BigDecimal $total, BigNumber $disbursed): LedgerTaxSplit
     {
         $paidAmount = BigDecimal::of($paid);
 
@@ -213,7 +222,7 @@ final readonly class LedgerTaxSplitter
         }
 
         $tax = $this->round($totalTax->multipliedBy($ratio));
-        $net = BigDecimal::of($paid)->toBigInteger()->minus($tax);
+        $net = BigDecimal::of($paid)->toBigInteger()->minus(BigDecimal::of($disbursed)->toBigInteger())->minus($tax);
 
         $shares = [];
         $taxSoFar = BigInteger::zero();
