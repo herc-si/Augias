@@ -24,6 +24,7 @@ use Augias\CoreBundle\Action\ViewBilling;
 use Augias\CoreBundle\Export\Action\DownloadExport;
 use Augias\CoreBundle\Export\Action\ListExports;
 use Augias\CoreBundle\Export\Action\RequestExport;
+use Augias\InvoiceBundle\Action\DisbursementReceipt\ClientDownload;
 use Symfony\Bundle\FrameworkBundle\Controller\RedirectController;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
@@ -49,6 +50,14 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->controller([ViewBilling::class, 'invoiceAction'])
         ->defaults(['_format' => 'html'])
         ->requirements(['uuid' => '[a-zA-Z0-9-]{36}', '_format' => 'html|pdf']);
+
+    // Under the client's copy, so the public path that already opens the copy
+    // opens this too; the action checks the receipt belongs to that invoice.
+    $routingConfigurator
+        ->add('_view_invoice_receipt_external', '/view/invoice/{uuid}/receipt/{id}')
+        ->controller(ClientDownload::class)
+        ->methods(['GET'])
+        ->requirements(['uuid' => '[a-zA-Z0-9-]{36}', 'id' => '[0-9A-HJKMNP-TV-Z]{26}']);
 
     $routingConfigurator
         ->add('_select_company', '/select-company')

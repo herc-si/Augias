@@ -292,7 +292,7 @@
                     <p class="text-muted">{{ vatMention }}</p>
                 {% endif %}
                 {% if invoice.hasDisbursements %}
-                    <p class="text-muted small">{{ 'invoice.disbursement.mention'|trans }}</p>
+                    <p class="text-muted small">{{ disbursement_mention(invoice) }}</p>
                 {% endif %}
                 {% if invoice.terms is not empty %}
                     <div class="col-6">

@@ -460,7 +460,7 @@
 {% endif %}
 
 {% if invoice.hasDisbursements %}
-    <div style="margin-top: 12px; font-size: 8pt; color: #64748b; line-height: 1.5;">{{ 'invoice.disbursement.mention'|trans }}</div>
+    <div style="margin-top: 12px; font-size: 8pt; color: #64748b; line-height: 1.5;">{{ disbursement_mention(invoice) }}</div>
 {% endif %}
 
 {% if invoice.terms is not empty %}

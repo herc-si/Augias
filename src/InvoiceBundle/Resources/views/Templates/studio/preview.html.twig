@@ -63,7 +63,7 @@
                 </div>
                 {% if invoice.hasDisbursements %}
                     <div class="small mt-3" style="opacity: 0.85; line-height: 1.4;">
-                        {{ 'invoice.disbursements'|trans }} : {{ invoice.disbursementTotal|formatCurrency(currency) }} — {{ 'invoice.disbursement.mention'|trans }}
+                        {{ 'invoice.disbursements'|trans }} : {{ invoice.disbursementTotal|formatCurrency(currency) }} — {{ disbursement_mention(invoice) }}
                     </div>
                 {% endif %}
             </div>

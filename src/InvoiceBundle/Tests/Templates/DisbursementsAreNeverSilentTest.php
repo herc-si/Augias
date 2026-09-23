@@ -111,7 +111,7 @@ final class DisbursementsAreNeverSilentTest extends TestCase
                 continue;
             }
 
-            if (str_contains($source, 'invoice.disbursement.mention')) {
+            if (str_contains($source, 'disbursement_mention(')) {
                 continue;
             }
 

@@ -293,7 +293,7 @@
                     {% endif %}
 
                     {% if invoice.hasDisbursements %}
-                        <div class="opacity-75 small mb-3">{{ 'invoice.disbursement.mention'|trans }}</div>
+                        <div class="opacity-75 small mb-3">{{ disbursement_mention(invoice) }}</div>
                     {% endif %}
 
                     {% if invoice.terms is not empty or invoice.notes is not empty %}
@@ -314,6 +314,31 @@
                 </div>
             </div>
             {% endif %}
+
+                {#
+                 # Outside the document, so it shows whichever template the
+                 # company chose: the supplier's documents are what make the
+                 # disbursements on this invoice something other than a sale.
+                 #}
+                {% set receipts = invoice.lines|filter(l => l.disbursement)|reduce((carry, l) => carry|merge(l.receipts.toArray), []) %}
+                {% if receipts is not empty %}
+                    <div class="card mt-3 no-print" id="disbursement-receipts">
+                        <div class="card-body">
+                            <strong class="d-block mb-2">{{ 'invoice.disbursement.receipt.title'|trans }}</strong>
+                            <ul class="list-unstyled mb-0">
+                                {% for receipt in receipts %}
+                                    <li class="mb-1">
+                                        <a href="{{ path('_view_invoice_receipt_external', {'uuid': invoice.uuid, 'id': receipt.id}) }}">
+                                            {{ ux_icon('tabler:paperclip', {width: 16, height: 16}) }}
+                                            {{ receipt.filename }}
+                                        </a>
+                                        <span class="text-muted small">— {{ receipt.line.description }}</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
 
                 {% if setting('system/general/hide_powered_by') is not same as('1') %}
                     {# Footer #}

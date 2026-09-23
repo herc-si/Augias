@@ -244,7 +244,7 @@
        taxable base if the invoice says on what ground it is one. #}
     {% if invoice.hasDisbursements %}
         <div style="margin-top: 12px; font-size: 8pt; color: {{ p.labelColor }}; line-height: 1.5;">
-            {{ 'invoice.disbursement.mention'|trans }}
+            {{ disbursement_mention(invoice) }}
         </div>
     {% endif %}
 {% endmacro %}

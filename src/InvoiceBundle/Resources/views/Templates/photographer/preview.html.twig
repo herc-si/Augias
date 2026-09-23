@@ -52,7 +52,7 @@
                 <div class="col-md-5">
                     <div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.subtotal'|trans }}</span><span>{{ invoice.baseTotal|formatCurrency(currency) }}</span></div>
                     {% if invoice.tax.positive %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.tax'|trans }}</span><span>{{ invoice.tax|formatCurrency(currency) }}</span></div>{% endif %}
-                    {% if invoice.hasDisbursements %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.disbursements'|trans }}</span><span>{{ invoice.disbursementTotal|formatCurrency(currency) }}</span></div><div class="text-muted small mb-2" style="line-height: 1.4;">{{ 'invoice.disbursement.mention'|trans }}</div>{% endif %}
+                    {% if invoice.hasDisbursements %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.disbursements'|trans }}</span><span>{{ invoice.disbursementTotal|formatCurrency(currency) }}</span></div><div class="text-muted small mb-2" style="line-height: 1.4;">{{ disbursement_mention(invoice) }}</div>{% endif %}
                     <div class="d-flex justify-content-between p-3 rounded" style="background: #a2492b; color: #faf3e6;">
                         <strong>{{ 'invoice.total'|trans }}</strong>
                         <strong>{{ invoice.total|formatCurrency(currency) }}</strong>

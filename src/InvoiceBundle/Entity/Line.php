@@ -214,12 +214,26 @@ class Line implements LineInterface, Stringable
     #[Groups(['invoice_api:read', 'invoice_api:write', 'recurring_invoice_api:read', 'recurring_invoice_api:write'])]
     protected bool $disbursement = false;
 
+    /**
+     * The supplier's documents behind a disbursement — see
+     * {@see DisbursementReceipt} for why they hang off the line.
+     *
+     * Removed with the line through the ORM rather than only by the foreign
+     * key, so that the files on disk go with them.
+     *
+     * @var Collection<int, DisbursementReceipt>
+     */
+    #[ORM\OneToMany(targetEntity: DisbursementReceipt::class, mappedBy: 'line', cascade: ['remove'])]
+    #[ORM\OrderBy(['created' => 'ASC'])]
+    protected Collection $receipts;
+
     public function __construct()
     {
         $this->total = BigDecimal::zero();
         $this->price = BigDecimal::zero();
         $this->qty = BigDecimal::one();
         $this->taxes = new ArrayCollection();
+        $this->receipts = new ArrayCollection();
     }
 
     public function getId(): Ulid
@@ -309,6 +323,40 @@ class Line implements LineInterface, Stringable
         $this->disbursement = $disbursement;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, DisbursementReceipt>
+     */
+    public function getReceipts(): Collection
+    {
+        return $this->receipts;
+    }
+
+    public function addReceipt(DisbursementReceipt $receipt): static
+    {
+        if (! $this->receipts->contains($receipt)) {
+            $this->receipts->add($receipt);
+            $receipt->setLine($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReceipt(DisbursementReceipt $receipt): static
+    {
+        $this->receipts->removeElement($receipt);
+
+        return $this;
+    }
+
+    /**
+     * A disbursement with nothing to show for it — which the law treats as an
+     * ordinary sale until the supplier's document is attached.
+     */
+    public function lacksReceipt(): bool
+    {
+        return $this->disbursement && $this->receipts->isEmpty();
     }
 
     /**

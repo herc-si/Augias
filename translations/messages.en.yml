@@ -377,8 +377,6 @@ bill:
         tax: 'VAT'
         total: Total
 billing:
-    disbursement:
-        mention: 'Disbursements are sums paid in the client''s name and on their behalf, re-billed at cost and outside the scope of VAT (French Tax Code, art. 267-II-2°). Supporting documents available on request.'
     disbursements: Disbursements
     discount: Discount
     due_date: 'Due Date'
@@ -1640,6 +1638,22 @@ invoice:
     created: Created
     custom_fields: 'Custom fields'
     date: 'Invoice Date'
+    disbursement:
+        mention: 'Disbursements are sums paid in the client''s name and on their behalf, re-billed at cost and outside the scope of VAT (French Tax Code, art. 267-II-2°). Supporting documents available on request.'
+        mention_attached: 'Disbursements are sums paid in the client''s name and on their behalf, re-billed at cost and outside the scope of VAT (French Tax Code, art. 267-II-2°). Supporting documents attached.'
+        receipt:
+            add: "Attach"
+            delete: "Remove this receipt"
+            flash:
+                added: "Receipt attached."
+                deleted: "Receipt removed."
+                invalid_token: "The request expired. Please try again."
+                locked: "The invoice has been issued: its receipt can no longer be removed. Attach the right document alongside it."
+                missing: "Choose a file to attach."
+                rejected: "This file is not accepted: a PDF or an image, 10 MB at most."
+            help: "The supplier's invoice, made out to the client. It is attached to the invoice e-mail and offered on the client's copy."
+            missing: "No receipt: without the supplier's invoice, this disbursement counts as a sale."
+            title: "Disbursement receipts"
     disbursements: Disbursements
     discount: Discount
     due_date: 'Due Date'
