@@ -47,6 +47,7 @@ use Augias\TaxBundle\Entity\InvoiceTax;
 use Brick\Math\BigInteger;
 use Brick\Math\BigNumber;
 use Brick\Math\Exception\MathException;
+use Brick\Math\RoundingMode;
 use Carbon\CarbonImmutable;
 use DateTimeImmutable;
 use DateTimeInterface;
@@ -63,6 +64,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
+use function array_values;
 
 #[ORM\Table(name: Invoice::TABLE_NAME)]
 #[ORM\Index(columns: ['quote_id'])]
@@ -415,6 +417,138 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
         }
 
         return $any;
+    }
+
+    /*
+     * The invoice as a document, and the disbursement note beside it.
+     *
+     * Disbursements are entered on the invoice — one operation, one entry —
+     * but they go out on a note of their own. EN 16931 forbids a "not subject
+     * to VAT" breakdown next to any other (BR-O-11), so an e-invoice cannot
+     * carry fees and disbursements together; and a disbursement note is not
+     * an invoice, so it stays outside e-invoicing altogether. What the client
+     * owes is still the whole, and the payments and balance above stay
+     * figures of the whole. The methods below split them for the two
+     * documents, the disbursements taking their share of the balance pro rata,
+     * as the books do (see LedgerFeeder).
+     */
+
+    /**
+     * The lines the invoice document shows: everything but the disbursements.
+     *
+     * @return list<Line>
+     */
+    public function getFeeLines(): array
+    {
+        return array_values($this->lines->filter(static fn (Line $line): bool => ! $line->isDisbursement())->toArray());
+    }
+
+    /**
+     * The lines the disbursement note shows.
+     *
+     * @return list<Line>
+     */
+    public function getDisbursementLines(): array
+    {
+        return array_values($this->lines->filter(static fn (Line $line): bool => $line->isDisbursement())->toArray());
+    }
+
+    /**
+     * An invoice entered with nothing but disbursements has no invoice to
+     * issue — only the note.
+     */
+    public function hasOnlyDisbursements(): bool
+    {
+        return ! $this->lines->isEmpty() && [] === $this->getFeeLines();
+    }
+
+    /**
+     * @throws MathException
+     */
+    public function getFeesTotal(): BigNumber
+    {
+        return $this->getTotal()->toBigDecimal()->minus($this->getDisbursementTotal());
+    }
+
+    /**
+     * What the invoice document asks for once withholding is off. Withholding
+     * is computed on the fees alone, the disbursements being outside the
+     * document's subtotal.
+     *
+     * @throws MathException
+     */
+    public function getFeesPayableAmount(): BigNumber
+    {
+        $payable = $this->getPayableAmount();
+
+        if ($payable->isZero()) {
+            $payable = $this->getTotal()->toBigDecimal()->minus($this->getWithholdingAmount());
+        }
+
+        return $payable->toBigDecimal()->minus($this->getDisbursementTotal());
+    }
+
+    /**
+     * The disbursements' share of what is still owed, pro rata of the total.
+     *
+     * @throws MathException
+     */
+    public function getDisbursementBalance(): BigNumber
+    {
+        $disbursements = $this->getDisbursementTotal()->toBigDecimal();
+        $total = $this->getTotal()->toBigDecimal();
+        $balance = $this->getBalance()->toBigDecimal();
+
+        if (! $disbursements->isPositive() || ! $total->isPositive() || ! $balance->isPositive()) {
+            return BigInteger::zero();
+        }
+
+        if ($balance->isGreaterThanOrEqualTo($total)) {
+            return $disbursements->toScale(0, RoundingMode::HalfEven)->toBigInteger();
+        }
+
+        return $disbursements
+            ->multipliedBy($balance)
+            ->dividedBy($total, 0, RoundingMode::HalfEven)
+            ->toBigInteger();
+    }
+
+    /**
+     * @throws MathException
+     */
+    public function getFeesBalance(): BigNumber
+    {
+        return $this->getBalance()->toBigDecimal()->minus($this->getDisbursementBalance());
+    }
+
+    /**
+     * What has been paid towards the fees — the one figure the invoice
+     * document can show for payments that each covered fees and
+     * disbursements alike.
+     *
+     * @throws MathException
+     */
+    public function getFeesPaid(): BigNumber
+    {
+        return $this->getFeesTotal()->toBigDecimal()->minus($this->getFeesBalance());
+    }
+
+    /**
+     * @throws MathException
+     */
+    public function getDisbursementPaid(): BigNumber
+    {
+        return $this->getDisbursementTotal()->toBigDecimal()->minus($this->getDisbursementBalance());
+    }
+
+    /**
+     * The note's reference: the invoice's own number, so that the two are
+     * read together. A disbursement note is not an invoice and owes nothing
+     * to the invoice sequence.
+     */
+    public function getDisbursementNoteId(): string
+    {
+        return 'ND-' . $this->getInvoiceId();
     }
 
     /**

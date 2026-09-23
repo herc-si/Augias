@@ -29,7 +29,7 @@
                     </td>
                     <td style="vertical-align: middle; text-align: right; color: #ffffff;">
                         <div style="font-size: 8pt; color: #94a3b8;">{{ 'invoice.date'|trans }}: {{ invoice.invoiceDate|date('Y-m-d') }}{% if invoice.due %} · {{ 'invoice.due_date'|trans }}: {{ invoice.due|date('Y-m-d') }}{% endif %}</div>
-                        <div style="font-size: 16pt; font-weight: bold;">{{ (hasOutstandingBalance ? invoice.balance : invoice.total)|formatCurrency(currency) }}</div>
+                        <div style="font-size: 16pt; font-weight: bold;">{{ (hasOutstandingBalance ? invoice.feesBalance : invoice.feesTotal)|formatCurrency(currency) }}</div>
                     </td>
                 </tr>
             </table>
@@ -55,7 +55,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for line in invoice.lines %}
+        {% for line in invoice.feeLines %}
             <tr{% if loop.index0 is divisible by(2) %} style="background-color: #f8fafc;"{% endif %}>
                 <td style="padding: 8px 12px; font-size: 8pt; text-align: center; color: #64748b;">{{ loop.index }}</td>
                 <td style="padding: 8px 12px; font-size: 8pt; color: #1e293b;">{{ line.description|nl2br }}{{ inv.disbursement_tag(line) }}</td>

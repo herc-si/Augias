@@ -14,28 +14,40 @@ declare(strict_types=1);
 namespace Augias\InvoiceBundle\Listener\Mailer;
 
 use Augias\CoreBundle\Storage\DocumentStorage;
+use Augias\InvoiceBundle\Document\DisbursementNoteRenderer;
 use Augias\InvoiceBundle\Email\InvoiceEmail;
+use Mpdf\MpdfException;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mailer\Event\MessageEvent;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 
 /**
- * Sends the supplier's documents with the invoice that re-bills them.
+ * Sends the disbursement note, and the supplier's documents behind it, with
+ * the invoice.
  *
- * A disbursement is only outside turnover if the client receives the
- * supplier's invoice made out in their name along with the re-billing (CGI art.
- * 267-II-2°). The e-mail is how the invoice reaches them, so that is where the
- * receipts go too.
+ * The invoice no longer carries the disbursements — they are on a note of
+ * their own, which never goes through an e-invoicing platform — so the e-mail
+ * is how the note reaches the client. And a disbursement is only outside
+ * turnover if the client receives the supplier's invoice made out in their
+ * name along with the re-billing (CGI art. 267-II-2°), so the receipts go
+ * too.
  */
-final readonly class DisbursementReceiptListener implements EventSubscriberInterface
+final readonly class DisbursementNoteListener implements EventSubscriberInterface
 {
     public function __construct(
         private DocumentStorage $storage,
+        private DisbursementNoteRenderer $noteRenderer,
         private LoggerInterface $logger,
     ) {
     }
 
+    /**
+     * @throws MpdfException|LoaderError|RuntimeError|SyntaxError
+     */
     public function __invoke(MessageEvent $event): void
     {
         $message = $event->getMessage();
@@ -44,11 +56,13 @@ final readonly class DisbursementReceiptListener implements EventSubscriberInter
             return;
         }
 
-        foreach ($message->getInvoice()->getLines() as $line) {
-            if (! $line->isDisbursement()) {
-                continue;
-            }
+        $invoice = $message->getInvoice();
 
+        if ($this->noteRenderer->canRender($invoice)) {
+            $message->attach($this->noteRenderer->render($invoice), $this->noteRenderer->filename($invoice), 'application/pdf');
+        }
+
+        foreach ($invoice->getDisbursementLines() as $line) {
             foreach ($line->getReceipts() as $receipt) {
                 try {
                     $path = $this->storage->path($receipt->getStoragePath());

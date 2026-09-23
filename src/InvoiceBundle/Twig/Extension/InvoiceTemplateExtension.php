@@ -15,8 +15,13 @@ namespace Augias\InvoiceBundle\Twig\Extension;
 
 use Augias\ClientBundle\Entity\Contact;
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\MoneyBundle\Formatter\MoneyFormatterInterface;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
+use Brick\Math\Exception\MathException;
+use Brick\Math\RoundingMode;
+use Money\Currency;
+use Money\Money;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Attribute\AsTwigFunction;
 use function array_filter;
@@ -29,7 +34,32 @@ final readonly class InvoiceTemplateExtension
 {
     public function __construct(
         private TranslatorInterface $translator,
+        private MoneyFormatterInterface $moneyFormatter,
     ) {
+    }
+
+    /**
+     * What the invoice says about the disbursements it no longer carries:
+     * where they went, and how much. The note is a document of its own, and
+     * an invoice whose total is smaller than what the client is asked to pay
+     * has to say why.
+     *
+     * @throws MathException
+     */
+    #[AsTwigFunction(name: 'disbursement_note_reference')]
+    public function disbursementNoteReference(object $document): string
+    {
+        if (! $document instanceof Invoice || ! $document->hasDisbursements()) {
+            return '';
+        }
+
+        $amount = $document->getDisbursementTotal()->toBigDecimal()->toScale(0, RoundingMode::HalfEven);
+        $currency = $document->getClient()?->getCurrency();
+
+        return $this->translator->trans('invoice.disbursement.note.reference', [
+            '%note%' => $document->getDisbursementNoteId(),
+            '%amount%' => $currency instanceof Currency ? $this->moneyFormatter->format(new Money((string) $amount, $currency)) : (string) $amount,
+        ]);
     }
 
     /**

@@ -47,7 +47,7 @@
             </table>
 
             <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-                {% for line in invoice.lines %}
+                {% for line in invoice.feeLines %}
                     <tr>
                         <td style="padding: 12px 0; font-size: 10pt; color: #2a2418; border-bottom: 1px solid #e8d7b8; vertical-align: top;">
                             <div style="font-family: Georgia, serif; font-size: 11pt;">{{ line.description|nl2br }}{{ inv.disbursement_tag(line) }}</div>

@@ -148,14 +148,18 @@ final readonly class FacturXInvoiceBuilder
         /** @var list<Line> $lines */
         $lines = array_values($invoice->getLines()->toArray());
 
-        /** @var array<string, array{category: TaxCategory, rate: ?float, basis: float, tax: float, disbursement: bool}> $vatGroups */
+        /** @var array<string, array{category: TaxCategory, rate: ?float, basis: float, tax: float}> $vatGroups */
         $vatGroups = [];
         $lineTotal = 0.0;
 
         foreach ($lines as $index => $line) {
             $breakdown = $result->lineBreakdowns[$index] ?? null;
 
-            if ($breakdown === null) {
+            // Disbursements are not on the invoice: they go out on a note of
+            // their own. EN 16931 forbids a "not subject to VAT" breakdown next
+            // to any other (BR-O-11), and a disbursement note is not an invoice,
+            // so it never reaches the platform at all.
+            if ($breakdown === null || $line->isDisbursement()) {
                 continue;
             }
 
@@ -174,33 +178,28 @@ final readonly class FacturXInvoiceBuilder
 
             $category = $this->lineVatCategory($line);
             $categoryCode = $this->mapVatCategory($category);
-            $disbursement = $line->isDisbursement();
             /** @var TaxSummaryRow|null $taxRow */
             $taxRow = $breakdown->taxRows[0] ?? null;
             $rate = $this->categoryRate($category, $taxRow);
             $taxAmount = $taxRow !== null ? $this->minorToFloat($taxRow->amount) : 0.0;
-            [$exemptionReason, $exemptionReasonCode] = $this->exemptionReasonFor($category, $disbursement);
+            [$exemptionReason, $exemptionReasonCode] = $this->exemptionReasonFor($category);
 
             $documentBuilder->addDocumentPositionTax($categoryCode, ZugferdVatTypeCodes::VALUE_ADDED_TAX, $rate, null, $exemptionReason, $exemptionReasonCode);
             $documentBuilder->setDocumentPositionLineSummation($lineNet);
 
-            // Disbursements keep a breakdown group of their own: they share
-            // category "O" with anything else out of scope, but not the reason
-            // it is out of scope, and one group carries one reason.
-            $groupKey = $categoryCode . '|' . ($rate ?? 'null') . ($disbursement ? '|disbursement' : '');
+            $groupKey = $categoryCode . '|' . ($rate ?? 'null');
             $vatGroups[$groupKey] ??= [
                 'category' => $category,
                 'rate' => $rate,
                 'basis' => 0.0,
                 'tax' => 0.0,
-                'disbursement' => $disbursement,
             ];
             $vatGroups[$groupKey]['basis'] += $lineNet;
             $vatGroups[$groupKey]['tax'] += $taxAmount;
         }
 
         foreach ($vatGroups as $group) {
-            [$exemptionReason, $exemptionReasonCode] = $this->exemptionReasonFor($group['category'], $group['disbursement']);
+            [$exemptionReason, $exemptionReasonCode] = $this->exemptionReasonFor($group['category']);
 
             $documentBuilder->addDocumentTax(
                 $this->mapVatCategory($group['category']),
@@ -217,9 +216,11 @@ final readonly class FacturXInvoiceBuilder
         // position totals set via setDocumentPositionLineSummation() above — using
         // Invoice::getBaseTotal() here instead risks diverging by rounding cents
         // from a total computed independently elsewhere in the app.
+        // The fees alone — the figures the invoice document shows, the
+        // disbursements being on the note.
         $documentBuilder->setDocumentSummation(
-            $this->minorToFloat($invoice->getTotal()),
-            $this->minorToFloat($invoice->getPayableAmount()),
+            $this->minorToFloat($invoice->getFeesTotal()),
+            $this->minorToFloat($invoice->getFeesPayableAmount()),
             $lineTotal,
             null,
             $this->discountAmount($invoice),
@@ -438,15 +439,6 @@ final readonly class FacturXInvoiceBuilder
      */
     private function lineVatCategory(Line $line): TaxCategory
     {
-        // A disbursement is money advanced in the client's name: it never
-        // entered the seller's taxable base, so it is outside the scope — code
-        // "O" — rather than taxed at nothing. Answered before the line's own
-        // rates because it holds none by construction, and because what decides
-        // is the nature of the operation, not the absence of a rate.
-        if ($line->isDisbursement()) {
-            return TaxCategory::OutOfScope;
-        }
-
         $firstTax = $line->getTaxes()->first();
 
         if ($firstTax instanceof LineTax) {
@@ -481,15 +473,8 @@ final readonly class FacturXInvoiceBuilder
     /**
      * @return array{0: ?string, 1: ?string}
      */
-    private function exemptionReasonFor(TaxCategory $category, bool $disbursement = false): array
+    private function exemptionReasonFor(TaxCategory $category): array
     {
-        // A disbursement is out of scope on a named ground, and the receiving
-        // platform should see which one. French wording like the two below: the
-        // reason travels to a French platform and is read there.
-        if ($disbursement && $category === TaxCategory::OutOfScope) {
-            return ['Débours au nom et pour le compte du client — CGI art. 267-II-2°', ZugferdVATExemptionReasonCode::VATEX_EU_O];
-        }
-
         return match ($category) {
             // BR-O-10: category "O" needs an exemption reason code or text.
             TaxCategory::OutOfScope => ['Non soumis à la TVA', ZugferdVATExemptionReasonCode::VATEX_EU_O],

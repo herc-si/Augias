@@ -36,7 +36,7 @@
 
             <table class="table" style="background: transparent;">
                 <tbody>
-                    {% for line in invoice.lines %}
+                    {% for line in invoice.feeLines %}
                         <tr style="border-bottom: 1px solid #e8d7b8;">
                             <td>
                                 <div class="fs-5">{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</div>
@@ -52,10 +52,10 @@
                 <div class="col-md-5">
                     <div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.subtotal'|trans }}</span><span>{{ invoice.baseTotal|formatCurrency(currency) }}</span></div>
                     {% if invoice.tax.positive %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.tax'|trans }}</span><span>{{ invoice.tax|formatCurrency(currency) }}</span></div>{% endif %}
-                    {% if invoice.hasDisbursements %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.disbursements'|trans }}</span><span>{{ invoice.disbursementTotal|formatCurrency(currency) }}</span></div><div class="text-muted small mb-2" style="line-height: 1.4;">{{ disbursement_mention(invoice) }}</div>{% endif %}
+                    {% if invoice.hasDisbursements %}<div class="text-muted small mb-2" style="line-height: 1.4;">{{ disbursement_note_reference(invoice) }}</div>{% endif %}
                     <div class="d-flex justify-content-between p-3 rounded" style="background: #a2492b; color: #faf3e6;">
                         <strong>{{ 'invoice.total'|trans }}</strong>
-                        <strong>{{ invoice.total|formatCurrency(currency) }}</strong>
+                        <strong>{{ invoice.feesTotal|formatCurrency(currency) }}</strong>
                     </div>
                 </div>
             </div>

@@ -14,11 +14,12 @@ declare(strict_types=1);
 namespace Augias\InvoiceBundle\Tests\Twig\Extension;
 
 use Augias\ClientBundle\Entity\Contact;
+use Augias\CoreBundle\Storage\StoredDocument;
 use Augias\InvoiceBundle\Entity\DisbursementReceipt;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
-use Augias\CoreBundle\Storage\StoredDocument;
 use Augias\InvoiceBundle\Twig\Extension\InvoiceTemplateExtension;
+use Augias\MoneyBundle\Formatter\MoneyFormatterInterface;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Brick\Math\BigInteger;
@@ -33,7 +34,7 @@ final class InvoiceTemplateExtensionTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->extension = new InvoiceTemplateExtension(new IdentityTranslator());
+        $this->extension = new InvoiceTemplateExtension(new IdentityTranslator(), self::createStub(MoneyFormatterInterface::class));
     }
 
     public function testTheMentionPromisesDocumentsOnRequestUntilEveryDisbursementHasOne(): void

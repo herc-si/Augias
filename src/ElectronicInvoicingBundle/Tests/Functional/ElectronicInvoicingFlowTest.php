@@ -84,14 +84,31 @@ final class ElectronicInvoicingFlowTest extends KernelTestCase
     }
 
     /**
-     * Fees and a disbursement on one invoice give two VAT breakdowns, one of
-     * them "not subject to VAT" — which EN 16931 forbids (BR-O-11). The
-     * platform would reject it; it is refused here instead, with the reason
-     * recorded and shown, and the provider is never called.
+     * Fees and a disbursement on one invoice: the disbursement goes out on
+     * its note, the e-invoice carries the fees alone — valid EN 16931, where
+     * a "not subject to VAT" breakdown beside the fees would not be (BR-O-11).
      */
-    public function testAnInvoiceMixingFeesAndDisbursementsIsNotSent(): void
+    public function testAnInvoiceWithFeesAndDisbursementsIsSentWithTheFees(): void
     {
         $invoice = $this->withLines($this->createInvoiceForClientWithSiret(), [false, true]);
+        $this->configureActiveTestProvider();
+
+        $this->sendElectronicInvoice($invoice);
+
+        $submissions = self::getContainer()->get(ElectronicInvoiceSubmissionRepository::class)->findAll();
+
+        self::assertCount(1, $submissions);
+        self::assertTrue($submissions[0]->isSuccess());
+    }
+
+    /**
+     * Nothing but disbursements leaves nothing to transmit: they are all on
+     * the note, which is not an invoice. Refused with the reason, and the
+     * provider is never called.
+     */
+    public function testAnInvoiceOfDisbursementsAloneIsNotSent(): void
+    {
+        $invoice = $this->withLines($this->createInvoiceForClientWithSiret(), [true]);
         $this->configureActiveTestProvider();
 
         $response = self::getContainer()->get(SendElectronicInvoice::class)(Request::createFromGlobals(), $invoice);
@@ -101,27 +118,10 @@ final class ElectronicInvoicingFlowTest extends KernelTestCase
         self::assertCount(1, $submissions);
         self::assertFalse($submissions[0]->isSuccess());
         self::assertNull($submissions[0]->getExternalReference(), 'Nothing reached the provider.');
-        self::assertSame(ElectronicInvoiceManager::MIXED_DISBURSEMENTS, $submissions[0]->getMessage());
+        self::assertSame(ElectronicInvoiceManager::ONLY_DISBURSEMENTS, $submissions[0]->getMessage());
 
         self::assertInstanceOf(FlashResponse::class, $response);
-        self::assertSame([FlashResponse::FLASH_ERROR => ElectronicInvoiceManager::MIXED_DISBURSEMENTS], iterator_to_array($response->getFlash()));
-    }
-
-    /**
-     * Disbursements alone make a single "O" breakdown, which the standard
-     * accepts.
-     */
-    public function testAnInvoiceOfDisbursementsAloneIsSent(): void
-    {
-        $invoice = $this->withLines($this->createInvoiceForClientWithSiret(), [true]);
-        $this->configureActiveTestProvider();
-
-        $this->sendElectronicInvoice($invoice);
-
-        $submissions = self::getContainer()->get(ElectronicInvoiceSubmissionRepository::class)->findAll();
-
-        self::assertCount(1, $submissions);
-        self::assertTrue($submissions[0]->isSuccess());
+        self::assertSame([FlashResponse::FLASH_ERROR => ElectronicInvoiceManager::ONLY_DISBURSEMENTS], iterator_to_array($response->getFlash()));
     }
 
     public function testTwoProviderSettingsWithTheSameNameForACompanyAreRejectedByTheValidator(): void

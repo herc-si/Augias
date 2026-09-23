@@ -24,6 +24,7 @@ use Augias\CoreBundle\Action\ViewBilling;
 use Augias\CoreBundle\Export\Action\DownloadExport;
 use Augias\CoreBundle\Export\Action\ListExports;
 use Augias\CoreBundle\Export\Action\RequestExport;
+use Augias\InvoiceBundle\Action\DisbursementNote\ClientView as DisbursementNoteClientView;
 use Augias\InvoiceBundle\Action\DisbursementReceipt\ClientDownload;
 use Symfony\Bundle\FrameworkBundle\Controller\RedirectController;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
@@ -53,6 +54,12 @@ return static function (RoutingConfigurator $routingConfigurator): void {
 
     // Under the client's copy, so the public path that already opens the copy
     // opens this too; the action checks the receipt belongs to that invoice.
+    $routingConfigurator
+        ->add('_view_invoice_disbursement_note_external', '/view/invoice/{uuid}/disbursement-note.pdf')
+        ->controller(DisbursementNoteClientView::class)
+        ->methods(['GET'])
+        ->requirements(['uuid' => '[a-zA-Z0-9-]{36}']);
+
     $routingConfigurator
         ->add('_view_invoice_receipt_external', '/view/invoice/{uuid}/receipt/{id}')
         ->controller(ClientDownload::class)
