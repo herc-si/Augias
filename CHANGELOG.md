@@ -1,6 +1,24 @@
 Changelog
 =========
 
+4.0.0 / 2026-09-23
+------------------
+
+### Changes since 4.0.0-beta1
+
+* Credit notes: a document of their own with a separate number series, refunds or offsets against a later invoice, credit shown where people look for it, and a refund booked back out of revenue in the period it corrects
+* Disbursements: a line can be money advanced in the client's name. It carries no tax, stays out of the book of receipts (pro rata on a partial payment), and goes out on a disbursement note of its own, `ND-<invoice number>`, with the supplier's receipts attached. The invoice and its Factur-X carry the fees alone, since EN 16931 forbids a "not subject to VAT" breakdown next to any other (BR-O-11)
+* Accounting: the French réel normal regime, a warning when quarterly VAT filing has been outgrown, VAT on hand-written entries, supporting documents attached to book entries, and the books in the main menu
+* Client credit is no longer booked as revenue, and granting credit says it is not a payment
+* Account journals: who signed in to an account, who opened a customer's file, and where a user has been
+* A partly paid invoice now shows its payments and the balance due on the default PDF and in the invoice e-mail (both always showed the full total)
+* Dates follow the reader's language, including those rendered in PHP
+* Deployment: a runtime image built from source, hosts a deployment reserves for itself, a configurable session cookie name, and tables this instance does not map are no longer dropped by the installer
+* The installer runs pending migrations instead of recording them as run
+* Telemetry is off unless configured, and the installer no longer asks about it
+* Terms of service and privacy policy
+* Icons are served from the repository instead of being fetched at runtime
+
 4.0.0-beta1 / 2026-09-13
 ------------------------
 
