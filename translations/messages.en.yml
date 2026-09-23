@@ -1638,6 +1638,7 @@ invoice:
     date: 'Invoice Date'
     disbursement:
         mention: 'Disbursements are sums paid in the client''s name and on their behalf, re-billed at cost and outside the scope of VAT (French Tax Code, art. 267-II-2°). Supporting documents available on request.'
+        mention_attached: 'Disbursements are sums paid in the client''s name and on their behalf, re-billed at cost and outside the scope of VAT (French Tax Code, art. 267-II-2°). Supporting documents attached.'
         receipt:
             add: "Attach"
             delete: "Remove this receipt"

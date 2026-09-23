@@ -14,13 +14,17 @@ declare(strict_types=1);
 namespace Augias\InvoiceBundle\Tests\Twig\Extension;
 
 use Augias\ClientBundle\Entity\Contact;
+use Augias\InvoiceBundle\Entity\DisbursementReceipt;
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\InvoiceBundle\Entity\Line;
+use Augias\CoreBundle\Storage\StoredDocument;
 use Augias\InvoiceBundle\Twig\Extension\InvoiceTemplateExtension;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Brick\Math\BigInteger;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\IdentityTranslator;
 
 #[CoversClass(InvoiceTemplateExtension::class)]
 final class InvoiceTemplateExtensionTest extends TestCase
@@ -29,7 +33,36 @@ final class InvoiceTemplateExtensionTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->extension = new InvoiceTemplateExtension();
+        $this->extension = new InvoiceTemplateExtension(new IdentityTranslator());
+    }
+
+    public function testTheMentionPromisesDocumentsOnRequestUntilEveryDisbursementHasOne(): void
+    {
+        $invoice = new Invoice();
+        $first = new Line()->setDisbursement(true);
+        $second = new Line()->setDisbursement(true);
+        $invoice->addLine(new Line());
+        $invoice->addLine($first);
+        $invoice->addLine($second);
+
+        self::assertSame('invoice.disbursement.mention', $this->extension->disbursementMention($invoice));
+
+        $first->addReceipt($this->receipt());
+
+        self::assertSame('invoice.disbursement.mention', $this->extension->disbursementMention($invoice), 'One of two is not all.');
+
+        $second->addReceipt($this->receipt());
+
+        self::assertSame('invoice.disbursement.mention_attached', $this->extension->disbursementMention($invoice));
+    }
+
+    /**
+     * Previews render the templates with something that is not an invoice;
+     * the mention must still come out rather than fail.
+     */
+    public function testTheMentionFallsBackForAnythingButAnInvoice(): void
+    {
+        self::assertSame('invoice.disbursement.mention', $this->extension->disbursementMention(new \stdClass()));
     }
 
     public function testHasOutstandingBalanceIsFalseForFullyPaidInvoice(): void
@@ -127,5 +160,10 @@ final class InvoiceTemplateExtensionTest extends TestCase
     private function payment(PaymentStatus $status): Payment
     {
         return new Payment()->setStatus($status);
+    }
+
+    private function receipt(): DisbursementReceipt
+    {
+        return DisbursementReceipt::of(new StoredDocument('receipt.pdf', 'application/pdf', 1, 'checksum', 'path/receipt.pdf'));
     }
 }

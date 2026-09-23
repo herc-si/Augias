@@ -60,7 +60,7 @@
                 <div class="col-md-5">
                     <div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.subtotal'|trans }}</span><span>{{ invoice.baseTotal|formatCurrency(currency) }}</span></div>
                     {% if invoice.tax.positive %}<div class="d-flex justify-content-between mb-2 text-muted"><span>{{ 'invoice.tax'|trans }}</span><span>{{ invoice.tax|formatCurrency(currency) }}</span></div>{% endif %}
-                    {% if invoice.hasDisbursements %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.disbursements'|trans }}</span><span>{{ invoice.disbursementTotal|formatCurrency(currency) }}</span></div><div class="text-muted small mb-2" style="line-height: 1.4;">{{ 'invoice.disbursement.mention'|trans }}</div>{% endif %}
+                    {% if invoice.hasDisbursements %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.disbursements'|trans }}</span><span>{{ invoice.disbursementTotal|formatCurrency(currency) }}</span></div><div class="text-muted small mb-2" style="line-height: 1.4;">{{ disbursement_mention(invoice) }}</div>{% endif %}
                     <div class="d-flex justify-content-between border-top pt-3 mt-3">
                         <span class="fw-bold fs-5">{{ hasOutstandingBalance ? 'invoice.balance'|trans : 'invoice.total'|trans }}</span>
                         <span class="fw-bold fs-3">{{ (hasOutstandingBalance ? invoice.balance : invoice.total)|formatCurrency(currency) }}</span>

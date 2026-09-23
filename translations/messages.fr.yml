@@ -1638,6 +1638,7 @@ invoice:
     date: 'Date de facture'
     disbursement:
         mention: 'Les débours sont des sommes réglées au nom et pour le compte du client, refacturées à l''euro près et hors du champ de la TVA (CGI, art. 267-II-2°). Justificatifs disponibles sur demande.'
+        mention_attached: 'Les débours sont des sommes réglées au nom et pour le compte du client, refacturées à l''euro près et hors du champ de la TVA (CGI, art. 267-II-2°). Justificatifs joints.'
         receipt:
             add: "Joindre"
             delete: "Retirer ce justificatif"

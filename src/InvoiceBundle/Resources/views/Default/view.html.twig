@@ -364,7 +364,7 @@
                                 <span class="totals-value">{{ invoice.disbursementTotal|formatCurrency(currency) }}</span>
                             </div>
                             <div class="totals-row totals-row-disbursement-note">
-                                <span class="totals-label totals-label-sub small text-muted">{{ 'invoice.disbursement.mention'|trans }}</span>
+                                <span class="totals-label totals-label-sub small text-muted">{{ disbursement_mention(invoice) }}</span>
                             </div>
                         {% endif %}
 

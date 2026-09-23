@@ -395,6 +395,29 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
     }
 
     /**
+     * Whether every disbursement on the invoice has the supplier's document
+     * behind it. False when there is none to justify.
+     */
+    public function hasAllDisbursementReceipts(): bool
+    {
+        $any = false;
+
+        foreach ($this->lines as $line) {
+            if (! $line->isDisbursement()) {
+                continue;
+            }
+
+            if ($line->lacksReceipt()) {
+                return false;
+            }
+
+            $any = true;
+        }
+
+        return $any;
+    }
+
+    /**
      * @return Collection<int, Line>
      */
     public function getLines(): Collection

@@ -296,6 +296,25 @@ final class DisbursementReceiptTest extends WebTestCase
     }
 
     /**
+     * The mention says the documents are attached only once every
+     * disbursement has one — until then they are available on request, which
+     * is all the invoice can truthfully promise.
+     */
+    public function testTheMentionSaysAttachedOnceEveryDisbursementHasItsReceipt(): void
+    {
+        $invoice = $this->invoice(InvoiceStatus::Pending);
+
+        $crawler = $this->client->request('GET', '/invoices/view/' . $invoice->getId());
+        self::assertStringContainsString('available on request', $crawler->text());
+
+        $this->attach($invoice, 'facture.pdf');
+
+        $crawler = $this->client->request('GET', '/invoices/view/' . $invoice->getId());
+        self::assertStringContainsString('Supporting documents attached', $crawler->text());
+        self::assertStringNotContainsString('available on request', $crawler->text());
+    }
+
+    /**
      * The mention the templates print was once defined under a key none of
      * them read, so every invoice showed the key itself. Pinned in both
      * languages.
