@@ -16,6 +16,7 @@ namespace Augias\InvoiceBundle\Action\Transition;
 use Augias\CoreBundle\Contracts\EmailVerificationGateInterface;
 use Augias\CoreBundle\Response\FlashResponse;
 use Augias\CoreBundle\Traits\SaveableTrait;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceManager;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceManagerInterface;
 use Augias\InvoiceBundle\Email\InvoiceEmail;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -135,8 +136,13 @@ final class Send
             return [FlashResponse::FLASH_ERROR, 'einvoicing.send.failed'];
         }
 
-        return $submission->isSuccess()
-            ? [FlashResponse::FLASH_SUCCESS, 'einvoicing.send.success']
-            : [FlashResponse::FLASH_ERROR, 'einvoicing.send.failed'];
+        if ($submission->isSuccess()) {
+            return [FlashResponse::FLASH_SUCCESS, 'einvoicing.send.success'];
+        }
+
+        return [
+            FlashResponse::FLASH_ERROR,
+            $submission->getMessage() === ElectronicInvoiceManager::MIXED_DISBURSEMENTS ? ElectronicInvoiceManager::MIXED_DISBURSEMENTS : 'einvoicing.send.failed',
+        ];
     }
 }
