@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Action;
 
 use Augias\CoreBundle\Response\FlashResponse;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceManager;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceManagerInterface;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Generator;
@@ -49,10 +50,21 @@ final class SendElectronicInvoice
         }
 
         if (! $submission->isSuccess()) {
-            return new class($route) extends RedirectResponse implements FlashResponse {
+            $reason = $submission->getMessage() === ElectronicInvoiceManager::MIXED_DISBURSEMENTS
+                ? ElectronicInvoiceManager::MIXED_DISBURSEMENTS
+                : 'einvoicing.send.failed';
+
+            return new class($route, $reason) extends RedirectResponse implements FlashResponse {
+                public function __construct(
+                    string $url,
+                    private readonly string $reason
+                ) {
+                    parent::__construct($url);
+                }
+
                 public function getFlash(): Generator
                 {
-                    yield FlashResponse::FLASH_ERROR => 'einvoicing.send.failed';
+                    yield FlashResponse::FLASH_ERROR => $this->reason;
                 }
             };
         }

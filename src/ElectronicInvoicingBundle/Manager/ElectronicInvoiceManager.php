@@ -31,6 +31,15 @@ use Doctrine\ORM\EntityManagerInterface;
  */
 final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManagerInterface
 {
+    /**
+     * Why an invoice mixing fees and disbursements was not sent. EN 16931
+     * forbids a "not subject to VAT" breakdown next to any other (BR-O-11 to
+     * BR-O-14), which is what a disbursement beside taxed fees produces: the
+     * platform would reject it. Refused here, with a reason, rather than
+     * transmitted to fail there.
+     */
+    public const string MIXED_DISBURSEMENTS = 'einvoicing.send.mixed_disbursements';
+
     public function __construct(
         private SystemConfig $systemConfig,
         private ElectronicInvoiceProviderRegistry $registry,
@@ -56,6 +65,19 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
     {
         $activeSetting = $this->settingRepository->findActive();
 
+        if (self::mixesDisbursements($invoice)) {
+            $submission = new ElectronicInvoiceSubmission();
+            $submission->setInvoice($invoice)
+                ->setProvider($activeSetting instanceof ElectronicInvoiceProviderSetting ? $activeSetting->getProvider() : '')
+                ->setSuccess(false)
+                ->setMessage(self::MIXED_DISBURSEMENTS);
+
+            $this->entityManager->persist($submission);
+            $this->entityManager->flush();
+
+            return $submission;
+        }
+
         $result = $this->registry->send($invoice);
 
         $submission = new ElectronicInvoiceSubmission();
@@ -69,6 +91,26 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
         $this->entityManager->flush();
 
         return $submission;
+    }
+
+    /**
+     * A disbursement and at least one other line. An invoice of disbursements
+     * alone carries a single "O" breakdown, which EN 16931 accepts.
+     */
+    public static function mixesDisbursements(Invoice $invoice): bool
+    {
+        $disbursement = false;
+        $other = false;
+
+        foreach ($invoice->getLines() as $line) {
+            if ($line->isDisbursement()) {
+                $disbursement = true;
+            } else {
+                $other = true;
+            }
+        }
+
+        return $disbursement && $other;
     }
 
     private function clientHasSiret(Invoice $invoice): bool

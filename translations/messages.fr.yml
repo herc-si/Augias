@@ -1276,6 +1276,7 @@ einvoicing:
             tagline: "Simule l'envoi de factures électroniques sans appel externe réel, pour les tests."
     send:
         failed: "Échec de l'envoi de la facture électronique. Veuillez vérifier la configuration du fournisseur."
+        mixed_disbursements: "Facture électronique non envoyée : elle mêle des débours et des prestations, ce que la norme EN 16931 interdit (règle BR-O-11). Établissez les débours sur un document à part."
         no_active_provider: "Aucun fournisseur de facturation électronique actif n'est configuré."
         success: "La facture électronique a été envoyée avec succès."
     view:
