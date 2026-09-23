@@ -27,6 +27,8 @@ use Augias\InvoiceBundle\Document\DisbursementNoteRenderer;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
+use Augias\PaymentBundle\Entity\Payment;
+use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\LineTax;
 use Augias\TaxBundle\Enum\TaxCategory;
@@ -157,6 +159,39 @@ final class DisbursementNoteTest extends WebTestCase
             self::assertStringContainsString($invoice->getDisbursementNoteId(), $html, $template . ' does not point to the note.');
             self::assertStringNotContainsString('1,700.00', $html, $template . ' shows the combined total as the invoice\'s.');
         }
+    }
+
+    /**
+     * A partly paid invoice shows what is left to pay on its fees. The
+     * default PDF and the e-mail both used to test `balance.zero`, which Twig
+     * resolves to Brick's static zero() — an object, always truthy — so
+     * neither ever showed a payment or a balance; and the e-mail's payment
+     * row, never reached, read a property that does not exist.
+     */
+    public function testAPartlyPaidInvoiceShowsWhatIsLeftOnTheFees(): void
+    {
+        $invoice = $this->invoice();
+
+        $payment = new Payment();
+        $payment->setTotalAmount(85_000);
+        $payment->setCurrencyCode('EUR');
+        $invoice->addPayment($payment);
+        $payment->setClient($invoice->getClient());
+        $payment->setStatus(PaymentStatus::Captured);
+        $payment->setCompleted(new DateTimeImmutable('2026-01-10'));
+        $payment->setCompany($this->companyReference());
+        $this->entityManager->persist($payment);
+        $invoice->setBalance(85_000);
+        $this->entityManager->flush();
+
+        $twig = self::getContainer()->get(Environment::class);
+
+        $pdf = $twig->render(BillingTemplateResolver::defaultTemplate(BillingDocumentType::Invoice, BillingTemplateChannel::Pdf), ['invoice' => $invoice]);
+        self::assertStringContainsString('-€600.00', $pdf, 'The fees part of what was paid.');
+        self::assertStringContainsString('€600.00', $pdf);
+
+        $email = $twig->render('@AugiasInvoice/Email/invoice.html.twig', ['invoice' => $invoice]);
+        self::assertStringContainsString('-€850.00', $email, 'The e-mail announces the whole: both documents.');
     }
 
     public function testTheNoteCarriesTheDisbursementsAndTheirGround(): void
