@@ -1,0 +1,128 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # The disbursement note: the sums advanced in the client's name that an
+ # invoice re-bills, on a document of their own.
+ #
+ # Not an invoice. A disbursement is outside the scope of VAT (CGI art.
+ # 267-II-2°) and therefore outside e-invoicing, and EN 16931 forbids it on an
+ # invoice beside taxed fees (BR-O-11). So this document never goes through a
+ # platform: it travels with the invoice, by e-mail and on the client's copy,
+ # together with the supplier's documents it rests on. One design for every
+ # company template — it is a statement, not the company's showcase.
+ #}
+
+{% import '@AugiasInvoice/Templates/_macros.html.twig' as inv %}
+
+{% set currency = invoice.client.currency %}
+{% set paid = invoice.disbursementPaid %}
+
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <style type="text/css">
+        {{ file(asset('static/pdf.css')) }}
+
+        @page {
+            margin-top: 20mm;
+            margin-bottom: 25mm;
+            margin-left: 15mm;
+            margin-right: 15mm;
+            footer: footer;
+        }
+    </style>
+</head>
+<body>
+
+<pagefooter
+    name="footer"
+    content-left="{{ setting('system/general/hide_powered_by') is not same as ('1') ? 'powered_by'|trans ~ ' ' ~ constant('Augias\\CoreBundle\\AugiasCoreBundle::APP_NAME') }}"
+    content-right="{{ 'pdf.page'|trans }} {PAGENO} {{ 'pdf.of'|trans }} {nb}"
+    line="on"
+    footer-style="border-top: 1px solid #e2e8f0; font-size: 8pt; color: #64748b; padding-top: 8px;"
+/>
+
+<table cellpadding="0" cellspacing="0" style="width: 100%;">
+    <tr>
+        <td style="width: 50%; vertical-align: top;">
+            {% if setting('system/company/logo') is not empty %}
+                <div style="margin-bottom: 10px;">{{ app_logo(50) }}</div>
+            {% endif %}
+            <div style="font-size: 18pt; font-weight: bold; color: #1e293b; margin-bottom: 8px;">{{ company_name() }}</div>
+            <div style="font-size: 9pt; color: #475569; line-height: 1.6;">
+                {% for identifier in tax_identifiers() %}
+                    <div><span style="font-weight: 600; color: #1e293b;">{{ identifier.label }}:</span> {{ identifier.value }}</div>
+                {% endfor %}
+                {% set companyAddress = setting('system/company/contact_details/address', null, true) %}
+                {% if companyAddress is not empty %}
+                    <div>{{ address(companyAddress)|replace({"\n": ", "}) }}</div>
+                {% endif %}
+            </div>
+        </td>
+        <td style="width: 50%; vertical-align: top; text-align: right;">
+            <div style="font-size: 10pt; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px;">
+                {{ 'invoice.disbursement.note.label'|trans }}
+            </div>
+            <div style="font-size: 20pt; font-weight: bold; color: #1e293b; margin-bottom: 12px;">{{ invoice.disbursementNoteId }}</div>
+            <div style="font-size: 9pt; color: #475569;">{{ 'invoice.disbursement.note.attached_to'|trans({'%invoice%': invoice.invoiceId}) }}</div>
+            <div style="font-size: 9pt; color: #475569;">{{ invoice.invoiceDate|format_date('long') }}</div>
+        </td>
+    </tr>
+</table>
+
+<div style="margin-top: 24px;">
+    {{ inv.bill_to_block(invoice) }}
+</div>
+
+<table cellpadding="0" cellspacing="0" style="width: 100%; margin-top: 24px; border-collapse: collapse;">
+    <thead>
+        <tr>
+            <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: left; border-bottom: 2px solid #e2e8f0;">{{ 'invoice.item.heading.description'|trans }}</th>
+            <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid #e2e8f0;">{{ 'invoice.item.heading.total'|trans }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for line in invoice.disbursementLines %}
+            <tr>
+                <td style="padding: 10px 12px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9;">
+                    {{ line.description|nl2br }}
+                    {% for receipt in line.receipts %}
+                        <div style="font-size: 8pt; color: #64748b;">{{ 'invoice.disbursement.note.receipt'|trans({'%file%': receipt.filename}) }}</div>
+                    {% endfor %}
+                </td>
+                <td style="padding: 10px 12px; font-size: 9pt; color: #1e293b; text-align: right; font-family: 'Courier New', monospace; border-bottom: 1px solid #f1f5f9; white-space: nowrap;">
+                    {{ line.total|formatCurrency(currency) }}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table cellpadding="0" cellspacing="0" style="width: 280px; border-collapse: collapse; margin-left: auto; margin-top: 12px;">
+    <tr style="background-color: #f0fdf4;">
+        <td style="padding: 12px 20px 12px 12px; font-size: 11pt; font-weight: bold; text-align: right; color: #1e293b;">{{ 'invoice.disbursement.note.total'|trans }}</td>
+        <td style="padding: 12px; font-size: 12pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: #166534;">{{ invoice.disbursementTotal|formatCurrency(currency) }}</td>
+    </tr>
+    {% if paid.positive %}
+        <tr>
+            <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">{{ 'invoice.disbursement.note.paid'|trans }}</td>
+            <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #10b981;">-{{ paid|formatCurrency(currency) }}</td>
+        </tr>
+        <tr style="background-color: #fef3c7;">
+            <td style="padding: 12px 20px 12px 12px; font-size: 11pt; font-weight: bold; text-align: right; color: #1e293b;">{{ 'invoice.balance'|trans }}</td>
+            <td style="padding: 12px; font-size: 12pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: #92400e;">{{ invoice.disbursementBalance|formatCurrency(currency) }}</td>
+        </tr>
+    {% endif %}
+</table>
+
+<div style="margin-top: 24px; font-size: 8pt; color: #64748b; line-height: 1.5;">{{ disbursement_mention(invoice) }}</div>
+
+</body>
+</html>

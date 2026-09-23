@@ -1276,7 +1276,7 @@ einvoicing:
             tagline: 'Simulate electronic-invoice submissions without any external call, for testing.'
     send:
         failed: 'Failed to send the electronic invoice. Please check the provider configuration.'
-        mixed_disbursements: "Electronic invoice not sent: it mixes disbursements with services, which the EN 16931 standard forbids (rule BR-O-11). Put the disbursements on a separate document."
+        only_disbursements: "Electronic invoice not sent: it carries nothing but disbursements. They are on the disbursement note, which is not an invoice and does not go through the platform."
         no_active_provider: 'No active electronic-invoicing provider is configured.'
         success: 'The electronic invoice was sent successfully.'
     view:
@@ -1642,6 +1642,18 @@ invoice:
     disbursement:
         mention: 'Disbursements are sums paid in the client''s name and on their behalf, re-billed at cost and outside the scope of VAT (French Tax Code, art. 267-II-2°). Supporting documents available on request.'
         mention_attached: 'Disbursements are sums paid in the client''s name and on their behalf, re-billed at cost and outside the scope of VAT (French Tax Code, art. 267-II-2°). Supporting documents attached.'
+        note:
+            amount_due: "Invoice: %invoice% + disbursement note: %note%"
+            attached_to: "Attached to invoice %invoice%"
+            fees_paid: "Already paid"
+            label: "Disbursement note"
+            only_disbursements: "This invoice carries nothing but disbursements: they are all on the note, and the invoice itself stays at 0."
+            paid: "Already paid"
+            pdf: "Disbursement note (PDF)"
+            receipt: "Supporting document attached: %file%"
+            reference: "Disbursements advanced on your behalf (%amount%) are not on this invoice: they are on disbursement note %note%, attached."
+            title: "Disbursement note %note%"
+            total: "Total disbursements"
         receipt:
             add: "Attach"
             delete: "Remove this receipt"

@@ -142,7 +142,7 @@ final class Send
 
         return [
             FlashResponse::FLASH_ERROR,
-            $submission->getMessage() === ElectronicInvoiceManager::MIXED_DISBURSEMENTS ? ElectronicInvoiceManager::MIXED_DISBURSEMENTS : 'einvoicing.send.failed',
+            $submission->getMessage() === ElectronicInvoiceManager::ONLY_DISBURSEMENTS ? ElectronicInvoiceManager::ONLY_DISBURSEMENTS : 'einvoicing.send.failed',
         ];
     }
 }

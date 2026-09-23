@@ -155,15 +155,13 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
     }
 
     /**
-     * A disbursement is money advanced in the client's name. It never entered
-     * the seller's taxable base, so it belongs to category "O" — outside the
-     * scope — and not to "Z", which claims a zero rate was applied to it.
-     *
-     * The two are a whole VAT breakdown group apart: "Z" puts the amount in the
-     * taxable basis at 0%, "O" keeps it out of it. Getting this wrong overstates
-     * every turnover figure the platform derives from the document.
+     * Disbursements are not on the e-invoice: they go out on a note of their
+     * own. EN 16931 forbids a "not subject to VAT" breakdown beside any other
+     * (BR-O-11), so an invoice carrying fees and a disbursement together would
+     * be rejected; the note is not an invoice and never reaches the platform.
+     * What is left is the fees, and the totals are the fees' totals.
      */
-    public function testADisbursementLineIsOutsideTheScopeOfVatRatherThanZeroRated(): void
+    public function testTheEInvoiceCarriesTheFeesAndLeavesTheDisbursementsToTheirNote(): void
     {
         $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
 
@@ -195,17 +193,16 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
 
         $xml = self::getContainer()->get(FacturXInvoiceBuilder::class)->buildDocument($invoice)->getContent();
 
-        // Category "O", with the ground it rests on rather than a bare "not
-        // subject to VAT" that says nothing about why.
-        self::assertStringContainsString('<ram:CategoryCode>O</ram:CategoryCode>', $xml);
-        self::assertStringContainsString('CGI art. 267-II-2', $xml);
-        self::assertStringNotContainsString('<ram:CategoryCode>Z</ram:CategoryCode>', $xml);
+        self::assertStringNotContainsString('Screen bought for the client', $xml);
+        self::assertStringNotContainsString('<ram:CategoryCode>O</ram:CategoryCode>', $xml, 'A single breakdown, the fees\' one.');
+        self::assertStringContainsString('<ram:CategoryCode>S</ram:CategoryCode>', $xml);
 
-        // 400 of fees is the taxable basis; the 500 advanced is not, though the
-        // client owes all 900 plus the 80 of tax.
-        self::assertStringContainsString('<ram:LineTotalAmount>900.00</ram:LineTotalAmount>', $xml);
+        // 400 of fees and 80 of tax. The client still owes the 500 advanced,
+        // but on the note, not on this invoice.
+        self::assertStringContainsString('<ram:LineTotalAmount>400.00</ram:LineTotalAmount>', $xml);
         self::assertStringContainsString('<ram:TaxTotalAmount currencyID="EUR">80.00</ram:TaxTotalAmount>', $xml);
-        self::assertStringContainsString('<ram:GrandTotalAmount>980.00</ram:GrandTotalAmount>', $xml);
+        self::assertStringContainsString('<ram:GrandTotalAmount>480.00</ram:GrandTotalAmount>', $xml);
+        self::assertStringContainsString('<ram:DuePayableAmount>480.00</ram:DuePayableAmount>', $xml);
     }
 
     /**

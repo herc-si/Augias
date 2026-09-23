@@ -88,7 +88,7 @@
                                 <dt>{{ "invoice.title"|trans({"%id%" : ''}) }}</dt>
                                 <dd>{{ invoice.invoiceId ?? invoice.id }}</dd>
                                 <dt>{{ "invoice.total"|trans }}</dt>
-                                <dd>{{ invoice.total|formatCurrency(invoice.client.currency) }}</dd>
+                                <dd>{{ invoice.feesTotal|formatCurrency(invoice.client.currency) }}</dd>
                             </dl>
                         </div>
                         {% if isRecurring is not defined or isRecurring is same as(false) %}
@@ -123,7 +123,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {% for item in invoice.lines %}
+                            {% for item in invoice.feeLines %}
                                 <tr>
                                     <td class="column-description">
                                         {{ item.description|nl2br }}{% if item.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}
@@ -212,18 +212,8 @@
                                     </td>
                                 </tr>
                             {% endif %}
-                            {% if invoice.hasDisbursements %}
-                                <tr>
-                                    <td colspan="{{ footerSpan }}" class="no-line text-right">
-                                        <strong>{{ 'invoice.disbursements'|trans }}</strong>
-                                    </td>
-                                    <td class="no-line text-right">
-                                        {{ invoice.disbursementTotal|formatCurrency(invoice.client.currency) }}
-                                    </td>
-                                </tr>
-                            {% endif %}
                             {% set paid = 0 %}
-                            {% if (isRecurring is not defined or isRecurring is same as(false)) and invoice.payments|length > 0 and not invoice.balance.isZero %}
+                            {% if (isRecurring is not defined or isRecurring is same as(false)) and invoice.payments|length > 0 and not invoice.feesBalance.isZero %}
                                 {% for payment in invoice.payments|filter((v) => v.status == enum('Augias\\PaymentBundle\\Enum\\PaymentStatus').Captured) %}
                                     <tr>
                                         <td colspan="{{ footerSpan }}" class="no-line text-right">
@@ -243,7 +233,7 @@
                             <tr>
                                 <td colspan="{{ footerSpan }}" class="no-line text-right">
                                     <strong>
-                                        {% if invoice.payments is defined and invoice.payments|length > 0 and not invoice.balance.isZero %}
+                                        {% if invoice.payments is defined and invoice.payments|length > 0 and not invoice.feesBalance.isZero %}
                                             {{ 'invoice.balance'|trans }}
                                         {% else %}
                                             {{ 'invoice.total'|trans }}
@@ -252,10 +242,10 @@
                                 </td>
                                 <td class="no-line text-right">
                                     <div class="invoice-total">
-                                        {% if invoice.payments is defined and invoice.payments|length > 0 and not invoice.balance.isZero %}
-                                            {{ invoice.balance|formatCurrency(invoice.client.currency) }}
+                                        {% if invoice.payments is defined and invoice.payments|length > 0 and not invoice.feesBalance.isZero %}
+                                            {{ invoice.feesBalance|formatCurrency(invoice.client.currency) }}
                                         {% else %}
-                                            {{ invoice.total|formatCurrency(invoice.client.currency) }}
+                                            {{ invoice.feesTotal|formatCurrency(invoice.client.currency) }}
                                         {% endif %}
                                     </div>
                                 </td>
@@ -275,7 +265,7 @@
                                     </td>
                                     <td class="no-line text-right">
                                         <div class="invoice-total">
-                                            {{ payable_amount(invoice)|formatCurrency(invoice.client.currency) }}
+                                            {{ invoice.feesPayableAmount|formatCurrency(invoice.client.currency) }}
                                         </div>
                                     </td>
                                 </tr>
@@ -292,7 +282,7 @@
                     <p class="text-muted">{{ vatMention }}</p>
                 {% endif %}
                 {% if invoice.hasDisbursements %}
-                    <p class="text-muted small">{{ disbursement_mention(invoice) }}</p>
+                    <p class="text-muted small">{{ disbursement_note_reference(invoice) }}</p>
                 {% endif %}
                 {% if invoice.terms is not empty %}
                     <div class="col-6">

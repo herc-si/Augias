@@ -50,8 +50,8 @@ final class SendElectronicInvoice
         }
 
         if (! $submission->isSuccess()) {
-            $reason = $submission->getMessage() === ElectronicInvoiceManager::MIXED_DISBURSEMENTS
-                ? ElectronicInvoiceManager::MIXED_DISBURSEMENTS
+            $reason = $submission->getMessage() === ElectronicInvoiceManager::ONLY_DISBURSEMENTS
+                ? ElectronicInvoiceManager::ONLY_DISBURSEMENTS
                 : 'einvoicing.send.failed';
 
             return new class($route, $reason) extends RedirectResponse implements FlashResponse {

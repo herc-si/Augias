@@ -51,7 +51,7 @@
             <td style="width: 4px;"></td>
             <td style="background-color: #ecf7ee; padding: 16px 18px; vertical-align: top; width: 34%;">
                 <div style="font-size: 8pt; color: #166534; text-transform: uppercase; letter-spacing: 1px;">{% if hasOutstandingBalance %}{{ 'invoice.balance_due'|trans }}{% else %}{{ 'invoice.total_due'|trans }}{% endif %}</div>
-                <div style="font-size: 14pt; font-weight: bold; color: #166534;">{{ (hasOutstandingBalance ? invoice.balance : invoice.total)|formatCurrency(currency) }}</div>
+                <div style="font-size: 14pt; font-weight: bold; color: #166534;">{{ (hasOutstandingBalance ? invoice.feesBalance : invoice.feesTotal)|formatCurrency(currency) }}</div>
             </td>
         </tr>
     </table>
@@ -72,7 +72,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for line in invoice.lines %}
+            {% for line in invoice.feeLines %}
                 <tr>
                     <td style="padding: 12px; font-size: 10pt; color: #1e293b; border-bottom: 1px solid #f1eada;">{{ line.description|nl2br }}{{ inv.disbursement_tag(line) }}</td>
                     <td style="padding: 12px; font-size: 10pt; color: #475569; border-bottom: 1px solid #f1eada; text-align: right;">{{ line.qty }}</td>

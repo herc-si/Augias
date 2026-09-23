@@ -27,7 +27,7 @@
                 <div class="col-md-4 text-end">
                     <div class="text-muted small text-uppercase mb-1" style="letter-spacing: 2px;">{% if hasOutstandingBalance %}{{ 'invoice.balance_due'|trans }}{% else %}{{ 'invoice.total_due'|trans }}{% endif %}</div>
                     <div style="font-family: Georgia, serif; font-size: 28px; color: #d4a94a; font-weight: bold;">
-                        {{ (hasOutstandingBalance ? invoice.balance : invoice.total)|formatCurrency(currency) }}
+                        {{ (hasOutstandingBalance ? invoice.feesBalance : invoice.feesTotal)|formatCurrency(currency) }}
                     </div>
                 </div>
             </div>
@@ -45,7 +45,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for line in invoice.lines %}
+                    {% for line in invoice.feeLines %}
                         <tr style="border-bottom: 1px solid #e0d8c8;">
                             <td>{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
                             <td class="text-muted text-end">{{ line.qty }} × {{ line.price|formatCurrency(currency) }}</td>
@@ -59,10 +59,10 @@
                     <div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.subtotal'|trans }}</span><span>{{ invoice.baseTotal|formatCurrency(currency) }}</span></div>
                     {% if invoice.tax.positive %}<div class="d-flex justify-content-between mb-2 text-muted"><span>{{ 'invoice.tax'|trans }}</span><span>{{ invoice.tax|formatCurrency(currency) }}</span></div>{% endif %}
                     {% if invoice.discount.type is not empty %}<div class="d-flex justify-content-between mb-2 text-muted"><span>{{ 'invoice.discount'|trans }}</span><span class="text-danger">-{{ discount(invoice)|formatCurrency(currency) }}</span></div>{% endif %}
-                    {% if invoice.hasDisbursements %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.disbursements'|trans }}</span><span>{{ invoice.disbursementTotal|formatCurrency(currency) }}</span></div><div class="text-muted small mb-2" style="line-height: 1.4;">{{ disbursement_mention(invoice) }}</div>{% endif %}
+                    {% if invoice.hasDisbursements %}<div class="text-muted small mb-2" style="line-height: 1.4;">{{ disbursement_note_reference(invoice) }}</div>{% endif %}
                     <div class="d-flex justify-content-between p-3" style="background: #1a1a1a;">
                         <strong style="color: #f5f1e8;">{{ hasOutstandingBalance ? 'invoice.balance'|trans : 'invoice.total'|trans }}</strong>
-                        <strong style="font-family: Georgia, serif; color: #d4a94a;">{{ (hasOutstandingBalance ? invoice.balance : invoice.total)|formatCurrency(currency) }}</strong>
+                        <strong style="font-family: Georgia, serif; color: #d4a94a;">{{ (hasOutstandingBalance ? invoice.feesBalance : invoice.feesTotal)|formatCurrency(currency) }}</strong>
                     </div>
                 </div>
             </div>

@@ -40,7 +40,7 @@
 
 <div class="editorial-marker" style="margin-bottom: 12px;">III. {{ 'invoice.item.heading.description'|trans }}</div>
 <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 28px;">
-    {% for line in invoice.lines %}
+    {% for line in invoice.feeLines %}
         <tr>
             <td style="padding: 14px 0; font-size: 11pt; color: #1a1a1a; border-bottom: 1px solid #e8dcc4; vertical-align: top;">
                 <em>{{ line.description|nl2br }}{{ inv.disbursement_tag(line) }}</em>

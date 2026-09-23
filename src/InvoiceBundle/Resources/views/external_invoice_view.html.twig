@@ -105,7 +105,7 @@
                                 {% endif %}
                                 <div class="col-sm-4">
                                     <div class="ext-doc-metadata-label text-uppercase small mb-1">{{ 'invoice.total'|trans }}</div>
-                                    <div class="ext-doc-metadata-total text-primary fw-bold">{{ invoice.total|formatCurrency(currency) }}</div>
+                                    <div class="ext-doc-metadata-total text-primary fw-bold">{{ invoice.feesTotal|formatCurrency(currency) }}</div>
                                 </div>
                             </div>
                         </div>
@@ -173,7 +173,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for item in invoice.lines %}
+                                {% for item in invoice.feeLines %}
                                     <tr>
                                         <td class="item-description">{{ item.description|nl2br }}{% if item.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
                                         <td class="text-end item-amount">{{ item.price|formatCurrency(currency) }}</td>
@@ -239,13 +239,12 @@
                                             <div class="ext-doc-totals-value text-success">-{{ discount(invoice)|formatCurrency(currency) }}</div>
                                         </div>
                                     {% endif %}
-                                    {% if invoice.hasDisbursements %}
+                                    {% if invoice.payments|length > 0 and not invoice.feesBalance.isZero and invoice.hasDisbursements %}
                                         <div class="ext-doc-totals-row">
-                                            <div class="ext-doc-totals-label">{{ 'invoice.disbursements'|trans }}</div>
-                                            <div class="ext-doc-totals-value">{{ invoice.disbursementTotal|formatCurrency(currency) }}</div>
+                                            <div class="ext-doc-totals-label">{{ 'invoice.disbursement.note.fees_paid'|trans }}</div>
+                                            <div class="ext-doc-totals-value text-success">-{{ invoice.feesPaid|formatCurrency(currency) }}</div>
                                         </div>
-                                    {% endif %}
-                                    {% if invoice.payments|length > 0 and not invoice.balance.isZero %}
+                                    {% elseif invoice.payments|length > 0 and not invoice.feesBalance.isZero %}
                                         {% for payment in invoice.payments|filter((v) => v.status == enum('Augias\\PaymentBundle\\Enum\\PaymentStatus').Captured) %}
                                             <div class="ext-doc-totals-row">
                                                 <div class="ext-doc-totals-label">
@@ -261,11 +260,11 @@
                                     <div class="ext-doc-totals-final">
                                         <div class="ext-doc-totals-row">
                                             <div class="ext-doc-totals-label">
-                                                {% set hasOutstandingBalance = invoice.payments|length > 0 and not invoice.balance.isZero %}
+                                                {% set hasOutstandingBalance = invoice.payments|length > 0 and not invoice.feesBalance.isZero %}
                                                 {{ hasOutstandingBalance ? 'invoice.balance'|trans : 'invoice.total'|trans }}
                                             </div>
                                             <div class="ext-doc-totals-value text-primary">
-                                                {{ (hasOutstandingBalance ? invoice.balance : invoice.total)|formatCurrency(currency) }}
+                                                {{ (hasOutstandingBalance ? invoice.feesBalance : invoice.feesTotal)|formatCurrency(currency) }}
                                             </div>
                                         </div>
                                     </div>
@@ -277,7 +276,7 @@
                                         <div class="ext-doc-totals-final">
                                             <div class="ext-doc-totals-row">
                                                 <div class="ext-doc-totals-label">{{ 'invoice.amount_payable'|trans }}</div>
-                                                <div class="ext-doc-totals-value text-primary">{{ payable_amount(invoice)|formatCurrency(currency) }}</div>
+                                                <div class="ext-doc-totals-value text-primary">{{ invoice.feesPayableAmount|formatCurrency(currency) }}</div>
                                             </div>
                                         </div>
                                     {% endif %}
@@ -293,7 +292,7 @@
                     {% endif %}
 
                     {% if invoice.hasDisbursements %}
-                        <div class="opacity-75 small mb-3">{{ disbursement_mention(invoice) }}</div>
+                        <div class="opacity-75 small mb-3">{{ disbursement_note_reference(invoice) }}</div>
                     {% endif %}
 
                     {% if invoice.terms is not empty or invoice.notes is not empty %}
@@ -316,26 +315,69 @@
             {% endif %}
 
                 {#
-                 # Outside the document, so it shows whichever template the
-                 # company chose: the supplier's documents are what make the
-                 # disbursements on this invoice something other than a sale.
+                 # The disbursement note, outside the invoice document so it shows
+                 # whichever template the company chose. Disbursements go out on a
+                 # note of their own: EN 16931 forbids them on the invoice beside
+                 # taxed fees, and the note is not an invoice at all.
                  #}
-                {% set receipts = invoice.lines|filter(l => l.disbursement)|reduce((carry, l) => carry|merge(l.receipts.toArray), []) %}
-                {% if receipts is not empty %}
-                    <div class="card mt-3 no-print" id="disbursement-receipts">
+                {% if invoice.hasDisbursements %}
+                    <div class="card mt-3" id="disbursement-note">
                         <div class="card-body">
-                            <strong class="d-block mb-2">{{ 'invoice.disbursement.receipt.title'|trans }}</strong>
-                            <ul class="list-unstyled mb-0">
-                                {% for receipt in receipts %}
-                                    <li class="mb-1">
-                                        <a href="{{ path('_view_invoice_receipt_external', {'uuid': invoice.uuid, 'id': receipt.id}) }}">
-                                            {{ ux_icon('tabler:paperclip', {width: 16, height: 16}) }}
-                                            {{ receipt.filename }}
-                                        </a>
-                                        <span class="text-muted small">— {{ receipt.line.description }}</span>
-                                    </li>
-                                {% endfor %}
-                            </ul>
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                                <div>
+                                    <strong class="d-block">{{ 'invoice.disbursement.note.title'|trans({'%note%': invoice.disbursementNoteId}) }}</strong>
+                                    <span class="text-muted small">{{ 'invoice.disbursement.note.attached_to'|trans({'%invoice%': invoice.invoiceId}) }}</span>
+                                </div>
+                                {% if can_print_pdf() %}
+                                    <a href="{{ path('_view_invoice_disbursement_note_external', {'uuid': invoice.uuid}) }}" target="_blank" class="btn btn-outline-secondary btn-sm no-print">
+                                        {{ ux_icon('tabler:file-type-pdf', {width: 16, height: 16}) }}
+                                        {{ 'invoice.action.pdf'|trans }}
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                            <table class="table table-sm mb-2">
+                                <tbody>
+                                    {% for line in invoice.disbursementLines %}
+                                        <tr>
+                                            <td>{{ line.description|nl2br }}</td>
+                                            <td class="text-end text-nowrap">{{ line.total|formatCurrency(currency) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th>{{ 'invoice.disbursement.note.total'|trans }}</th>
+                                        <th class="text-end text-nowrap">{{ invoice.disbursementTotal|formatCurrency(currency) }}</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+
+                            <div class="opacity-75 small mb-3">{{ disbursement_mention(invoice) }}</div>
+
+                            {% set receipts = invoice.disbursementLines|reduce((carry, l) => carry|merge(l.receipts.toArray), []) %}
+                            {% if receipts is not empty %}
+                                <strong class="d-block mb-2 no-print">{{ 'invoice.disbursement.receipt.title'|trans }}</strong>
+                                <ul class="list-unstyled mb-0 no-print" id="disbursement-receipts">
+                                    {% for receipt in receipts %}
+                                        <li class="mb-1">
+                                            <a href="{{ path('_view_invoice_receipt_external', {'uuid': invoice.uuid, 'id': receipt.id}) }}">
+                                                {{ ux_icon('tabler:paperclip', {width: 16, height: 16}) }}
+                                                {{ receipt.filename }}
+                                            </a>
+                                            <span class="text-muted small">— {{ receipt.line.description }}</span>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# What the client pays: the two documents together. #}
+                    <div class="card mt-3" id="amount-due">
+                        <div class="card-body d-flex justify-content-between align-items-center gap-2">
+                            <span>{{ 'invoice.disbursement.note.amount_due'|trans({'%invoice%': invoice.feesBalance|formatCurrency(currency), '%note%': invoice.disbursementBalance|formatCurrency(currency)}) }}</span>
+                            <strong class="text-nowrap">{{ invoice.balance|formatCurrency(currency) }}</strong>
                         </div>
                     </div>
                 {% endif %}

@@ -1276,7 +1276,7 @@ einvoicing:
             tagline: "Simule l'envoi de factures électroniques sans appel externe réel, pour les tests."
     send:
         failed: "Échec de l'envoi de la facture électronique. Veuillez vérifier la configuration du fournisseur."
-        mixed_disbursements: "Facture électronique non envoyée : elle mêle des débours et des prestations, ce que la norme EN 16931 interdit (règle BR-O-11). Établissez les débours sur un document à part."
+        only_disbursements: "Facture électronique non envoyée : elle ne porte que des débours. Ils figurent sur la note de débours, qui n'est pas une facture et ne passe pas par la plateforme."
         no_active_provider: "Aucun fournisseur de facturation électronique actif n'est configuré."
         success: "La facture électronique a été envoyée avec succès."
     view:
@@ -1642,6 +1642,18 @@ invoice:
     disbursement:
         mention: 'Les débours sont des sommes réglées au nom et pour le compte du client, refacturées à l''euro près et hors du champ de la TVA (CGI, art. 267-II-2°). Justificatifs disponibles sur demande.'
         mention_attached: 'Les débours sont des sommes réglées au nom et pour le compte du client, refacturées à l''euro près et hors du champ de la TVA (CGI, art. 267-II-2°). Justificatifs joints.'
+        note:
+            amount_due: "Facture : %invoice% + note de débours : %note%"
+            attached_to: "Jointe à la facture %invoice%"
+            fees_paid: "Déjà réglé"
+            label: "Note de débours"
+            only_disbursements: "Cette facture ne porte que des débours : ils figurent tous sur la note, et la facture elle-même reste à 0."
+            paid: "Déjà réglé"
+            pdf: "Note de débours (PDF)"
+            receipt: "Justificatif joint : %file%"
+            reference: "Les débours avancés pour votre compte (%amount%) ne figurent pas sur cette facture : ils font l'objet de la note de débours %note%, jointe."
+            title: "Note de débours %note%"
+            total: "Total des débours"
         receipt:
             add: "Joindre"
             delete: "Retirer ce justificatif"

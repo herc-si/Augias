@@ -22,6 +22,7 @@ use Augias\InvoiceBundle\Action\CreditNote\Index as CreditNoteIndex;
 use Augias\InvoiceBundle\Action\CreditNote\Send as CreditNoteSend;
 use Augias\InvoiceBundle\Action\CreditNote\Transition as CreditNoteTransition;
 use Augias\InvoiceBundle\Action\CreditNote\View as CreditNoteView;
+use Augias\InvoiceBundle\Action\DisbursementNote\View as DisbursementNoteView;
 use Augias\InvoiceBundle\Action\DisbursementReceipt\Delete as DisbursementReceiptDelete;
 use Augias\InvoiceBundle\Action\DisbursementReceipt\Download as DisbursementReceiptDownload;
 use Augias\InvoiceBundle\Action\DisbursementReceipt\Upload as DisbursementReceiptUpload;
@@ -95,6 +96,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->add('_send_manual_reminder', '/action/send-reminder/{id}')
         ->methods(['POST'])
         ->controller(SendManualReminder::class);
+
+    $routingConfigurator
+        ->add('_invoices_disbursement_note', '/view/{id}/disbursement-note.pdf')
+        ->methods(['GET'])
+        ->controller(DisbursementNoteView::class);
 
     $routingConfigurator
         ->add('_invoices_disbursement_receipt_upload', '/disbursement/{id}/receipt')

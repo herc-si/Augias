@@ -10,7 +10,7 @@
 {% import '@AugiasInvoice/Templates/_macros.html.twig' as inv %}
 
 {% set currency = invoice.client.currency %}
-{% set hasOutstandingBalance = invoice.payments|length > 0 and not invoice.balance.zero %}
+{% set hasOutstandingBalance = invoice.payments|length > 0 and not invoice.feesBalance.isZero %}
 
 <html>
 <head>
@@ -165,9 +165,9 @@
                         </div>
                         <div style="font-size: 18pt; font-weight: bold;">
                             {% if hasOutstandingBalance %}
-                                {{ invoice.balance|formatCurrency(currency) }}
+                                {{ invoice.feesBalance|formatCurrency(currency) }}
                             {% else %}
-                                {{ invoice.total|formatCurrency(currency) }}
+                                {{ invoice.feesTotal|formatCurrency(currency) }}
                             {% endif %}
                         </div>
                     </td>
@@ -239,7 +239,7 @@
         </tr>
     </thead>
     <tbody>
-        {% for line in invoice.lines %}
+        {% for line in invoice.feeLines %}
             <tr{% if loop.index is even %} style="background-color: #fafbfc;"{% endif %}>
                 <td class="col-description" style="padding: 12px 16px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: top;">
                     {{ line.description|nl2br }}{{ inv.disbursement_tag(line) }}
@@ -342,20 +342,19 @@
             </tr>
         {% endif %}
 
-        {# Disbursements - money advanced in the client's name, owed but not earned. #}
-        {% if invoice.hasDisbursements %}
-            <tr class="disbursement-row">
+        {# Partial Payments. Disbursements are not on this document - they go out
+           on a note of their own - and each payment covered both, so with
+           disbursements only the part that went to the fees is shown. #}
+        {% if invoice.payments|length > 0 and not invoice.feesBalance.isZero and invoice.hasDisbursements %}
+            <tr class="payment-row">
                 <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
-                    {{ 'invoice.disbursements'|trans }}
+                    {{ 'invoice.disbursement.note.fees_paid'|trans }}
                 </td>
-                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #1e293b;">
-                    {{ invoice.disbursementTotal|formatCurrency(currency) }}
+                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #10b981;">
+                    -{{ invoice.feesPaid|formatCurrency(currency) }}
                 </td>
             </tr>
-        {% endif %}
-
-        {# Partial Payments #}
-        {% if invoice.payments|length > 0 and not invoice.balance.zero %}
+        {% elseif invoice.payments|length > 0 and not invoice.feesBalance.isZero %}
             {% for payment in invoice.payments|filter((v) => v.status == enum('Augias\\PaymentBundle\\Enum\\PaymentStatus').Captured) %}
                 <tr class="payment-row">
                     <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
@@ -380,7 +379,7 @@
                     {{ 'invoice.balance'|trans }}
                 </td>
                 <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: #92400e;">
-                    {{ invoice.balance|formatCurrency(currency) }}
+                    {{ invoice.feesBalance|formatCurrency(currency) }}
                 </td>
             </tr>
         {% else %}
@@ -389,7 +388,7 @@
                     {{ 'invoice.total'|trans }}
                 </td>
                 <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: #166534;">
-                    {{ invoice.total|formatCurrency(currency) }}
+                    {{ invoice.feesTotal|formatCurrency(currency) }}
                 </td>
             </tr>
         {% endif %}
@@ -407,7 +406,7 @@
                     {{ 'invoice.amount_payable'|trans }}
                 </td>
                 <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: #166534;">
-                    {{ payable_amount(invoice)|formatCurrency(currency) }}
+                    {{ invoice.feesPayableAmount|formatCurrency(currency) }}
                 </td>
             </tr>
         {% endif %}
@@ -460,7 +459,7 @@
 {% endif %}
 
 {% if invoice.hasDisbursements %}
-    <div style="margin-top: 12px; font-size: 8pt; color: #64748b; line-height: 1.5;">{{ disbursement_mention(invoice) }}</div>
+    <div style="margin-top: 12px; font-size: 8pt; color: #64748b; line-height: 1.5;">{{ disbursement_note_reference(invoice) }}</div>
 {% endif %}
 
 {% if invoice.terms is not empty %}

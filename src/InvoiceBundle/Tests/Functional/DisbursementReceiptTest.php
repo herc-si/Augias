@@ -26,7 +26,7 @@ use Augias\InvoiceBundle\Entity\DisbursementReceipt;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
-use Augias\InvoiceBundle\Listener\Mailer\DisbursementReceiptListener;
+use Augias\InvoiceBundle\Listener\Mailer\DisbursementNoteListener;
 use Augias\InvoiceBundle\Repository\DisbursementReceiptRepository;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\UserBundle\Entity\User;
@@ -59,7 +59,7 @@ use function unlink;
 #[CoversClass(Upload::class)]
 #[CoversClass(Delete::class)]
 #[CoversClass(ClientDownload::class)]
-#[CoversClass(DisbursementReceiptListener::class)]
+#[CoversClass(DisbursementNoteListener::class)]
 #[Group('functional')]
 final class DisbursementReceiptTest extends WebTestCase
 {
@@ -272,7 +272,7 @@ final class DisbursementReceiptTest extends WebTestCase
         self::assertCount(1, $this->receipts());
     }
 
-    public function testTheReceiptTravelsWithTheInvoiceEmail(): void
+    public function testTheNoteAndItsReceiptTravelWithTheInvoiceEmail(): void
     {
         $invoice = $this->invoice(InvoiceStatus::Pending);
         $this->attach($invoice, 'facture.pdf');
@@ -281,8 +281,8 @@ final class DisbursementReceiptTest extends WebTestCase
         self::assertInstanceOf(Invoice::class, $invoice);
 
         $email = new InvoiceEmail($invoice);
-        $listener = self::getContainer()->get(DisbursementReceiptListener::class);
-        self::assertInstanceOf(DisbursementReceiptListener::class, $listener);
+        $listener = self::getContainer()->get(DisbursementNoteListener::class);
+        self::assertInstanceOf(DisbursementNoteListener::class, $listener);
 
         $listener(new MessageEvent($email, new Envelope(new Address('a@example.com'), [new Address('b@example.com')]), 'null://'));
 
@@ -292,7 +292,7 @@ final class DisbursementReceiptTest extends WebTestCase
             $names[] = $attachment->getFilename();
         }
 
-        self::assertSame(['facture.pdf'], $names);
+        self::assertSame([$invoice->getDisbursementNoteId() . '.pdf', 'facture.pdf'], $names, 'The note first, then what it rests on.');
     }
 
     /**
