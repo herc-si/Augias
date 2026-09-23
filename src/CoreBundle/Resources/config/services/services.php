@@ -24,6 +24,7 @@ use Augias\CoreBundle\Form\Extension\FeatureRestrictedExtension;
 use Augias\CoreBundle\Routing\Loader\AbstractDirectoryLoader;
 use Augias\CoreBundle\Search\MultiSearchService;
 use Augias\CoreBundle\Search\SearchQueryParser;
+use Augias\CoreBundle\Storage\DocumentStorage;
 use Augias\CoreBundle\Subscription\NullPaidSubscriptionGate;
 use Augias\CoreBundle\Templates\BillingDocumentType;
 use Augias\CoreBundle\Templates\BillingTemplateRegistry;
@@ -73,6 +74,7 @@ return static function (ContainerConfigurator $containerConfigurator, ContainerB
         // Platform normalizer chain.
         ->exclude([
             dirname(__DIR__, 3) . '/{DependencyInjection,Entity,Resources,Tests,Export/Serializer/Normalizer}',
+            dirname(__DIR__, 3) . '/Storage/StoredDocument.php',
             dirname(__DIR__, 3) . '/Twig/Extension/FeatureExtension.php',
             dirname(__DIR__, 3) . '/Form/Extension/FeatureRestrictedExtension.php',
         ]);
@@ -93,6 +95,11 @@ return static function (ContainerConfigurator $containerConfigurator, ContainerB
         $services->set(FeatureExtension::class);
         $services->set(FeatureRestrictedExtension::class);
     }
+
+    // Where supporting documents are written: a path, not a service.
+    $services
+        ->set(DocumentStorage::class)
+        ->arg('$root', env('AUGIAS_ATTACHMENTS_DIR'));
 
     $services
         ->load(AugiasCoreBundle::NAMESPACE . '\\Action\\', dirname(__DIR__, 3) . '/Action')

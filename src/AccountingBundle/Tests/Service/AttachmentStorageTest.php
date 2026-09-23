@@ -15,6 +15,7 @@ namespace Augias\AccountingBundle\Tests\Service;
 
 use Augias\AccountingBundle\Entity\EntryAttachment;
 use Augias\AccountingBundle\Service\AttachmentStorage;
+use Augias\CoreBundle\Storage\DocumentStorage;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -30,6 +31,7 @@ use function sys_get_temp_dir;
  * {@see \Augias\AccountingBundle\Tests\Functional\EntryAttachmentTest}.
  */
 #[CoversClass(AttachmentStorage::class)]
+#[CoversClass(DocumentStorage::class)]
 final class AttachmentStorageTest extends TestCase
 {
     private string $root;
@@ -54,7 +56,7 @@ final class AttachmentStorageTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        new AttachmentStorage($this->root, new Filesystem())
+        new AttachmentStorage(new DocumentStorage($this->root, new Filesystem()))
             ->path($this->attachment('../../etc/passwd'));
     }
 
@@ -67,13 +69,13 @@ final class AttachmentStorageTest extends TestCase
     {
         $this->expectException(RuntimeException::class);
 
-        new AttachmentStorage($this->root, new Filesystem())
+        new AttachmentStorage(new DocumentStorage($this->root, new Filesystem()))
             ->path($this->attachment('company/2026/gone.pdf'));
     }
 
     public function testRemovingAnAttachmentWhoseFileIsAlreadyGoneIsNotAnError(): void
     {
-        new AttachmentStorage($this->root, new Filesystem())
+        new AttachmentStorage(new DocumentStorage($this->root, new Filesystem()))
             ->remove($this->attachment('company/2026/gone.pdf'));
 
         $this->expectNotToPerformAssertions();
@@ -89,7 +91,7 @@ final class AttachmentStorageTest extends TestCase
         file_put_contents($outside, 'kept');
 
         mkdir($this->root . '/inside');
-        new AttachmentStorage($this->root . '/inside', new Filesystem())
+        new AttachmentStorage(new DocumentStorage($this->root . '/inside', new Filesystem()))
             ->remove($this->attachment('../outside.pdf'));
 
         self::assertFileExists($outside);
