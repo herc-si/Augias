@@ -1,5 +1,14 @@
-4.0.0-beta1
-===========
+4.0.0
+=====
+
+### From 4.0.0-beta1
+
+* Run the database migrations (`bin/console doctrine:migrations:migrate`). They add credit notes, disbursements and their receipts, the account journals and the attachments behind book entries; nothing already recorded is recomputed.
+* Supporting documents (receipts behind book entries and disbursements) are stored on disk under `AUGIAS_ATTACHMENTS_DIR` (default `var/attachments`). Point it at a persistent volume in container deployments, or they are lost with the container.
+* New optional environment variables: `AUGIAS_RESERVED_HOSTS` (host names a deployment keeps for itself), `AUGIAS_TRUSTED_HOSTS`, `AUGIAS_SESSION_NAME` (the session cookie's name) and `AUGIAS_PRESERVED_TABLES` (tables the installer must never drop).
+* Telemetry is off by default (`AUGIAS_ENABLE_TELEMETRY=0`), and even when enabled it sends nothing unless `AUGIAS_TELEMETRY_URL` names where to.
+
+### From 3.x
 
 **The application was renamed from SolidInvoice to Augias.** This is a hard
 break with no compatibility layer, so read this section before upgrading.
