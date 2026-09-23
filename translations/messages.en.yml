@@ -150,7 +150,9 @@ accounting:
         label:
             bill_payment: 'Supplier payment'
             invoice_payment: 'Invoice payment'
+            invoice_payment_with_disbursement: 'Invoice payment, excluding %disbursed% of disbursements'
             invoice_refund: 'Refund to client'
+            invoice_refund_with_disbursement: 'Refund to client, excluding %disbursed% of disbursements'
         source:
             bill_payment: 'Supplier payment'
             invoice_payment: 'Invoice payment'

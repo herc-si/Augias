@@ -23,6 +23,7 @@ use Augias\AccountingBundle\Regime\RegimeRegistry;
 use Augias\AccountingBundle\Repository\LedgerEntryRepository;
 use Augias\BillBundle\Entity\BillPayment;
 use Augias\CoreBundle\Entity\Company;
+use Augias\InvoiceBundle\Entity\BaseInvoice;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -36,6 +37,11 @@ use Brick\Math\Exception\MathException;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Money\Currencies\ISOCurrencies;
+use Money\Currency;
+use Money\Formatter\IntlMoneyFormatter;
+use Money\Money;
+use NumberFormatter;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use function count;
@@ -138,6 +144,12 @@ final readonly class LedgerFeeder
 
         $money = $payment->getAmount();
         $client = $payment->getClient() ?? $invoice->getClient();
+        $received = BigInteger::of($money->getAmount());
+        $currency = $money->getCurrency()->getCode();
+        // Money advanced for the client and invoiced back at cost came in, but
+        // it is not turnover — so it is left out of the entry, and the label
+        // says how much was, since the bank statement will show all of it.
+        $disbursed = $this->disbursedIn($invoice, $received);
 
         $entry = new LedgerEntry()
             ->setBook(LedgerBook::Revenue)
@@ -146,9 +158,9 @@ final readonly class LedgerFeeder
             // The date the money moved, which for a captured payment is when it
             // completed — not when the invoice was raised, and not today.
             ->setEntryDate($payment->getCompleted() ?? new DateTimeImmutable('today'))
-            ->setLabel($this->label('accounting.entry.label.invoice_payment', $company))
+            ->setLabel($this->label('accounting.entry.label.invoice_payment', $company, $disbursed, $currency))
             ->setDocumentReference($invoice->getInvoiceId())
-            ->setAmount(BigInteger::of($money->getAmount()))
+            ->setAmount($received->minus($disbursed))
             ->setCurrencyCode($money->getCurrency()->getCode())
             // The company's main activity is only a default: turnover of a
             // second kind has to be re-filed by hand, which is why the field
@@ -169,7 +181,7 @@ final readonly class LedgerFeeder
         // The tax contained in what was received, split by rate. Worked out
         // here because an entry is immutable once its period is sealed, and
         // because a single amount cannot be taken apart afterwards.
-        $split = $this->taxSplitter->forInvoicePayment($invoice, BigInteger::of($money->getAmount()));
+        $split = $this->taxSplitter->forInvoicePayment($invoice, $received, $disbursed);
 
         if ($split instanceof LedgerTaxSplit) {
             $entry->setTax($split->net, $split->tax, $split->toArray());
@@ -238,19 +250,23 @@ final readonly class LedgerFeeder
 
         $amount = BigInteger::of((string) $allocation->getAmount());
         $client = $creditNote->getClient();
+        $currency = $client->getCurrency()->getCode();
         $reversed = $this->soleEntryFor($creditNote);
+        // A disbursement given back was never revenue, so it is not taken out
+        // of revenue either — the mirror of what a payment does.
+        $disbursed = $this->disbursedIn($creditNote, $amount);
 
         $entry = new LedgerEntry()
             ->setBook(LedgerBook::Revenue)
             ->setSource(LedgerEntrySource::InvoiceRefund)
             ->setSourceId($id)
             ->setEntryDate($reversed?->getEntryDate() ?? $allocation->getAllocatedOn())
-            ->setLabel($this->label('accounting.entry.label.invoice_refund', $company))
+            ->setLabel($this->label('accounting.entry.label.invoice_refund', $company, $disbursed, $currency))
             ->setDocumentReference($creditNote->getCreditNoteId())
             // Negative: this is revenue going back out. Stored positive on the
             // document, signed here, which is where the books read it.
-            ->setAmount($amount->negated())
-            ->setCurrencyCode($client->getCurrency()->getCode())
+            ->setAmount($amount->minus($disbursed)->negated())
+            ->setCurrencyCode($currency)
             ->setActivityNature($profile->primaryActivity)
             ->setCounterparty($client)
             ->setReverses($reversed);
@@ -263,7 +279,7 @@ final readonly class LedgerFeeder
 
         // The tax given back, split by rate, in the proportions it was
         // collected in. Negated for the same reason as the amount.
-        $split = $this->taxSplitter->forCreditNoteRefund($creditNote, $amount);
+        $split = $this->taxSplitter->forCreditNoteRefund($creditNote, $amount, $disbursed);
 
         if ($split instanceof LedgerTaxSplit) {
             $entry->setTax(
@@ -327,6 +343,13 @@ final readonly class LedgerFeeder
 
         $money = $payment->getAmount();
         $client = $payment->getClient() ?? $invoice->getClient();
+        $currency = $money->getCurrency()->getCode();
+        // What was booked, not what went back: the part of the payment that
+        // settled disbursements never entered the book, so it has nothing to
+        // leave it. Read off the original rather than worked out again, so the
+        // pair cancels exactly even if the invoice has changed since.
+        $booked = $original->getAmount()->toBigInteger();
+        $disbursed = BigInteger::of($money->getAmount())->minus($booked);
 
         $entry = new LedgerEntry()
             ->setBook(LedgerBook::Revenue)
@@ -336,10 +359,10 @@ final readonly class LedgerFeeder
             // Today is when the books learned of it, and dating it any earlier
             // would be inventing a fact — possibly into a sealed period.
             ->setEntryDate(new DateTimeImmutable('today'))
-            ->setLabel($this->label('accounting.entry.label.invoice_refund', $company))
+            ->setLabel($this->label('accounting.entry.label.invoice_refund', $company, $disbursed, $currency))
             ->setDocumentReference($invoice->getInvoiceId())
-            ->setAmount(BigInteger::of($money->getAmount())->negated())
-            ->setCurrencyCode($money->getCurrency()->getCode())
+            ->setAmount($booked->negated())
+            ->setCurrencyCode($currency)
             ->setActivityNature($original->getActivityNature() ?? $profile->primaryActivity)
             ->setSettlementMethod(SettlementMethod::fromGatewayName($payment->getMethod()?->getGatewayName()))
             ->setReverses($original);
@@ -502,11 +525,55 @@ final readonly class LedgerFeeder
      * its wording at render time would let a change of interface language
      * rewrite entries that were filed years ago.
      */
-    private function label(string $key, Company $company): string
+    private function label(string $key, Company $company, ?BigInteger $disbursed = null, string $currency = ''): string
     {
         $locale = trim((string) $this->systemConfig->get(SystemConfig::LOCALE_CONFIG_PATH, $company));
+        $locale = '' === $locale ? null : $locale;
 
-        return $this->translator->trans($key, [], null, '' === $locale ? null : $locale);
+        if (! $disbursed instanceof BigInteger || ! $disbursed->isPositive()) {
+            return $this->translator->trans($key, [], null, $locale);
+        }
+
+        // The part left out is named on the entry itself, in figures: the
+        // bank statement shows the whole receipt, and whoever reconciles the
+        // two has to see where the difference went without opening the
+        // invoice.
+        $formatter = new IntlMoneyFormatter(
+            new NumberFormatter($locale ?? $this->translator->getLocale(), NumberFormatter::CURRENCY),
+            new ISOCurrencies(),
+        );
+
+        return $this->translator->trans($key . '_with_disbursement', [
+            '%disbursed%' => $formatter->format(new Money((string) $disbursed, new Currency($currency))),
+        ], null, $locale);
+    }
+
+    /**
+     * The part of a settlement that went to the document's disbursements.
+     *
+     * Pro rata of the total, the convention the tax already follows on a
+     * partial payment: a client who pays half an invoice has paid half of each
+     * thing on it. Settling the disbursements first would favour the company's
+     * figures with nothing in the law to justify it. A payment of the whole
+     * amount or more covers all of them, and an overpayment is turnover like
+     * any other — it was not advanced for anyone.
+     *
+     * @throws MathException
+     */
+    private function disbursedIn(BaseInvoice $document, BigInteger $settled): BigInteger
+    {
+        $disbursements = $document->getDisbursementTotal();
+
+        if (! $disbursements->isPositive()) {
+            return BigInteger::zero();
+        }
+
+        // What the client was asked for, as the tax split reads it: the
+        // payable amount once withholding is off, since that is what they pay.
+        $payable = $document->getPayableAmount();
+        $total = $payable->isPositive() ? $payable : $document->getTotal();
+
+        return $this->shareOf($disbursements, $settled, $total);
     }
 
     /**
