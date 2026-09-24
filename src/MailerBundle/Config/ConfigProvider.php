@@ -27,9 +27,13 @@ final class ConfigProvider implements ProviderInterface
     public function provide(array $data): array
     {
         return [
+            // A placeholder on a domain reserved for examples (RFC 2606): it
+            // never delivers, so an installation that has not set its own
+            // sender finds out on the first e-mail rather than sending in
+            // somebody else's name.
             new Config(
                 'email/from_address',
-                'no-reply@solidinvoice.co',
+                'no-reply@augias.example',
                 null,
                 EmailType::class,
                 ['trial_restricted' => true]
