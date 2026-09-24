@@ -87,12 +87,14 @@ spec:
             timeoutSeconds: 5
           volumeMounts:
             {{- include "augias.configVolumeMount" . | nindent 12 }}
+            {{- include "augias.attachmentsVolumeMount" . | nindent 12 }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           securityContext:
             {{- toYaml .Values.containerSecurityContext | nindent 12 }}
       volumes:
         {{- include "augias.configVolume" . | nindent 8 }}
+        {{- include "augias.attachmentsVolume" . | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -131,6 +131,32 @@ persistence:
     ## Keep PVC on helm uninstall to prevent data loss
     helm.sh/resource-policy: keep
 
+## @section Supporting documents
+## Receipts behind book entries and the supplier's documents behind
+## disbursements. Accounting records: they must outlive every pod, and be
+## backed up like the database. Kept apart from /etc/augias because they grow,
+## and are retained for years, where the configuration does neither.
+attachments:
+  persistence:
+    ## @param attachments.persistence.enabled Store supporting documents on a PVC
+    ## WARNING: when disabled, documents are written inside the container and
+    ## are lost on every restart or upgrade.
+    enabled: true
+    ## @param attachments.persistence.storageClass StorageClass for the PVC (empty = cluster default)
+    storageClass: ""
+    ## @param attachments.persistence.accessModes PVC access modes
+    ## The app and the worker both mount it: with ReadWriteOnce they must run
+    ## on the same node. Use ReadWriteMany to spread them.
+    accessModes:
+      - ReadWriteOnce
+    ## @param attachments.persistence.size Size of the PVC
+    size: 5Gi
+    ## @param attachments.persistence.existingClaim Use an existing PVC instead of creating one
+    existingClaim: ""
+    annotations:
+      ## Keep PVC on helm uninstall: these are accounting records
+      helm.sh/resource-policy: keep
+
 ## @section Ingress configuration
 ingress:
   ## @param ingress.enabled Enable Ingress

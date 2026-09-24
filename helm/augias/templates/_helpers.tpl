@@ -99,6 +99,44 @@ Returns the volumeMount entry mounting /etc/augias.
 {{- end }}
 
 {{/*
+Where supporting documents are stored inside the container. The same path
+as docker-compose.yml, so both deployments read the same AUGIAS_ATTACHMENTS_DIR.
+*/}}
+{{- define "augias.attachmentsPath" -}}
+/var/augias/attachments
+{{- end }}
+
+{{/*
+Return the name of the PVC holding supporting documents.
+*/}}
+{{- define "augias.attachmentsPvcName" -}}
+{{- if .Values.attachments.persistence.existingClaim }}
+{{- .Values.attachments.persistence.existingClaim }}
+{{- else }}
+{{- printf "%s-attachments" (include "augias.fullname" .) }}
+{{- end }}
+{{- end }}
+
+{{/*
+Supporting documents volume (app and worker: the worker reads them to attach
+receipts to invoice e-mails). Emits nothing when persistence is disabled.
+*/}}
+{{- define "augias.attachmentsVolume" -}}
+{{- if .Values.attachments.persistence.enabled }}
+- name: augias-attachments
+  persistentVolumeClaim:
+    claimName: {{ include "augias.attachmentsPvcName" . }}
+{{- end }}
+{{- end }}
+
+{{- define "augias.attachmentsVolumeMount" -}}
+{{- if .Values.attachments.persistence.enabled }}
+- name: augias-attachments
+  mountPath: {{ include "augias.attachmentsPath" . }}
+{{- end }}
+{{- end }}
+
+{{/*
 Return the name of the MySQL secret containing the password.
 */}}
 {{- define "augias.mysql.secretName" -}}

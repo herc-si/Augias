@@ -136,6 +136,11 @@ The following table lists the major configurable parameters. For the full list s
 | `persistence.accessModes` | PVC access modes | `[ReadWriteOnce]` |
 | `persistence.size` | PVC size | `1Gi` |
 | `persistence.existingClaim` | Use an existing PVC | `""` |
+| `attachments.persistence.enabled` | Store supporting documents on a PVC (see below) | `true` |
+| `attachments.persistence.storageClass` | StorageClass name (empty = cluster default) | `""` |
+| `attachments.persistence.accessModes` | PVC access modes | `[ReadWriteOnce]` |
+| `attachments.persistence.size` | PVC size | `5Gi` |
+| `attachments.persistence.existingClaim` | Use an existing PVC | `""` |
 | `ingress.enabled` | Enable Ingress | `false` |
 | `ingress.className` | Ingress class name | `""` |
 | `ingress.hosts` | Ingress host rules | see `values.yaml` |
@@ -220,6 +225,7 @@ Augias on Kubernetes consists of the following components:
 - **Install Job** (optional) — A pre-install Helm hook that runs the CLI install command for automated/GitOps deployments.
 
 - **Persistent Volume** — Mounts `/etc/augias` across all workloads. This directory holds the Symfony encrypted secrets vault and application configuration. It must be shared across all pods.
+- **Supporting documents** — A second volume at `/var/augias/attachments` (`AUGIAS_ATTACHMENTS_DIR`), mounted in the app and the worker, holds the receipts behind book entries and the supplier's documents behind disbursements. These are accounting records: back the volume up with the database. With `attachments.persistence.enabled=false` they are written inside the container and **lost on every restart or upgrade**.
 
 ---
 
