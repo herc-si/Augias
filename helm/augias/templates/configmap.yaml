@@ -9,6 +9,9 @@ data:
   AUGIAS_DEBUG: "0"
   AUGIAS_DOCKER: "true"
   AUGIAS_CONFIG_DIR: "/etc/augias"
+  {{- if .Values.attachments.persistence.enabled }}
+  AUGIAS_ATTACHMENTS_DIR: {{ include "augias.attachmentsPath" . | quote }}
+  {{- end }}
   AUGIAS_LOCALE: {{ .Values.app.locale | quote }}
   AUGIAS_ALLOW_REGISTRATION: {{ .Values.app.allowRegistration | toString | quote }}
   {{- if .Values.app.url }}

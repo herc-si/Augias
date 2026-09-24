@@ -1,0 +1,25 @@
+{{- if and .Values.attachments.persistence.enabled (not .Values.attachments.persistence.existingClaim) -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "augias.fullname" . }}-attachments
+  labels:
+    {{- include "augias.labels" . | nindent 4 }}
+  {{- with .Values.attachments.persistence.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  accessModes:
+    {{- toYaml .Values.attachments.persistence.accessModes | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .Values.attachments.persistence.size }}
+  {{- if .Values.attachments.persistence.storageClass }}
+  {{- if (eq "-" .Values.attachments.persistence.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ .Values.attachments.persistence.storageClass | quote }}
+  {{- end }}
+  {{- end }}
+{{- end }}
