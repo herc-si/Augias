@@ -62,7 +62,7 @@ final class SystemConfigTest extends KernelTestCase
             'credit_note/id_generation/id_prefix' => 'AV-',
             'credit_note/id_generation/id_suffix' => '-{year}',
             'credit_note/id_generation/strategy' => 'auto_increment',
-            'email/from_address' => 'no-reply@solidinvoice.co',
+            'email/from_address' => 'no-reply@augias.example',
             'email/from_name' => 'Augias',
             'email/sending_options/provider' => null,
             'invoice/bcc_address' => null,
