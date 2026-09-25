@@ -64,6 +64,37 @@ final readonly class SuperPdpClient
     }
 
     /**
+     * The current OAuth2 session, notably `company_verification_status`:
+     * `verified`, `needs_review` or `failed`. The one route that still
+     * answers while the company is not verified — every other returns 403.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws SuperPdpApiException
+     */
+    public function getSession(string $accessToken): array
+    {
+        return $this->request('GET', '/v1.beta/oauth2_sessions/me', [
+            'auth_bearer' => $accessToken,
+        ]);
+    }
+
+    /**
+     * The company behind the credentials: its environment (`sandbox` or
+     * `production`), identity, VAT regime and option for VAT on debits.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws SuperPdpApiException
+     */
+    public function getCompany(string $accessToken): array
+    {
+        return $this->request('GET', '/v1.beta/companies/me', [
+            'auth_bearer' => $accessToken,
+        ]);
+    }
+
+    /**
      * Uploads a Factur-X invoice (or CII/UBL XML) for asynchronous processing.
      *
      * $processingRule is left null by default: SUPER PDP computes it (B2B, B2C,
@@ -174,7 +205,7 @@ final readonly class SuperPdpClient
         } catch (ExceptionInterface $e) {
             [$message, $code] = $this->extractError($e);
 
-            throw new SuperPdpApiException($message, $code, $e);
+            throw new SuperPdpApiException($message, $code, $e, $e instanceof HttpExceptionInterface ? $e->getResponse()->getStatusCode() : null);
         }
     }
 
@@ -202,7 +233,7 @@ final readonly class SuperPdpClient
         } catch (ExceptionInterface $e) {
             [$message, $code] = $this->extractError($e);
 
-            throw new SuperPdpApiException($message, $code, $e);
+            throw new SuperPdpApiException($message, $code, $e, $e instanceof HttpExceptionInterface ? $e->getResponse()->getStatusCode() : null);
         }
     }
 

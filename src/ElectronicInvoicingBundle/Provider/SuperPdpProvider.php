@@ -14,12 +14,14 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Provider;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
+use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
 use Augias\ElectronicInvoicingBundle\Form\Type\Provider\SuperPdpConfigType;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\FacturXInvoiceBuilder;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApiException;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\SettingsBundle\SystemConfig;
 use Brick\Math\BigDecimal;
 use Brick\Math\BigNumber;
 use Brick\Math\RoundingMode;
@@ -43,7 +45,7 @@ use function usort;
  * @see \Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdpProviderTest
  */
 #[AsTaggedItem('super_pdp')]
-final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface
+final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface, ElectronicInvoiceAccountCheckerInterface
 {
     /**
      * `fr:*` codes per https://api.superpdp.tech/openapi/superpdp.json that mean
@@ -63,7 +65,129 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         private FacturXInvoiceBuilder $documentBuilder,
         private SuperPdpClient $client,
         private LoggerInterface $logger,
+        private SystemConfig $systemConfig,
     ) {
+    }
+
+    /**
+     * Whose account this is, whether SUPER PDP has verified that identity, and
+     * whether the VAT settings it holds for the company agree with Augias's.
+     *
+     * Those settings are not decoration: SUPER PDP files the company's
+     * e-reporting to the tax administration on the schedule its VAT regime
+     * sets, and reports payments for services only when VAT is not on debits.
+     *
+     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     */
+    public function checkAccount(array $config): ElectronicInvoiceAccountStatus
+    {
+        $credentials = $this->credentials($config);
+
+        if ($credentials === null) {
+            return ElectronicInvoiceAccountStatus::unreachable('einvoicing.provider.super_pdp.missing_credentials');
+        }
+
+        [$clientId, $clientSecret] = $credentials;
+
+        try {
+            $accessToken = $this->client->getAccessToken($clientId, $clientSecret);
+            $verification = AccountVerification::tryFrom((string) ($this->client->getSession($accessToken)['company_verification_status'] ?? ''))
+                ?? AccountVerification::Unknown;
+
+            // Nothing else answers until the identity is verified.
+            if (! $verification->isUsable()) {
+                return new ElectronicInvoiceAccountStatus($verification);
+            }
+
+            $company = $this->client->getCompany($accessToken);
+        } catch (SuperPdpApiException $e) {
+            $this->logger->warning('Could not check the SUPER PDP account.', ['exception' => $e]);
+
+            return ElectronicInvoiceAccountStatus::unreachable(
+                $e->isUnauthorized() ? 'einvoicing.provider.super_pdp.bad_credentials' : $e->getMessage(),
+            );
+        }
+
+        return new ElectronicInvoiceAccountStatus(
+            $verification,
+            is_string($company['formal_name'] ?? null) ? $company['formal_name'] : null,
+            is_string($company['number'] ?? null) ? $company['number'] : null,
+            is_string($company['env'] ?? null) ? $company['env'] : null,
+            warnings: $this->vatSettingWarnings($company),
+        );
+    }
+
+    /**
+     * Where the VAT settings SUPER PDP holds for the company disagree with
+     * Augias's.
+     *
+     * @param array<string, mixed> $company
+     *
+     * @return list<string>
+     */
+    private function vatSettingWarnings(array $company): array
+    {
+        $warnings = [];
+
+        if (($company['has_vat_on_debits'] ?? false) !== $this->systemConfig->isVatOnDebits()) {
+            $warnings[] = 'einvoicing.account.warning.vat_on_debits';
+        }
+
+        $regime = is_string($company['vat_regime'] ?? null) ? $company['vat_regime'] : '';
+        $expected = $this->expectedVatRegime();
+
+        if ('' === $regime) {
+            $warnings[] = 'einvoicing.account.warning.vat_regime_missing';
+        } elseif (null !== $expected && $expected !== $regime) {
+            $warnings[] = 'einvoicing.account.warning.vat_regime_mismatch';
+        }
+
+        return $warnings;
+    }
+
+    /**
+     * SUPER PDP's name for the company's VAT regime, as far as Augias can
+     * tell it: exempt, or the rhythm VAT is declared on. Null when that
+     * rhythm is not one SUPER PDP names.
+     */
+    private function expectedVatRegime(): ?string
+    {
+        if ($this->systemConfig->isVatExempt()) {
+            return 'vat_exemption';
+        }
+
+        $rhythm = trim((string) $this->systemConfig->get(SystemConfig::VAT_PERIODICITY_CONFIG_PATH));
+        $rhythm = '' === $rhythm ? trim((string) $this->systemConfig->get(SystemConfig::DECLARATION_PERIODICITY_CONFIG_PATH)) : $rhythm;
+
+        return match ($rhythm) {
+            'month' => 'monthly',
+            'quarter' => 'quarterly',
+            default => null,
+        };
+    }
+
+    /**
+     * What to tell the user when SUPER PDP refuses: until the company is
+     * verified, it answers 403 to everything, and its own message says
+     * nothing about why.
+     */
+    private function forbiddenReason(string $clientId, string $clientSecret, SuperPdpApiException $e): string
+    {
+        if (! $e->isForbidden()) {
+            return $e->getMessage();
+        }
+
+        try {
+            $status = AccountVerification::tryFrom((string) ($this->client->getSession($this->client->getAccessToken($clientId, $clientSecret))['company_verification_status'] ?? ''));
+        } catch (SuperPdpApiException) {
+            return $e->getMessage();
+        }
+
+        return match ($status) {
+            AccountVerification::NeedsReview => 'einvoicing.provider.super_pdp.needs_review',
+            AccountVerification::Failed => 'einvoicing.provider.super_pdp.verification_failed',
+            default => $e->getMessage(),
+        };
     }
 
     public static function getName(): string
@@ -96,7 +220,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         } catch (SuperPdpApiException $e) {
             $this->logger->error('SUPER PDP rejected the invoice submission.', ['exception' => $e, 'invoice' => (string) $invoice->getId()]);
 
-            return ElectronicInvoiceSubmissionResult::failure($e->getMessage());
+            return ElectronicInvoiceSubmissionResult::failure($this->forbiddenReason($clientId, $clientSecret, $e));
         } catch (Throwable $e) {
             $this->logger->error('Failed to build or send the Factur-X document for SUPER PDP.', ['exception' => $e, 'invoice' => (string) $invoice->getId()]);
 
@@ -146,7 +270,13 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
                 $afterExternalReference !== null ? (int) $afterExternalReference : null,
             );
         } catch (SuperPdpApiException $e) {
-            $this->logger->error('Failed to list incoming invoices from SUPER PDP.', ['exception' => $e]);
+            // Said plainly: an unverified account is refused on every route,
+            // and a bare 403 in the log would not tell anyone why nothing
+            // arrives.
+            $this->logger->error('Failed to list incoming invoices from SUPER PDP.', [
+                'exception' => $e,
+                'reason' => $this->forbiddenReason($clientId, $clientSecret, $e),
+            ]);
 
             return [];
         }

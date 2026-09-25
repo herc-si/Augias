@@ -1250,6 +1250,26 @@ datagrid:
 delete_client: 'Supprimer le client'
 edit_client: 'Modifier le tiers'
 einvoicing:
+    account:
+        check: 'Vérifier le compte'
+        environment:
+            production: 'Production'
+            sandbox: 'Bac à sable'
+        explain:
+            failed: "SUPER PDP a refusé de lier ces identifiants à l'entreprise. Rien ne peut être envoyé ni reçu : contactez son support."
+            needs_review: "Une incohérence (nom, immatriculation…) est en cours d'examen par le support de SUPER PDP. En attendant, la plateforme refuse tout envoi et toute réception."
+            unknown: "La plateforme n'a pas pu être interrogée."
+        help: "Tant que la plateforme n'a pas vérifié l'identité de l'entreprise, elle refuse tout envoi et toute réception."
+        title: 'Compte sur la plateforme'
+        verification:
+            failed: 'Identité refusée'
+            needs_review: 'Vérification en cours'
+            unknown: 'Statut inconnu'
+            verified: 'Identité vérifiée'
+        warning:
+            vat_on_debits: "L'option pour la TVA sur les débits ne correspond pas entre Augias et SUPER PDP. Elle décide des paiements que SUPER PDP transmet en e-reporting : alignez-la dans votre espace SUPER PDP."
+            vat_regime_missing: "Aucun régime de TVA n'est déclaré chez SUPER PDP. C'est lui qui fixe le calendrier de l'e-reporting : renseignez-le dans votre espace SUPER PDP."
+            vat_regime_mismatch: "Le régime de TVA déclaré chez SUPER PDP ne correspond pas au rythme de déclaration de TVA choisi dans Augias."
     grid:
         amount: "Montant"
         invoice_number: "N° de facture"
@@ -1289,10 +1309,13 @@ einvoicing:
             updated: 'Fournisseur mis à jour'
             validation_errors: 'Veuillez corriger les erreurs de validation'
         super_pdp:
+            bad_credentials: "SUPER PDP refuse ces identifiants : vérifiez l'identifiant client et la clé secrète, et qu'ils sont bien ceux de l'environnement voulu (bac à sable ou production)."
             build_failed: "Impossible de générer ou d'envoyer le document Factur-X. Veuillez vérifier les données de la facture et réessayer."
             client_id: 'Identifiant client (Client ID)'
             client_secret: 'Clé secrète (Client secret)'
             display_name: 'SUPER PDP'
+            needs_review: "SUPER PDP n'a pas encore vérifié l'identité de l'entreprise : son support examine le compte. Aucune facture ne peut partir d'ici là."
+            verification_failed: "SUPER PDP a refusé de lier ces identifiants à l'entreprise : aucune facture ne peut partir. Contactez son support."
             missing_credentials: "L'identifiant client et la clé secrète SUPER PDP doivent être configurés."
             tagline: 'Envoyez des factures Factur-X via SUPER PDP, une Plateforme Agréée (PA/PDP) française.'
         test:

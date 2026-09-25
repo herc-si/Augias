@@ -59,7 +59,7 @@
                          # out what this card already knows.
                          #}
                         {% if submission.message %}
-                            <span class="attention-item-client">{{ submission.message }}</span>
+                            <span class="attention-item-client">{{ submission.message|trans }}</span>
                         {% endif %}
                     </span>
                     <span class="attention-item-meta">

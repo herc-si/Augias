@@ -15,12 +15,14 @@ namespace Augias\ElectronicInvoicingBundle\Tests\Provider;
 
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
+use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdpProvider;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
+use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\LineTax;
 use Augias\TaxBundle\Test\Factory\TaxIdentifierFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -83,6 +85,92 @@ final class SuperPdpProviderTest extends KernelTestCase
 
         self::assertFalse($result->success);
         self::assertStringContainsString('Invalid document', (string) $result->message);
+    }
+
+    /**
+     * An unverified account is refused everywhere with a bare 403. The user is
+     * told why, not shown the platform's message.
+     */
+    public function testSendExplainsThatTheAccountIsStillUnderReview(): void
+    {
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
+            static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token'])),
+            static fn (): MockResponse => new MockResponse((string) json_encode(['message' => 'Forbidden']), ['http_code' => 403]),
+            static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token'])),
+            static fn (): MockResponse => new MockResponse((string) json_encode(['created_at' => '2026-09-25T09:58:15Z', 'company_verification_status' => 'needs_review'])),
+        ]));
+
+        $result = self::getContainer()->get(SuperPdpProvider::class)->send($this->createEligibleInvoice(), [
+            'client_id' => 'id',
+            'client_secret' => 'secret',
+        ]);
+
+        self::assertFalse($result->success);
+        self::assertSame('einvoicing.provider.super_pdp.needs_review', $result->message);
+    }
+
+    /**
+     * The shape the sandbox answered with on 25/09/2026, for an account that is
+     * verified but whose VAT settings were never filled in at SUPER PDP.
+     */
+    public function testCheckAccountReportsTheCompanyAndWhereItsVatSettingsDisagree(): void
+    {
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
+            static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token'])),
+            static fn (): MockResponse => new MockResponse((string) json_encode(['created_at' => '2026-09-25T09:58:15Z', 'company_verification_status' => 'verified'])),
+            static fn (): MockResponse => new MockResponse((string) json_encode([
+                'id' => 92569,
+                'env' => 'sandbox',
+                'number_scheme' => 'sandbox',
+                'number' => '000000002',
+                'formal_name' => 'Burger Queen',
+                'vat_regime' => '',
+                'has_vat_on_debits' => false,
+            ])),
+        ]));
+
+        $config = self::getContainer()->get(SystemConfig::class);
+        $config->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, '0');
+        $config->set(SystemConfig::VAT_ON_DEBITS_CONFIG_PATH, '1');
+
+        $status = self::getContainer()->get(SuperPdpProvider::class)->checkAccount(['client_id' => 'id', 'client_secret' => 'secret']);
+
+        self::assertSame(AccountVerification::Verified, $status->verification);
+        self::assertSame('Burger Queen', $status->companyName);
+        self::assertTrue($status->isSandbox());
+        self::assertSame([
+            'einvoicing.account.warning.vat_on_debits',
+            'einvoicing.account.warning.vat_regime_missing',
+        ], $status->warnings);
+    }
+
+    /**
+     * Until the identity is verified nothing else answers, so nothing else is
+     * asked.
+     */
+    public function testCheckAccountStopsAtAnUnverifiedIdentity(): void
+    {
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
+            static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token'])),
+            static fn (): MockResponse => new MockResponse((string) json_encode(['created_at' => '2026-09-25T09:58:15Z', 'company_verification_status' => 'failed'])),
+        ]));
+
+        $status = self::getContainer()->get(SuperPdpProvider::class)->checkAccount(['client_id' => 'id', 'client_secret' => 'secret']);
+
+        self::assertSame(AccountVerification::Failed, $status->verification);
+        self::assertNull($status->companyName);
+    }
+
+    public function testCheckAccountSaysWhenTheCredentialsAreRefused(): void
+    {
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
+            static fn (): MockResponse => new MockResponse('', ['http_code' => 401]),
+        ]));
+
+        $status = self::getContainer()->get(SuperPdpProvider::class)->checkAccount(['client_id' => 'id', 'client_secret' => 'wrong']);
+
+        self::assertSame(AccountVerification::Unknown, $status->verification);
+        self::assertSame('einvoicing.provider.super_pdp.bad_credentials', $status->error);
     }
 
     public function testResolveProcessingStatusReturnsRejectedWhenTheInitialSendFailed(): void

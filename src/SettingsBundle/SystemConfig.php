@@ -46,6 +46,14 @@ class SystemConfig
 
     final public const string VAT_EXEMPT_MENTION_CONFIG_PATH = 'accounting/vat_exempt_mention';
 
+    /** The rhythm VAT is declared on, and the books' — read by the e-invoicing side too. */
+    final public const string VAT_PERIODICITY_CONFIG_PATH = 'accounting/vat_periodicity';
+
+    final public const string DECLARATION_PERIODICITY_CONFIG_PATH = 'accounting/declaration_periodicity';
+
+    /** The option for VAT on debits — here for the same reason as the exemption. */
+    final public const string VAT_ON_DEBITS_CONFIG_PATH = 'accounting/vat_on_debits';
+
     /**
      * Printed when no wording has been set. The article reference is mandatory
      * on the invoice, so it is spelled out rather than left to be remembered.
@@ -124,6 +132,17 @@ class SystemConfig
         $value = trim((string) $this->get(self::VAT_EXEMPT_CONFIG_PATH, $company));
 
         return '1' === $value || 'true' === $value;
+    }
+
+    /**
+     * Whether the company has opted for VAT on debits. Never while it is
+     * outside the scope of VAT: it charges none.
+     */
+    public function isVatOnDebits(?Company $company = null): bool
+    {
+        $value = trim((string) $this->get(self::VAT_ON_DEBITS_CONFIG_PATH, $company));
+
+        return ! $this->isVatExempt($company) && ('1' === $value || 'true' === $value);
     }
 
     public function vatExemptMention(?Company $company = null): string

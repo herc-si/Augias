@@ -58,7 +58,7 @@ final class AccountingSettings
      * since a document issued before the option is still paid under the cash
      * rule, and one issued under it must say so.
      */
-    final public const string VAT_ON_DEBITS = 'accounting/vat_on_debits';
+    final public const string VAT_ON_DEBITS = SystemConfig::VAT_ON_DEBITS_CONFIG_PATH;
 
     /** Needed to scale a first, partial year's limits down pro rata. */
     final public const string ACTIVITY_START_DATE = 'accounting/activity_start_date';
@@ -67,7 +67,7 @@ final class AccountingSettings
     final public const string PRIMARY_ACTIVITY = 'accounting/primary_activity';
 
     /** Monthly or quarterly — also the granularity the books are closed at. */
-    final public const string DECLARATION_PERIODICITY = 'accounting/declaration_periodicity';
+    final public const string DECLARATION_PERIODICITY = SystemConfig::DECLARATION_PERIODICITY_CONFIG_PATH;
 
     /**
      * The month the company's financial year opens on, 1 to 12.
@@ -94,7 +94,7 @@ final class AccountingSettings
      * everyone else. The books are still sealed on one rhythm and one only —
      * this is a declaration cycle, not a second set of registers.
      */
-    final public const string VAT_PERIODICITY = 'accounting/vat_periodicity';
+    final public const string VAT_PERIODICITY = SystemConfig::VAT_PERIODICITY_CONFIG_PATH;
 
     /**
      * Books up to and including this date are shut: entries filed into a period
