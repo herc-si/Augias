@@ -20,7 +20,6 @@ use Augias\TaxBundle\Form\Type\TaxIdentifierType;
 use Augias\TaxBundle\Repository\TaxIdentifierRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\Uid\Ulid;
 use function ctype_digit;
 use function in_array;
 use function preg_replace;
@@ -71,13 +70,7 @@ final readonly class ElectronicAddressResolver
 
     private function resolveOwn(string $accessToken, Company $company): bool
     {
-        $companyId = $company->getId();
-
-        if (! $companyId instanceof Ulid) {
-            return false;
-        }
-
-        $identifiers = $this->taxIdentifiers->findCompanyIdentifiers($companyId);
+        $identifiers = $this->taxIdentifiers->findCompanyIdentifiers($company->getId());
 
         if (null !== $this->find($identifiers, TaxIdentifierType::ELECTRONIC_ADDRESS)) {
             return false;
