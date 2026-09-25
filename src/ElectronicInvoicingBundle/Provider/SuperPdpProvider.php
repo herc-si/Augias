@@ -33,7 +33,11 @@ use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Throwable;
+use function array_filter;
 use function array_key_last;
+use function array_keys;
+use function array_map;
+use function array_values;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -49,7 +53,7 @@ use function usort;
  * @see \Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdpProviderTest
  */
 #[AsTaggedItem('super_pdp')]
-final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface, ElectronicInvoiceAccountCheckerInterface, ElectronicInvoiceResponderInterface
+final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface, ElectronicInvoiceAccountCheckerInterface, ElectronicInvoiceResponderInterface, ElectronicReporterInterface
 {
     /**
      * BT-8 values meaning the supplier's VAT falls due on the invoice date —
@@ -423,6 +427,91 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
 
             throw new SuperPdpApiException($this->forbiddenReason($clientId, $clientSecret, $e), $e->getApiCode(), $e);
         }
+    }
+
+    /**
+     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     * @param list<ReportedTransaction>                      $transactions
+     *
+     * @throws SuperPdpApiException
+     */
+    public function reportTransactions(array $config, array $transactions): array
+    {
+        return $this->report($config, fn (string $token): array => $this->client->createB2cTransactions($token, array_map(
+            static fn (ReportedTransaction $transaction): array => array_filter([
+                'date' => $transaction->date->format('Y-m-d'),
+                'currency' => $transaction->currency,
+                'category_code' => $transaction->category,
+                'role_code' => 'SE',
+                'tax_exclusive_amount' => $transaction->taxExclusiveAmount,
+                'tax_total' => $transaction->taxTotal,
+                'tax_subtotals' => array_map(
+                    static fn (string $rate, array $subtotal): array => ['tax_percent' => $rate, 'taxable_amount' => $subtotal['taxable'], 'tax_total' => $subtotal['tax']],
+                    array_keys($transaction->subtotals),
+                    array_values($transaction->subtotals),
+                ),
+                'tax_due_date_type_code' => $transaction->taxDueDateTypeCode,
+            ], static fn (mixed $value): bool => null !== $value),
+            $transactions,
+        )));
+    }
+
+    /**
+     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     * @param list<ReportedPayment>                          $payments
+     *
+     * @throws SuperPdpApiException
+     */
+    public function reportPayments(array $config, array $payments): array
+    {
+        return $this->report($config, fn (string $token): array => $this->client->createB2cPayments($token, array_map(
+            static fn (ReportedPayment $payment): array => [
+                'date' => $payment->date->format('Y-m-d'),
+                'subtotals' => array_map(
+                    static fn (string $rate, string $amount): array => ['tax_percent' => $rate, 'amount' => $amount, 'currency_code' => $payment->currency],
+                    array_keys($payment->amounts),
+                    array_values($payment->amounts),
+                ),
+            ],
+            $payments,
+        )));
+    }
+
+    /**
+     * @param array{client_id?: mixed, client_secret?: mixed}   $config
+     * @param callable(string): array<string, mixed>            $call
+     *
+     * @return list<string>
+     *
+     * @throws SuperPdpApiException
+     */
+    private function report(array $config, callable $call): array
+    {
+        $credentials = $this->credentials($config);
+
+        if ($credentials === null) {
+            throw new SuperPdpApiException('einvoicing.provider.super_pdp.missing_credentials');
+        }
+
+        [$clientId, $clientSecret] = $credentials;
+
+        try {
+            $response = $call($this->client->getAccessToken($clientId, $clientSecret));
+        } catch (SuperPdpApiException $e) {
+            $this->logger->error('SUPER PDP did not take the e-reporting data.', ['exception' => $e]);
+
+            throw new SuperPdpApiException($this->forbiddenReason($clientId, $clientSecret, $e), $e->getApiCode(), $e);
+        }
+
+        $ids = [];
+
+        foreach (is_array($response['data'] ?? null) ? $response['data'] : [] as $stored) {
+            if (is_array($stored) && (is_int($stored['id'] ?? null) || is_string($stored['id'] ?? null))) {
+                $ids[] = (string) $stored['id'];
+            }
+        }
+
+        return $ids;
     }
 
     /**
