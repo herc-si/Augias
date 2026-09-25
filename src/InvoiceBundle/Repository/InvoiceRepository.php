@@ -501,6 +501,12 @@ class InvoiceRepository extends EntityRepository
      * Get pending invoices that are past their due date.
      * Uses toIterable() for memory-efficient streaming.
      *
+     * Passed, not reached: an invoice falls overdue the day after its due
+     * date, the same day the first overdue reminder goes out. `due` is a DATE
+     * column, so today is bound as a date — bound as a datetime, the current
+     * time of day made an invoice due today overdue by mid-morning, on every
+     * database.
+     *
      * @return iterable<Invoice>
      */
     public function getPendingOverdueInvoices(): iterable
@@ -508,10 +514,10 @@ class InvoiceRepository extends EntityRepository
         $qb = $this->createQueryBuilder('i');
 
         $qb->where('i.status = :status')
-            ->andWhere('i.due < :now')
+            ->andWhere('i.due < :today')
             ->andWhere('i.due IS NOT NULL')
             ->setParameter('status', InvoiceStatus::Pending)
-            ->setParameter('now', $this->clock->now());
+            ->setParameter('today', $this->clock->now(), Types::DATE_IMMUTABLE);
 
         return $qb->getQuery()->toIterable();
     }
