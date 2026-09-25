@@ -1,0 +1,54 @@
+{#
+# This file is part of Augias package.
+#
+# (c) HERC SI <opensource@herc-si.fr>
+#
+# This source file is subject to the MIT license that is bundled
+# with this source code in the file LICENSE.
+#}
+
+{% extends '@AugiasCore/Layout/default.html.twig' %}
+
+{% block title %}{{ ux_icon('tabler:file-check', {width: 24, height: 24, class: 'me-2'}) }}{{ 'einvoicing.response.title'|trans }}{% endblock %}
+
+{% block content %}
+    <twig:Ui:Card>
+        <dl class="row mb-4">
+            <dt class="col-sm-3">{{ 'einvoicing.grid.seller_name'|trans }}</dt>
+            <dd class="col-sm-9">{{ receipt.sellerName }}</dd>
+            <dt class="col-sm-3">{{ 'einvoicing.grid.invoice_number'|trans }}</dt>
+            <dd class="col-sm-9">{{ receipt.invoiceNumber }}</dd>
+            <dt class="col-sm-3">{{ 'einvoicing.grid.issue_date'|trans }}</dt>
+            <dd class="col-sm-9">{{ receipt.issueDate ? receipt.issueDate|format_date('long') : '' }}</dd>
+            <dt class="col-sm-3">{{ 'einvoicing.grid.amount'|trans }}</dt>
+            <dd class="col-sm-9">{{ (receipt.totalAmount ?? 0)|formatCurrency(receipt.currencyCode ?? 'EUR') }}</dd>
+        </dl>
+
+        {% if form is null %}
+            {# Already answered, or no platform in use to carry an answer. #}
+            {% if receipt.response %}
+                <twig:Ui:Alert type="info" icon="tabler:info-circle">
+                    {{ 'einvoicing.response.already_answered_as'|trans({'%response%': receipt.response.translationKey|trans}) }}
+                </twig:Ui:Alert>
+            {% else %}
+                <twig:Ui:Alert type="warning" icon="tabler:alert-triangle">{{ 'einvoicing.response.unavailable'|trans }}</twig:Ui:Alert>
+            {% endif %}
+            <a href="{{ path('_einvoicing_incoming') }}" class="btn btn-ghost">{{ 'action.back'|trans }}</a>
+        {% else %}
+            <p class="text-secondary">{{ 'einvoicing.response.help'|trans }}</p>
+            {{ form_start(form) }}
+                {{ form_errors(form) }}
+                {{ form_row(form.response) }}
+                {{ form_row(form.reason) }}
+                {{ form_row(form.comment) }}
+                <div class="d-flex justify-content-between">
+                    <a href="{{ path('_einvoicing_incoming') }}" class="btn btn-ghost">{{ 'action.cancel'|trans }}</a>
+                    <button type="submit" class="btn btn-primary">
+                        {{ ux_icon('tabler:send', {width: 18, height: 18}) }}
+                        {{ 'einvoicing.response.submit'|trans }}
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        {% endif %}
+    </twig:Ui:Card>
+{% endblock %}

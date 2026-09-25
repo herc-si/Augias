@@ -298,6 +298,40 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         self::assertStringContainsString('<ram:ExemptionReasonCode>VATEX-FR-FRANCHISE</ram:ExemptionReasonCode>', $xml);
     }
 
+    /**
+     * A registered address with a suffix — SUPER PDP's sandbox gives every
+     * company one — has to be where answers are sent, not the bare SIREN.
+     */
+    public function testAnExplicitElectronicAddressIsWhereTheInvoiceIsDelivered(): void
+    {
+        TaxIdentifierFactory::createOne(['company' => $this->company, 'client' => null, 'label' => 'SIRET', 'value' => '00000000100011']);
+        TaxIdentifierFactory::createOne(['company' => $this->company, 'client' => null, 'label' => 'Adresse électronique', 'value' => '0225:315143296_92568']);
+
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+        TaxIdentifierFactory::createOne(['company' => $this->company, 'client' => $client, 'label' => 'SIRET', 'value' => '00000000200011']);
+        TaxIdentifierFactory::createOne(['company' => $this->company, 'client' => $client, 'label' => 'Adresse électronique', 'value' => '315143296_92569']);
+
+        $invoice = new Invoice();
+        $invoice->setCompany($this->company);
+        $invoice->setClient($client);
+        $invoice->setInvoiceId('INV-ADDR');
+        $invoice->setStatus(InvoiceStatus::Draft);
+        $line = new Line();
+        $line->setDescription('Service')->setPrice(10000)->setQty(1)->updateTotal();
+        $invoice->addLine($line);
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($invoice);
+        $entityManager->flush();
+
+        $xml = self::getContainer()->get(FacturXInvoiceBuilder::class)->buildDocument($invoice)->getContent();
+
+        self::assertMatchesRegularExpression('/<ram:SellerTradeParty>.*<ram:URIID schemeID="0225">315143296_92568<\/ram:URIID>.*<\/ram:SellerTradeParty>/s', $xml);
+        self::assertMatchesRegularExpression('/<ram:BuyerTradeParty>.*<ram:URIID schemeID="0225">315143296_92569<\/ram:URIID>.*<\/ram:BuyerTradeParty>/s', $xml);
+        // The legal identity still comes from the SIRET.
+        self::assertMatchesRegularExpression('/<ram:SpecifiedLegalOrganization>\s*<ram:ID schemeID="0002">000000001<\/ram:ID>/', $xml);
+    }
+
     private function xmlFor(SupplyType ...$types): string
     {
         return $this->xmlOf(false, ...$types);

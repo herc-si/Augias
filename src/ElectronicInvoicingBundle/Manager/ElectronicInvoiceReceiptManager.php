@@ -16,17 +16,22 @@ namespace Augias\ElectronicInvoicingBundle\Manager;
 use Augias\CoreBundle\Entity\Company;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
+use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
+use Augias\ElectronicInvoicingBundle\Enum\RefusalReason;
 use Augias\ElectronicInvoicingBundle\Event\ElectronicInvoiceReceiptImportedEvent;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
+use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceResponderInterface;
 use Augias\ElectronicInvoicingBundle\Provider\ReceivedElectronicInvoiceData;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceReceiptRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use RuntimeException;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
 use function sprintf;
+use function trim;
 
 /**
  * Central place for "can this company receive electronic invoices, and doing
@@ -128,6 +133,58 @@ final readonly class ElectronicInvoiceReceiptManager implements ElectronicInvoic
      * rather than read from the request. A provider whose platform has not
      * verified the company is not in use, and nothing is fetched through it.
      */
+    public function canRespond(ElectronicInvoiceReceipt $receipt): bool
+    {
+        return ! $receipt->getResponse() instanceof ReceiptResponse
+            && $this->responder($receipt) !== null;
+    }
+
+    public function respond(ElectronicInvoiceReceipt $receipt, ReceiptResponse $response, ?RefusalReason $reason = null, ?string $comment = null): void
+    {
+        if ($receipt->getResponse() instanceof ReceiptResponse) {
+            throw new RuntimeException('einvoicing.response.already_answered');
+        }
+
+        if ($response->needsReason() && ! $reason instanceof RefusalReason) {
+            throw new RuntimeException('einvoicing.response.reason_required');
+        }
+
+        // A reason belongs to a refusal only.
+        $reason = $response->needsReason() ? $reason : null;
+        $comment = null === $comment ? null : trim($comment);
+
+        $responder = $this->responder($receipt);
+
+        if (null === $responder) {
+            throw new RuntimeException('einvoicing.response.unavailable');
+        }
+
+        [$provider, $setting] = $responder;
+        $provider->respond($setting->getSettings(), $receipt->getExternalReference(), $response, $reason, '' === $comment ? null : $comment);
+
+        // Recorded only once the platform took it: an answer the supplier
+        // never received is not an answer.
+        $receipt->setStatusCode($response->value);
+        $this->entityManager->flush();
+    }
+
+    /**
+     * The provider the invoice came through, when it is in use and can carry
+     * an answer back — through the same platform, since that is where the
+     * supplier's invoice lives.
+     *
+     * @return array{0: ElectronicInvoiceResponderInterface, 1: ElectronicInvoiceProviderSetting}|null
+     */
+    private function responder(ElectronicInvoiceReceipt $receipt): ?array
+    {
+        $setting = $this->settingRepository->findActiveForCompany($receipt->getCompany()->getId(), $receipt->getProvider());
+        $provider = $setting instanceof ElectronicInvoiceProviderSetting ? $this->registry->get($setting->getProvider()) : null;
+
+        return $provider instanceof ElectronicInvoiceResponderInterface && $setting instanceof ElectronicInvoiceProviderSetting
+            ? [$provider, $setting]
+            : null;
+    }
+
     private function activeReceiverSetting(Company $company): ?ElectronicInvoiceProviderSetting
     {
         return $this->settingRepository->findActiveForCompany($company->getId());
@@ -145,7 +202,10 @@ final readonly class ElectronicInvoiceReceiptManager implements ElectronicInvoic
             ->setIssueDate($data->issueDate)
             ->setTotalAmount($data->totalAmount)
             ->setCurrencyCode($data->currencyCode)
-            ->setStatusCode($data->statusCode);
+            ->setStatusCode($data->statusCode)
+            ->setTaxAmount($data->taxAmount)
+            ->setSupplyType($data->supplyType)
+            ->setSupplierVatOnDebits($data->supplierVatOnDebits);
 
         return $receipt;
     }

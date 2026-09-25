@@ -64,6 +64,39 @@ final readonly class SuperPdpClient
     }
 
     /**
+     * Sends a lifecycle status for an invoice — for a received one, the
+     * buyer's answer: fr:205 accepted, fr:210 refused. SUPER PDP queues it
+     * and carries it to the supplier's platform.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws SuperPdpApiException
+     */
+    public function createInvoiceEvent(string $accessToken, int $invoiceId, string $statusCode, ?string $reasonCode = null, ?string $note = null): array
+    {
+        $payload = ['invoice_id' => $invoiceId, 'status_code' => $statusCode];
+        $detail = [];
+
+        // MDT-113, a normalised code; MDT-114 and notes carry the words.
+        if (null !== $reasonCode) {
+            $detail['reason'] = $reasonCode;
+        }
+
+        if (null !== $note && '' !== $note) {
+            $detail['notes'] = [['contents' => [['content' => $note]]]];
+        }
+
+        if ([] !== $detail) {
+            $payload['details'] = [$detail];
+        }
+
+        return $this->request('POST', '/v1.beta/invoice_events', [
+            'auth_bearer' => $accessToken,
+            'json' => $payload,
+        ]);
+    }
+
+    /**
      * The current OAuth2 session, notably `company_verification_status`:
      * `verified`, `needs_review` or `failed`. The one route that still
      * answers while the company is not verified — every other returns 403.

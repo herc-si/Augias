@@ -14,9 +14,12 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Tests\Provider;
 
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
+use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
+use Augias\ElectronicInvoicingBundle\Enum\RefusalReason;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdpProvider;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -31,7 +34,9 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use function json_decode;
 use function json_encode;
+use function str_ends_with;
 
 #[CoversClass(SuperPdpProvider::class)]
 final class SuperPdpProviderTest extends KernelTestCase
@@ -272,6 +277,98 @@ final class SuperPdpProviderTest extends KernelTestCase
         self::assertSame('19990', (string) $data->totalAmount);
         self::assertSame('EUR', $data->currencyCode);
         self::assertSame('fr:205', $data->statusCode);
+        // Nothing said about VAT: nothing guessed.
+        self::assertNull($data->taxAmount);
+        self::assertNull($data->supplyType);
+        self::assertFalse($data->supplierVatOnDebits);
+    }
+
+    /**
+     * The VAT details, as SUPER PDP reported them for the invoice Tricatel
+     * sent under its option for debits, in the sandbox on 25/09/2026: the tax
+     * in the totals, the framework code, and BT-8 as "3" for the "5" sent.
+     */
+    public function testFetchIncomingKeepsTheVatDetails(): void
+    {
+        $listing = (string) json_encode([
+            'data' => [
+                $this->receivedInvoice(746879, 'S1', '3'),
+                $this->receivedInvoice(746878, 'B1', null),
+                $this->receivedInvoice(746880, 'M1', null),
+            ],
+        ]);
+
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
+            static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token'])),
+            static fn (): MockResponse => new MockResponse($listing),
+        ]));
+
+        $results = self::getContainer()->get(SuperPdpProvider::class)->fetchIncoming(['client_id' => 'id', 'client_secret' => 'secret'], null);
+
+        self::assertSame('10000', (string) $results[0]->taxAmount);
+        self::assertSame(SupplyType::Services, $results[0]->supplyType);
+        self::assertTrue($results[0]->supplierVatOnDebits);
+
+        self::assertSame(SupplyType::Goods, $results[1]->supplyType);
+        self::assertFalse($results[1]->supplierVatOnDebits);
+
+        // Mixed: no single answer.
+        self::assertNull($results[2]->supplyType);
+    }
+
+    public function testRespondSendsTheAnswerAsALifecycleStatus(): void
+    {
+        $requests = [];
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient(static function (string $method, string $url, array $options) use (&$requests): MockResponse {
+            $requests[] = [$method, $url, $options['body'] ?? null];
+
+            return str_ends_with($url, '/oauth2/token')
+                ? new MockResponse((string) json_encode(['access_token' => 'a-token']))
+                : new MockResponse((string) json_encode(['id' => 1, 'status_code' => 'fr:210']));
+        }));
+
+        self::getContainer()->get(SuperPdpProvider::class)->respond(
+            ['client_id' => 'id', 'client_secret' => 'secret'],
+            '746879',
+            ReceiptResponse::Refused,
+            RefusalReason::VatRate,
+            'Taux de 5,5 % attendu',
+        );
+
+        [$method, $url, $body] = $requests[1];
+        self::assertSame('POST', $method);
+        self::assertStringEndsWith('/v1.beta/invoice_events', $url);
+        self::assertSame([
+            'invoice_id' => 746879,
+            'status_code' => 'fr:210',
+            'details' => [['reason' => 'TX_TVA_ERR', 'notes' => [['contents' => [['content' => 'Taux de 5,5 % attendu']]]]]],
+        ], json_decode((string) $body, true));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function receivedInvoice(int $id, string $framework, ?string $vatPointDateCode): array
+    {
+        $enInvoice = [
+            'number' => 'TRI-' . $id,
+            'issue_date' => '2026-09-25',
+            'currency_code' => 'EUR',
+            'process_control' => ['business_process_type' => $framework, 'specification_identifier' => 'urn:cen.eu:en16931:2017'],
+            'seller' => ['name' => 'Tricatel'],
+            'totals' => [
+                'total_without_vat' => '500.00',
+                'total_vat_amount' => ['value' => '100.00', 'currency_code' => 'EUR'],
+                'total_with_vat' => '600.00',
+                'amount_due_for_payment' => '600.00',
+            ],
+        ];
+
+        if (null !== $vatPointDateCode) {
+            $enInvoice['vat_point_date_code'] = $vatPointDateCode;
+        }
+
+        return ['id' => $id, 'direction' => 'in', 'events' => [], 'en_invoice' => $enInvoice];
     }
 
     public function testFetchIncomingReturnsEmptyWhenCredentialsAreMissing(): void

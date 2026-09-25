@@ -46,8 +46,10 @@ use Twig\Environment;
 use function array_values;
 use function ctype_digit;
 use function json_decode;
+use function str_starts_with;
 use function strlen;
 use function substr;
+use function trim;
 
 /**
  * Builds a Factur-X document (a PDF/A-3 with an embedded CII XML, EN16931
@@ -66,6 +68,9 @@ use function substr;
  */
 final readonly class FacturXInvoiceBuilder
 {
+    /** The tax identifier label that holds a registered e-invoicing address. */
+    private const string ELECTRONIC_ADDRESS_LABEL = 'Adresse électronique';
+
     /** The exemption reason code for a French company in franchise en base (BT-121). */
     private const string VATEX_FRANCHISE = 'VATEX-FR-FRANCHISE';
 
@@ -279,6 +284,8 @@ final readonly class FacturXInvoiceBuilder
             }
         }
 
+        $this->useElectronicAddress($documentBuilder->setDocumentSellerCommunication(...), $this->taxIdentifierRepository->findCompanyIdentifiers($company->getId()));
+
         // BR-E-02: an exempt invoice has to name the seller for tax purposes,
         // by VAT number (BT-31) or tax registration (BT-32). A company in
         // franchise en base usually has no VAT number at all; its SIRET, under
@@ -323,6 +330,37 @@ final readonly class FacturXInvoiceBuilder
             if ($identifier->getLabel() === 'TVA intracommunautaire') {
                 $documentBuilder->addDocumentBuyerVATRegistrationNumber($identifier->getValue());
             }
+        }
+
+        $this->useElectronicAddress($documentBuilder->setDocumentBuyerCommunication(...), $client->getTaxIdentifiers());
+    }
+
+    /**
+     * BT-34 / BT-49: where the invoice — and every answer to it — is
+     * delivered. The SIREN by default, set above; an explicit "Adresse
+     * électronique" wins when there is one: a registered address can carry
+     * a suffix, and an answer sent to the bare SIREN then has nowhere to go
+     * ("L'adresse électronique (MDT-73) est invalide", as SUPER PDP put it).
+     *
+     * Entered with or without its "0225:" scheme prefix.
+     *
+     * @param callable(string, string): mixed $setCommunication
+     * @param iterable<TaxIdentifier>          $identifiers
+     */
+    private function useElectronicAddress(callable $setCommunication, iterable $identifiers): void
+    {
+        foreach ($identifiers as $identifier) {
+            $value = trim((string) $identifier->getValue());
+
+            if ($identifier->getLabel() !== self::ELECTRONIC_ADDRESS_LABEL || '' === $value) {
+                continue;
+            }
+
+            $setCommunication(self::PEPPOL_FRANCE_SCHEME, str_starts_with($value, self::PEPPOL_FRANCE_SCHEME . ':')
+                ? substr($value, strlen(self::PEPPOL_FRANCE_SCHEME) + 1)
+                : $value);
+
+            return;
         }
     }
 

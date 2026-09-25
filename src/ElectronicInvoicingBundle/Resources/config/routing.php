@@ -14,6 +14,7 @@ declare(strict_types=1);
 use Augias\ElectronicInvoicingBundle\Action\DownloadIncomingInvoice;
 use Augias\ElectronicInvoicingBundle\Action\IncomingInvoices;
 use Augias\ElectronicInvoicingBundle\Action\Providers;
+use Augias\ElectronicInvoicingBundle\Action\RespondToIncomingInvoice;
 use Augias\ElectronicInvoicingBundle\Action\SendElectronicInvoice;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
@@ -36,4 +37,9 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->add('_einvoicing_incoming_download', '/incoming/download/{id}')
         ->controller(DownloadIncomingInvoice::class)
         ->methods(['GET']);
+
+    $routingConfigurator
+        ->add('_einvoicing_incoming_respond', '/incoming/respond/{id}')
+        ->controller(RespondToIncomingInvoice::class)
+        ->methods(['GET', 'POST']);
 };
