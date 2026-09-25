@@ -18,8 +18,13 @@ use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Manager\ReportDataBuilder;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use Augias\InvoiceBundle\Entity\CreditNote;
+use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
+use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
+use Augias\InvoiceBundle\Enum\AllocationKind;
+use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
@@ -117,6 +122,47 @@ final class ReportDataBuilderTest extends KernelTestCase
         self::assertNull($this->builder()->payment($this->paid($invoice, 12000)));
     }
 
+    /**
+     * A credit note is the sale going the other way: the same categories and
+     * codes, every amount negative, dated when it was issued.
+     */
+    public function testACreditNoteIsReportedAsANegativeSale(): void
+    {
+        $this->liable();
+        $creditNote = $this->creditNote([[SupplyType::Goods, 10000, '20'], [SupplyType::Services, 5000, '10']]);
+
+        [$goods, $services] = $this->builder()->transactions($creditNote);
+
+        self::assertSame('TLB1', $goods->category);
+        self::assertSame('-100.00', $goods->taxExclusiveAmount);
+        self::assertSame('-20.00', $goods->taxTotal);
+        self::assertSame(['20.00' => ['taxable' => '-100.00', 'tax' => '-20.00']], $goods->subtotals);
+        self::assertSame('3', $goods->taxDueDateTypeCode);
+        self::assertSame('2026-09-27', $goods->date->format('Y-m-d'));
+
+        self::assertSame('TPS1', $services->category);
+        self::assertSame('-5.00', $services->taxTotal);
+        self::assertSame('432', $services->taxDueDateTypeCode);
+    }
+
+    /**
+     * Paying a credit note back is money going out for the services it
+     * credits; setting it against another invoice moves none.
+     */
+    public function testARefundIsANegativePaymentAndAnOffsetIsNone(): void
+    {
+        $this->liable();
+        $creditNote = $this->creditNote([[SupplyType::Goods, 10000, '20'], [SupplyType::Services, 10000, '20']]);
+
+        $refund = $this->builder()->refund($this->allocated($creditNote, AllocationKind::Refund, 12000));
+
+        self::assertNotNull($refund);
+        self::assertSame(['20.00' => '-60.00'], $refund->amounts, 'Half the credit note back: half its services, tax included.');
+        self::assertSame('2026-09-28', $refund->date->format('Y-m-d'));
+
+        self::assertNull($this->builder()->refund($this->allocated($creditNote, AllocationKind::Offset, 12000)));
+    }
+
     private function builder(): ReportDataBuilder
     {
         return self::getContainer()->get(ReportDataBuilder::class);
@@ -157,6 +203,50 @@ final class ReportDataBuilderTest extends KernelTestCase
         $entityManager->flush();
 
         return $invoice;
+    }
+
+    /**
+     * @param list<array{0: SupplyType, 1: int, 2: string|null}> $lines
+     */
+    private function creditNote(array $lines): CreditNote
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+        self::assertInstanceOf(Client::class, $client);
+
+        $creditNote = new CreditNote();
+        $creditNote->setCompany($this->company);
+        $creditNote->setClient($client);
+        $creditNote->setCreditNoteId('AV-' . count($lines));
+        $creditNote->setStatus(CreditNoteStatus::Issued);
+        $creditNote->setCreditNoteDate(new DateTimeImmutable('2026-09-27'));
+
+        foreach ($lines as [$type, $price, $rate]) {
+            $line = new CreditNoteLine()->setDescription($type->value)->setPrice($price)->setQty(1)->setSupplyType($type);
+
+            if (null !== $rate) {
+                $line->addTax(new LineTax()->setNameSnapshot('TVA')->setRateSnapshot($rate)->setTypeSnapshot(TaxType::Exclusive)->setCategorySnapshot(TaxCategory::Standard));
+            }
+
+            $creditNote->addLine($line->updateTotal());
+        }
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($creditNote);
+        $entityManager->flush();
+
+        return $creditNote;
+    }
+
+    private function allocated(CreditNote $creditNote, AllocationKind $kind, int $amount): CreditNoteAllocation
+    {
+        $allocation = new CreditNoteAllocation()
+            ->setCreditNote($creditNote)
+            ->setKind($kind)
+            ->setAmount($amount)
+            ->setAllocatedOn(new DateTimeImmutable('2026-09-28'));
+        $allocation->setCompany($this->company);
+
+        return $allocation;
     }
 
     private function paid(Invoice $invoice, int $amount): Payment

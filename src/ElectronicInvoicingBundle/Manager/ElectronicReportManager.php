@@ -21,7 +21,11 @@ use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicReporterInterface;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicReportRepository;
+use Augias\InvoiceBundle\Entity\CreditNote;
+use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\InvoiceBundle\Enum\AllocationKind;
+use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
@@ -33,8 +37,9 @@ use Symfony\Component\Uid\Ulid;
 use function implode;
 
 /**
- * Reports what a company sold to private individuals — and was paid for it —
- * through the platform in use, for the tax administration's e-reporting; and
+ * Reports what a company sold to private individuals — and was paid for it,
+ * and credited and paid back — through the platform in use, for the tax
+ * administration's e-reporting; and
  * marks the invoices it sent electronically as paid (fr:212) as the money
  * comes in, where the VAT falls due on payment.
  *
@@ -92,6 +97,26 @@ final readonly class ElectronicReportManager
             }
 
             $this->file($company, $setting, ReportKind::Payment, $payment->getId(), $stats, static fn (): array => $reporter->reportPayments($setting->getSettings(), [$data]));
+        }
+
+        foreach ($this->creditNotesToReport($company, $since) as $creditNote) {
+            $transactions = $this->builder->transactions($creditNote);
+
+            if ([] === $transactions) {
+                continue;
+            }
+
+            $this->file($company, $setting, ReportKind::CreditNote, $creditNote->getId(), $stats, static fn (): array => $reporter->reportTransactions($setting->getSettings(), $transactions));
+        }
+
+        foreach ($this->refundsToReport($company, $since) as $allocation) {
+            $data = $this->builder->refund($allocation);
+
+            if (null === $data) {
+                continue;
+            }
+
+            $this->file($company, $setting, ReportKind::Refund, $allocation->getId(), $stats, static fn (): array => $reporter->reportPayments($setting->getSettings(), [$data]));
         }
 
         foreach ($this->paymentsOnSentInvoices($company, $since, $setting->getProvider()) as [$payment, $invoiceReference]) {
@@ -162,6 +187,57 @@ final readonly class ElectronicReportManager
         foreach ($invoices as $invoice) {
             if ($this->builder->isPrivateIndividual($invoice->getClient())) {
                 yield $invoice;
+            }
+        }
+    }
+
+    /**
+     * Credit notes issued to private individuals, dated from the day
+     * reporting started — a draft has been handed to no one.
+     *
+     * @return iterable<CreditNote>
+     */
+    private function creditNotesToReport(Company $company, DateTimeImmutable $since): iterable
+    {
+        /** @var list<CreditNote> $creditNotes */
+        $creditNotes = $this->entityManager->getRepository(CreditNote::class)->createQueryBuilder('c')
+            ->andWhere('c.company = :company')
+            ->andWhere('c.status IN (:issued)')
+            ->andWhere('c.creditNoteDate >= :since')
+            ->setParameter('company', $company->getId(), UlidType::NAME)
+            ->setParameter('issued', [CreditNoteStatus::Issued, CreditNoteStatus::Settled])
+            ->setParameter('since', $since->setTime(0, 0), 'date_immutable')
+            ->getQuery()
+            ->getResult();
+
+        foreach ($creditNotes as $creditNote) {
+            if ($this->builder->isPrivateIndividual($creditNote->getClient())) {
+                yield $creditNote;
+            }
+        }
+    }
+
+    /**
+     * Credit notes paid back to private individuals since reporting started.
+     *
+     * @return iterable<CreditNoteAllocation>
+     */
+    private function refundsToReport(Company $company, DateTimeImmutable $since): iterable
+    {
+        /** @var list<CreditNoteAllocation> $allocations */
+        $allocations = $this->entityManager->getRepository(CreditNoteAllocation::class)->createQueryBuilder('a')
+            ->andWhere('a.company = :company')
+            ->andWhere('a.kind = :refund')
+            ->andWhere('a.allocatedOn >= :since')
+            ->setParameter('company', $company->getId(), UlidType::NAME)
+            ->setParameter('refund', AllocationKind::Refund)
+            ->setParameter('since', $since->setTime(0, 0), 'date_immutable')
+            ->getQuery()
+            ->getResult();
+
+        foreach ($allocations as $allocation) {
+            if ($this->builder->isPrivateIndividual($allocation->getCreditNote()->getClient())) {
+                yield $allocation;
             }
         }
     }

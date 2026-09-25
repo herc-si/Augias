@@ -20,8 +20,11 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicReport;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicReportManager;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use Augias\InvoiceBundle\Entity\CreditNote;
+use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
+use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
@@ -180,6 +183,33 @@ final class ElectronicReportManagerTest extends KernelTestCase
 
         self::assertSame(['reported' => 0, 'failed' => 0], $this->manager()->reportPending($this->company));
         self::assertNull($this->lastEvent);
+    }
+
+    /**
+     * An issued credit note is reported once, like the sale it takes back;
+     * a draft has been handed to no one.
+     */
+    public function testAnIssuedCreditNoteToAPrivateIndividualIsReportedOnce(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+
+        foreach ([CreditNoteStatus::Issued, CreditNoteStatus::Draft] as $status) {
+            $creditNote = new CreditNote();
+            $creditNote->setCompany($this->company);
+            $creditNote->setClient($client);
+            $creditNote->setCreditNoteId('AV-' . $status->value);
+            $creditNote->setStatus($status);
+            $creditNote->setCreditNoteDate(new DateTimeImmutable('today'));
+            $creditNote->addLine(new CreditNoteLine()->setDescription('Pizza')->setPrice(1200)->setQty(1)->updateTotal());
+
+            self::getContainer()->get('doctrine')->getManager()->persist($creditNote);
+        }
+
+        self::getContainer()->get('doctrine')->getManager()->flush();
+
+        self::assertSame(['reported' => 1, 'failed' => 0], $this->manager()->reportPending($this->company));
+        self::assertSame(['reported' => 0, 'failed' => 0], $this->manager()->reportPending($this->company), 'Not twice.');
+        self::assertSame(1, $this->transactionsPosted);
     }
 
     private function sentElectronically(Invoice $invoice): void
