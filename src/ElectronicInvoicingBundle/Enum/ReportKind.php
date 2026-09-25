@@ -31,4 +31,10 @@ enum ReportKind: string
      * VAT falls due on payment: the "paid" status (fr:212) on that invoice.
      */
     case PaymentReceived = 'payment_received';
+
+    /** A credit note to a private individual: the sale, going the other way. */
+    case CreditNote = 'credit_note';
+
+    /** A credit note to a private individual, paid back. */
+    case Refund = 'refund';
 }

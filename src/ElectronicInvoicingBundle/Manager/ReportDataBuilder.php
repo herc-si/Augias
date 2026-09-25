@@ -17,6 +17,8 @@ use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Provider\ReportedPayment;
 use Augias\ElectronicInvoicingBundle\Provider\ReportedTransaction;
+use Augias\InvoiceBundle\Entity\CreditNote;
+use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\SettingsBundle\SystemConfig;
@@ -26,6 +28,7 @@ use Augias\TaxBundle\Form\Type\TaxIdentifierType;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;
+use function array_map;
 use function array_values;
 use function in_array;
 
@@ -42,6 +45,11 @@ use function in_array;
  * Payments are reported for services whose VAT falls due on payment: the
  * administration learns when that VAT became due. Not for goods (due on
  * delivery), nor under the option for debits, nor in franchise (no VAT).
+ *
+ * A credit note is the same sale going the other way: its transactions are
+ * negative, and so is a refund of it. A credit note set against another
+ * invoice moves no money — the client pays less, and the smaller payment on
+ * that invoice is already what was received.
  *
  * Amounts in major units, two decimals: the documents are in euros.
  */
@@ -74,18 +82,24 @@ final readonly class ReportDataBuilder
     }
 
     /**
-     * @return list<ReportedTransaction> one per category the invoice sells in
+     * @return list<ReportedTransaction> one per category the document sells
+     *                                   in — negative for a credit note
      */
-    public function transactions(Invoice $invoice): array
+    public function transactions(Invoice | CreditNote $document): array
     {
-        $exempt = $this->systemConfig->isVatExempt($invoice->getCompany());
-        $currency = $invoice->getClient()?->getCurrencyCode() ?? 'EUR';
+        $exempt = $this->systemConfig->isVatExempt($document->getCompany());
+        $currency = $document->getClient()?->getCurrencyCode() ?? 'EUR';
+        $sign = $document instanceof CreditNote ? -1 : 1;
+        // What a credit note takes back was delivered when the invoice said.
+        $invoice = $document instanceof CreditNote ? $document->getCreditedInvoice() : $document;
 
         /** @var array<string, array<string, array{taxable: BigDecimal, tax: BigDecimal}>> $categories */
         $categories = [];
 
-        foreach ($this->lines($invoice) as [$category, $subtotal, $rows]) {
+        foreach ($this->lines($document) as [$category, $subtotal, $rows]) {
             $category = $exempt ? 'TNT1' : $category;
+            $subtotal = $subtotal->multipliedBy($sign);
+            $rows = array_map(static fn (array $row): array => [$row[0], $row[1]->multipliedBy($sign)], $rows);
 
             if ([] === $rows) {
                 $this->add($categories, $category, '0.00', $subtotal, BigDecimal::zero());
@@ -112,15 +126,15 @@ final readonly class ReportDataBuilder
             }
 
             $transactions[] = new ReportedTransaction(
-                DateTimeImmutable::createFromInterface($invoice->getInvoiceDate()),
+                DateTimeImmutable::createFromInterface($document instanceof CreditNote ? $document->getCreditNoteDate() : $document->getInvoiceDate()),
                 $currency,
                 $category,
                 $this->major($taxable),
                 $this->major($tax),
                 $subtotals,
                 match ($category) {
-                    'TLB1' => $invoice->hasDistinctDeliveryDate() ? '35' : '3',
-                    'TPS1' => $invoice->isVatOnDebits() ? '3' : '432',
+                    'TLB1' => true === $invoice?->hasDistinctDeliveryDate() ? '35' : '3',
+                    'TPS1' => $document->isVatOnDebits() ? '3' : '432',
                     default => null,
                 },
             );
@@ -138,14 +152,52 @@ final readonly class ReportDataBuilder
     {
         $invoice = $payment->getInvoice();
 
-        if (! $invoice instanceof Invoice || $invoice->isVatOnDebits() || $this->systemConfig->isVatExempt($invoice->getCompany())) {
+        if (! $invoice instanceof Invoice) {
+            return null;
+        }
+
+        return $this->servicesShare(
+            $invoice,
+            BigDecimal::of($payment->getAmount()->getAmount()),
+            $payment->getCompleted() ?? new DateTimeImmutable('today'),
+            $payment->getAmount()->getCurrency()->getCode(),
+        );
+    }
+
+    /**
+     * A credit note paid back: the same share, going out — or null for an
+     * offset, which moves no money, and wherever a payment would be null.
+     */
+    public function refund(CreditNoteAllocation $allocation): ?ReportedPayment
+    {
+        if (! $allocation->getKind()->movesMoney()) {
+            return null;
+        }
+
+        $creditNote = $allocation->getCreditNote();
+
+        return $this->servicesShare(
+            $creditNote,
+            $allocation->getAmount()->toBigDecimal(),
+            $allocation->getAllocatedOn(),
+            $creditNote->getClient()->getCurrencyCode() ?? 'EUR',
+            -1,
+        );
+    }
+
+    /**
+     * @param BigDecimal $amount in minor units, of the document's total
+     */
+    private function servicesShare(Invoice | CreditNote $document, BigDecimal $amount, DateTimeImmutable $date, string $currency, int $sign = 1): ?ReportedPayment
+    {
+        if ($document->isVatOnDebits() || $this->systemConfig->isVatExempt($document->getCompany())) {
             return null;
         }
 
         /** @var array<string, BigDecimal> $services tax-included, by rate */
         $services = [];
 
-        foreach ($this->lines($invoice) as [$category, $subtotal, $rows]) {
+        foreach ($this->lines($document) as [$category, $subtotal, $rows]) {
             if ('TPS1' !== $category) {
                 continue;
             }
@@ -155,39 +207,34 @@ final readonly class ReportDataBuilder
             }
         }
 
-        $total = BigDecimal::of($invoice->getTotal());
+        $total = $document->getTotal()->toBigDecimal();
 
         if ([] === $services || ! $total->isPositive()) {
             return null;
         }
 
-        $paid = BigDecimal::of($payment->getAmount()->getAmount());
-        $ratio = $paid->isGreaterThanOrEqualTo($total) ? BigDecimal::one() : $paid->dividedBy($total, 10, RoundingMode::HalfEven);
+        $ratio = $amount->isGreaterThanOrEqualTo($total) ? BigDecimal::one() : $amount->dividedBy($total, 10, RoundingMode::HalfEven);
 
         $amounts = [];
 
-        foreach ($services as $rate => $amount) {
-            $amounts[$rate] = $this->major($amount->multipliedBy($ratio));
+        foreach ($services as $rate => $share) {
+            $amounts[$rate] = $this->major($share->multipliedBy($ratio)->multipliedBy($sign));
         }
 
-        return new ReportedPayment(
-            $payment->getCompleted() ?? new DateTimeImmutable('today'),
-            $payment->getAmount()->getCurrency()->getCode(),
-            $amounts,
-        );
+        return new ReportedPayment($date, $currency, $amounts);
     }
 
     /**
-     * The invoice's lines as sold: category, net, and VAT rows (rate,
+     * The document's lines as sold: category, net, and VAT rows (rate,
      * amount). Disbursements are left out — money advanced for the client is
      * not a sale.
      *
      * @return list<array{0: string, 1: BigDecimal, 2: list<array{0: string, 1: BigDecimal}>}>
      */
-    private function lines(Invoice $invoice): array
+    private function lines(Invoice | CreditNote $document): array
     {
-        $result = $this->taxCalculator->calculate($invoice);
-        $lines = array_values($invoice->getLines()->toArray());
+        $result = $this->taxCalculator->calculate($document);
+        $lines = array_values($document->getLines()->toArray());
         $out = [];
 
         foreach ($result->lineBreakdowns as $index => $breakdown) {
