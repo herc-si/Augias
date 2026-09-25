@@ -37,12 +37,34 @@ final class TaxIdentifierType extends AbstractType
      */
     public const array PRESET_LABELS = ['SIRET', 'SIREN', 'TVA intracommunautaire', 'Adresse électronique', 'RCS', 'Code APE/NAF', 'Autre'];
 
+    public const string SIRET = 'SIRET';
+
+    public const string SIREN = 'SIREN';
+
+    public const string VAT_NUMBER = 'TVA intracommunautaire';
+
+    /**
+     * The three identifiers every French business has, which the company and
+     * client forms ask for in fields of their own rather than in the list —
+     * where they had to be picked from a dropdown to be given at all.
+     *
+     * @var list<string>
+     */
+    public const array PROMINENT_LABELS = [self::SIRET, self::SIREN, self::VAT_NUMBER];
+
+    /**
+     * What is left for the list once those three have fields of their own.
+     *
+     * @var list<string>
+     */
+    public const array OTHER_LABELS = ['Adresse électronique', 'RCS', 'Code APE/NAF', 'Autre'];
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('label', ChoiceType::class, [
-            'choices' => array_combine(self::PRESET_LABELS, self::PRESET_LABELS),
+            'choices' => array_combine($options['labels'], $options['labels']),
             'required' => true,
-            'empty_data' => self::PRESET_LABELS[0],
+            'empty_data' => $options['labels'][0],
             'placeholder' => false,
         ]);
 
@@ -61,7 +83,9 @@ final class TaxIdentifierType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => TaxIdentifier::class,
+            'labels' => self::PRESET_LABELS,
         ]);
+        $resolver->setAllowedTypes('labels', 'string[]');
     }
 
     #[Override]

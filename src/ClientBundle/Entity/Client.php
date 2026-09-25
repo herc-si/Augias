@@ -40,6 +40,7 @@ use Augias\MoneyBundle\Validator\Constraints\SupportedCurrency;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\TaxBundle\Entity\TaxIdentifier;
+use Augias\TaxBundle\Form\Type\TaxIdentifierType;
 use Augias\TaxBundle\Validator\Constraints\RequiredFiscalIdentifierForElectronicInvoicing;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -55,7 +56,9 @@ use Symfony\Component\Serializer\Normalizer\AbstractObjectNormalizer;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use function array_values;
 use function in_array;
+use function trim;
 
 #[ApiFilter(SearchFilter::class, properties: ['name' => 'partial', 'status' => 'exact'])]
 #[ApiFilter(OrderFilter::class, properties: ['name'])]
@@ -617,6 +620,103 @@ class Client implements Stringable, Journalled
     {
         if ($this->taxIdentifiers->removeElement($taxIdentifier) && $taxIdentifier->getClient() === $this) {
             $taxIdentifier->setClient(null);
+        }
+
+        return $this;
+    }
+
+    public function getSiret(): ?string
+    {
+        return $this->fiscalIdentifier(TaxIdentifierType::SIRET);
+    }
+
+    public function setSiret(?string $siret): self
+    {
+        return $this->setFiscalIdentifier(TaxIdentifierType::SIRET, $siret);
+    }
+
+    public function getSiren(): ?string
+    {
+        return $this->fiscalIdentifier(TaxIdentifierType::SIREN);
+    }
+
+    public function setSiren(?string $siren): self
+    {
+        return $this->setFiscalIdentifier(TaxIdentifierType::SIREN, $siren);
+    }
+
+    public function getVatNumber(): ?string
+    {
+        return $this->fiscalIdentifier(TaxIdentifierType::VAT_NUMBER);
+    }
+
+    public function setVatNumber(?string $vatNumber): self
+    {
+        return $this->setFiscalIdentifier(TaxIdentifierType::VAT_NUMBER, $vatNumber);
+    }
+
+    /**
+     * Every identifier but the three that have fields of their own — what the
+     * form's list shows.
+     *
+     * @return list<TaxIdentifier>
+     */
+    public function getOtherTaxIdentifiers(): array
+    {
+        return array_values($this->taxIdentifiers->filter(
+            static fn (TaxIdentifier $identifier): bool => ! in_array($identifier->getLabel(), TaxIdentifierType::PROMINENT_LABELS, true),
+        )->toArray());
+    }
+
+    public function addOtherTaxIdentifier(TaxIdentifier $taxIdentifier): self
+    {
+        return $this->addTaxIdentifier($taxIdentifier);
+    }
+
+    public function removeOtherTaxIdentifier(TaxIdentifier $taxIdentifier): self
+    {
+        return $this->removeTaxIdentifier($taxIdentifier);
+    }
+
+    /**
+     * The SIRET, SIREN or VAT number are stored as identifiers like any
+     * other — the invoice, the e-invoice and the supplier matching all read
+     * them there — and only the form shows them apart.
+     */
+    private function fiscalIdentifier(string $label): ?string
+    {
+        foreach ($this->taxIdentifiers as $identifier) {
+            if ($identifier->getLabel() === $label) {
+                return $identifier->getValue();
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Set, changed, or removed when emptied — one identifier per label.
+     */
+    private function setFiscalIdentifier(string $label, ?string $value): self
+    {
+        $value = null === $value ? '' : trim($value);
+
+        foreach ($this->taxIdentifiers as $identifier) {
+            if ($identifier->getLabel() !== $label) {
+                continue;
+            }
+
+            if ('' === $value) {
+                $this->removeTaxIdentifier($identifier);
+            } else {
+                $identifier->setValue($value);
+            }
+
+            return $this;
+        }
+
+        if ('' !== $value) {
+            $this->addTaxIdentifier(new TaxIdentifier()->setLabel($label)->setValue($value));
         }
 
         return $this;

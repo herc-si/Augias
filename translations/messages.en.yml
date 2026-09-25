@@ -614,7 +614,13 @@ client:
         role_description: 'Check either or both, you can change this later.'
         role_title: 'What is this party?'
         subtitle: 'Add a new party, then mark them as a client, a supplier, or both.'
-        tax_identifiers_description: 'Tax registration numbers (SIRET, SIREN, TVA intracommunautaire, RCS, etc.). These appear on invoices and quotes issued to this party.'
+        fiscal_identifiers_description: 'They appear on invoices and quotes issued to this party, and route its e-invoices. Leave empty for a private individual.'
+        fiscal_identifiers_title: 'Tax identifiers'
+        other_identifiers_title: 'Other identifiers'
+        siren: 'SIREN'
+        siret: 'SIRET'
+        tax_identifiers_description: 'RCS, APE/NAF code, e-invoicing address when it is not the SIREN.'
+        vat_number: 'EU VAT number'
         website:
             label: Website
     grid:
@@ -3473,16 +3479,20 @@ status:
 success: Success
 tax:
     company_identifiers:
-        add: 'Add tax identifier'
-        description: 'Add the tax identifiers (SIRET, SIREN, TVA intracommunautaire, RCS, etc.) for your own business — these will appear on the invoices and quotes you issue.'
-        empty: 'No tax identifiers configured. Add one to display it on your invoices.'
+        add: 'Add an identifier'
+        description: 'Your company''s identifiers: they appear on the invoices and quotes you issue, and identify your e-invoices.'
+        empty: 'No other identifier.'
         label: Type
+        other: 'Other identifiers (RCS, APE/NAF code, e-invoicing address…)'
         primary: Primary
         remove: 'Remove tax identifier'
         save: 'Save tax identifiers'
+        siren: 'SIREN'
+        siret: 'SIRET'
         siret_required: 'Electronic invoicing is enabled: add your company''s SIRET number.'
         title: 'Company Tax Identifiers'
         value: Number
+        vat_number: 'EU VAT number'
         vat_required: 'Electronic invoicing is enabled: add your company''s intra-community VAT number.'
     direction:
         additive: Additive

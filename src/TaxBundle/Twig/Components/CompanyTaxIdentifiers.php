@@ -17,6 +17,7 @@ use Augias\CoreBundle\Company\CompanySelector;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\TaxIdentifier;
 use Augias\TaxBundle\Form\Type\CompanyTaxIdentifiersFormType;
+use Augias\TaxBundle\Form\Type\TaxIdentifierType;
 use Augias\TaxBundle\Repository\TaxIdentifierRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -29,6 +30,7 @@ use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 use Symfony\UX\LiveComponent\LiveCollectionTrait;
+use function trim;
 
 #[AsLiveComponent]
 final class CompanyTaxIdentifiers extends AbstractController
@@ -50,36 +52,85 @@ final class CompanyTaxIdentifiers extends AbstractController
      */
     protected function instantiateForm(): FormInterface
     {
-        $companyId = $this->companySelector->getCompany();
-        $identifiers = $companyId instanceof Ulid
-            ? $this->repository->findCompanyIdentifiers($companyId)
-            : [];
+        $data = ['siret' => null, 'siren' => null, 'vatNumber' => null, 'identifiers' => []];
 
-        return $this->createForm(CompanyTaxIdentifiersFormType::class, [
-            'identifiers' => $identifiers,
-        ]);
+        foreach ($this->savedIdentifiers() as $identifier) {
+            $field = self::FIELDS[(string) $identifier->getLabel()] ?? null;
+
+            if (null === $field) {
+                $data['identifiers'][] = $identifier;
+            } elseif (null === $data[$field]) {
+                $data[$field] = $identifier->getValue();
+            }
+        }
+
+        return $this->createForm(CompanyTaxIdentifiersFormType::class, $data);
+    }
+
+    /**
+     * The identifiers that have a field of their own, by label.
+     */
+    private const array FIELDS = [
+        TaxIdentifierType::SIRET => 'siret',
+        TaxIdentifierType::SIREN => 'siren',
+        TaxIdentifierType::VAT_NUMBER => 'vatNumber',
+    ];
+
+    /**
+     * @return list<TaxIdentifier>
+     */
+    private function savedIdentifiers(): array
+    {
+        $companyId = $this->companySelector->getCompany();
+
+        return $companyId instanceof Ulid ? $this->repository->findCompanyIdentifiers($companyId) : [];
     }
 
     #[LiveAction]
     public function save(): ?RedirectResponse
     {
         $this->submitForm();
-        /** @var array{identifiers: list<TaxIdentifier>} $data */
+        /** @var array{siret: string|null, siren: string|null, vatNumber: string|null, identifiers: list<TaxIdentifier>} $data */
         $data = $this->getForm()->getData();
+        $existing = $this->savedIdentifiers();
+
+        // The list holds the others; the three fields become identifiers again
+        // here, reusing the saved one for each so its id — and anything that
+        // points at it — survives the save.
         $submitted = $data['identifiers'] ?? [];
 
-        if ($this->systemConfig->get(SystemConfig::ELECTRONIC_INVOICING_CONFIG_PATH) === '1') {
-            $labels = [];
+        foreach (self::FIELDS as $label => $field) {
+            $value = trim((string) ($data[$field] ?? ''));
 
-            foreach ($submitted as $identifier) {
-                if (($identifier->getValue() ?? '') !== '') {
-                    $labels[(string) $identifier->getLabel()] = true;
+            if ('' === $value) {
+                continue;
+            }
+
+            $identifier = null;
+
+            foreach ($existing as $candidate) {
+                if ($candidate->getLabel() === $label) {
+                    $identifier = $candidate;
+
+                    break;
                 }
             }
 
-            foreach (['SIRET' => 'tax.company_identifiers.siret_required', 'TVA intracommunautaire' => 'tax.company_identifiers.vat_required'] as $requiredLabel => $errorMessage) {
-                if (! isset($labels[$requiredLabel])) {
-                    $this->getForm()->addError(new FormError($this->translator->trans($errorMessage)));
+            $submitted[] = ($identifier ?? new TaxIdentifier()->setLabel($label))->setValue($value);
+        }
+
+        if ($this->systemConfig->get(SystemConfig::ELECTRONIC_INVOICING_CONFIG_PATH) === '1') {
+            $required = ['siret' => 'tax.company_identifiers.siret_required'];
+
+            // A company in franchise usually has no VAT number, and its
+            // e-invoices name it by SIRET instead (BT-32).
+            if (! $this->systemConfig->isVatExempt()) {
+                $required['vatNumber'] = 'tax.company_identifiers.vat_required';
+            }
+
+            foreach ($required as $field => $errorMessage) {
+                if ('' === trim((string) ($data[$field] ?? ''))) {
+                    $this->getForm()->get($field)->addError(new FormError($this->translator->trans($errorMessage)));
                 }
             }
 
@@ -88,8 +139,6 @@ final class CompanyTaxIdentifiers extends AbstractController
             }
         }
 
-        $companyId = $this->companySelector->getCompany();
-        $existing = $companyId instanceof Ulid ? $this->repository->findCompanyIdentifiers($companyId) : [];
         $submittedIds = [];
         foreach ($submitted as $identifier) {
             $identifier->setClient(null);
