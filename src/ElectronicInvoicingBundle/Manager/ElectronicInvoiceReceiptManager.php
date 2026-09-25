@@ -123,14 +123,14 @@ final readonly class ElectronicInvoiceReceiptManager implements ElectronicInvoic
     }
 
     /**
-     * findActive()/findActiveForCompany() both require the provider name or the
-     * current-request company (via the Doctrine filter) up front — neither fits
-     * "resolve whichever provider is active for this specific company", needed
-     * here since imports run across every company with the filter disabled.
+     * Whichever provider is in use for this specific company — imports run
+     * across every company with the filter disabled, so the company is given
+     * rather than read from the request. A provider whose platform has not
+     * verified the company is not in use, and nothing is fetched through it.
      */
     private function activeReceiverSetting(Company $company): ?ElectronicInvoiceProviderSetting
     {
-        return $this->settingRepository->findOneBy(['company' => $company->getId(), 'active' => true]);
+        return $this->settingRepository->findActiveForCompany($company->getId());
     }
 
     private function createReceipt(Company $company, string $provider, ReceivedElectronicInvoiceData $data): ElectronicInvoiceReceipt

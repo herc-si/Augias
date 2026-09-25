@@ -83,7 +83,11 @@
                                 <div class="flex-grow-1 min-w-0">
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
                                         <h6 class="mb-0">{{ setting.name }}</h6>
-                                        {% if setting.active %}
+                                        {% if setting.heldByThePlatform %}
+                                            {# Switched on, but the platform has not verified the
+                                             # account: nothing goes through it, and it says so. #}
+                                            <span class="badge bg-yellow-lt">{{ 'einvoicing.marketplace.held'|trans }}</span>
+                                        {% elseif setting.active %}
                                             <span class="badge bg-success-lt">{{ 'einvoicing.marketplace.active'|trans }}</span>
                                         {% endif %}
                                         <span class="badge bg-secondary-lt">{{ setting.provider }}</span>

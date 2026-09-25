@@ -33,12 +33,27 @@ final readonly class ElectronicInvoiceAccountStatus
         public ?string $environment = null,
         public ?string $error = null,
         public array $warnings = [],
+        /**
+         * Whether the platform actually answered about this account — false
+         * when it could not be reached. An outage says nothing about the
+         * account, and must not switch electronic invoicing off.
+         */
+        public bool $answered = true,
     ) {
     }
 
     public static function unreachable(string $error): self
     {
-        return new self(AccountVerification::Unknown, error: $error);
+        return new self(AccountVerification::Unknown, error: $error, answered: false);
+    }
+
+    /**
+     * The credentials themselves were refused: an answer about the account,
+     * and a final one until someone changes them.
+     */
+    public static function refused(string $error): self
+    {
+        return new self(AccountVerification::Failed, error: $error);
     }
 
     public function isSandbox(): bool

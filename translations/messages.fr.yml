@@ -1251,6 +1251,7 @@ delete_client: 'Supprimer le client'
 edit_client: 'Modifier le tiers'
 einvoicing:
     account:
+        held: "Enregistré, mais la plateforme n'a pas vérifié l'identité de l'entreprise : la facturation électronique reste à l'arrêt jusqu'à ce qu'elle le fasse."
         check: 'Vérifier le compte'
         environment:
             production: 'Production'
@@ -1260,6 +1261,10 @@ einvoicing:
             needs_review: "Une incohérence (nom, immatriculation…) est en cours d'examen par le support de SUPER PDP. En attendant, la plateforme refuse tout envoi et toute réception."
             unknown: "La plateforme n'a pas pu être interrogée."
         help: "Tant que la plateforme n'a pas vérifié l'identité de l'entreprise, elle refuse tout envoi et toute réception."
+        stopped:
+            resume: "Aucune facture n'est envoyée ni reçue en attendant. Augias interroge la plateforme toutes les heures et reprend tout seul dès que l'identité est vérifiée."
+            title: 'Facturation électronique à l''arrêt.'
+        unchecked: "Enregistré, mais la plateforme n'a pas pu être interrogée. Le compte sera vérifié dans l'heure."
         title: 'Compte sur la plateforme'
         verification:
             failed: 'Identité refusée'
@@ -1283,6 +1288,7 @@ einvoicing:
         title: 'Factures reçues'
     marketplace:
         active: Actif
+        held: 'Active — en attente de vérification'
         configure: Configurer
         configured_title: 'Fournisseurs configurés'
         empty_subtitle: 'Configurez votre premier fournisseur de facturation électronique pour commencer à envoyer des factures électroniques.'

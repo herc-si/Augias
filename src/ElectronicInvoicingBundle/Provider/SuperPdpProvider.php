@@ -84,7 +84,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         $credentials = $this->credentials($config);
 
         if ($credentials === null) {
-            return ElectronicInvoiceAccountStatus::unreachable('einvoicing.provider.super_pdp.missing_credentials');
+            return ElectronicInvoiceAccountStatus::refused('einvoicing.provider.super_pdp.missing_credentials');
         }
 
         [$clientId, $clientSecret] = $credentials;
@@ -103,9 +103,9 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         } catch (SuperPdpApiException $e) {
             $this->logger->warning('Could not check the SUPER PDP account.', ['exception' => $e]);
 
-            return ElectronicInvoiceAccountStatus::unreachable(
-                $e->isUnauthorized() ? 'einvoicing.provider.super_pdp.bad_credentials' : $e->getMessage(),
-            );
+            return $e->isUnauthorized()
+                ? ElectronicInvoiceAccountStatus::refused('einvoicing.provider.super_pdp.bad_credentials')
+                : ElectronicInvoiceAccountStatus::unreachable($e->getMessage());
         }
 
         return new ElectronicInvoiceAccountStatus(
