@@ -1319,6 +1319,7 @@ einvoicing:
             build_failed: 'Could not build or send the Factur-X document. Please check the invoice data and try again.'
             client_id: 'Client ID'
             client_secret: 'Client secret'
+            client_secret_help: 'Leave empty to keep the secret already saved. It is never shown again.'
             display_name: 'SUPER PDP'
             needs_review: 'SUPER PDP has not verified the company''s identity yet: its support is reviewing the account. No invoice can be sent until then.'
             verification_failed: 'SUPER PDP refused to link these credentials to the company: no invoice can be sent. Contact their support.'
