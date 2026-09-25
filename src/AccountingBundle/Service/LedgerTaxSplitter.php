@@ -60,7 +60,8 @@ use function count;
  * for goods lines are marked as due on issue: a payment still records them,
  * since the money did contain that tax, but the return takes them from the
  * sales journal, where {@see self::forIssue()} puts the whole of them on the
- * day the document goes out.
+ * day the document goes out. Services join them on a document issued under the
+ * option for VAT on debits.
  *
  * @see \Augias\AccountingBundle\Tests\Service\LedgerTaxSplitterTest
  */
@@ -204,6 +205,11 @@ final readonly class LedgerTaxSplitter
     {
         $result = $this->taxCalculator->calculate($document);
 
+        // Under the option for VAT on debits, services fall due on issue too,
+        // and so does everything on the document. The option is read off the
+        // document, where it was frozen when it went out.
+        $onDebits = $document->isVatOnDebits();
+
         $groups = [];
 
         foreach ($result->lineBreakdowns as $line) {
@@ -211,7 +217,7 @@ final readonly class LedgerTaxSplitter
                 // The line's own net is the base the rate applied to. Several
                 // taxes on one line each take that same base: compounding one
                 // VAT onto another is not a thing this has to model.
-                $this->collect($groups, $row, $line->lineSubtotal, $row->amount, $line->supplyType->isTaxedOnIssue());
+                $this->collect($groups, $row, $line->lineSubtotal, $row->amount, $onDebits || $line->supplyType->isTaxedOnIssue());
             }
         }
 
@@ -219,7 +225,7 @@ final readonly class LedgerTaxSplitter
         // line — so to its goods and its services alike, in proportion. The
         // goods part falls due on issue with the rest of the goods; without
         // goods on the document this is the whole row, as it always was.
-        $goods = $this->goodsSubtotal($result);
+        $goods = $onDebits ? $result->subTotal : $this->goodsSubtotal($result);
         $goodsRatio = $result->subTotal->isPositive() && $goods->isPositive()
             ? $goods->dividedBy($result->subTotal, 10, RoundingMode::HalfEven)
             : BigDecimal::zero();

@@ -40,6 +40,8 @@
         <p class="text-secondary">{{ 'accounting.book.revenue_is_automatic'|trans }}</p>
     {% elseif book.value == 'sales' %}
         <p class="text-secondary">{{ 'accounting.book.sales_notice'|trans }}</p>
+    {% elseif book.value == 'bills' %}
+        <p class="text-secondary">{{ 'accounting.book.bills_notice'|trans }}</p>
     {% elseif book.value == 'expense' %}
         <p class="text-secondary">{{ 'accounting.book.expense_notice'|trans }}</p>
     {% endif %}

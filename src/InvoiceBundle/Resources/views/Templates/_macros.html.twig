@@ -243,6 +243,12 @@
             {{ vatMention }}
         </div>
     {% endif %}
+    {% set debitsMention = vat_on_debits_mention(invoice) %}
+    {% if debitsMention %}
+        <div style="margin-top: 12px; font-size: 9pt; color: {{ p.labelColor }};">
+            {{ debitsMention }}
+        </div>
+    {% endif %}
 
     {# Same reasoning, and the same place. The disbursements are on a note of
        their own, and the invoice has to say where. #}

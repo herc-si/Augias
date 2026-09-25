@@ -58,6 +58,7 @@ final class SystemConfigTest extends KernelTestCase
             'accounting/regime' => null,
             'accounting/vat_exempt' => '0',
             'accounting/vat_exempt_mention' => 'TVA non applicable, article 293 B du CGI',
+            'accounting/vat_on_debits' => '0',
             'accounting/vat_periodicity' => null,
             'credit_note/id_generation/id_prefix' => 'AV-',
             'credit_note/id_generation/id_suffix' => '-{year}',

@@ -281,6 +281,10 @@
                 {% if vatMention %}
                     <p class="text-muted">{{ vatMention }}</p>
                 {% endif %}
+                {% set debitsMention = vat_on_debits_mention(invoice) %}
+                {% if debitsMention %}
+                    <p class="text-muted">{{ debitsMention }}</p>
+                {% endif %}
                 {% if invoice.hasDisbursements %}
                     <p class="text-muted small">{{ disbursement_note_reference(invoice) }}</p>
                 {% endif %}

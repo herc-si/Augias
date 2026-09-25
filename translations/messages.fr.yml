@@ -37,13 +37,15 @@ accounting:
         line: 'Seuil atteint à %percent%% (limite : %amount%)'
         title: 'Alertes de seuil %year%'
     book:
+        bills: 'Journal des achats'
+        bills_notice: "La TVA sur un achat se déduit quand elle devient exigible chez le fournisseur : à la date de sa facture pour des biens, ou pour des services s'il a opté pour les débits. Ces factures s'inscrivent ici à leur date ; leur règlement, au registre des achats, ne la déduit pas une seconde fois."
         expense: 'Notes de frais'
         expense_notice: "Les dépenses que vous enregistrez ici ne sont pas un livre obligatoire : elles conservent vos justificatifs, leur TVA et leur date. En micro-entreprise elles ne se déduisent pas."
         purchase: 'Registre des achats'
         revenue_is_automatic: "Chaque paiement encaissé dans l'application s'inscrit ici tout seul."
         revenue: 'Livre des recettes'
         sales: 'Journal des ventes'
-        sales_notice: "La TVA sur les biens est due à la livraison, pas au paiement. Chaque facture émise avec des biens s'inscrit ici à sa date, chaque avoir qui en reprend aussi. Ce journal alimente la déclaration de TVA ; le chiffre d'affaires, lui, reste ce qui est encaissé, au livre des recettes."
+        sales_notice: "La TVA sur les biens est due à la livraison, pas au paiement. Chaque facture émise avec des biens s'inscrit ici à sa date, chaque avoir qui en reprend aussi — et, sous l'option pour les débits, les services avec. Ce journal alimente la déclaration de TVA ; le chiffre d'affaires, lui, reste ce qui est encaissé, au livre des recettes."
     books:
         title: Livres comptables
     declaration:
@@ -150,15 +152,19 @@ accounting:
             number: N°
             tax: TVA
         label:
+            bill_cancelled: 'Facture fournisseur annulée : TVA reprise'
             bill_payment: 'Règlement fournisseur'
-            credit_note_issued: 'Avoir sur livraison de biens'
-            invoice_issued: 'Facture de livraison de biens'
+            bill_received: 'Facture fournisseur : TVA déductible à réception'
+            credit_note_issued: 'Avoir : TVA reprise à l''émission'
+            invoice_issued: 'Facture : TVA exigible à l''émission'
             invoice_payment: 'Encaissement de facture'
             invoice_payment_with_disbursement: 'Encaissement de facture, hors %disbursed% de débours'
             invoice_refund: 'Remboursement client'
             invoice_refund_with_disbursement: 'Remboursement client, hors %disbursed% de débours'
         source:
+            bill_cancelled: 'Facture fournisseur annulée'
             bill_payment: 'Paiement fournisseur'
+            bill_received: 'Facture fournisseur reçue'
             credit_note_issued: 'Avoir émis'
             invoice_issued: 'Facture émise'
             invoice_payment: 'Encaissement de facture'
@@ -245,6 +251,9 @@ accounting:
         vat_exempt_mention:
             description: 'Imprimée sur chaque facture et chaque devis tant que vous n''êtes pas assujetti à la TVA.'
             label: 'Mention d''exonération de TVA'
+        vat_on_debits:
+            description: 'Services : la TVA est due à la facturation plutôt qu''à l''encaissement. Chaque facture émise sous l''option porte la mention légale ; celles émises avant restent déclarées à l''encaissement.'
+            label: 'Option pour le paiement de la TVA d''après les débits'
     settlement_method:
         bank_transfer: Virement
         cash: Espèces
@@ -321,6 +330,12 @@ bill:
             placeholder: 'Choisir un fournisseur existant'
         total_amount:
             label: 'Montant total'
+        supplier_vat_on_debits:
+            help: "Cochez si la facture porte la mention « Option pour le paiement de la taxe d'après les débits » : la TVA sur les services se déduit alors à la date de la facture, et non au paiement."
+            label: 'Le fournisseur a opté pour les débits'
+        supply_type:
+            help: "Des biens : leur TVA se déduit à la date de la facture. Des services : au paiement, sauf option du fournisseur pour les débits."
+            label: 'Achat de'
         tax_amount:
             help: "La TVA facturée par le fournisseur, telle qu'elle figure sur sa facture. Laissez vide s'il n'y en a pas."
             label: 'TVA'

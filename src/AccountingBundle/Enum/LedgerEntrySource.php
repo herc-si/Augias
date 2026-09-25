@@ -41,6 +41,12 @@ enum LedgerEntrySource: string
     /** A credit note taking goods back, in the sales journal. */
     case CreditNoteIssued = 'credit_note_issued';
 
+    /** A supplier's bill whose VAT is deductible on its date, in the purchase journal. */
+    case BillReceived = 'bill_received';
+
+    /** That deduction taken back, when the bill is cancelled. */
+    case BillCancelled = 'bill_cancelled';
+
     case Manual = 'manual';
 
     public function getLabel(): string
@@ -51,6 +57,8 @@ enum LedgerEntrySource: string
             self::BillPayment => 'Supplier payment',
             self::InvoiceIssued => 'Invoice issued',
             self::CreditNoteIssued => 'Credit note issued',
+            self::BillReceived => 'Supplier bill received',
+            self::BillCancelled => 'Supplier bill cancelled',
             self::Manual => 'Manual entry',
         };
     }
@@ -63,6 +71,8 @@ enum LedgerEntrySource: string
             self::BillPayment => 'accounting.entry.source.bill_payment',
             self::InvoiceIssued => 'accounting.entry.source.invoice_issued',
             self::CreditNoteIssued => 'accounting.entry.source.credit_note_issued',
+            self::BillReceived => 'accounting.entry.source.bill_received',
+            self::BillCancelled => 'accounting.entry.source.bill_cancelled',
             self::Manual => 'accounting.entry.source.manual',
         };
     }

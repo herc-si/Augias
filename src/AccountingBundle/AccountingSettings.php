@@ -49,6 +49,17 @@ final class AccountingSettings
     /** The legal wording printed on invoices and quotes when VAT-exempt. */
     final public const string VAT_EXEMPT_MENTION = SystemConfig::VAT_EXEMPT_MENTION_CONFIG_PATH;
 
+    /**
+     * The option for VAT on debits (CGI art. 269, 2-c): the VAT on services
+     * falls due when they are invoiced instead of when they are paid.
+     *
+     * Read once per document, when it is issued, and frozen on it — see
+     * {@see \Augias\InvoiceBundle\Entity\BaseInvoice::isVatOnDebits()} —
+     * since a document issued before the option is still paid under the cash
+     * rule, and one issued under it must say so.
+     */
+    final public const string VAT_ON_DEBITS = 'accounting/vat_on_debits';
+
     /** Needed to scale a first, partial year's limits down pro rata. */
     final public const string ACTIVITY_START_DATE = 'accounting/activity_start_date';
 

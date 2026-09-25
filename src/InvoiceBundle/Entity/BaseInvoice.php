@@ -155,6 +155,21 @@ abstract class BaseInvoice
     )]
     protected BigNumber $disbursementTotal;
 
+    /**
+     * Whether the VAT on this document's services was due on issue rather than
+     * on payment — the company's option for VAT on debits, as it stood when
+     * the document went out.
+     *
+     * Frozen on the document rather than read from the setting, because the
+     * setting can change and the document cannot: an invoice issued under the
+     * cash rule is still paid under it after the company opts, and one issued
+     * under the option has to print the mention the law asks for. Null until
+     * the document is issued, and on every document issued before the option
+     * existed — both read as "on payment", which is what they were.
+     */
+    #[ORM\Column(name: 'vat_on_debits', type: Types::BOOLEAN, nullable: true)]
+    protected ?bool $vatOnDebits = null;
+
     #[ORM\Column(name: 'payable_amount', type: BigIntegerType::NAME, options: ['default' => 0])]
     #[Groups(['invoice_api:read', 'recurring_invoice_api:read'])]
     #[ApiProperty(
@@ -293,6 +308,30 @@ abstract class BaseInvoice
     public function getDisbursementTotal(): BigNumber
     {
         return $this->disbursementTotal;
+    }
+
+    /** The wording the law asks for, verbatim — not a translation key. */
+    final public const string VAT_ON_DEBITS_MENTION = 'Option pour le paiement de la taxe d\'après les débits';
+
+    public function isVatOnDebits(): bool
+    {
+        return true === $this->vatOnDebits;
+    }
+
+    /**
+     * Whether the option has been frozen on the document yet, which happens
+     * once, when it is issued.
+     */
+    public function hasVatOnDebitsDecided(): bool
+    {
+        return null !== $this->vatOnDebits;
+    }
+
+    public function setVatOnDebits(?bool $vatOnDebits): self
+    {
+        $this->vatOnDebits = $vatOnDebits;
+
+        return $this;
     }
 
     /**

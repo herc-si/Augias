@@ -217,15 +217,39 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         self::assertStringContainsString('<ram:ID>S1</ram:ID>', $this->xmlFor(SupplyType::Goods, SupplyType::Services));
     }
 
+    /**
+     * Under the option for VAT on debits the e-invoice says so twice: BT-8
+     * set to the invoice date ("5"), and the legal mention as a note. Neither
+     * appears on an invoice under the cash rule.
+     */
+    public function testAnInvoiceOnDebitsSaysSoInTheData(): void
+    {
+        $onDebits = $this->xmlOf(true, SupplyType::Services);
+
+        self::assertStringContainsString('<ram:DueDateTypeCode>5</ram:DueDateTypeCode>', $onDebits);
+        self::assertStringContainsString(Invoice::VAT_ON_DEBITS_MENTION, $onDebits);
+
+        $onReceipts = $this->xmlFor(SupplyType::Services);
+
+        self::assertStringNotContainsString('DueDateTypeCode', $onReceipts);
+        self::assertStringNotContainsString(Invoice::VAT_ON_DEBITS_MENTION, $onReceipts);
+    }
+
     private function xmlFor(SupplyType ...$types): string
+    {
+        return $this->xmlOf(false, ...$types);
+    }
+
+    private function xmlOf(bool $onDebits, SupplyType ...$types): string
     {
         $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
 
         $invoice = new Invoice();
         $invoice->setCompany($this->company);
         $invoice->setClient($client);
-        $invoice->setInvoiceId('INV-BT23-' . count($types));
+        $invoice->setInvoiceId('INV-BT23-' . count($types) . ($onDebits ? '-D' : ''));
         $invoice->setStatus(InvoiceStatus::Draft);
+        $invoice->setVatOnDebits($onDebits);
 
         foreach ($types as $type) {
             $line = new Line();

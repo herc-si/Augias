@@ -17,6 +17,7 @@ use Augias\BillBundle\Entity\Bill;
 use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Entity\Category;
 use Augias\CoreBundle\Enum\CategoryUsage;
+use Augias\CoreBundle\Form\Type\SupplyTypeType;
 use Augias\CoreBundle\Repository\CategoryRepository;
 use Augias\MoneyBundle\Form\Type\CurrencyType;
 use Augias\SettingsBundle\SystemConfig;
@@ -24,6 +25,7 @@ use Doctrine\ORM\EntityRepository;
 use Money\Currency;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -117,6 +119,19 @@ final class BillType extends AbstractType
                 'label' => 'bill.form.tax_amount.label',
                 'help' => 'bill.form.tax_amount.help',
                 'currency' => $options['currency'],
+                'required' => false,
+            ]);
+
+            // The two facts that decide when that VAT is deductible, asked
+            // where the VAT is: nowhere else do they mean anything.
+            $builder->add('supplyType', SupplyTypeType::class, [
+                'label' => 'bill.form.supply_type.label',
+                'help' => 'bill.form.supply_type.help',
+                'attr' => ['class' => 'form-select'],
+            ]);
+            $builder->add('supplierVatOnDebits', CheckboxType::class, [
+                'label' => 'bill.form.supplier_vat_on_debits.label',
+                'help' => 'bill.form.supplier_vat_on_debits.help',
                 'required' => false,
             ]);
         }

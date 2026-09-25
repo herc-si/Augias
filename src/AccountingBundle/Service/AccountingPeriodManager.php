@@ -25,7 +25,6 @@ use Augias\AccountingBundle\Repository\LedgerEntryRepository;
 use Augias\CoreBundle\Entity\Company;
 use Augias\UserBundle\Entity\User;
 use Brick\Math\BigInteger;
-use Brick\Math\BigNumber;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use function array_key_first;
@@ -257,17 +256,23 @@ final class AccountingPeriodManager
             }
 
             $currencies[$entry->getCurrencyCode()] = true;
-            $tax = $entry->getTaxAmount();
 
-            if ($entry->getBook() === LedgerBook::Purchase) {
-                $purchase = $purchase->plus($entry->getAmount());
+            if ($entry->getBook() === LedgerBook::Purchase || $entry->getBook() === LedgerBook::Bills) {
+                // What was paid: the register only. The journal records bills
+                // received, and counting them too would count every purchase
+                // twice once it is paid.
+                if ($entry->getBook() === LedgerBook::Purchase) {
+                    $purchase = $purchase->plus($entry->getAmount());
+                }
 
                 // Kept apart from the tax collected, and never added to it: on
                 // a return the two are opposite signs, and one figure standing
                 // for both would be the difference between them, which is what
                 // the return is for computing.
-                if ($tax instanceof BigNumber) {
-                    $deductible = ($deductible ?? BigInteger::zero())->plus($tax);
+                $entryDeducted = $entry->deductedTax();
+
+                if ($entryDeducted instanceof BigInteger) {
+                    $deductible = ($deductible ?? BigInteger::zero())->plus($entryDeducted);
                 }
 
                 continue;

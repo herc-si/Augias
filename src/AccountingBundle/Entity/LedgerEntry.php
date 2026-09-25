@@ -395,8 +395,37 @@ class LedgerEntry
                 $this->signedShares(),
                 static fn (array $share): bool => ($share['due'] ?? null) !== TaxShare::DUE_ON_ISSUE,
             )),
-            LedgerBook::Purchase, LedgerBook::Expense => [],
+            LedgerBook::Purchase, LedgerBook::Bills, LedgerBook::Expense => [],
         };
+    }
+
+    /**
+     * The VAT this entry deducts on its own date, or null when it deducts
+     * none — the purchase side of {@see self::collectedTax()}.
+     *
+     * All of it in the purchase journal, which only records VAT deductible on
+     * a bill's date. In the purchase register, all but that: the payment of
+     * such a bill records the tax it contained, marked as already deducted.
+     */
+    public function deductedTax(): ?BigInteger
+    {
+        if (! $this->taxAmount instanceof BigNumber || ! in_array($this->book, [LedgerBook::Purchase, LedgerBook::Bills], true)) {
+            return null;
+        }
+
+        $deducted = $this->taxAmount->toBigInteger();
+
+        if ($this->book === LedgerBook::Bills) {
+            return $deducted;
+        }
+
+        foreach ($this->signedShares() as $share) {
+            if (($share['due'] ?? null) === TaxShare::DUE_ON_ISSUE) {
+                $deducted = $deducted->minus($share['tax']);
+            }
+        }
+
+        return $deducted;
     }
 
     /**
@@ -451,7 +480,7 @@ class LedgerEntry
             return $collected;
         }
 
-        foreach ($this->taxBreakdown ?? [] as $share) {
+        foreach ($this->signedShares() as $share) {
             if (($share['due'] ?? null) === TaxShare::DUE_ON_ISSUE) {
                 $collected = $collected->minus($share['tax']);
             }
