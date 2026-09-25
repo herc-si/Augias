@@ -26,6 +26,8 @@ einvoicing:
     constraint:
         provider_setting:
             unique_name: 'The name is already in use'
+        super_pdp:
+            client_secret_required: 'The SUPER PDP client secret is required.'
 install:
     database:
         driver:

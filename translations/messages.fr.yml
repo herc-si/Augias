@@ -1319,6 +1319,7 @@ einvoicing:
             build_failed: "Impossible de générer ou d'envoyer le document Factur-X. Veuillez vérifier les données de la facture et réessayer."
             client_id: 'Identifiant client (Client ID)'
             client_secret: 'Clé secrète (Client secret)'
+            client_secret_help: "Laissez vide pour conserver la clé déjà enregistrée. Elle n'est jamais réaffichée."
             display_name: 'SUPER PDP'
             needs_review: "SUPER PDP n'a pas encore vérifié l'identité de l'entreprise : son support examine le compte. Aucune facture ne peut partir d'ici là."
             verification_failed: "SUPER PDP a refusé de lier ces identifiants à l'entreprise : aucune facture ne peut partir. Contactez son support."
