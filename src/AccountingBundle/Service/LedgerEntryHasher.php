@@ -107,12 +107,24 @@ final readonly class LedgerEntryHasher
     private function breakdown(LedgerEntry $entry): string
     {
         return implode(self::SHARE_SEPARATOR, array_map(
-            static fn (array $share): string => implode(self::FIELD_SEPARATOR, [
-                $share['rate'],
-                $share['category'],
-                $share['base'],
-                $share['tax'],
-            ]),
+            static function (array $share): string {
+                $fields = [
+                    $share['rate'],
+                    $share['category'],
+                    $share['base'],
+                    $share['tax'],
+                ];
+
+                // When the tax fell due decides which return declares it, so
+                // it is committed to — appended, and only when present, for
+                // the same reason as the tax fields above: every share sealed
+                // before it existed still hashes to what it did.
+                if (isset($share['due'])) {
+                    $fields[] = $share['due'];
+                }
+
+                return implode(self::FIELD_SEPARATOR, $fields);
+            },
             $entry->getTaxBreakdown() ?? [],
         ));
     }

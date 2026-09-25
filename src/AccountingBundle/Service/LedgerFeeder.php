@@ -14,19 +14,21 @@ declare(strict_types=1);
 namespace Augias\AccountingBundle\Service;
 
 use Augias\AccountingBundle\Entity\LedgerEntry;
+use Augias\AccountingBundle\Enum\ActivityNature;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Enum\LedgerEntrySource;
 use Augias\AccountingBundle\Enum\SettlementMethod;
 use Augias\AccountingBundle\Model\AccountingProfile;
 use Augias\AccountingBundle\Model\LedgerTaxSplit;
-use Augias\AccountingBundle\Regime\RegimeRegistry;
 use Augias\AccountingBundle\Repository\LedgerEntryRepository;
 use Augias\BillBundle\Entity\BillPayment;
+use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Entity\Company;
 use Augias\InvoiceBundle\Entity\BaseInvoice;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\SettingsBundle\SystemConfig;
@@ -44,6 +46,7 @@ use Money\Money;
 use NumberFormatter;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function array_map;
 use function count;
 use function in_array;
 use function trim;
@@ -82,15 +85,24 @@ final readonly class LedgerFeeder
      */
     private const array BOOKABLE_STATUSES = [PaymentStatus::Captured];
 
+    /**
+     * The places an invoice reaches only by having been issued. A cancelled
+     * invoice is left out: under a regime that holds issued documents final
+     * it cannot be cancelled, and elsewhere it was never a sale.
+     *
+     * @var list<InvoiceStatus>
+     */
+    private const array ISSUED_INVOICE_STATUSES = [InvoiceStatus::Pending, InvoiceStatus::Overdue, InvoiceStatus::Paid];
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private AccountingProfileProvider $profileProvider,
-        private RegimeRegistry $registry,
         private AccountingPeriodManager $periodManager,
         private LedgerEntryRepository $entryRepository,
         private SystemConfig $systemConfig,
         private TranslatorInterface $translator,
         private LedgerTaxSplitter $taxSplitter,
+        private CompanyBooks $companyBooks,
     ) {
     }
 
@@ -282,11 +294,8 @@ final readonly class LedgerFeeder
         $split = $this->taxSplitter->forCreditNoteRefund($creditNote, $amount, $disbursed);
 
         if ($split instanceof LedgerTaxSplit) {
-            $entry->setTax(
-                BigInteger::of((string) $split->net)->negated(),
-                BigInteger::of((string) $split->tax)->negated(),
-                $split->toArray(),
-            );
+            $split = $split->negated();
+            $entry->setTax($split->net, $split->tax, $split->toArray());
         }
 
         return $this->persist($entry, $profile);
@@ -387,11 +396,168 @@ final readonly class LedgerFeeder
             $entry->setTax(
                 BigInteger::of((string) $net)->negated(),
                 BigInteger::of((string) $tax)->negated(),
-                $original->getTaxBreakdown() ?? [],
+                array_map(
+                    static function (array $share): array {
+                        $share['base'] = (string) BigInteger::of($share['base'])->negated();
+                        $share['tax'] = (string) BigInteger::of($share['tax'])->negated();
+
+                        return $share;
+                    },
+                    $original->getTaxBreakdown() ?? [],
+                ),
             );
         }
 
         return $this->persist($entry, $profile);
+    }
+
+    /**
+     * Files the VAT on an issued invoice's goods into the sales journal.
+     *
+     * Goods are taxed on delivery, not on payment (CGI art. 269, 2-a), and the
+     * invoice date stands in for the delivery: an invoice for goods is issued
+     * when they are delivered. So the entry is dated on the invoice, and the
+     * return for that period declares the tax whether the client has paid or
+     * not. When they do, the revenue book records the receipt with the same
+     * shares marked as already declared.
+     *
+     * Returns null when there is nothing to file: the invoice is not issued,
+     * carries no goods or no tax, the company charges no VAT or keeps no
+     * books, or the entry is already there. It runs on every invoice flushed.
+     *
+     * One limit, stated rather than guessed around: a deposit paid before the
+     * invoice makes the tax due on the day it is received (art. 269, 2-a,
+     * second sentence). Augias takes payments against issued invoices only,
+     * so that day cannot come first here.
+     *
+     * @throws MathException
+     */
+    public function recordInvoiceIssue(Invoice $invoice): ?LedgerEntry
+    {
+        if (! in_array($invoice->getStatus(), self::ISSUED_INVOICE_STATUSES, true) || ! $this->hasGoods($invoice)) {
+            return null;
+        }
+
+        $client = $invoice->getClient();
+
+        if (null === $client) {
+            return null;
+        }
+
+        return $this->recordIssue(
+            $invoice,
+            $invoice->getCompany(),
+            LedgerEntrySource::InvoiceIssued,
+            DateTimeImmutable::createFromInterface($invoice->getInvoiceDate()),
+            $invoice->getInvoiceId(),
+            $client,
+            'accounting.entry.label.invoice_issued',
+            false,
+        );
+    }
+
+    /**
+     * Takes back, in the sales journal, the VAT on the goods a credit note
+     * credits — on the day the credit note is issued, whatever happens to the
+     * money afterwards (CGI art. 272, 1). The refund or offset that follows
+     * moves money; it no longer moves this tax.
+     *
+     * @throws MathException
+     */
+    public function recordCreditNoteIssue(CreditNote $creditNote): ?LedgerEntry
+    {
+        if (! $creditNote->isIssued() || ! $this->hasGoods($creditNote)) {
+            return null;
+        }
+
+        return $this->recordIssue(
+            $creditNote,
+            $creditNote->getCompany(),
+            LedgerEntrySource::CreditNoteIssued,
+            $creditNote->getCreditNoteDate(),
+            $creditNote->getCreditNoteId(),
+            $creditNote->getClient(),
+            'accounting.entry.label.credit_note_issued',
+            true,
+        );
+    }
+
+    /**
+     * @throws MathException
+     */
+    private function recordIssue(
+        Invoice | CreditNote $document,
+        Company $company,
+        LedgerEntrySource $source,
+        DateTimeImmutable $date,
+        string $reference,
+        Client $client,
+        string $label,
+        bool $negate,
+    ): ?LedgerEntry {
+        $id = $document->getId();
+
+        if (! $id instanceof Ulid) {
+            return null;
+        }
+
+        $profile = $this->books($company, LedgerBook::Sales);
+
+        if (! $profile instanceof AccountingProfile) {
+            return null;
+        }
+
+        if ($this->entryRepository->findBySource($company, LedgerBook::Sales, $source, $id) instanceof LedgerEntry) {
+            return null;
+        }
+
+        $split = $this->taxSplitter->forIssue($document);
+
+        if (! $split instanceof LedgerTaxSplit) {
+            return null;
+        }
+
+        if ($negate) {
+            $split = $split->negated();
+        }
+
+        $entry = new LedgerEntry()
+            ->setBook(LedgerBook::Sales)
+            ->setSource($source)
+            ->setSourceId($id)
+            ->setEntryDate($date)
+            ->setLabel($this->label($label, $company))
+            ->setDocumentReference($reference)
+            // What the goods were invoiced at, tax included: the figure the
+            // client owes for them, as a sales journal records it.
+            ->setAmount($split->net->plus($split->tax))
+            ->setCurrencyCode($client->getCurrency()->getCode())
+            ->setActivityNature(ActivityNature::SaleOfGoods)
+            ->setCounterparty($client)
+            ->setTax($split->net, $split->tax, $split->toArray());
+
+        $entry->setCompany($company);
+
+        if ('' === $entry->getCounterpartyName()) {
+            $entry->setCounterpartyName((string) $client->getName());
+        }
+
+        return $this->persist($entry, $profile);
+    }
+
+    /**
+     * Whether any line sells goods — checked before anything is loaded, since
+     * this runs on every invoice flushed and most carry none.
+     */
+    private function hasGoods(Invoice | CreditNote $document): bool
+    {
+        foreach ($document->getLines() as $line) {
+            if ($line->getSupplyType()->isTaxedOnIssue() && ! $line->isDisbursement()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -500,9 +666,8 @@ final readonly class LedgerFeeder
     private function books(Company $company, LedgerBook $book): ?AccountingProfile
     {
         $profile = $this->profileProvider->forCompany($company);
-        $regime = $this->registry->forProfile($profile);
 
-        if (null === $regime || ! in_array($book, $regime->books($profile), true)) {
+        if (! in_array($book, $this->companyBooks->statutory($profile), true)) {
             return null;
         }
 

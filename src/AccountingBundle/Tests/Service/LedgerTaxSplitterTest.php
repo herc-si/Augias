@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Augias\AccountingBundle\Tests\Service;
 
 use Augias\AccountingBundle\Model\LedgerTaxSplit;
+use Augias\AccountingBundle\Model\TaxShare;
 use Augias\AccountingBundle\Service\LedgerTaxSplitter;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\InvoiceBundle\Entity\BaseInvoice;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\QuoteBundle\Entity\Quote;
@@ -254,6 +256,100 @@ final class LedgerTaxSplitterTest extends TestCase
         self::assertSame('110000', (string) $split->net);
     }
 
+    /**
+     * A payment for goods did contain their tax, so it records it — marked as
+     * due on issue, so that the return does not take it a second time.
+     */
+    public function testAPaymentMarksTheGoodsSharesAsDueOnIssue(): void
+    {
+        $split = $this->splitter(
+            subTotal: 200_000,
+            lines: [
+                [100_000, [['20.0000', 20_000]], SupplyType::Goods],
+                [100_000, [['20.0000', 20_000]], SupplyType::Services],
+            ],
+        )->forInvoicePayment($this->invoice(240_000), BigInteger::of(240_000));
+
+        self::assertInstanceOf(LedgerTaxSplit::class, $split);
+        self::assertSame('40000', (string) $split->tax);
+        self::assertSame(
+            [['100000', '20000', true], ['100000', '20000', false]],
+            array_map(
+                static fn (TaxShare $share): array => [(string) $share->base, (string) $share->tax, $share->dueOnIssue],
+                $split->shares,
+            ),
+        );
+        self::assertSame(TaxShare::DUE_ON_ISSUE, $split->toArray()[0]['due'] ?? null);
+        self::assertArrayNotHasKey('due', $split->toArray()[1]);
+    }
+
+    /**
+     * On issue, the goods' tax is due in full — nothing has been paid and
+     * nothing needs to be — and the services' is not due at all.
+     */
+    public function testTheIssueCarriesTheWholeGoodsTaxAndNothingElse(): void
+    {
+        $split = $this->splitter(
+            subTotal: 200_000,
+            lines: [
+                [100_000, [['20.0000', 20_000]], SupplyType::Goods],
+                [100_000, [['5.5000', 5_500]], SupplyType::Services],
+            ],
+        )->forIssue($this->invoice(225_500));
+
+        self::assertInstanceOf(LedgerTaxSplit::class, $split);
+        self::assertSame('100000', (string) $split->net);
+        self::assertSame('20000', (string) $split->tax);
+        self::assertCount(1, $split->shares);
+        self::assertSame('20.0000', $split->shares[0]->rate);
+        self::assertTrue($split->shares[0]->dueOnIssue);
+    }
+
+    public function testADocumentWithoutGoodsHasNothingDueOnIssue(): void
+    {
+        $split = $this->splitter(
+            subTotal: 100_000,
+            lines: [[100_000, [['20.0000', 20_000]]]],
+        )->forIssue($this->invoice(120_000));
+
+        self::assertNull($split);
+    }
+
+    /**
+     * A document-level rate reaches goods and services alike, so its tax is
+     * shared between them in proportion — and the goods part falls due with
+     * the goods.
+     */
+    public function testADocumentLevelRateIsSharedBetweenGoodsAndServices(): void
+    {
+        $splitter = $this->splitter(
+            subTotal: 400_000,
+            lines: [
+                [300_000, [], SupplyType::Goods],
+                [100_000, [], SupplyType::Services],
+            ],
+            invoiceLevel: [['20.0000', 80_000]],
+        );
+
+        $issue = $splitter->forIssue($this->invoice(480_000));
+
+        self::assertInstanceOf(LedgerTaxSplit::class, $issue);
+        self::assertSame('300000', (string) $issue->net);
+        self::assertSame('60000', (string) $issue->tax);
+
+        $payment = $splitter->forInvoicePayment($this->invoice(480_000), BigInteger::of(480_000));
+
+        self::assertInstanceOf(LedgerTaxSplit::class, $payment);
+        self::assertSame('80000', (string) $payment->tax);
+        self::assertSame(
+            [['300000', '60000', true], ['100000', '20000', false]],
+            array_map(
+                static fn (TaxShare $share): array => [(string) $share->base, (string) $share->tax, $share->dueOnIssue],
+                $payment->shares,
+            ),
+        );
+    }
+
     private static function tax(float $rate, TaxCategory $category = TaxCategory::Standard): Tax
     {
         return new Tax()
@@ -267,7 +363,7 @@ final class LedgerTaxSplitterTest extends TestCase
      * The document-side cases build a calculator result to read from;
      * forManualEntry() reads nothing, so it takes the defaults.
      *
-     * @param list<array{0: int, 1: list<array{0: string, 1: int, 2?: TaxCategory, 3?: TaxDirection}>}> $lines
+     * @param list<array{0: int, 1: list<array{0: string, 1: int, 2?: TaxCategory, 3?: TaxDirection}>, 2?: SupplyType}> $lines
      * @param list<array{0: string, 1: int, 2?: TaxCategory, 3?: TaxDirection}>                         $invoiceLevel
      */
     private function splitter(int $subTotal = 0, array $lines = [], array $invoiceLevel = []): LedgerTaxSplitter
@@ -275,7 +371,8 @@ final class LedgerTaxSplitterTest extends TestCase
         $breakdowns = [];
         $lineTax = BigDecimal::zero();
 
-        foreach ($lines as [$net, $taxes]) {
+        foreach ($lines as $line) {
+            [$net, $taxes] = $line;
             $rows = [];
 
             foreach ($taxes as $tax) {
@@ -288,6 +385,7 @@ final class LedgerTaxSplitterTest extends TestCase
                 BigDecimal::of($net),
                 BigDecimal::zero(),
                 $rows,
+                $line[2] ?? SupplyType::Services,
             );
         }
 

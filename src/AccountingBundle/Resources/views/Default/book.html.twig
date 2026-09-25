@@ -20,7 +20,10 @@
      # quiet link, for money that arrived outside the application — cash, a
      # transfer never recorded here — without which a livre des recettes could
      # not be complete. #}
-    {% if book.value == 'revenue' %}
+    {% if not book.acceptsManualEntries %}
+        {# The sales journal mirrors issued documents one for one: there is
+         # nothing to write in it by hand, so nothing is offered. #}
+    {% elseif book.value == 'revenue' %}
         <a class="btn btn-link text-secondary" href="{{ path('_accounting_entry_add', {'book': book.value}) }}">
             {{ 'accounting.entry.add_revenue_manual'|trans }}
         </a>
@@ -35,6 +38,8 @@
 {% block content %}
     {% if book.value == 'revenue' %}
         <p class="text-secondary">{{ 'accounting.book.revenue_is_automatic'|trans }}</p>
+    {% elseif book.value == 'sales' %}
+        <p class="text-secondary">{{ 'accounting.book.sales_notice'|trans }}</p>
     {% elseif book.value == 'expense' %}
         <p class="text-secondary">{{ 'accounting.book.expense_notice'|trans }}</p>
     {% endif %}

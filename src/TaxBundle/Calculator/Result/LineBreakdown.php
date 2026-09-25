@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\TaxBundle\Calculator\Result;
 
+use Augias\CoreBundle\Enum\SupplyType;
 use Brick\Math\BigDecimal;
 
 /**
@@ -34,6 +35,11 @@ final readonly class LineBreakdown
         public BigDecimal $lineTotal,
         public BigDecimal $lineTax,
         public array $taxRows,
+        /**
+         * Carried from the line so that whoever reads the tax off a document
+         * can tell which part falls due on issue and which on payment.
+         */
+        public SupplyType $supplyType = SupplyType::Services,
     ) {
     }
 }

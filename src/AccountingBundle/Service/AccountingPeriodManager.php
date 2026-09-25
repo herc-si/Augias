@@ -273,18 +273,31 @@ final class AccountingPeriodManager
                 continue;
             }
 
-            if ($tax instanceof BigNumber) {
-                $collected = ($collected ?? BigInteger::zero())->plus($tax);
+            $entryCollected = $entry->collectedTax();
+
+            if ($entryCollected instanceof BigInteger) {
+                $collected = ($collected ?? BigInteger::zero())->plus($entryCollected);
             }
 
             // Frozen per rate, because that is how tax collected is declared.
             // Left out entirely for a period whose entries carried none, so a
             // company outside the scope of VAT gets no zero to explain.
-            foreach ($entry->getTaxBreakdown() ?? [] as $share) {
+            //
+            // Only what fell due in the period: the goods on the invoices
+            // issued in it, and the rest of what was received — never the
+            // goods' tax a second time when their invoice is paid.
+            foreach ($entry->collectedShares() as $share) {
                 $key = $share['rate'] . '|' . $share['category'];
                 $taxByRate[$key] ??= ['base' => BigInteger::zero(), 'tax' => BigInteger::zero()];
                 $taxByRate[$key]['base'] = $taxByRate[$key]['base']->plus($share['base']);
                 $taxByRate[$key]['tax'] = $taxByRate[$key]['tax']->plus($share['tax']);
+            }
+
+            // The sales journal records when tax fell due, not money received:
+            // its sales reach the revenue here when they are paid, like any
+            // other, and counting them now as well would count them twice.
+            if ($entry->getBook() === LedgerBook::Sales) {
+                continue;
             }
 
             $nature = $entry->getActivityNature();

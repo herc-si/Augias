@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\InvoiceBundle\Form\Type;
 
 use Augias\CoreBundle\Form\Transformer\QuantityTransformer;
+use Augias\CoreBundle\Form\Type\SupplyTypeType;
 use Augias\InvoiceBundle\Entity\RecurringInvoiceLine;
 use Augias\TaxBundle\Form\Type\LineTaxType;
 use Augias\TaxBundle\Service\TaxAvailability;
@@ -82,6 +83,9 @@ class RecurringInvoiceLineType extends AbstractType
             ->addViewTransformer(new QuantityTransformer());
 
         if ($this->taxAvailability->isOffered()) {
+            // Carried onto every invoice the schedule raises.
+            $builder->add('supplyType', SupplyTypeType::class);
+
             $builder->add(
                 'taxes',
                 LiveCollectionType::class,

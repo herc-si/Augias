@@ -42,6 +42,8 @@ accounting:
         purchase: 'Registre des achats'
         revenue_is_automatic: "Chaque paiement encaissé dans l'application s'inscrit ici tout seul."
         revenue: 'Livre des recettes'
+        sales: 'Journal des ventes'
+        sales_notice: "La TVA sur les biens est due à la livraison, pas au paiement. Chaque facture émise avec des biens s'inscrit ici à sa date, chaque avoir qui en reprend aussi. Ce journal alimente la déclaration de TVA ; le chiffre d'affaires, lui, reste ce qui est encaissé, au livre des recettes."
     books:
         title: Livres comptables
     declaration:
@@ -149,12 +151,16 @@ accounting:
             tax: TVA
         label:
             bill_payment: 'Règlement fournisseur'
+            credit_note_issued: 'Avoir sur livraison de biens'
+            invoice_issued: 'Facture de livraison de biens'
             invoice_payment: 'Encaissement de facture'
             invoice_payment_with_disbursement: 'Encaissement de facture, hors %disbursed% de débours'
             invoice_refund: 'Remboursement client'
             invoice_refund_with_disbursement: 'Remboursement client, hors %disbursed% de débours'
         source:
             bill_payment: 'Paiement fournisseur'
+            credit_note_issued: 'Avoir émis'
+            invoice_issued: 'Facture émise'
             invoice_payment: 'Encaissement de facture'
             invoice_refund: 'Remboursement client'
             manual: 'Saisie manuelle'
@@ -382,6 +388,9 @@ billing:
     due_date: 'Date d''échéance'
     notes_help: 'Les notes ne seront pas visibles par le client'
     subtotal: 'Sous-total'
+    supply_type:
+        goods: 'Bien'
+        services: 'Service'
     tax: Taxe
     total: Total
     withholding: 'Retenues et ajustements'
@@ -1390,6 +1399,7 @@ form:
         direction: "Sens"
         disbursement: "Débours"
         disbursement.help: "Somme avancée au nom de ce client, refacturée à l'euro près"
+        supply_type: "Nature"
         domain: "Domaine"
         eid: "EID"
         email: "E-mail"

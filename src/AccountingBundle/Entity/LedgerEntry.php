@@ -17,6 +17,7 @@ use Augias\AccountingBundle\Enum\ActivityNature;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Enum\LedgerEntrySource;
 use Augias\AccountingBundle\Enum\SettlementMethod;
+use Augias\AccountingBundle\Model\TaxShare;
 use Augias\AccountingBundle\Repository\LedgerEntryRepository;
 use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Doctrine\Type\BigIntegerType;
@@ -35,6 +36,10 @@ use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Validator\Constraints as Assert;
+use function array_filter;
+use function array_map;
+use function array_values;
+use function in_array;
 
 /**
  * One line of one of the two statutory books — a receipt in the livre des
@@ -155,7 +160,7 @@ class LedgerEntry
      * written. Entries become immutable once sealed, which is why this is
      * stored rather than derived later.
      *
-     * @var list<array{rate: string, category: string, base: string, tax: string}>|null
+     * @var list<array{rate: string, category: string, base: string, tax: string, due?: string}>|null
      */
     #[ORM\Column(name: 'tax_breakdown', type: Types::JSON, nullable: true)]
     private ?array $taxBreakdown = null;
@@ -361,11 +366,98 @@ class LedgerEntry
     }
 
     /**
-     * @return list<array{rate: string, category: string, base: string, tax: string}>|null
+     * @return list<array{rate: string, category: string, base: string, tax: string, due?: string}>|null
      */
     public function getTaxBreakdown(): ?array
     {
         return $this->taxBreakdown;
+    }
+
+    /**
+     * The shares of this entry's tax that fell due on its own date — the ones
+     * a VAT return for that date collects.
+     *
+     * All of them in the sales journal, which only ever records tax that fell
+     * due on issue. In the revenue book, all but those: a payment for goods
+     * did contain their tax, and records it, but the return took it from the
+     * sales journal on the day the invoice went out. Collecting it again when
+     * the money arrived would declare it twice.
+     *
+     * Empty for a purchase or an expense, whose tax is not collected.
+     *
+     * @return list<array{rate: string, category: string, base: string, tax: string, due?: string}>
+     */
+    public function collectedShares(): array
+    {
+        return match ($this->book) {
+            LedgerBook::Sales => $this->signedShares(),
+            LedgerBook::Revenue => array_values(array_filter(
+                $this->signedShares(),
+                static fn (array $share): bool => ($share['due'] ?? null) !== TaxShare::DUE_ON_ISSUE,
+            )),
+            LedgerBook::Purchase, LedgerBook::Expense => [],
+        };
+    }
+
+    /**
+     * The breakdown, with every share carrying the sign of the entry.
+     *
+     * Money given back used to be written with a negative amount and tax but
+     * the shares of the payment it reversed, still positive — and a return
+     * built from the shares then counted a refund's tax as collected, twice
+     * over. New entries are written signed; this reads the older ones the way
+     * they were meant, without touching what was stored or sealed.
+     *
+     * @return list<array{rate: string, category: string, base: string, tax: string, due?: string}>
+     */
+    private function signedShares(): array
+    {
+        $shares = $this->taxBreakdown ?? [];
+
+        if (! $this->amount->isNegative()) {
+            return $shares;
+        }
+
+        return array_map(
+            static function (array $share): array {
+                if (BigInteger::of($share['base'])->isPositive() || BigInteger::of($share['tax'])->isPositive()) {
+                    $share['base'] = (string) BigInteger::of($share['base'])->negated();
+                    $share['tax'] = (string) BigInteger::of($share['tax'])->negated();
+                }
+
+                return $share;
+            },
+            $shares,
+        );
+    }
+
+    /**
+     * The tax this entry collects on its own date, or null when it records
+     * none at all — see {@see self::collectedShares()} for which part that is.
+     *
+     * Worked out from the tax amount rather than summed from the shares, so
+     * that a revenue entry recorded before shares carried a due date reads
+     * exactly as it always has.
+     */
+    public function collectedTax(): ?BigInteger
+    {
+        if (! $this->taxAmount instanceof BigNumber || ! in_array($this->book, [LedgerBook::Revenue, LedgerBook::Sales], true)) {
+            return null;
+        }
+
+        $collected = $this->taxAmount->toBigInteger();
+
+        if ($this->book === LedgerBook::Sales) {
+            return $collected;
+        }
+
+        foreach ($this->taxBreakdown ?? [] as $share) {
+            if (($share['due'] ?? null) === TaxShare::DUE_ON_ISSUE) {
+                $collected = $collected->minus($share['tax']);
+            }
+        }
+
+        return $collected;
     }
 
     /**
@@ -383,7 +475,7 @@ class LedgerEntry
      * separately would allow a net without its tax, which no reader could make
      * sense of.
      *
-     * @param list<array{rate: string, category: string, base: string, tax: string}> $breakdown
+     * @param list<array{rate: string, category: string, base: string, tax: string, due?: string}> $breakdown
      */
     public function setTax(BigNumber $net, BigNumber $tax, array $breakdown): self
     {

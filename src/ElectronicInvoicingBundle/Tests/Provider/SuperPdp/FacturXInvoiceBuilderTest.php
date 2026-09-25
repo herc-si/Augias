@@ -15,6 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdp;
 
 use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\FacturXInvoiceBuilder;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -203,6 +204,44 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         self::assertStringContainsString('<ram:TaxTotalAmount currencyID="EUR">80.00</ram:TaxTotalAmount>', $xml);
         self::assertStringContainsString('<ram:GrandTotalAmount>480.00</ram:GrandTotalAmount>', $xml);
         self::assertStringContainsString('<ram:DuePayableAmount>480.00</ram:DuePayableAmount>', $xml);
+    }
+
+    /**
+     * BT-23 follows the lines: goods alone are "B1". A single service keeps
+     * the invoice on "S1" — "M1" would be exact for a mixed one, but SUPER PDP
+     * refuses it on an international flow.
+     */
+    public function testTheBillingFrameworkFollowsWhatTheLinesSell(): void
+    {
+        self::assertStringContainsString('<ram:ID>B1</ram:ID>', $this->xmlFor(SupplyType::Goods));
+        self::assertStringContainsString('<ram:ID>S1</ram:ID>', $this->xmlFor(SupplyType::Goods, SupplyType::Services));
+    }
+
+    private function xmlFor(SupplyType ...$types): string
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+
+        $invoice = new Invoice();
+        $invoice->setCompany($this->company);
+        $invoice->setClient($client);
+        $invoice->setInvoiceId('INV-BT23-' . count($types));
+        $invoice->setStatus(InvoiceStatus::Draft);
+
+        foreach ($types as $type) {
+            $line = new Line();
+            $line->setDescription($type->value)->setPrice(10000)->setQty(1)->setSupplyType($type)->updateTotal();
+            $vat = new LineTax();
+            $vat->setNameSnapshot('VAT');
+            $vat->setRateSnapshot('20.0000');
+            $line->addTax($vat);
+            $invoice->addLine($line);
+        }
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($invoice);
+        $entityManager->flush();
+
+        return self::getContainer()->get(FacturXInvoiceBuilder::class)->buildDocument($invoice)->getContent();
     }
 
     /**

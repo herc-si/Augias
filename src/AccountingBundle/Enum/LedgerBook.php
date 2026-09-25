@@ -29,6 +29,22 @@ enum LedgerBook: string
 {
     case Revenue = 'revenue';
 
+    /**
+     * The VAT that fell due when a document was issued rather than when it
+     * was paid: the goods on every invoice, taken back by every credit note.
+     *
+     * Kept apart from the revenue book because it records a different event.
+     * The revenue book is what came in, which is what a micro-entrepreneur's
+     * turnover is and what VAT on services follows. VAT on goods falls due on
+     * delivery (CGI art. 269, 2-a), paid or not, and a return that waited for
+     * the money declared it late. Nothing here is turnover: the sale reaches
+     * the revenue book when it is paid, as it always has.
+     *
+     * Written by the application alone — an entry here mirrors an issued
+     * document, and a hand-written one would have no document to mirror.
+     */
+    case Sales = 'sales';
+
     case Purchase = 'purchase';
 
     /**
@@ -47,6 +63,7 @@ enum LedgerBook: string
     {
         return match ($this) {
             self::Revenue => 'Revenue Book',
+            self::Sales => 'Sales Journal',
             self::Purchase => 'Purchase Register',
             self::Expense => 'Expenses',
         };
@@ -56,6 +73,7 @@ enum LedgerBook: string
     {
         return match ($this) {
             self::Revenue => 'accounting.book.revenue',
+            self::Sales => 'accounting.book.sales',
             self::Purchase => 'accounting.book.purchase',
             self::Expense => 'accounting.book.expense',
         };
@@ -71,6 +89,15 @@ enum LedgerBook: string
     }
 
     /**
+     * Whether the person can write in this book by hand. The sales journal
+     * mirrors issued documents one for one, so it cannot.
+     */
+    public function acceptsManualEntries(): bool
+    {
+        return $this !== self::Sales;
+    }
+
+    /**
      * What the person is about to write down, in their words rather than an
      * accountant's.
      *
@@ -82,6 +109,7 @@ enum LedgerBook: string
     {
         return match ($this) {
             self::Revenue => 'accounting.entry.add_revenue',
+            self::Sales => 'accounting.entry.add_revenue',
             self::Purchase => 'accounting.entry.add_purchase',
             self::Expense => 'accounting.entry.add_expense',
         };

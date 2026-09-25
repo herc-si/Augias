@@ -26,6 +26,7 @@ use Augias\ApiBundle\State\Processor\QuoteLinePersistProcessor;
 use Augias\CoreBundle\Doctrine\Type\BigIntegerType;
 use Augias\CoreBundle\Doctrine\Type\QuantityType;
 use Augias\CoreBundle\Entity\LineInterface;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
 use Augias\QuoteBundle\Repository\LineRepository;
@@ -194,6 +195,14 @@ class Line implements LineInterface, Stringable
     )]
     private BigNumber $total;
 
+    /**
+     * Goods or a service, carried onto the invoice the quote becomes — where
+     * it decides when the VAT falls due. See {@see SupplyType}.
+     */
+    #[ORM\Column(name: 'supply_type', type: Types::STRING, length: 10, enumType: SupplyType::class, options: ['default' => 'services'])]
+    #[Groups(['quote_api:read', 'quote_api:write'])]
+    private SupplyType $supplyType = SupplyType::Services;
+
     public function __construct()
     {
         $this->total = BigDecimal::zero();
@@ -290,6 +299,18 @@ class Line implements LineInterface, Stringable
     public function isDisbursement(): bool
     {
         return false;
+    }
+
+    public function getSupplyType(): SupplyType
+    {
+        return $this->supplyType;
+    }
+
+    public function setSupplyType(SupplyType $supplyType): static
+    {
+        $this->supplyType = $supplyType;
+
+        return $this;
     }
 
     /**

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\TaxBundle\Calculator;
 
 use Augias\CoreBundle\Entity\LineInterface;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\TaxBundle\Calculator\Result\LineBreakdown;
 use Augias\TaxBundle\Calculator\Result\TaxSummaryRow;
 use Augias\TaxBundle\Entity\LineTax;
@@ -68,7 +69,9 @@ final class LineTaxCalculator
         // validator so that a line marked after its rates were chosen — or one
         // that arrived through the API — cannot produce tax either.
         if ($line->isDisbursement()) {
-            return new LineBreakdown($gross, $gross, BigDecimal::zero(), []);
+            // A disbursement sells nothing, whatever the line says: no tax, and so
+            // no question of when it falls due.
+            return new LineBreakdown($gross, $gross, BigDecimal::zero(), [], SupplyType::Services);
         }
 
         $subtotal = $gross;
@@ -122,7 +125,7 @@ final class LineTaxCalculator
             $taxRows[] = $this->summary($lineTax, $amount);
         }
 
-        return new LineBreakdown($subtotal, $lineTotal, $totalTax, $taxRows);
+        return new LineBreakdown($subtotal, $lineTotal, $totalTax, $taxRows, $line->getSupplyType());
     }
 
     /**

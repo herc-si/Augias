@@ -24,6 +24,7 @@ use Augias\AccountingBundle\Regime\RegimeRegistry;
 use Augias\AccountingBundle\Repository\AccountingPeriodRepository;
 use Augias\AccountingBundle\Repository\ThresholdAlertRepository;
 use Augias\AccountingBundle\Service\AccountingProfileProvider;
+use Augias\AccountingBundle\Service\CompanyBooks;
 use Augias\AccountingBundle\Service\CurrentCompany;
 use Augias\AccountingBundle\Service\LedgerLockDate;
 use Augias\AccountingBundle\Service\LimitUsageCalculator;
@@ -55,6 +56,7 @@ final readonly class Index
         private AccountingPeriodRepository $periodRepository,
         private ThresholdAlertRepository $alertRepository,
         private LedgerLockDate $lockDate,
+        private CompanyBooks $books,
     ) {
     }
 
@@ -101,7 +103,7 @@ final readonly class Index
         return [
             'profile' => $profile,
             'regime' => $regime,
-            'books' => $regime->books($profile),
+            'books' => $this->books->statutory($profile),
             'turnover' => $turnover,
             'limits' => $this->limitUsageCalculator->forTurnover($regime, $profile, $turnover, $today),
             'period' => $period = $this->periodRepository->findForDate($company, $profile->declarationPeriodicity, $today, $profile->fiscalYearStartMonth),

@@ -53,6 +53,7 @@ final class AccountingMenuTest extends KernelTestCase
     {
         $this->selectCompany();
         $this->configureRegime('fr_micro', ActivityNature::ServicesBnc);
+        $this->setVatExempt(true);
 
         self::assertSame(
             [
@@ -73,6 +74,28 @@ final class AccountingMenuTest extends KernelTestCase
         $this->configureRegime('fr_micro', ActivityNature::SaleOfGoods);
 
         self::assertContains('accounting.book.purchase', array_keys($this->accounting()->getChildren()));
+    }
+
+    /**
+     * VAT on goods falls due when the invoice goes out, and the sales journal
+     * is where that is recorded — so it comes with being liable to VAT, micro
+     * or not, whatever the main activity.
+     */
+    public function testChargingVatAddsTheSalesJournal(): void
+    {
+        $this->selectCompany();
+        $this->configureRegime('fr_micro', ActivityNature::ServicesBnc);
+        $this->setVatExempt(false);
+
+        self::assertContains('accounting.book.sales', array_keys($this->accounting()->getChildren()));
+    }
+
+    private function setVatExempt(bool $exempt): void
+    {
+        $config = self::getContainer()->get(SystemConfig::class);
+        self::assertInstanceOf(SystemConfig::class, $config);
+
+        $config->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, $exempt ? '1' : '0');
     }
 
     private function accounting(): ItemInterface

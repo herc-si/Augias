@@ -130,6 +130,7 @@ final readonly class InvoiceCloner
             // and a clone that quietly turned it into turnover would be the
             // easiest way to lose the distinction.
             $invoiceLine->setDisbursement($line->isDisbursement());
+            $invoiceLine->setSupplyType($line->getSupplyType());
 
             $invoiceLine->getTaxes()->clear();
             foreach ($line->getTaxes() as $sourceLineTax) {
