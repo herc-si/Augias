@@ -23,6 +23,15 @@ client:
         subject: 'Un nouveau client a été créé'
         view_client: 'Voir le client'
 einvoicing:
+    notification_disputed:
+        alert: 'Facture électronique en litige'
+        client: Client
+        heading: 'Facture électronique en litige'
+        invoice_number: 'Numéro de facture'
+        message: "Votre client conteste une partie d'une facture envoyée par la plateforme de facturation électronique. Réglez le désaccord avec lui, par exemple par un avoir ou une facture rectificative : il pourra ensuite l'accepter."
+        note: 'Précisions du client'
+        reason: Motif
+        view_invoice: 'Voir la facture'
     notification_rejected:
         alert: 'Facture électronique rejetée'
         client: Client

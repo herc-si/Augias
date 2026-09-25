@@ -7,6 +7,8 @@
  # with this source code in the file LICENSE.
  #}
 
+{# Plain text: nothing here is HTML, and a French apostrophe must not come out as &#039;. #}
+{% autoescape false %}
 {{ 'einvoicing.notification_rejected.heading'|trans({}, 'email') }}
 {{ '='|repeat(60) }}
 
@@ -25,3 +27,4 @@
 
 {{ '-'|repeat(60) }}
 {{ 'einvoicing.notification_rejected.view_invoice'|trans({}, 'email') }}: {{ url('_invoices_view', {'id': invoice.id}) }}
+{% endautoescape %}

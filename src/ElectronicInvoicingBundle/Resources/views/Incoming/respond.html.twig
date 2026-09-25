@@ -35,6 +35,10 @@
             {% endif %}
             <a href="{{ path('_einvoicing_incoming') }}" class="btn btn-ghost">{{ 'action.back'|trans }}</a>
         {% else %}
+            {% if receipt.response %}
+                {# Disputed: still open, for an acceptance or a refusal. #}
+                <twig:Ui:Alert type="warning" icon="tabler:alert-triangle">{{ 'einvoicing.response.disputed_help'|trans }}</twig:Ui:Alert>
+            {% endif %}
             <p class="text-secondary">{{ 'einvoicing.response.help'|trans }}</p>
             {{ form_start(form) }}
                 {{ form_errors(form) }}

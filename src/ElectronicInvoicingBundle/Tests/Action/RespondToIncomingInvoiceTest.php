@@ -18,6 +18,7 @@ use Augias\ElectronicInvoicingBundle\Action\RespondToIncomingInvoice;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
+use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\UserBundle\Entity\User;
@@ -105,6 +106,32 @@ final class RespondToIncomingInvoiceTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertCount(0, $crawler->filter('form[name="einvoicing_receipt_response"]'));
+    }
+
+    /**
+     * Once disputed, the page offers what ends the dispute: acceptance or
+     * refusal, not a second dispute.
+     */
+    public function testADisputedInvoiceCanStillBeAnswered(): void
+    {
+        $receipt = $this->receipt();
+
+        $crawler = $this->client->request('GET', '/electronic-invoicing/incoming/respond/' . $receipt->getId());
+        $form = $crawler->filter('form[name="einvoicing_receipt_response"]')->form([
+            'einvoicing_receipt_response[response]' => ReceiptResponse::Disputed->value,
+            'einvoicing_receipt_response[reason]' => ResponseReason::Quantity->value,
+        ]);
+        $this->client->submit($form);
+
+        self::assertResponseRedirects('/electronic-invoicing/incoming');
+        self::assertSame(ReceiptResponse::Disputed, $this->reload($receipt)->getResponse());
+
+        $crawler = $this->client->request('GET', '/electronic-invoicing/incoming/respond/' . $receipt->getId());
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('input[name="einvoicing_receipt_response[response]"][value="fr:205"]'));
+        self::assertCount(1, $crawler->filter('input[name="einvoicing_receipt_response[response]"][value="fr:210"]'));
+        self::assertCount(0, $crawler->filter('input[name="einvoicing_receipt_response[response]"][value="fr:207"]'));
     }
 
     private function receipt(): ElectronicInvoiceReceipt

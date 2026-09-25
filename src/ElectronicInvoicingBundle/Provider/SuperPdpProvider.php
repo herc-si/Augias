@@ -18,7 +18,7 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
-use Augias\ElectronicInvoicingBundle\Enum\RefusalReason;
+use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use Augias\ElectronicInvoicingBundle\Form\Type\Provider\SuperPdpConfigType;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\ElectronicAddressResolver;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\FacturXInvoiceBuilder;
@@ -79,6 +79,12 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      * codes that mean SUPER PDP itself will not process the invoice any further.
      */
     public const array REJECTED_STATUS_CODES = ['fr:210', 'fr:213', 'fr:501', 'api:rejected', 'api:invalid'];
+
+    /**
+     * fr:207 Disputed — the client disagrees with part of the invoice. Not
+     * terminal: an acceptance or a refusal follows once it is settled.
+     */
+    public const string DISPUTED_STATUS_CODE = 'fr:207';
 
     public function __construct(
         private FacturXInvoiceBuilder $documentBuilder,
@@ -270,6 +276,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
             $statusCode === null => ElectronicInvoiceProcessingStatus::Pending,
             in_array($statusCode, self::REJECTED_STATUS_CODES, true) => ElectronicInvoiceProcessingStatus::Rejected,
             in_array($statusCode, self::ACCEPTED_STATUS_CODES, true) => ElectronicInvoiceProcessingStatus::Accepted,
+            self::DISPUTED_STATUS_CODE === $statusCode => ElectronicInvoiceProcessingStatus::Disputed,
             default => ElectronicInvoiceProcessingStatus::Pending,
         };
     }
@@ -364,16 +371,28 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      */
     public static function latestStatusCode(mixed $events): ?string
     {
+        $statusCode = self::latestEvent($events)['status_code'] ?? null;
+
+        return is_string($statusCode) ? $statusCode : null;
+    }
+
+    /**
+     * The most recent event itself, ordered as {@see latestStatusCode()}
+     * explains — for what came with the status, such as a dispute's reason.
+     *
+     * @return array<mixed>|null
+     */
+    public static function latestEvent(mixed $events): ?array
+    {
         if (! is_array($events) || $events === []) {
             return null;
         }
 
-        usort($events, static fn (mixed $a, mixed $b): int => ($a['id'] ?? 0) <=> ($b['id'] ?? 0));
+        usort($events, static fn (mixed $a, mixed $b): int => (is_array($a) ? $a['id'] ?? 0 : 0) <=> (is_array($b) ? $b['id'] ?? 0 : 0));
 
         $latest = $events[array_key_last($events)];
-        $statusCode = is_array($latest) ? $latest['status_code'] ?? null : null;
 
-        return is_string($statusCode) ? $statusCode : null;
+        return is_array($latest) ? $latest : null;
     }
 
     /**
@@ -406,7 +425,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      *
      * @throws SuperPdpApiException
      */
-    public function respond(array $config, string $externalReference, ReceiptResponse $response, ?RefusalReason $reason = null, ?string $comment = null): void
+    public function respond(array $config, string $externalReference, ReceiptResponse $response, ?ResponseReason $reason = null, ?string $comment = null): void
     {
         $credentials = $this->credentials($config);
 

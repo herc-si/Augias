@@ -19,7 +19,7 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
-use Augias\ElectronicInvoicingBundle\Enum\RefusalReason;
+use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdpProvider;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -215,6 +215,7 @@ final class SuperPdpProviderTest extends KernelTestCase
         yield 'fr:206 Partly accepted' => ['fr:206', ElectronicInvoiceProcessingStatus::Accepted];
         yield 'fr:209 Completed' => ['fr:209', ElectronicInvoiceProcessingStatus::Accepted];
         yield 'fr:212 Payment received' => ['fr:212', ElectronicInvoiceProcessingStatus::Accepted];
+        yield 'fr:207 Disputed' => ['fr:207', ElectronicInvoiceProcessingStatus::Disputed];
         yield 'fr:210 Refused' => ['fr:210', ElectronicInvoiceProcessingStatus::Rejected];
         yield 'fr:213 Rejected' => ['fr:213', ElectronicInvoiceProcessingStatus::Rejected];
         yield 'fr:501 Inadmissible' => ['fr:501', ElectronicInvoiceProcessingStatus::Rejected];
@@ -341,7 +342,7 @@ final class SuperPdpProviderTest extends KernelTestCase
             ['client_id' => 'id', 'client_secret' => 'secret'],
             '746879',
             ReceiptResponse::Refused,
-            RefusalReason::VatRate,
+            ResponseReason::VatRate,
             'Taux de 5,5 % attendu',
         );
 

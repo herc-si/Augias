@@ -1281,37 +1281,56 @@ einvoicing:
             vat_on_debits: 'The option for VAT on debits differs between Augias and SUPER PDP. It decides which payments SUPER PDP files in e-reporting: align it in your SUPER PDP account.'
             vat_regime_missing: 'No VAT regime is set at SUPER PDP. It sets the e-reporting schedule: fill it in in your SUPER PDP account.'
             vat_regime_mismatch: 'The VAT regime set at SUPER PDP does not match the VAT filing rhythm chosen in Augias.'
-    refusal_reason:
+    response_reason:
         ADR_ERR: 'Wrong e-invoicing address'
+        ART_ERR: 'Wrong item'
+        AUTRE: 'Other reason'
         CALCUL_ERR: 'Calculation error'
         CMD_ERR: 'Purchase order number wrong or missing'
+        CODE_ROUTAGE_ERR: 'Wrong routing code'
         CONTRAT_TERM: 'Contract ended'
+        COORD_BANC_ERR: 'Wrong bank details'
         DEST_ERR: 'Wrong recipient'
         DOUBLE_FACT: 'Billed twice'
         DOUBLON: 'Duplicate invoice'
         EMMET_INC: 'Unknown issuer'
+        LIVR_INCOMP: 'Incomplete delivery'
+        MODPAI_ERR: 'Wrong payment method'
         MONTANTTOTAL_ERR: 'Wrong total amount'
         NON_CONFORME: 'Legal mention missing'
+        PU_ERR: 'Wrong unit price'
+        QTE_ERR: 'Wrong quantity'
+        QUALITE_ERR: 'Quality not as agreed'
         REF_CT_ABSENT: 'Contract reference missing'
+        REF_ERR: 'Wrong reference'
+        REM_ERR: 'Wrong discount'
+        SIRET_ERR: 'Wrong SIRET'
         TRANSAC_INC: 'Unknown transaction'
         TX_TVA_ERR: 'Wrong VAT rate'
     response:
         accepted: 'Accepted'
-        action: 'Accept or refuse'
+        action: 'Answer'
         already_answered: 'This invoice has already been answered.'
         already_answered_as: 'Answer already sent to the supplier: %response%.'
+        disputed: 'Disputed'
+        disputed_help: 'This invoice is disputed. Once the disagreement is settled with the supplier, accept or refuse it.'
         flash:
             accepted: 'Invoice accepted: the supplier has been told.'
+            disputed: 'Invoice disputed: the supplier has been told, with your reason.'
             refused: 'Invoice refused: the supplier has been told, with your reason.'
         form:
             comment: 'Details for the supplier (optional)'
-            reason: 'Reason for refusing'
-            reason_help: 'Required to refuse: a normalised code, which the platform insists on.'
+            reason: 'Reason'
+            reason_group:
+                any: 'Refusal or dispute'
+                dispute: 'Dispute only'
+            reason_help: 'Required to dispute or refuse: a normalised code, which the platform insists on. A refusal takes only the first ones.'
             reason_placeholder: 'Choose a reason'
             response: 'Your answer'
-        help: 'The answer goes to the supplier through the platform the invoice came from. It is final.'
+        help: 'The answer goes to the supplier through the platform the invoice came from. An acceptance or a refusal is final; a dispute leaves the invoice open.'
         none: 'No answer'
-        reason_required: 'Give the reason for refusing.'
+        reason_not_allowed: 'This reason opens a dispute, it does not justify a refusal: dispute the invoice, or choose a reason for refusing.'
+        reason_required: 'Give the reason.'
         refused: 'Refused'
         submit: 'Send the answer'
         title: 'Answer a received invoice'
@@ -3461,6 +3480,7 @@ status:
     complete: Complete
     credit: Credit
     declined: Declined
+    disputed: Disputed
     draft: Draft
     expired: Expired
     failed: Failed

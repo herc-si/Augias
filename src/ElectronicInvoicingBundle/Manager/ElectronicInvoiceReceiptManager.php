@@ -17,7 +17,7 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
-use Augias\ElectronicInvoicingBundle\Enum\RefusalReason;
+use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use Augias\ElectronicInvoicingBundle\Event\ElectronicInvoiceReceiptImportedEvent;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceResponderInterface;
@@ -135,21 +135,29 @@ final readonly class ElectronicInvoiceReceiptManager implements ElectronicInvoic
      */
     public function canRespond(ElectronicInvoiceReceipt $receipt): bool
     {
-        return ! $receipt->getResponse() instanceof ReceiptResponse
+        return true !== $receipt->getResponse()?->isFinal()
             && $this->responder($receipt) !== null;
     }
 
-    public function respond(ElectronicInvoiceReceipt $receipt, ReceiptResponse $response, ?RefusalReason $reason = null, ?string $comment = null): void
+    public function respond(ElectronicInvoiceReceipt $receipt, ReceiptResponse $response, ?ResponseReason $reason = null, ?string $comment = null): void
     {
-        if ($receipt->getResponse() instanceof ReceiptResponse) {
+        // A dispute leaves the invoice open, for an acceptance or a refusal
+        // once it is settled — not for a second dispute.
+        $previous = $receipt->getResponse();
+
+        if ($previous instanceof ReceiptResponse && ($previous->isFinal() || $previous === $response)) {
             throw new RuntimeException('einvoicing.response.already_answered');
         }
 
-        if ($response->needsReason() && ! $reason instanceof RefusalReason) {
+        if ($response->needsReason() && ! $reason instanceof ResponseReason) {
             throw new RuntimeException('einvoicing.response.reason_required');
         }
 
-        // A reason belongs to a refusal only.
+        if ($response->needsReason() && ! $reason?->isAllowedFor($response)) {
+            throw new RuntimeException('einvoicing.response.reason_not_allowed');
+        }
+
+        // A reason belongs to a refusal or a dispute only.
         $reason = $response->needsReason() ? $reason : null;
         $comment = null === $comment ? null : trim($comment);
 

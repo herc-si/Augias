@@ -1281,37 +1281,56 @@ einvoicing:
             vat_on_debits: "L'option pour la TVA sur les débits ne correspond pas entre Augias et SUPER PDP. Elle décide des paiements que SUPER PDP transmet en e-reporting : alignez-la dans votre espace SUPER PDP."
             vat_regime_missing: "Aucun régime de TVA n'est déclaré chez SUPER PDP. C'est lui qui fixe le calendrier de l'e-reporting : renseignez-le dans votre espace SUPER PDP."
             vat_regime_mismatch: "Le régime de TVA déclaré chez SUPER PDP ne correspond pas au rythme de déclaration de TVA choisi dans Augias."
-    refusal_reason:
+    response_reason:
         ADR_ERR: 'Adresse de facturation électronique erronée'
+        ART_ERR: 'Article erroné'
+        AUTRE: 'Autre motif'
         CALCUL_ERR: 'Erreur de calcul de la facture'
         CMD_ERR: 'N° de commande incorrect ou manquant'
+        CODE_ROUTAGE_ERR: 'Code de routage erroné'
         CONTRAT_TERM: 'Contrat terminé'
+        COORD_BANC_ERR: 'Coordonnées bancaires erronées'
         DEST_ERR: 'Erreur de destinataire'
         DOUBLE_FACT: 'Double facturation'
         DOUBLON: 'Facture en doublon'
         EMMET_INC: 'Émetteur inconnu'
+        LIVR_INCOMP: 'Livraison incomplète'
+        MODPAI_ERR: 'Moyen de paiement erroné'
         MONTANTTOTAL_ERR: 'Montant total erroné'
         NON_CONFORME: 'Mention légale manquante'
+        PU_ERR: 'Prix unitaire erroné'
+        QTE_ERR: 'Quantité erronée'
+        QUALITE_ERR: 'Qualité non conforme'
         REF_CT_ABSENT: 'Référence contractuelle manquante'
+        REF_ERR: 'Référence erronée'
+        REM_ERR: 'Remise erronée'
+        SIRET_ERR: 'SIRET erroné'
         TRANSAC_INC: 'Transaction inconnue'
         TX_TVA_ERR: 'Taux de TVA erroné'
     response:
         accepted: 'Acceptée'
-        action: 'Accepter ou refuser'
+        action: 'Répondre'
         already_answered: 'Cette facture a déjà reçu une réponse.'
         already_answered_as: 'Réponse déjà envoyée au fournisseur : %response%.'
+        disputed: 'En litige'
+        disputed_help: "Cette facture est en litige. Une fois le désaccord réglé avec le fournisseur, acceptez-la ou refusez-la."
         flash:
             accepted: 'Facture acceptée : le fournisseur en est informé.'
+            disputed: 'Facture mise en litige : le fournisseur en est informé, avec votre motif.'
             refused: 'Facture refusée : le fournisseur en est informé, avec votre motif.'
         form:
             comment: 'Précisions pour le fournisseur (facultatif)'
-            reason: 'Motif du refus'
-            reason_help: 'Obligatoire pour un refus : un code normalisé, que la plateforme exige.'
+            reason: 'Motif'
+            reason_group:
+                any: 'Refus ou litige'
+                dispute: 'Litige seulement'
+            reason_help: 'Obligatoire pour un litige ou un refus : un code normalisé, que la plateforme exige. Un refus ne prend que les premiers.'
             reason_placeholder: 'Choisissez un motif'
             response: 'Votre réponse'
-        help: "La réponse part chez le fournisseur par la plateforme d'où vient la facture. Elle est définitive."
+        help: "La réponse part chez le fournisseur par la plateforme d'où vient la facture. Une acceptation ou un refus est définitif ; un litige laisse la facture ouverte."
         none: 'Sans réponse'
-        reason_required: 'Indiquez le motif du refus.'
+        reason_not_allowed: "Ce motif ouvre un litige, il ne justifie pas un refus : mettez la facture en litige, ou choisissez un motif de refus."
+        reason_required: 'Indiquez le motif.'
         refused: 'Refusée'
         submit: 'Envoyer la réponse'
         title: 'Répondre à une facture reçue'
@@ -3461,6 +3480,7 @@ status:
     complete: Terminé
     credit: Crédit
     declined: Refusé
+    disputed: 'En litige'
     draft: Brouillon
     expired: Expiré
     failed: Échoué

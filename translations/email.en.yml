@@ -23,6 +23,15 @@ client:
         subject: 'A new client has been created'
         view_client: 'View Client'
 einvoicing:
+    notification_disputed:
+        alert: 'Electronic Invoice Disputed'
+        client: Client
+        heading: 'Electronic Invoice Disputed'
+        invoice_number: 'Invoice Number'
+        message: 'Your client disputes part of an invoice sent through the electronic-invoicing platform. Settle it with them, for instance with a credit note or a corrected invoice: they can then accept it.'
+        note: "Client's details"
+        reason: Reason
+        view_invoice: 'View Invoice'
     notification_rejected:
         alert: 'Electronic Invoice Rejected'
         client: Client
