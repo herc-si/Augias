@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\McpBundle\Mcp\Tool;
 
 use Augias\CoreBundle\Entity\Discount;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\InvoiceBundle\Entity\Line as InvoiceLine;
 use Augias\InvoiceBundle\Entity\RecurringInvoiceLine;
 use Augias\QuoteBundle\Entity\Line as QuoteLine;
@@ -160,12 +161,32 @@ final readonly class LineItemBuilder
                 throw new ToolCallException(sprintf('Line item #%d has an invalid "qty": %s', $index, $this->describe($qty)));
             }
 
+            $line->setSupplyType($this->supplyType($data['supply_type'] ?? null, $index));
+
             $this->attachTaxes($line, $data, $index);
 
             $built[] = $line;
         }
 
         return $built;
+    }
+
+    /**
+     * Services unless the caller says otherwise, as on the form.
+     */
+    private function supplyType(mixed $value, int $index): SupplyType
+    {
+        if ($value === null) {
+            return SupplyType::Services;
+        }
+
+        $type = \is_string($value) ? SupplyType::tryFrom($value) : null;
+
+        if (! $type instanceof SupplyType) {
+            throw new ToolCallException(sprintf('Line item #%d has an invalid "supply_type": %s. Expected "goods" or "services".', $index, $this->describe($value)));
+        }
+
+        return $type;
     }
 
     /**

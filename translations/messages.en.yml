@@ -382,6 +382,9 @@ billing:
     due_date: 'Due Date'
     notes_help: 'Notes will not be visible to the client'
     subtotal: SubTotal
+    supply_type:
+        goods: 'Goods'
+        services: 'Service'
     tax: Tax
     total: Total
     withholding: 'Withholding & adjustments'
@@ -1390,6 +1393,7 @@ form:
         direction: "Direction"
         disbursement: "Disbursement"
         disbursement.help: "Money advanced in this client's name, re-billed to the euro"
+        supply_type: "Supply"
         domain: "Domain"
         eid: "EID"
         email: "Email"

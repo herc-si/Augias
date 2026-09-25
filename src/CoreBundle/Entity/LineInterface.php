@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Entity;
 
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\TaxBundle\Entity\LineTax;
 use Brick\Math\BigNumber;
 use Doctrine\Common\Collections\Collection;
@@ -61,4 +62,10 @@ interface LineInterface
      * marked; see {@see \Augias\InvoiceBundle\Entity\Line::isDisbursement()}.
      */
     public function isDisbursement(): bool;
+
+    /**
+     * Whether the line sells goods or a service, which decides when its VAT
+     * falls due. See {@see SupplyType}.
+     */
+    public function getSupplyType(): SupplyType;
 }

@@ -26,6 +26,7 @@ use Augias\ApiBundle\State\Processor\InvoiceLinePersistProcessor;
 use Augias\CoreBundle\Doctrine\Type\BigIntegerType;
 use Augias\CoreBundle\Doctrine\Type\QuantityType;
 use Augias\CoreBundle\Entity\LineInterface;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
 use Augias\InvoiceBundle\Enum\InvoiceLineType;
@@ -215,6 +216,16 @@ class Line implements LineInterface, Stringable
     protected bool $disbursement = false;
 
     /**
+     * Goods or a service — see {@see SupplyType} for why the VAT depends on it.
+     *
+     * Services by default, which is what every line was taken to be before the
+     * distinction existed: the e-invoice has always declared them so.
+     */
+    #[ORM\Column(name: 'supply_type', type: Types::STRING, length: 10, enumType: SupplyType::class, options: ['default' => 'services'])]
+    #[Groups(['invoice_api:read', 'invoice_api:write', 'recurring_invoice_api:read', 'recurring_invoice_api:write'])]
+    protected SupplyType $supplyType = SupplyType::Services;
+
+    /**
      * The supplier's documents behind a disbursement — see
      * {@see DisbursementReceipt} for why they hang off the line.
      *
@@ -321,6 +332,18 @@ class Line implements LineInterface, Stringable
     public function setDisbursement(bool $disbursement): static
     {
         $this->disbursement = $disbursement;
+
+        return $this;
+    }
+
+    public function getSupplyType(): SupplyType
+    {
+        return $this->supplyType;
+    }
+
+    public function setSupplyType(SupplyType $supplyType): static
+    {
+        $this->supplyType = $supplyType;
 
         return $this;
     }

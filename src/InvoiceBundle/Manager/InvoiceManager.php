@@ -141,6 +141,7 @@ class InvoiceManager
             $invoiceItem->setDescription($item->getDescription());
             $invoiceItem->setPrice($item->getPrice());
             $invoiceItem->setQty($item->getQty());
+            $invoiceItem->setSupplyType($item->getSupplyType());
 
             // Snapshot fresh LineTax rows so the new invoice owns its own tax history.
             $invoiceItem->getTaxes()->clear();

@@ -111,6 +111,10 @@ final readonly class CreditNoteFormManager
                     // same terms. Dropping the mark here would credit a
                     // disbursement as turnover and leave the books short.
                     ->setDisbursement($line->isDisbursement())
+                    // Goods credited are goods: their VAT is taken back on the
+                    // day the credit note is issued, as it fell due on the day
+                    // the invoice was.
+                    ->setSupplyType($line->getSupplyType())
                     ->updateTotal(),
             );
         }

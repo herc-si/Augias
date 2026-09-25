@@ -1,5 +1,5 @@
 <html><body>
-<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateQuote" data-live-url-value="/_components/CreateQuote" data-live-props-value='{"isEdit":false,"quoteEntity":null,"previousClientId":null,"catalogProductId":null,"formName":"quote","quote":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","taxes":[]}],"invoiceTaxes":[],"quoteId":"1","terms":"","notes":"","total":0,"baseTotal":0,"tax":0,"customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateQuote" data-live-url-value="/_components/CreateQuote" data-live-props-value='{"isEdit":false,"quoteEntity":null,"previousClientId":null,"catalogProductId":null,"formName":"quote","quote":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","supplyType":"services","taxes":[]}],"invoiceTaxes":[],"quoteId":"1","terms":"","notes":"","total":0,"baseTotal":0,"tax":0,"customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
     
     <form name="quote" method="post" data-model="on(change)|*">
 
@@ -107,8 +107,8 @@
                                     <div class="column-description">
                                         <span class="mobile-label">Description</span>
                                         <textarea id="quote_lines_0_description" name="quote[lines][0][description]" class="input-medium quote-item-name form-control" placeholder="Describe the service or product..." rows="2"></textarea>
-                                        
-                                    </div>
+                                                                                                                                <div class="item-supply-type"><select id="quote_lines_0_supplyType" name="quote[lines][0][supplyType]" class="form-select-sm form-select" aria-label="Supply"><option value="goods">Goods</option>
+<option value="services" selected>Service</option></select></div>                                    </div>
                                     <div class="column-price">
                                         <span class="mobile-label">Price</span>
                                         <div class="input-group flex-nowrap">

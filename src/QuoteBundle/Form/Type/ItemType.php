@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\QuoteBundle\Form\Type;
 
 use Augias\CoreBundle\Form\Transformer\QuantityTransformer;
+use Augias\CoreBundle\Form\Type\SupplyTypeType;
 use Augias\QuoteBundle\Entity\Line;
 use Augias\TaxBundle\Form\Type\LineTaxType;
 use Augias\TaxBundle\Service\TaxAvailability;
@@ -82,6 +83,10 @@ class ItemType extends AbstractType
             ->addViewTransformer(new QuantityTransformer());
 
         if ($this->taxAvailability->isOffered()) {
+            // Only where tax is: goods and services differ by when their VAT
+            // falls due, which is nothing to a company that charges none.
+            $builder->add('supplyType', SupplyTypeType::class);
+
             $builder->add(
                 'taxes',
                 LiveCollectionType::class,

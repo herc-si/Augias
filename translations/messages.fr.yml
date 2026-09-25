@@ -382,6 +382,9 @@ billing:
     due_date: 'Date d''échéance'
     notes_help: 'Les notes ne seront pas visibles par le client'
     subtotal: 'Sous-total'
+    supply_type:
+        goods: 'Bien'
+        services: 'Service'
     tax: Taxe
     total: Total
     withholding: 'Retenues et ajustements'
@@ -1390,6 +1393,7 @@ form:
         direction: "Sens"
         disbursement: "Débours"
         disbursement.help: "Somme avancée au nom de ce client, refacturée à l'euro près"
+        supply_type: "Nature"
         domain: "Domaine"
         eid: "EID"
         email: "E-mail"

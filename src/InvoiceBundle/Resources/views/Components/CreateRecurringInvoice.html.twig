@@ -95,6 +95,12 @@
                                         <span class="mobile-label">{{ 'invoice.item.heading.description'|trans }}</span>
                                         {{ form_widget(item.description, {attr: {placeholder: 'invoice.item.description.placeholder'|trans, rows: 2}}) }}
                                         {{ form_errors(item.description) }}
+                                        {%- if item.supplyType is defined %}
+                                            {# Goods or a service: when the VAT on the line falls due. Under the
+                                             # description, like the disbursement switch, rather than in a column
+                                             # of its own that most invoices would carry for nothing. #}
+                                            <div class="item-supply-type">{{ form_widget(item.supplyType, {attr: {'aria-label': 'form.field.supply_type'|trans}}) }}</div>
+                                        {%- endif %}
                                     </div>
                                     <div class="column-price">
                                         <span class="mobile-label">{{ 'invoice.item.heading.price'|trans }}</span>

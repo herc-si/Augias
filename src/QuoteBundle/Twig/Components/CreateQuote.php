@@ -234,6 +234,12 @@ final class CreateQuote extends AbstractController
             'qty' => '1',
         ];
 
+        // The form only has the field where tax is offered; sending it anyway
+        // would fail as an extra field.
+        if ($this->hasTax()) {
+            $line['supplyType'] = $product->getType()->supplyType()->value;
+        }
+
         $tax = $product->getTax();
 
         if ($tax instanceof Tax) {
