@@ -16,6 +16,7 @@ namespace Augias\ElectronicInvoicingBundle\Twig\Components;
 use Augias\CoreBundle\Response\FlashResponse;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Form\Type\ElectronicInvoiceProviderSettingType;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceAccountMonitor;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceAccountCheckerInterface;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
@@ -70,6 +71,7 @@ final class ElectronicInvoiceProviderConfiguration extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly RequestStack $requestStack,
         private readonly ElectronicInvoiceProviderRegistry $providers,
+        private readonly ElectronicInvoiceAccountMonitor $accountMonitor,
     ) {
     }
 
@@ -92,13 +94,16 @@ final class ElectronicInvoiceProviderConfiguration extends AbstractController
     #[LiveAction]
     public function checkAccount(): void
     {
-        $provider = $this->providers->get($this->providerSetting()->getProvider());
+        $status = $this->accountMonitor->check($this->providerSetting());
 
-        if (! $provider instanceof ElectronicInvoiceAccountCheckerInterface) {
+        if (null === $status) {
             return;
         }
 
-        $this->accountStatus = $provider->checkAccount($this->providerSetting()->getSettings())->toArray();
+        // Recorded as well as shown: the answer is what turns electronic
+        // invoicing on or off.
+        $this->entityManager->flush();
+        $this->accountStatus = $status->toArray();
     }
 
     #[ExposeInTemplate]
@@ -161,14 +166,25 @@ final class ElectronicInvoiceProviderConfiguration extends AbstractController
         // dispatches to) — the very first one configured for a company
         // becomes active automatically so there is always something to send
         // to as soon as one provider is set up.
-        if ($isNew && $this->repository->findActive() === null) {
+        // Switched on, verified or not: one held by its platform is still the
+        // one the company chose, and a second must not be switched on beside it.
+        if ($isNew && $this->repository->findSwitchedOn() === []) {
             $setting->setActive(true);
         }
+
+        // Asked as soon as there are credentials to ask with: a platform that
+        // has not verified the company refuses everything, and the user should
+        // learn that now rather than on the first invoice.
+        $status = $this->accountMonitor->check($setting);
 
         $this->entityManager->persist($setting);
         $this->entityManager->flush();
 
         $this->flash(FlashResponse::FLASH_SUCCESS, $isNew ? 'einvoicing.provider.flash.added' : 'einvoicing.provider.flash.updated');
+
+        if (null !== $status && ! $status->verification->isUsable()) {
+            $this->flash(FlashResponse::FLASH_WARNING, $status->answered ? 'einvoicing.account.held' : 'einvoicing.account.unchecked');
+        }
 
         return $this->redirectToRoute('_einvoicing_providers');
     }

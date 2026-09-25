@@ -1251,6 +1251,7 @@ delete_client: 'Delete Client'
 edit_client: 'Edit Party'
 einvoicing:
     account:
+        held: 'Saved, but the platform has not verified the company''s identity: electronic invoicing stays stopped until it does.'
         check: 'Check the account'
         environment:
             production: 'Production'
@@ -1260,6 +1261,10 @@ einvoicing:
             needs_review: 'A discrepancy (name, registration…) is being reviewed by SUPER PDP support. Until then the platform refuses every submission and every download.'
             unknown: 'The platform could not be reached.'
         help: 'Until the platform has verified the company''s identity, it refuses every submission and every download.'
+        stopped:
+            resume: 'No invoice is sent or received meanwhile. Augias asks the platform every hour and resumes on its own as soon as the identity is verified.'
+            title: 'Electronic invoicing is stopped.'
+        unchecked: 'Saved, but the platform could not be reached. The account will be checked within the hour.'
         title: 'Account on the platform'
         verification:
             failed: 'Identity refused'
@@ -1283,6 +1288,7 @@ einvoicing:
         title: 'Received Invoices'
     marketplace:
         active: Active
+        held: 'Active — awaiting verification'
         configure: Configure
         configured_title: 'Configured Providers'
         empty_subtitle: 'Configure your first electronic-invoicing provider to start sending electronic invoices.'

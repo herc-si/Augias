@@ -36,6 +36,14 @@
             </div>
         </div>
     {% else %}
+        {% if not isNewSetting and providerSetting.heldByThePlatform %}
+            <twig:Ui:Alert type="warning" icon="tabler:plug-connected-x" class="mb-4">
+                <strong>{{ 'einvoicing.account.stopped.title'|trans }}</strong>
+                {{ ('einvoicing.account.explain.' ~ providerSetting.accountVerification.value)|trans }}
+                {{ 'einvoicing.account.stopped.resume'|trans }}
+            </twig:Ui:Alert>
+        {% endif %}
+
         {% if canCheckAccount %}
             {# The platform refuses everything until it has verified the
              # company's identity, so this is the first thing to know about an

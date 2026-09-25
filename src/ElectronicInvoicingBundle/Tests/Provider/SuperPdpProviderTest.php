@@ -169,7 +169,8 @@ final class SuperPdpProviderTest extends KernelTestCase
 
         $status = self::getContainer()->get(SuperPdpProvider::class)->checkAccount(['client_id' => 'id', 'client_secret' => 'wrong']);
 
-        self::assertSame(AccountVerification::Unknown, $status->verification);
+        self::assertSame(AccountVerification::Failed, $status->verification);
+        self::assertTrue($status->answered);
         self::assertSame('einvoicing.provider.super_pdp.bad_credentials', $status->error);
     }
 

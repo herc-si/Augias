@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Twig\Components;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceAccountMonitor;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderInterface;
 use Augias\ElectronicInvoicingBundle\Provider\ProviderMetadataProvider;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
@@ -61,6 +62,7 @@ final class ElectronicInvoiceMarketplace extends AbstractController
         private readonly ProviderMetadataProvider $metadataProvider,
         private readonly ElectronicInvoiceProviderSettingRepository $repository,
         private readonly EntityManagerInterface $entityManager,
+        private readonly ElectronicInvoiceAccountMonitor $accountMonitor,
     ) {
     }
 
@@ -155,6 +157,10 @@ final class ElectronicInvoiceMarketplace extends AbstractController
         foreach ($this->repository->findAll() as $other) {
             $other->setActive($other === $setting);
         }
+
+        // Asked on the spot: the badge has to say at once whether invoices
+        // will go through it, or wait for the platform to verify the account.
+        $this->accountMonitor->check($setting);
 
         $this->entityManager->flush();
     }

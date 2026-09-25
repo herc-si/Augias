@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Repository;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
+use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
+use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 
 /**
@@ -28,9 +31,18 @@ final class ElectronicInvoiceProviderSettingRepository extends EntityRepository
         parent::__construct($registry, ElectronicInvoiceProviderSetting::class);
     }
 
+    /**
+     * The provider invoices go through — active, and not refused by its
+     * platform. One whose platform has not verified the company's identity is
+     * left out: it would refuse everything, so as far as the rest of the
+     * application is concerned, electronic invoicing is off.
+     */
     public function findActive(): ?ElectronicInvoiceProviderSetting
     {
-        return $this->findOneBy(['active' => true]);
+        return $this->usable()
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     /**
@@ -38,9 +50,38 @@ final class ElectronicInvoiceProviderSettingRepository extends EntityRepository
      * (which relies on that filter to scope to "the current company") cannot
      * be used, since the company must be given explicitly instead.
      */
-    public function findActiveForCompany(Ulid $companyId, string $provider): ?ElectronicInvoiceProviderSetting
+    public function findActiveForCompany(Ulid $companyId, ?string $provider = null): ?ElectronicInvoiceProviderSetting
     {
-        return $this->findOneBy(['company' => $companyId, 'provider' => $provider, 'active' => true]);
+        $qb = $this->usable()
+            ->andWhere('s.company = :company')
+            ->setParameter('company', $companyId, UlidType::NAME)
+            ->setMaxResults(1);
+
+        if (null !== $provider) {
+            $qb->andWhere('s.provider = :provider')->setParameter('provider', $provider);
+        }
+
+        return $qb->getQuery()->getOneOrNullResult();
+    }
+
+    /**
+     * Every setting switched on, verified or not, across whatever companies
+     * the caller can see — what the hourly account check goes through.
+     *
+     * @return list<ElectronicInvoiceProviderSetting>
+     */
+    public function findSwitchedOn(): array
+    {
+        return $this->findBy(['active' => true]);
+    }
+
+    private function usable(): QueryBuilder
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.active = :active')
+            ->andWhere('s.accountVerification IS NULL OR s.accountVerification = :verified')
+            ->setParameter('active', true)
+            ->setParameter('verified', AccountVerification::Verified->value);
     }
 
     public function delete(ElectronicInvoiceProviderSetting $setting): void

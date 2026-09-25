@@ -16,7 +16,9 @@ namespace Augias\ElectronicInvoicingBundle\Entity;
 use Augias\CoreBundle\Export\Attribute\ExportIgnore;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
+use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
+use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Stringable;
@@ -69,6 +71,21 @@ class ElectronicInvoiceProviderSetting implements Stringable
 
     #[ORM\Column(type: Types::BOOLEAN)]
     private bool $active = false;
+
+    /**
+     * What the platform last said about the account's identity, for a provider
+     * that can be asked. Null until it has been: a provider that cannot be
+     * asked, or one configured before the question existed.
+     *
+     * A platform that has not verified the company refuses everything, so an
+     * active setting it has not verified is treated as off — see
+     * {@see self::isUsable()} — and comes back on its own once it is.
+     */
+    #[ORM\Column(name: 'account_verification', type: Types::STRING, length: 20, nullable: true, enumType: AccountVerification::class)]
+    private ?AccountVerification $accountVerification = null;
+
+    #[ORM\Column(name: 'account_checked_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $accountCheckedAt = null;
 
     public function getId(): ?Ulid
     {
@@ -127,6 +144,43 @@ class ElectronicInvoiceProviderSetting implements Stringable
         $this->active = $active;
 
         return $this;
+    }
+
+    public function getAccountVerification(): ?AccountVerification
+    {
+        return $this->accountVerification;
+    }
+
+    public function getAccountCheckedAt(): ?DateTimeImmutable
+    {
+        return $this->accountCheckedAt;
+    }
+
+    public function recordAccountCheck(AccountVerification $verification, DateTimeImmutable $checkedAt): self
+    {
+        $this->accountVerification = $verification;
+        $this->accountCheckedAt = $checkedAt;
+
+        return $this;
+    }
+
+    /**
+     * Whether invoices can actually go through it: active, and not known to
+     * be refused by the platform.
+     */
+    public function isUsable(): bool
+    {
+        return $this->active
+            && (null === $this->accountVerification || $this->accountVerification->isUsable());
+    }
+
+    /**
+     * Active by choice, but stopped because the platform has not verified the
+     * account — what the configuration page has to explain.
+     */
+    public function isHeldByThePlatform(): bool
+    {
+        return $this->active && ! $this->isUsable();
     }
 
     public function __toString(): string
