@@ -156,7 +156,9 @@ accounting:
             bill_payment: 'Règlement fournisseur'
             bill_received: 'Facture fournisseur : TVA déductible à réception'
             credit_note_issued: 'Avoir : TVA reprise à l''émission'
-            invoice_issued: 'Facture : TVA exigible à l''émission'
+            deposit_received: 'Acompte : TVA déjà déclarée à l''encaissement'
+            deposit_refunded: 'Acompte remboursé : TVA due à la livraison'
+            invoice_issued: 'Facture émise : TVA exigible'
             invoice_payment: 'Encaissement de facture'
             invoice_payment_with_disbursement: 'Encaissement de facture, hors %disbursed% de débours'
             invoice_refund: 'Remboursement client'
@@ -166,6 +168,8 @@ accounting:
             bill_payment: 'Paiement fournisseur'
             bill_received: 'Facture fournisseur reçue'
             credit_note_issued: 'Avoir émis'
+            deposit_received: 'Acompte reçu'
+            deposit_refunded: 'Acompte remboursé'
             invoice_issued: 'Facture émise'
             invoice_payment: 'Encaissement de facture'
             invoice_refund: 'Remboursement client'
@@ -1415,6 +1419,8 @@ form:
         disbursement: "Débours"
         disbursement.help: "Somme avancée au nom de ce client, refacturée à l'euro près"
         supply_type: "Nature"
+        delivery_date: "Date de livraison"
+        delivery_date.help: "Si les biens sont livrés, ou le service rendu, à une autre date que celle de la facture. Laissez vide sinon."
         domain: "Domaine"
         eid: "EID"
         email: "E-mail"
@@ -1638,6 +1644,7 @@ invoice:
         view: 'Voir la facture'
     add_payment: 'Ajouter un paiement'
     amount_payable: 'Montant à payer'
+    delivery_date_mention: 'Date de livraison : %date%'
     archive:
         success: 'La facture a été archivée'
     balance: 'Solde impayé'

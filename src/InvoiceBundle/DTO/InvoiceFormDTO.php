@@ -65,6 +65,10 @@ final class InvoiceFormDTO
     #[Assert\Type(DateTimeInterface::class)]
     public ?DateTimeInterface $due = null;
 
+    /** Empty when the goods are delivered on the invoice date. */
+    #[Assert\Type(DateTimeInterface::class)]
+    public ?DateTimeInterface $deliveryDate = null;
+
     /**
      * Assigned in the constructor rather than left null so the default type
      * travels with the component's initial state. Left null, the form had

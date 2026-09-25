@@ -123,6 +123,9 @@
                     <div class="invoice-dates-row">
                         {{ form_row(form.invoiceDate) }}
                         {{ form_row(form.due) }}
+                        {# Third, so it wraps under the two everyone fills in: most
+                         # invoices are delivered on their own date and leave it empty. #}
+                        {{ form_row(form.deliveryDate) }}
                     </div>
                     {{ form_row(form.discount) }}
                 </div>

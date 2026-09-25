@@ -128,6 +128,7 @@ final class InvoiceTest extends ApiTestCase
             'balance' => 90,
             'due' => null,
             'invoiceDate' => Carbon::now()->format('Y-m-d\T00:00:00+02:00'),
+            'deliveryDate' => null,
             'paidDate' => null,
             'lines' => [
                 [
@@ -204,6 +205,7 @@ final class InvoiceTest extends ApiTestCase
             'balance' => 100,
             'due' => '2005-01-20T00:00:00+02:00',
             'invoiceDate' => Carbon::now()->format('Y-m-d\T00:00:00+02:00'),
+            'deliveryDate' => null,
             'paidDate' => null,
             'payments' => [],
             'quote' => null,
@@ -297,6 +299,7 @@ final class InvoiceTest extends ApiTestCase
             'balance' => 9000,
             'due' => '2005-01-20T00:00:00+02:00',
             'invoiceDate' => Carbon::now()->format('Y-m-d\T00:00:00+02:00'),
+            'deliveryDate' => null,
             'paidDate' => null,
             'payments' => [],
             'quote' => null,

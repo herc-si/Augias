@@ -243,6 +243,13 @@
             {{ vatMention }}
         </div>
     {% endif %}
+    {# The delivery date, when it is not the invoice date (CGI ann. II, art.
+       242 nonies A, I-7°). Same place, same reason as the mentions around it. #}
+    {% if invoice.hasDistinctDeliveryDate is defined and invoice.hasDistinctDeliveryDate %}
+        <div style="margin-top: 12px; font-size: 9pt; color: {{ p.labelColor }};">
+            {{ 'invoice.delivery_date_mention'|trans({'%date%': invoice.deliveryDate|format_date('long')}) }}
+        </div>
+    {% endif %}
     {% set debitsMention = vat_on_debits_mention(invoice) %}
     {% if debitsMention %}
         <div style="margin-top: 12px; font-size: 9pt; color: {{ p.labelColor }};">
