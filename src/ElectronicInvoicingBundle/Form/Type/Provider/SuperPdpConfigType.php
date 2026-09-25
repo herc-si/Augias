@@ -18,9 +18,11 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use function is_array;
 use function is_string;
 use function trim;
@@ -42,33 +44,50 @@ final class SuperPdpConfigType extends AbstractType
             'constraints' => new NotBlank(),
         ]);
 
-        // Never sent back to the browser: rendered into the field, the secret
-        // also sat in clear in the live component's state, in the page source.
-        // Left empty, the one already saved is kept — see PRE_SUBMIT below —
-        // so it is only required when there is none yet.
+        // Not mapped to the saved settings, and that is the whole point.
+        //
+        // The saved secret is never put into the form, so it is never rendered
+        // — rendered, it also sat in clear in the live component's state, in
+        // the page source. And what the user types survives the component
+        // re-rendering on every change: a password field emptied on render
+        // made the live component read back an empty value and save that,
+        // which is how a typed secret never reached the database.
+        //
+        // Left empty, the saved secret stays — see SUBMIT below — so it is only
+        // required when there is none yet.
         $builder->add('client_secret', PasswordType::class, [
             'label' => 'einvoicing.provider.super_pdp.client_secret',
             'help' => 'einvoicing.provider.super_pdp.client_secret_help',
-            'always_empty' => true,
+            'mapped' => false,
+            'always_empty' => false,
             'required' => false,
-            'constraints' => new NotBlank(message: 'einvoicing.constraint.super_pdp.client_secret_required'),
         ]);
 
-        $builder->addEventListener(FormEvents::PRE_SUBMIT, static function (FormEvent $event): void {
-            $submitted = $event->getData();
-            $saved = $event->getForm()->getData();
+        $builder->addEventListener(FormEvents::SUBMIT, function (FormEvent $event): void {
+            $settings = $event->getData();
+            $settings = is_array($settings) ? $settings : [];
+            $typed = trim((string) $event->getForm()->get('client_secret')->getData());
 
-            if (! is_array($submitted) || ! is_array($saved)) {
+            if ('' !== $typed) {
+                $settings['client_secret'] = $typed;
+                $event->setData($settings);
+
                 return;
             }
 
-            $secret = $saved['client_secret'] ?? null;
+            $saved = $settings['client_secret'] ?? null;
 
-            if ('' === trim((string) ($submitted['client_secret'] ?? '')) && is_string($secret) && '' !== $secret) {
-                $submitted['client_secret'] = $secret;
-                $event->setData($submitted);
+            if (! is_string($saved) || '' === $saved) {
+                $event->getForm()->get('client_secret')->addError(new FormError(
+                    $this->translator->trans('einvoicing.constraint.super_pdp.client_secret_required', [], 'validators'),
+                ));
             }
         });
+    }
+
+    public function __construct(
+        private readonly TranslatorInterface $translator,
+    ) {
     }
 
     #[Override]
