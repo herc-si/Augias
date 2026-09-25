@@ -23,6 +23,14 @@
         }
     }) }}
 
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">{{ form_row(form.siret) }}</div>
+        <div class="col-md-4">{{ form_row(form.siren) }}</div>
+        <div class="col-md-4">{{ form_row(form.vatNumber) }}</div>
+    </div>
+
+    <h4 class="h5 mb-2">{{ 'tax.company_identifiers.other'|trans }}</h4>
+
     <div class="tax-identifiers-list mb-3">
         {% for identifier in form.identifiers %}
             <div class="row g-3 align-items-end mb-2 company-tax-identifier-row">

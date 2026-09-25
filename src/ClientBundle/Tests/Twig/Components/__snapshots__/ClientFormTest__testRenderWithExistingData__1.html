@@ -1,5 +1,5 @@
 <html><body>
-<div class="form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="ClientForm" data-live-url-value="/_components/ClientForm" data-live-props-value='{"formData":null,"formName":"client","client":{"name":"Foo Bar","isClient":"1","isSupplier":null,"website":"https:\/\/example.com","currencyCode":"SBD","contacts":[],"addresses":[],"taxIdentifiers":[],"customFields":[],"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="ClientForm" data-live-url-value="/_components/ClientForm" data-live-props-value='{"formData":null,"formName":"client","client":{"name":"Foo Bar","isClient":"1","isSupplier":null,"website":"https:\/\/example.com","currencyCode":"SBD","contacts":[],"addresses":[],"siret":"","siren":"","vatNumber":"","otherTaxIdentifiers":[],"customFields":[],"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
     <form name="client" method="post" data-model="on(change)|*" data-action="live#action:prevent" data-live-action-param="save" class="client-form">
 
     
@@ -283,17 +283,42 @@
                 </div>
             </section>
 
-                                    <section class="form-page-section client-form-section-optional" id="client-tax-identifiers-collection">
-                <div class="section-header section-header-toggle" role="button" tabindex="0" data-bs-toggle="collapse" data-bs-target="#client-tax-identifiers-content" aria-expanded="false" aria-controls="client-tax-identifiers-content">
+                        <section class="form-page-section" id="client-fiscal-identifiers">
+                <div class="section-header">
                     <div class="section-icon">
                         <svg viewbox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="m9 14l6-6"></path><path fill="currentColor" d="M9 8.5a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0m5 5a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-3-2l-2 2l-2-2l-2 2l-2-2z"></path></g></svg>
                     </div>
                     <div class="section-header-text">
+                        <h2 class="section-title">Tax identifiers</h2>
+                        <p class="section-description">They appear on invoices and quotes issued to this party, and route its e-invoices. Leave empty for a private individual.</p>
+                    </div>
+                </div>
+                <div class="section-content">
+                    <div class="row g-3">
+                        <div class="col-md-4"><div class="mb-3">    
+            <label class="control-label form-label" for="client_siret">SIRET</label><input type="text" id="client_siret" name="client[siret]" inputmode="numeric" maxlength="14" class="form-control">
+</div></div>
+                        <div class="col-md-4"><div class="mb-3">    
+            <label class="control-label form-label" for="client_siren">SIREN</label><input type="text" id="client_siren" name="client[siren]" inputmode="numeric" maxlength="9" class="form-control">
+</div></div>
+                        <div class="col-md-4"><div class="mb-3">    
+            <label class="control-label form-label" for="client_vatNumber">EU VAT number</label><input type="text" id="client_vatNumber" name="client[vatNumber]" class="form-control">
+</div></div>
+                    </div>
+                </div>
+            </section>
+
+                                    <section class="form-page-section client-form-section-optional" id="client-tax-identifiers-collection">
+                <div class="section-header section-header-toggle" role="button" tabindex="0" data-bs-toggle="collapse" data-bs-target="#client-tax-identifiers-content" aria-expanded="false" aria-controls="client-tax-identifiers-content">
+                    <div class="section-icon">
+                        <svg viewbox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 7a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v10a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z"></path><path d="M7 10a2 2 0 1 0 4 0a2 2 0 1 0-4 0m8-2h2m-2 4h2M7 16h10"></path></g></svg>
+                    </div>
+                    <div class="section-header-text">
                         <h2 class="section-title">
-                            Tax Identifiers
+                            Other identifiers
                             <span class="badge bg-secondary-lt ms-1">Optional</span>
                         </h2>
-                        <p class="section-description">Tax registration numbers (SIRET, SIREN, TVA intracommunautaire, RCS, etc.). These appear on invoices and quotes issued to this party.</p>
+                        <p class="section-description">RCS, APE/NAF code, e-invoicing address when it is not the SIREN.</p>
                     </div>
                     <div class="section-toggle-icon">
                         <svg viewbox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9l6 6l6-6"></path></svg>
@@ -308,7 +333,7 @@
                         
 
                         <div class="add-item-action">
-                            <button type="button" id="client_taxIdentifiers_add" name="client[taxIdentifiers][add]" data-action="live#action" data-live-action-param="addCollectionItem" data-live-name-param="client[taxIdentifiers]" class="btn btn-outline-primary add-item-btn btn">Add tax identifier</button>
+                            <button type="button" id="client_otherTaxIdentifiers_add" name="client[otherTaxIdentifiers][add]" data-action="live#action" data-live-action-param="addCollectionItem" data-live-name-param="client[otherTaxIdentifiers]" class="btn btn-outline-primary add-item-btn btn">Add tax identifier</button>
                         </div>
                     </div>
                 </div>
@@ -356,7 +381,7 @@
     <div id="client_addresses"></div>
 </fieldset>
 <fieldset class="mb-3">                
-    <div id="client_taxIdentifiers"></div>
+    <div id="client_otherTaxIdentifiers"></div>
 </fieldset>
 <fieldset class="mb-3">                
     <div id="client_customFields"></div>

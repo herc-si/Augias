@@ -614,7 +614,13 @@ client:
         role_description: 'Cochez l''une ou les deux, vous pourrez changer plus tard.'
         role_title: 'Qu''est-ce que ce tiers ?'
         subtitle: 'Ajoutez un nouveau tiers, puis définissez-le comme client, fournisseur, ou les deux.'
-        tax_identifiers_description: "Numéros d'identification fiscale (SIRET, SIREN, TVA intracommunautaire, RCS, etc.). Ils apparaissent sur les factures et devis émis à ce tiers."
+        fiscal_identifiers_description: "Ils figurent sur les factures et devis émis à ce tiers, et servent à lui adresser ses factures électroniques. Laissez vide pour un particulier."
+        fiscal_identifiers_title: 'Identifiants fiscaux'
+        other_identifiers_title: 'Autres identifiants'
+        siren: 'SIREN'
+        siret: 'SIRET'
+        tax_identifiers_description: "RCS, code APE/NAF, adresse électronique de facturation si elle n'est pas le SIREN."
+        vat_number: 'N° de TVA intracommunautaire'
         website:
             label: 'Site web'
     grid:
@@ -695,7 +701,7 @@ client:
         active: Actifs
         archived: Archivés
     tax_identifiers:
-        add: 'Ajouter un identifiant fiscal'
+        add: 'Ajouter un identifiant'
         empty_hint: 'Aucun identifiant fiscal ajouté pour le moment. Ajoutez-en un si ce client possède un numéro SIRET, TVA intracommunautaire ou un autre numéro fiscal enregistré.'
         info: 'Identifiants fiscaux'
         remove: 'Supprimer l''identifiant fiscal'
@@ -3474,15 +3480,19 @@ success: Succès
 tax:
     company_identifiers:
         add: 'Ajouter un identifiant fiscal'
-        description: 'Ajoutez les identifiants fiscaux (SIRET, SIREN, TVA intracommunautaire, RCS, etc.) de votre propre société — ils apparaîtront sur les factures et devis que vous émettez.'
-        empty: 'Aucun identifiant fiscal configuré. Ajoutez-en un pour l''afficher sur vos factures.'
+        description: 'Les identifiants de votre société : ils figurent sur les factures et devis que vous émettez, et identifient vos factures électroniques.'
+        empty: 'Aucun autre identifiant.'
+        other: 'Autres identifiants (RCS, code APE/NAF, adresse électronique…)'
         label: Type
         primary: Principal
         remove: 'Supprimer l''identifiant fiscal'
         save: 'Enregistrer les identifiants fiscaux'
+        siren: 'SIREN'
+        siret: 'SIRET'
         siret_required: 'La facturation électronique est activée : ajoutez le numéro SIRET de votre société.'
         title: 'Identifiants fiscaux de la société'
         value: Numéro
+        vat_number: 'N° de TVA intracommunautaire'
         vat_required: 'La facturation électronique est activée : ajoutez le numéro de TVA intracommunautaire de votre société.'
     direction:
         additive: Additive

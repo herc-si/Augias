@@ -27,6 +27,7 @@ use RuntimeException;
 use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -117,11 +118,30 @@ class ClientType extends AbstractType
             ]
         );
 
+        // The three identifiers every French business has, in fields of their
+        // own: in the list below, they had to be picked from a dropdown to be
+        // given at all.
+        $builder->add('siret', TextType::class, [
+            'label' => 'client.form.siret',
+            'required' => false,
+            'attr' => ['inputmode' => 'numeric', 'maxlength' => 14],
+        ]);
+        $builder->add('siren', TextType::class, [
+            'label' => 'client.form.siren',
+            'required' => false,
+            'attr' => ['inputmode' => 'numeric', 'maxlength' => 9],
+        ]);
+        $builder->add('vatNumber', TextType::class, [
+            'label' => 'client.form.vat_number',
+            'required' => false,
+        ]);
+
         $builder->add(
-            'taxIdentifiers',
+            'otherTaxIdentifiers',
             LiveCollectionType::class,
             [
                 'entry_type' => TaxIdentifierType::class,
+                'entry_options' => ['labels' => TaxIdentifierType::OTHER_LABELS],
                 'allow_add' => true,
                 'allow_delete' => true,
                 'by_reference' => false,

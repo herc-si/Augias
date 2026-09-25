@@ -146,16 +146,38 @@
                 </div>
             </section>
 
-            {# Section: Tax Identifiers (Optional, collapsed unless it already has data) #}
-            {% set taxIdentifiersOpen = form.taxIdentifiers|length > 0 %}
-            <section class="form-page-section client-form-section-optional" id="client-tax-identifiers-collection">
-                <div class="section-header section-header-toggle" role="button" tabindex="0" data-bs-toggle="collapse" data-bs-target="#client-tax-identifiers-content" aria-expanded="{{ taxIdentifiersOpen ? 'true' : 'false' }}" aria-controls="client-tax-identifiers-content">
+            {# Section: Fiscal identifiers — always open. SIRET, SIREN and VAT number
+             # are what every French business has, and what an e-invoice needs;
+             # they used to be hidden in a collapsed list behind a dropdown. #}
+            <section class="form-page-section" id="client-fiscal-identifiers">
+                <div class="section-header">
                     <div class="section-icon">
                         {{ ux_icon('tabler:receipt-tax', {width: 20, height: 20}) }}
                     </div>
                     <div class="section-header-text">
+                        <h2 class="section-title">{{ 'client.form.fiscal_identifiers_title'|trans }}</h2>
+                        <p class="section-description">{{ 'client.form.fiscal_identifiers_description'|trans }}</p>
+                    </div>
+                </div>
+                <div class="section-content">
+                    <div class="row g-3">
+                        <div class="col-md-4">{{ form_row(form.siret) }}</div>
+                        <div class="col-md-4">{{ form_row(form.siren) }}</div>
+                        <div class="col-md-4">{{ form_row(form.vatNumber) }}</div>
+                    </div>
+                </div>
+            </section>
+
+            {# Section: Other identifiers (optional, collapsed unless it already has data) #}
+            {% set taxIdentifiersOpen = form.otherTaxIdentifiers|length > 0 %}
+            <section class="form-page-section client-form-section-optional" id="client-tax-identifiers-collection">
+                <div class="section-header section-header-toggle" role="button" tabindex="0" data-bs-toggle="collapse" data-bs-target="#client-tax-identifiers-content" aria-expanded="{{ taxIdentifiersOpen ? 'true' : 'false' }}" aria-controls="client-tax-identifiers-content">
+                    <div class="section-icon">
+                        {{ ux_icon('tabler:id', {width: 20, height: 20}) }}
+                    </div>
+                    <div class="section-header-text">
                         <h2 class="section-title">
-                            {{ 'client.tax_identifiers.info'|trans }}
+                            {{ 'client.form.other_identifiers_title'|trans }}
                             <span class="badge bg-secondary-lt ms-1">{{ 'optional'|trans }}</span>
                         </h2>
                         <p class="section-description">{{ 'client.form.tax_identifiers_description'|trans }}</p>
@@ -168,15 +190,15 @@
                 <div class="collapse{{ taxIdentifiersOpen ? ' show' : '' }}" id="client-tax-identifiers-content">
                     <div class="section-content">
                         <div class="tax-identifiers-list">
-                            {% for taxIdentifier in form.taxIdentifiers %}
+                            {% for taxIdentifier in form.otherTaxIdentifiers %}
                                 {{ form_row(taxIdentifier) }}
                             {% endfor %}
                         </div>
 
-                        {{ form_errors(form.taxIdentifiers) }}
+                        {{ form_errors(form.otherTaxIdentifiers) }}
 
                         <div class="add-item-action">
-                            {{ form_widget(form.taxIdentifiers.vars.button_add, {
+                            {{ form_widget(form.otherTaxIdentifiers.vars.button_add, {
                                 label: 'client.tax_identifiers.add'|trans,
                                 attr: {
                                     class: 'btn btn-outline-primary add-item-btn'
