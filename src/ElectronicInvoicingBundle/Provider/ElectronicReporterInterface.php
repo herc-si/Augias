@@ -17,8 +17,8 @@ use RuntimeException;
 
 /**
  * A provider that files e-reporting data — sales to private individuals and
- * the payments for them — which it aggregates and passes on to the tax
- * administration on the schedule the company's VAT regime sets.
+ * the payments for them, and payments on invoices sent through it — which it
+ * passes on to the tax administration.
  */
 interface ElectronicReporterInterface
 {
@@ -41,4 +41,18 @@ interface ElectronicReporterInterface
      * @throws RuntimeException
      */
     public function reportPayments(array $config, array $payments): array;
+
+    /**
+     * Marks an invoice sent through the provider as paid, for the amount
+     * received — the status the tax administration reads the VAT due on
+     * payment from.
+     *
+     * @param array<string, mixed> $config
+     * @param string               $invoiceReference the provider's id for the invoice sent
+     *
+     * @return list<string> the provider's id for the status sent
+     *
+     * @throws RuntimeException
+     */
+    public function reportPaymentReceived(array $config, string $invoiceReference, ReportedPayment $payment): array;
 }

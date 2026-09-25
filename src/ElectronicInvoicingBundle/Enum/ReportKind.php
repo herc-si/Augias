@@ -14,8 +14,9 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Enum;
 
 /**
- * What a company reports about a sale that is not invoiced electronically —
- * to a private individual — for the tax administration's e-reporting.
+ * What a company reports for the tax administration beyond the invoices
+ * themselves: sales to private individuals and the money received for them,
+ * and the money received on invoices it sent electronically.
  */
 enum ReportKind: string
 {
@@ -24,4 +25,10 @@ enum ReportKind: string
 
     /** Money received for services whose VAT falls due on payment. */
     case Payment = 'payment';
+
+    /**
+     * Money received on an invoice sent electronically, for services whose
+     * VAT falls due on payment: the "paid" status (fr:212) on that invoice.
+     */
+    case PaymentReceived = 'payment_received';
 }

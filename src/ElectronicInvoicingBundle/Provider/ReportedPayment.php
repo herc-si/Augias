@@ -16,8 +16,9 @@ namespace Augias\ElectronicInvoicingBundle\Provider;
 use DateTimeImmutable;
 
 /**
- * Money received from a private individual for services whose VAT falls due
- * on payment. Amounts in major units, tax included, by VAT rate.
+ * Money received for services whose VAT falls due on payment — from a private
+ * individual, or on an invoice sent electronically. Amounts in major units,
+ * tax included, by VAT rate.
  */
 final readonly class ReportedPayment
 {

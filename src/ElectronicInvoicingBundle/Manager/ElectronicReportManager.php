@@ -34,7 +34,9 @@ use function implode;
 
 /**
  * Reports what a company sold to private individuals — and was paid for it —
- * through the platform in use, for the tax administration's e-reporting.
+ * through the platform in use, for the tax administration's e-reporting; and
+ * marks the invoices it sent electronically as paid (fr:212) as the money
+ * comes in, where the VAT falls due on payment.
  *
  * From the day the platform was set up, never before: e-reporting starts
  * when the company does it, and history is not the platform's to receive.
@@ -90,6 +92,16 @@ final readonly class ElectronicReportManager
             }
 
             $this->file($company, $setting, ReportKind::Payment, $payment->getId(), $stats, static fn (): array => $reporter->reportPayments($setting->getSettings(), [$data]));
+        }
+
+        foreach ($this->paymentsOnSentInvoices($company, $since, $setting->getProvider()) as [$payment, $invoiceReference]) {
+            $data = $this->builder->payment($payment);
+
+            if (null === $data) {
+                continue;
+            }
+
+            $this->file($company, $setting, ReportKind::PaymentReceived, $payment->getId(), $stats, static fn (): array => $reporter->reportPaymentReceived($setting->getSettings(), $invoiceReference, $data));
         }
 
         $this->entityManager->flush();
@@ -161,6 +173,42 @@ final readonly class ElectronicReportManager
      */
     private function paymentsToReport(Company $company, DateTimeImmutable $since): iterable
     {
+        foreach ($this->paymentsSince($company, $since) as $payment) {
+            if ($this->builder->isPrivateIndividual($payment->getInvoice()?->getClient())) {
+                yield $payment;
+            }
+        }
+    }
+
+    /**
+     * Money received since reporting started on invoices that went out
+     * through the provider in use, with the provider's id for each invoice:
+     * the status goes on that invoice, where the other party sees it too.
+     *
+     * @return iterable<array{0: Payment, 1: string}>
+     */
+    private function paymentsOnSentInvoices(Company $company, DateTimeImmutable $since, string $provider): iterable
+    {
+        foreach ($this->paymentsSince($company, $since) as $payment) {
+            $reference = null;
+
+            foreach ($payment->getInvoice()?->getElectronicInvoiceSubmissions() ?? [] as $submission) {
+                if ($submission->isSuccess() && $provider === $submission->getProvider() && null !== $submission->getExternalReference()) {
+                    $reference = $submission->getExternalReference();
+                }
+            }
+
+            if (null !== $reference) {
+                yield [$payment, $reference];
+            }
+        }
+    }
+
+    /**
+     * @return list<Payment>
+     */
+    private function paymentsSince(Company $company, DateTimeImmutable $since): array
+    {
         /** @var list<Payment> $payments */
         $payments = $this->entityManager->getRepository(Payment::class)->createQueryBuilder('p')
             ->andWhere('p.company = :company')
@@ -173,10 +221,6 @@ final readonly class ElectronicReportManager
             ->getQuery()
             ->getResult();
 
-        foreach ($payments as $payment) {
-            if ($this->builder->isPrivateIndividual($payment->getInvoice()?->getClient())) {
-                yield $payment;
-            }
-        }
+        return $payments;
     }
 }

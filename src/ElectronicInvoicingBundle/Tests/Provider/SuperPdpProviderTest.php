@@ -214,6 +214,7 @@ final class SuperPdpProviderTest extends KernelTestCase
         yield 'fr:205 Accepted' => ['fr:205', ElectronicInvoiceProcessingStatus::Accepted];
         yield 'fr:206 Partly accepted' => ['fr:206', ElectronicInvoiceProcessingStatus::Accepted];
         yield 'fr:209 Completed' => ['fr:209', ElectronicInvoiceProcessingStatus::Accepted];
+        yield 'fr:212 Payment received' => ['fr:212', ElectronicInvoiceProcessingStatus::Accepted];
         yield 'fr:210 Refused' => ['fr:210', ElectronicInvoiceProcessingStatus::Rejected];
         yield 'fr:213 Rejected' => ['fr:213', ElectronicInvoiceProcessingStatus::Rejected];
         yield 'fr:501 Inadmissible' => ['fr:501', ElectronicInvoiceProcessingStatus::Rejected];
