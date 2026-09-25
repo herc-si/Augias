@@ -30,6 +30,7 @@ use Augias\TaxBundle\Calculator\TaxCalculatorInterface;
 use Augias\TaxBundle\Entity\LineTax;
 use Augias\TaxBundle\Entity\TaxIdentifier;
 use Augias\TaxBundle\Enum\TaxCategory;
+use Augias\TaxBundle\Form\Type\TaxIdentifierType;
 use Augias\TaxBundle\Repository\TaxIdentifierRepository;
 use Brick\Math\BigNumber;
 use horstoeko\zugferd\codelists\ZugferdInvoiceType;
@@ -69,7 +70,7 @@ use function trim;
 final readonly class FacturXInvoiceBuilder
 {
     /** The tax identifier label that holds a registered e-invoicing address. */
-    private const string ELECTRONIC_ADDRESS_LABEL = 'Adresse électronique';
+    private const string ELECTRONIC_ADDRESS_LABEL = TaxIdentifierType::ELECTRONIC_ADDRESS;
 
     /** The exemption reason code for a French company in franchise en base (BT-121). */
     private const string VATEX_FRANCHISE = 'VATEX-FR-FRANCHISE';

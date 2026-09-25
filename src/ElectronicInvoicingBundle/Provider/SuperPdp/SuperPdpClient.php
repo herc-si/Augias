@@ -18,6 +18,7 @@ use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
+use function is_array;
 use function is_int;
 use function is_string;
 use function sprintf;
@@ -94,6 +95,54 @@ final readonly class SuperPdpClient
             'auth_bearer' => $accessToken,
             'json' => $payload,
         ]);
+    }
+
+    /**
+     * The e-invoicing addresses registered for the company behind the
+     * credentials, e.g. "0225:315143296_92568".
+     *
+     * @return list<string>
+     *
+     * @throws SuperPdpApiException
+     */
+    public function getOwnAddresses(string $accessToken): array
+    {
+        return $this->identifiers($this->request('GET', '/v1.beta/directory_entries', ['auth_bearer' => $accessToken]));
+    }
+
+    /**
+     * The e-invoicing addresses the French directory lists for a SIREN — where
+     * an invoice to that company can be delivered. Empty for a company the
+     * directory does not know, and for every sandbox company.
+     *
+     * @return list<string>
+     *
+     * @throws SuperPdpApiException
+     */
+    public function findAddresses(string $accessToken, string $siren): array
+    {
+        return $this->identifiers($this->request('GET', '/v1.beta/french_directory/entries', [
+            'auth_bearer' => $accessToken,
+            'query' => ['number' => $siren],
+        ]));
+    }
+
+    /**
+     * @param array<string, mixed> $listing
+     *
+     * @return list<string>
+     */
+    private function identifiers(array $listing): array
+    {
+        $identifiers = [];
+
+        foreach (is_array($listing['data'] ?? null) ? $listing['data'] : [] as $entry) {
+            if (is_array($entry) && is_string($entry['identifier'] ?? null) && '' !== $entry['identifier']) {
+                $identifiers[] = $entry['identifier'];
+            }
+        }
+
+        return $identifiers;
     }
 
     /**
