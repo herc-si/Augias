@@ -607,6 +607,18 @@ parameters:
 			path: src/CoreBundle/Traits/Entity/TimeStampable.php
 
 		-
+			message: '#^Property Augias\\ElectronicInvoicingBundle\\Entity\\ElectronicReport\:\:\$created type mapping mismatch\: property can contain DateTimeImmutable\|null but database expects DateTimeImmutable\.$#'
+			identifier: doctrine.columnType
+			count: 1
+			path: src/CoreBundle/Traits/Entity/TimeStampable.php
+
+		-
+			message: '#^Property Augias\\ElectronicInvoicingBundle\\Entity\\ElectronicReport\:\:\$updated type mapping mismatch\: property can contain DateTimeImmutable\|null but database expects DateTimeImmutable\.$#'
+			identifier: doctrine.columnType
+			count: 1
+			path: src/CoreBundle/Traits/Entity/TimeStampable.php
+
+		-
 			message: '#^Property Augias\\ElectronicInvoicingBundle\\Entity\\ElectronicInvoiceSubmission\:\:\$created type mapping mismatch\: property can contain DateTimeImmutable\|null but database expects DateTimeImmutable\.$#'
 			identifier: doctrine.columnType
 			count: 1

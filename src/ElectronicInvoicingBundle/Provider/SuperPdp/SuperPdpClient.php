@@ -98,6 +98,40 @@ final readonly class SuperPdpClient
     }
 
     /**
+     * Files sales to private individuals for e-reporting. SUPER PDP stores
+     * them and aggregates them for the tax administration on the schedule
+     * the company's VAT regime sets.
+     *
+     * @param list<array<string, mixed>> $transactions
+     *
+     * @return array<string, mixed>
+     *
+     * @throws SuperPdpApiException
+     */
+    public function createB2cTransactions(string $accessToken, array $transactions): array
+    {
+        return $this->request('POST', '/v1.beta/b2c_transactions', [
+            'auth_bearer' => $accessToken,
+            'json' => ['data' => $transactions],
+        ]);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $payments
+     *
+     * @return array<string, mixed>
+     *
+     * @throws SuperPdpApiException
+     */
+    public function createB2cPayments(string $accessToken, array $payments): array
+    {
+        return $this->request('POST', '/v1.beta/b2c_payments', [
+            'auth_bearer' => $accessToken,
+            'json' => ['data' => $payments],
+        ]);
+    }
+
+    /**
      * The e-invoicing addresses registered for the company behind the
      * credentials, e.g. "0225:315143296_92568".
      *
