@@ -290,6 +290,10 @@
                     {% if vatMention %}
                         <div class="opacity-75 mb-3">{{ vatMention }}</div>
                     {% endif %}
+                    {% set debitsMention = vat_on_debits_mention(invoice) %}
+                    {% if debitsMention %}
+                        <div class="opacity-75 mb-3">{{ debitsMention }}</div>
+                    {% endif %}
 
                     {% if invoice.hasDisbursements %}
                         <div class="opacity-75 small mb-3">{{ disbursement_note_reference(invoice) }}</div>

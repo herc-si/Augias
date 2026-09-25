@@ -263,8 +263,12 @@ class LedgerEntryRepository extends EntityRepository
                 continue;
             }
 
-            if ($entry->getBook() === LedgerBook::Purchase) {
-                $deducted = $deducted->plus($tax);
+            // The purchase register and the purchase journal each deduct what
+            // became deductible on their own date — see LedgerEntry::deductedTax().
+            $entryDeducted = $entry->deductedTax();
+
+            if ($entryDeducted instanceof BigInteger) {
+                $deducted = $deducted->plus($entryDeducted);
 
                 continue;
             }

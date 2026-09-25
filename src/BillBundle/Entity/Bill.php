@@ -19,6 +19,7 @@ use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Doctrine\Type\BigIntegerType;
 use Augias\CoreBundle\Entity\Category;
 use Augias\CoreBundle\Enum\RecordKind;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\CoreBundle\Journal\Journalled;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
@@ -101,6 +102,23 @@ class Bill implements Journalled
      */
     #[ORM\Column(name: 'tax_amount', type: BigIntegerType::NAME, nullable: true)]
     private ?BigNumber $taxAmount = null;
+
+    /**
+     * What was bought — which, with {@see $supplierVatOnDebits}, decides when
+     * the VAT on it may be deducted: when it falls due at the supplier (CGI
+     * art. 271, I-2). Services by default, as every bill was taken to be.
+     */
+    #[ORM\Column(name: 'supply_type', type: Types::STRING, length: 10, enumType: SupplyType::class, options: ['default' => 'services'])]
+    private SupplyType $supplyType = SupplyType::Services;
+
+    /**
+     * Whether the supplier opted for VAT on debits, which their bill has to
+     * say ("Option pour le paiement de la taxe d'après les débits"). Their
+     * VAT on services then falls due when they invoice, and is deductible
+     * then rather than when it is paid.
+     */
+    #[ORM\Column(name: 'supplier_vat_on_debits', type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $supplierVatOnDebits = false;
 
     #[ORM\Column(name: 'currency_code', type: Types::STRING, length: 3)]
     private string $currencyCode;
@@ -256,6 +274,41 @@ class Bill implements Journalled
         $this->taxAmount = $taxAmount;
 
         return $this;
+    }
+
+    public function getSupplyType(): SupplyType
+    {
+        return $this->supplyType;
+    }
+
+    public function setSupplyType(SupplyType $supplyType): self
+    {
+        $this->supplyType = $supplyType;
+
+        return $this;
+    }
+
+    public function isSupplierVatOnDebits(): bool
+    {
+        return $this->supplierVatOnDebits;
+    }
+
+    public function setSupplierVatOnDebits(bool $supplierVatOnDebits): self
+    {
+        $this->supplierVatOnDebits = $supplierVatOnDebits;
+
+        return $this;
+    }
+
+    /**
+     * Whether the VAT on this bill may be deducted on its date rather than
+     * when it is paid: goods, whose VAT falls due at the supplier on delivery,
+     * or services from a supplier who opted for debits. Otherwise it falls due
+     * at the supplier when they are paid, and is deductible then.
+     */
+    public function isTaxDeductibleOnIssue(): bool
+    {
+        return $this->supplyType->isTaxedOnIssue() || $this->supplierVatOnDebits;
     }
 
     /**

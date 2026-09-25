@@ -127,6 +127,13 @@ final class AccountingConfigProvider implements ProviderInterface
                 ['label' => 'accounting.settings.vat_exempt_mention.label'],
             ),
             new Config(
+                AccountingSettings::VAT_ON_DEBITS,
+                '0',
+                'accounting.settings.vat_on_debits.description',
+                CheckboxType::class,
+                ['label' => 'accounting.settings.vat_on_debits.label'],
+            ),
+            new Config(
                 AccountingSettings::FR_INCOME_TAX_OPTION,
                 '0',
                 'accounting.settings.income_tax_option.description',

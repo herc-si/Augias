@@ -38,8 +38,8 @@ final readonly class CompanyBooks
     }
 
     /**
-     * The books the law asks of this company: its regime's, and the sales
-     * journal once it charges VAT.
+     * The books the law asks of this company: its regime's, and the two VAT
+     * journals once it charges VAT.
      *
      * The sales journal is not the regime's to decide, for the same reason the
      * VAT return is not a regime: a micro-entrepreneur over the franchise
@@ -60,6 +60,12 @@ final readonly class CompanyBooks
 
         if (! $profile->vatExempt) {
             $books[] = LedgerBook::Sales;
+
+            // Its purchase-side mirror, wherever purchases are kept at all:
+            // VAT deducted on a bill's date needs somewhere to be recorded.
+            if (in_array(LedgerBook::Purchase, $books, true)) {
+                $books[] = LedgerBook::Bills;
+            }
         }
 
         return $books;

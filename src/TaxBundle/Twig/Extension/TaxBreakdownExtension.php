@@ -66,6 +66,22 @@ final class TaxBreakdownExtension
     }
 
     /**
+     * The mention a document issued under the option for VAT on debits must
+     * carry (CGI, ann. II, art. 242 nonies A, I-11° bis), or null.
+     *
+     * Read off the document, where the option was frozen when it was issued,
+     * never off the current setting: a document does not change its wording
+     * because the company changed its mind afterwards.
+     */
+    #[AsTwigFunction(name: 'vat_on_debits_mention')]
+    public function vatOnDebitsMention(mixed $document): ?string
+    {
+        return $document instanceof BaseInvoice && $document->isVatOnDebits()
+            ? BaseInvoice::VAT_ON_DEBITS_MENTION
+            : null;
+    }
+
+    /**
      * Returns an ordered list of TaxIdentifier entities for the given owner.
      *
      * @return list<TaxIdentifier>

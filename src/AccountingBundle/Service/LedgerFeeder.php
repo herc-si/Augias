@@ -20,8 +20,11 @@ use Augias\AccountingBundle\Enum\LedgerEntrySource;
 use Augias\AccountingBundle\Enum\SettlementMethod;
 use Augias\AccountingBundle\Model\AccountingProfile;
 use Augias\AccountingBundle\Model\LedgerTaxSplit;
+use Augias\AccountingBundle\Model\TaxShare;
 use Augias\AccountingBundle\Repository\LedgerEntryRepository;
+use Augias\BillBundle\Entity\Bill;
 use Augias\BillBundle\Entity\BillPayment;
+use Augias\BillBundle\Enum\BillStatus;
 use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Entity\Company;
 use Augias\InvoiceBundle\Entity\BaseInvoice;
@@ -93,6 +96,14 @@ final readonly class LedgerFeeder
      * @var list<InvoiceStatus>
      */
     private const array ISSUED_INVOICE_STATUSES = [InvoiceStatus::Pending, InvoiceStatus::Overdue, InvoiceStatus::Paid];
+
+    /**
+     * A bill that stands: recorded and not withdrawn. A draft is not yet a
+     * bill in hand; a cancelled one no longer is.
+     *
+     * @var list<BillStatus>
+     */
+    private const array RECEIVED_BILL_STATUSES = [BillStatus::Pending, BillStatus::Overdue, BillStatus::Paid];
 
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -412,7 +423,9 @@ final readonly class LedgerFeeder
     }
 
     /**
-     * Files the VAT on an issued invoice's goods into the sales journal.
+     * Files the VAT that fell due when an invoice was issued into the sales
+     * journal: its goods', and its services' too under the option for VAT on
+     * debits (art. 269, 2-c).
      *
      * Goods are taxed on delivery, not on payment (CGI art. 269, 2-a), and the
      * invoice date stands in for the delivery: an invoice for goods is issued
@@ -434,7 +447,7 @@ final readonly class LedgerFeeder
      */
     public function recordInvoiceIssue(Invoice $invoice): ?LedgerEntry
     {
-        if (! in_array($invoice->getStatus(), self::ISSUED_INVOICE_STATUSES, true) || ! $this->hasGoods($invoice)) {
+        if (! in_array($invoice->getStatus(), self::ISSUED_INVOICE_STATUSES, true) || ! $this->hasTaxDueOnIssue($invoice)) {
             return null;
         }
 
@@ -466,7 +479,7 @@ final readonly class LedgerFeeder
      */
     public function recordCreditNoteIssue(CreditNote $creditNote): ?LedgerEntry
     {
-        if (! $creditNote->isIssued() || ! $this->hasGoods($creditNote)) {
+        if (! $creditNote->isIssued() || ! $this->hasTaxDueOnIssue($creditNote)) {
             return null;
         }
 
@@ -546,11 +559,17 @@ final readonly class LedgerFeeder
     }
 
     /**
-     * Whether any line sells goods — checked before anything is loaded, since
-     * this runs on every invoice flushed and most carry none.
+     * Whether any of the document's tax falls due on issue: all of it under
+     * the option for VAT on debits, the goods' otherwise. Checked before
+     * anything is loaded, since this runs on every invoice flushed and most
+     * carry nothing of the kind.
      */
-    private function hasGoods(Invoice | CreditNote $document): bool
+    private function hasTaxDueOnIssue(Invoice | CreditNote $document): bool
     {
+        if ($document->isVatOnDebits()) {
+            return true;
+        }
+
         foreach ($document->getLines() as $line) {
             if ($line->getSupplyType()->isTaxedOnIssue() && ! $line->isDisbursement()) {
                 return true;
@@ -558,6 +577,156 @@ final readonly class LedgerFeeder
         }
 
         return false;
+    }
+
+    /**
+     * Files a supplier's bill into the purchase journal when its VAT is
+     * deductible on its date — goods, or services from a supplier on debits
+     * (CGI art. 271, I-2).
+     *
+     * Dated on the bill: that is when the tax fell due at the supplier. The
+     * right to deduct also needs the bill in hand, which a bill recorded here
+     * is. One figure, as the purchase register records it.
+     *
+     * @throws MathException
+     */
+    public function recordBillReceipt(Bill $bill): ?LedgerEntry
+    {
+        if (! $bill->getTaxAmount() instanceof BigNumber || ! $this->deductedOnReceipt($bill)) {
+            return null;
+        }
+
+        $id = $bill->getId();
+        $company = $bill->getCompany();
+
+        if (! $id instanceof Ulid) {
+            return null;
+        }
+
+        $profile = $this->books($company, LedgerBook::Bills);
+
+        if (! $profile instanceof AccountingProfile
+            || $this->entryRepository->findBySource($company, LedgerBook::Bills, LedgerEntrySource::BillReceived, $id) instanceof LedgerEntry) {
+            return null;
+        }
+
+        $tax = $bill->getTaxAmount()->toBigInteger();
+        $total = $bill->getTotalAmount()->toBigInteger();
+
+        $entry = new LedgerEntry()
+            ->setBook(LedgerBook::Bills)
+            ->setSource(LedgerEntrySource::BillReceived)
+            ->setSourceId($id)
+            ->setEntryDate($bill->getIssueDate() ?? new DateTimeImmutable('today'))
+            ->setLabel($this->label('accounting.entry.label.bill_received', $company))
+            ->setDocumentReference($bill->getBillNumber())
+            ->setAmount($total)
+            ->setCurrencyCode($bill->getCurrencyCode())
+            ->setTax($total->minus($tax), $tax, []);
+
+        $entry->setCompany($company)
+            ->setCounterparty($bill->getSupplier());
+
+        return $this->persist($entry, $profile);
+    }
+
+    /**
+     * Takes the deduction back when a bill it was made on is cancelled. Dated
+     * today: that is when the books learned the bill no longer stands.
+     *
+     * @throws MathException
+     */
+    public function recordBillCancellation(Bill $bill): ?LedgerEntry
+    {
+        $id = $bill->getId();
+
+        if (BillStatus::Cancelled !== $bill->getStatus() || ! $id instanceof Ulid) {
+            return null;
+        }
+
+        $company = $bill->getCompany();
+        $profile = $this->books($company, LedgerBook::Bills);
+
+        if (! $profile instanceof AccountingProfile) {
+            return null;
+        }
+
+        $received = $this->entryRepository->findBySource($company, LedgerBook::Bills, LedgerEntrySource::BillReceived, $id);
+
+        if (! $received instanceof LedgerEntry
+            || $this->entryRepository->findBySource($company, LedgerBook::Bills, LedgerEntrySource::BillCancelled, $id) instanceof LedgerEntry) {
+            return null;
+        }
+
+        $net = $received->getNetAmount();
+        $tax = $received->getTaxAmount();
+
+        $entry = new LedgerEntry()
+            ->setBook(LedgerBook::Bills)
+            ->setSource(LedgerEntrySource::BillCancelled)
+            ->setSourceId($id)
+            ->setEntryDate(new DateTimeImmutable('today'))
+            ->setLabel($this->label('accounting.entry.label.bill_cancelled', $company))
+            ->setDocumentReference($bill->getBillNumber())
+            ->setAmount($received->getAmount()->toBigInteger()->negated())
+            ->setCurrencyCode($received->getCurrencyCode())
+            ->setReverses($received);
+
+        if (null !== $net && null !== $tax) {
+            $entry->setTax($net->toBigInteger()->negated(), $tax->toBigInteger()->negated(), []);
+        }
+
+        $entry->setCompany($company)
+            ->setCounterparty($bill->getSupplier());
+
+        return $this->persist($entry, $profile);
+    }
+
+    /**
+     * Whether this bill's VAT is — or is to be — deducted from the purchase
+     * journal on its date rather than from each payment.
+     *
+     * Settled by what the books already hold, not only by what the bill says
+     * now, because a bill can be edited after the fact: once deducted on
+     * receipt it stays so, and a bill whose payments were already deducted
+     * one by one is not deducted again on receipt — either way round, the
+     * tax is deducted once.
+     */
+    private function deductedOnReceipt(Bill $bill): bool
+    {
+        $id = $bill->getId();
+        $company = $bill->getCompany();
+
+        if ($id instanceof Ulid
+            && $this->entryRepository->findBySource($company, LedgerBook::Bills, LedgerEntrySource::BillReceived, $id) instanceof LedgerEntry) {
+            return true;
+        }
+
+        // A draft is not a bill in hand, and its receipt is not recorded: its
+        // payments deduct their own share, as they always have.
+        if (! $bill->isTaxDeductibleOnIssue() || ! in_array($bill->getStatus(), self::RECEIVED_BILL_STATUSES, true)) {
+            return false;
+        }
+
+        // The stored payments as well as the ones in hand: a payment recorded
+        // without being added to the bill's collection is still a payment.
+        $payments = [...$bill->getPayments(), ...$this->entityManager->getRepository(BillPayment::class)->findBy(['bill' => $bill])];
+
+        foreach ($payments as $payment) {
+            $paymentId = $payment->getId();
+
+            if (! $paymentId instanceof Ulid) {
+                continue;
+            }
+
+            $entry = $this->entryRepository->findBySource($company, LedgerBook::Purchase, LedgerEntrySource::BillPayment, $paymentId);
+
+            if ($entry instanceof LedgerEntry && $entry->deductedTax()?->isPositive() === true) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -652,7 +821,17 @@ final readonly class LedgerFeeder
 
         if ($billTax instanceof BigNumber) {
             $tax = $this->shareOf($billTax, $payment->getAmount(), $bill->getTotalAmount());
-            $entry->setTax($entry->getAmount()->toBigInteger()->minus($tax), $tax, []);
+            $net = $entry->getAmount()->toBigInteger()->minus($tax);
+
+            // Deducted already, from the purchase journal on the bill's date:
+            // recorded here because the money did contain it, marked so that
+            // the return does not deduct it a second time. One share, with no
+            // rate — a supplier's bill is recorded as one figure.
+            $shares = $this->deductedOnReceipt($bill)
+                ? [['rate' => '', 'category' => '', 'base' => (string) $net, 'tax' => (string) $tax, 'due' => TaxShare::DUE_ON_ISSUE]]
+                : [];
+
+            $entry->setTax($net, $tax, $shares);
         }
 
         return $this->persist($entry, $profile);

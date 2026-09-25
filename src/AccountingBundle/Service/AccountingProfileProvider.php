@@ -73,6 +73,15 @@ final readonly class AccountingProfileProvider
         return $this->bool(AccountingSettings::VAT_EXEMPT, $company);
     }
 
+    /**
+     * Whether a document issued now falls under the option for VAT on
+     * debits. Never for a company outside the scope of VAT: it charges none.
+     */
+    public function isVatOnDebits(?Company $company = null): bool
+    {
+        return ! $this->isVatExempt($company) && $this->bool(AccountingSettings::VAT_ON_DEBITS, $company);
+    }
+
     public function vatExemptMention(?Company $company = null): string
     {
         return $this->trimmed(AccountingSettings::VAT_EXEMPT_MENTION, $company)

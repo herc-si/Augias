@@ -37,13 +37,15 @@ accounting:
         line: 'Threshold reached at %percent%% (limit: %amount%)'
         title: '%year% threshold alerts'
     book:
+        bills: 'Purchase journal'
+        bills_notice: 'VAT on a purchase is deductible once it falls due at the supplier: on the date of their bill for goods, or for services when they opted for debits. Those bills file themselves here on their date; paying them, in the purchase register, does not deduct it again.'
         expense: Expenses
         expense_notice: 'The expenses you record here are not a statutory book: they keep your receipts, their VAT and their date. Under the micro regime they are not deductible.'
         purchase: 'Purchase register'
         revenue_is_automatic: 'Every payment the application captures files itself here.'
         revenue: 'Revenue book'
         sales: 'Sales journal'
-        sales_notice: 'VAT on goods falls due on delivery, not on payment. Every invoice issued with goods on it files itself here on its date, and so does every credit note that takes goods back. This journal feeds the VAT return; turnover stays what was received, in the revenue book.'
+        sales_notice: 'VAT on goods falls due on delivery, not on payment. Every invoice issued with goods on it files itself here on its date, and so does every credit note that takes goods back — services too, under the option for VAT on debits. This journal feeds the VAT return; turnover stays what was received, in the revenue book.'
     books:
         title: Books
     declaration:
@@ -150,15 +152,19 @@ accounting:
             number: No.
             tax: Tax
         label:
+            bill_cancelled: 'Supplier bill cancelled: VAT taken back'
             bill_payment: 'Supplier payment'
-            credit_note_issued: 'Credit note on a supply of goods'
-            invoice_issued: 'Invoice for a supply of goods'
+            bill_received: 'Supplier bill: VAT deductible on receipt'
+            credit_note_issued: 'Credit note: VAT taken back on issue'
+            invoice_issued: 'Invoice: VAT due on issue'
             invoice_payment: 'Invoice payment'
             invoice_payment_with_disbursement: 'Invoice payment, excluding %disbursed% of disbursements'
             invoice_refund: 'Refund to client'
             invoice_refund_with_disbursement: 'Refund to client, excluding %disbursed% of disbursements'
         source:
+            bill_cancelled: 'Supplier bill cancelled'
             bill_payment: 'Supplier payment'
+            bill_received: 'Supplier bill received'
             credit_note_issued: 'Credit note issued'
             invoice_issued: 'Invoice issued'
             invoice_payment: 'Invoice payment'
@@ -245,6 +251,9 @@ accounting:
         vat_exempt_mention:
             description: 'Printed on every invoice and quote while you are not liable for VAT.'
             label: 'VAT exemption wording'
+        vat_on_debits:
+            description: 'Services: VAT falls due when invoiced rather than when paid. Every invoice issued under the option carries the legal mention; those issued before it stay declared on payment.'
+            label: 'Option for VAT on debits'
     settlement_method:
         bank_transfer: 'Bank transfer'
         cash: Cash
@@ -321,6 +330,12 @@ bill:
             placeholder: 'Choose an existing supplier'
         total_amount:
             label: 'Total Amount'
+        supplier_vat_on_debits:
+            help: 'Tick if the bill says "Option pour le paiement de la taxe d''après les débits": the VAT on services is then deductible on the bill''s date, not on payment.'
+            label: 'The supplier opted for VAT on debits'
+        supply_type:
+            help: 'Goods: their VAT is deductible on the bill''s date. Services: on payment, unless the supplier opted for debits.'
+            label: 'Purchase of'
         tax_amount:
             help: 'The VAT the supplier charged, as printed on their bill. Leave empty if there is none.'
             label: 'VAT'

@@ -60,6 +60,17 @@
                         <div class="form-field">
                             {{ form_row(form.totalAmount) }}
                         </div>
+                        {% if form.taxAmount is defined %}
+                            <div class="form-field">
+                                {{ form_row(form.taxAmount) }}
+                            </div>
+                            <div class="form-field">
+                                {{ form_row(form.supplyType) }}
+                            </div>
+                            <div class="form-field form-field-wide">
+                                {{ form_row(form.supplierVatOnDebits) }}
+                            </div>
+                        {% endif %}
                         <div class="form-field form-field-wide">
                             {{ form_row(form.notes) }}
                         </div>

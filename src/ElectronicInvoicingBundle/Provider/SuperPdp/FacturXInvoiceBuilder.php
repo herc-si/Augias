@@ -66,6 +66,9 @@ use function substr;
  */
 final readonly class FacturXInvoiceBuilder
 {
+    /** UNTDID 2475 "5": the tax falls due on the invoice date. */
+    private const string VAT_DUE_ON_INVOICE_DATE = '5';
+
     /**
      * BT-34/BT-49 (seller/buyer electronic address): SUPER PDP's directory only
      * resolves French recipients under Peppol scheme 0225 ("FRCTC electronic
@@ -131,6 +134,12 @@ final readonly class FacturXInvoiceBuilder
         $documentBuilder->setDocumentBusinessProcess($this->businessProcess($invoice));
 
         $this->addMandatoryFrenchNotes($documentBuilder);
+
+        // The mention the law asks of a document issued under the option for
+        // VAT on debits, in the data as well as on the page.
+        if ($invoice->isVatOnDebits()) {
+            $documentBuilder->addDocumentNote(Invoice::VAT_ON_DEBITS_MENTION);
+        }
 
         // Without a delivery/supply date, zugferd still emits an empty
         // ApplicableHeaderTradeDelivery element, which PEPPOL-EN16931-R008 rejects.
@@ -209,6 +218,10 @@ final readonly class FacturXInvoiceBuilder
                 $group['rate'],
                 $exemptionReason,
                 $exemptionReasonCode,
+                // BT-8: under the option for VAT on debits the tax falls due on
+                // the invoice date — "5" in UNTDID 2475, the list CII uses.
+                // Left out otherwise, which is the cash rule.
+                dueDateTypeCode: $invoice->isVatOnDebits() ? self::VAT_DUE_ON_INVOICE_DATE : null,
             );
         }
 
