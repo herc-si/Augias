@@ -17,6 +17,7 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
 use Augias\ElectronicInvoicingBundle\Twig\ElectronicInvoiceExtension;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Twig\Environment;
@@ -47,6 +48,28 @@ final class ElectronicInvoiceExtensionTest extends KernelTestCase
         $status = $this->extension()->resolveProcessingStatus($submission);
 
         self::assertSame(ElectronicInvoiceProcessingStatus::Rejected, $status);
+    }
+
+    /**
+     * The list shows where the invoice stands now: the latest submission's
+     * status, whatever an earlier one said — and nothing for an invoice that
+     * never went out.
+     */
+    public function testTheListShowsTheLatestSubmissionsStatus(): void
+    {
+        $twig = self::getContainer()->get('twig');
+        self::assertInstanceOf(Environment::class, $twig);
+
+        $refused = new ElectronicInvoiceSubmission()->setProvider('super_pdp')->setSuccess(false);
+        $refused->setCreated(new DateTimeImmutable('2026-09-24 10:00'));
+        $disputed = new ElectronicInvoiceSubmission()->setProvider('super_pdp')->setSuccess(true)->setStatusCode('fr:207');
+        $disputed->setCreated(new DateTimeImmutable('2026-09-25 10:00'));
+
+        $label = $this->extension()->renderLatestStatusLabel($twig, [$disputed, $refused]);
+
+        self::assertStringContainsString('Disputed', $label);
+        self::assertStringNotContainsString('Rejected', $label);
+        self::assertSame('', $this->extension()->renderLatestStatusLabel($twig, []));
     }
 
     /**

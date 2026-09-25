@@ -62,7 +62,7 @@ use function trim;
  *
  * Simplification for this first version: a line with more than one applied
  * tax rate (compound taxes) only has its first tax rate reflected in the CII
- * document — Augias's SIRET-gated eligibility targets standard French
+ * document — Augias's SIRET/SIREN-gated eligibility targets standard French
  * B2B invoicing, where a line normally carries a single VAT rate.
  *
  * @see \Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdp\FacturXInvoiceBuilderTest

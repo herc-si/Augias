@@ -17,8 +17,10 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Override;
+use Twig\Environment;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
+use function is_callable;
 
 final class ElectronicInvoiceExtension extends AbstractExtension
 {
@@ -35,7 +37,34 @@ final class ElectronicInvoiceExtension extends AbstractExtension
     {
         return [
             new TwigFunction('einvoicing_processing_status', $this->resolveProcessingStatus(...)),
+            new TwigFunction('einvoicing_latest_status_label', $this->renderLatestStatusLabel(...), ['is_safe' => ['html'], 'needs_environment' => true]),
         ];
+    }
+
+    /**
+     * Where an invoice stands on the platform, at a glance — the status of
+     * its latest submission, the one a resend replaced the others with — or
+     * nothing for an invoice that never went out electronically.
+     *
+     * @param iterable<ElectronicInvoiceSubmission> $submissions
+     */
+    public function renderLatestStatusLabel(Environment $environment, iterable $submissions): string
+    {
+        $latest = null;
+
+        foreach ($submissions as $submission) {
+            if (! $latest instanceof ElectronicInvoiceSubmission || $submission->getCreated() >= $latest->getCreated()) {
+                $latest = $submission;
+            }
+        }
+
+        if (! $latest instanceof ElectronicInvoiceSubmission) {
+            return '';
+        }
+
+        $label = $environment->getFunction('einvoicing_status_label')?->getCallable();
+
+        return is_callable($label) ? (string) $label($environment, $this->resolveProcessingStatus($latest)) : '';
     }
 
     /**

@@ -19,7 +19,9 @@ use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\SettingsBundle\SystemConfig;
+use Augias\TaxBundle\Form\Type\TaxIdentifierType;
 use Doctrine\ORM\EntityManagerInterface;
+use function in_array;
 
 /**
  * Central place for "can this invoice be sent electronically, and doing so" —
@@ -57,7 +59,7 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
             return false;
         }
 
-        return $this->clientHasSiret($invoice);
+        return $this->clientHasFrenchCompanyNumber($invoice);
     }
 
     public function send(Invoice $invoice): ElectronicInvoiceSubmission
@@ -92,7 +94,12 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
         return $submission;
     }
 
-    private function clientHasSiret(Invoice $invoice): bool
+    /**
+     * A SIRET or a SIREN: either names a French company, and the Factur-X
+     * identifies the buyer by its SIREN anyway. A client with neither is a
+     * private individual — reported, not invoiced electronically.
+     */
+    private function clientHasFrenchCompanyNumber(Invoice $invoice): bool
     {
         $client = $invoice->getClient();
 
@@ -101,7 +108,7 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
         }
 
         foreach ($client->getTaxIdentifiers() as $identifier) {
-            if ($identifier->getLabel() === 'SIRET' && $identifier->getValue() !== null && $identifier->getValue() !== '') {
+            if (in_array($identifier->getLabel(), [TaxIdentifierType::SIRET, TaxIdentifierType::SIREN], true) && $identifier->getValue() !== null && $identifier->getValue() !== '') {
                 return true;
             }
         }

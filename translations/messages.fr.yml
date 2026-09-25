@@ -1815,6 +1815,7 @@ invoice:
         date_start: "Date de début"
         discount: "Remise"
         due_date: "Date d'échéance"
+        electronic_status: 'Facture électronique'
         end_date: "Date de fin"
         frequency: "Fréquence"
         invoice_date: "Date de facture"
