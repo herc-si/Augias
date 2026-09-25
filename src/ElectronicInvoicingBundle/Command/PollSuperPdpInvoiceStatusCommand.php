@@ -15,6 +15,8 @@ namespace Augias\ElectronicInvoicingBundle\Command;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
+use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
+use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceDisputedNotification;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceRejectedNotification;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApiException;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
@@ -31,6 +33,7 @@ use Symfony\Component\Scheduler\Attribute\AsCronTask;
 use Throwable;
 use function assert;
 use function in_array;
+use function is_array;
 use function is_string;
 use function sprintf;
 
@@ -141,6 +144,7 @@ final class PollSuperPdpInvoiceStatusCommand extends Command
         $accessToken = $this->client->getAccessToken($clientId, $clientSecret);
         $invoice = $this->client->getInvoice($accessToken, $externalReference);
 
+        $event = SuperPdpProvider::latestEvent($invoice['events'] ?? null);
         $statusCode = SuperPdpProvider::latestStatusCode($invoice['events'] ?? null);
 
         if ($statusCode === null || $statusCode === $submission->getStatusCode()) {
@@ -153,7 +157,41 @@ final class PollSuperPdpInvoiceStatusCommand extends Command
             $this->notifyRejection($submission, $statusCode);
         }
 
+        if (SuperPdpProvider::DISPUTED_STATUS_CODE === $statusCode) {
+            $this->notifyDispute($submission, $event ?? []);
+        }
+
         return true;
+    }
+
+    /**
+     * A dispute needs someone too: the client says what is wrong — the
+     * reason code and their own words — and the company settles it, usually
+     * with a credit note or a corrected invoice.
+     *
+     * @param array<mixed> $event
+     */
+    private function notifyDispute(ElectronicInvoiceSubmission $submission, array $event): void
+    {
+        $detail = is_array($event['details'][0] ?? null) ? $event['details'][0] : [];
+        $reason = ResponseReason::tryFrom(is_string($detail['reason'] ?? null) ? $detail['reason'] : '');
+        $note = $detail['notes'][0]['contents'][0]['content'] ?? null;
+
+        try {
+            $this->notificationManager->sendNotification(
+                new ElectronicInvoiceDisputedNotification([
+                    'invoice' => $submission->getInvoice(),
+                    'client' => $submission->getInvoice()->getClient(),
+                    'reason' => $reason?->translationKey() ?? (is_string($detail['reason'] ?? null) ? $detail['reason'] : null),
+                    'note' => is_string($note) && '' !== $note ? $note : null,
+                ])
+            );
+        } catch (Throwable $e) {
+            $this->logger->error('Failed to send electronic invoice dispute notification', [
+                'submission_id' => (string) $submission->getId(),
+                'exception' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

@@ -22,6 +22,12 @@ enum ReceiptResponse: string
     /** fr:205 — the buyer accepts the invoice as due. */
     case Accepted = 'fr:205';
 
+    /**
+     * fr:207 — the buyer disputes part of it, and says what. The invoice
+     * stays open: once settled with the supplier, it is accepted or refused.
+     */
+    case Disputed = 'fr:207';
+
     /** fr:210 — the buyer refuses it, and says why. */
     case Refused = 'fr:210';
 
@@ -29,12 +35,22 @@ enum ReceiptResponse: string
     {
         return match ($this) {
             self::Accepted => 'einvoicing.response.accepted',
+            self::Disputed => 'einvoicing.response.disputed',
             self::Refused => 'einvoicing.response.refused',
         };
     }
 
     public function needsReason(): bool
     {
-        return $this === self::Refused;
+        return self::Accepted !== $this;
+    }
+
+    /**
+     * Whether nothing more can be answered after it. A dispute ends in an
+     * acceptance or a refusal; those end it.
+     */
+    public function isFinal(): bool
+    {
+        return self::Disputed !== $this;
     }
 }

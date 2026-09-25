@@ -1,0 +1,55 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) HERC SI <opensource@herc-si.fr>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@AugiasCore/Layout/Email/notification.html.twig" %}
+{% import "@AugiasCore/Layout/Email/components.html.twig" as email %}
+
+{%- block title -%}
+    {{ 'einvoicing.notification_disputed.heading'|trans({}, 'email') }}
+{%- endblock -%}
+
+{%- block content -%}
+    {% apply inky_to_html %}
+        <row>
+            <columns>
+                <p style="color: #d97706; font-size: 16px; font-weight: 600; line-height: 1.5; margin: 0 0 16px 0; Margin: 0 0 16px 0;">
+                    ⚠️ {{ 'einvoicing.notification_disputed.alert'|trans({}, 'email') }}
+                </p>
+                <p style="color: #1e293b; font-size: 16px; line-height: 1.5; margin: 0 0 24px 0; Margin: 0 0 24px 0;">
+                    {{ 'einvoicing.notification_disputed.message'|trans({}, 'email') }}
+                </p>
+            </columns>
+        </row>
+    {% endapply %}
+
+    {{ email.spacer('sm') }}
+
+    {{ email.info_row('einvoicing.notification_disputed.invoice_number'|trans({}, 'email'), invoice.invoiceId ?? invoice.id) }}
+
+    {% if client %}
+        {{ email.spacer('xs') }}
+        {{ email.info_row('einvoicing.notification_disputed.client'|trans({}, 'email'), client.name) }}
+    {% endif %}
+
+    {% if reason %}
+        {{ email.spacer('xs') }}
+        {{ email.info_row('einvoicing.notification_disputed.reason'|trans({}, 'email'), reason|trans) }}
+    {% endif %}
+
+    {% if note %}
+        {{ email.spacer('xs') }}
+        {{ email.info_row('einvoicing.notification_disputed.note'|trans({}, 'email'), note) }}
+    {% endif %}
+
+    {{ email.divider('md') }}
+
+    {{ email.button('einvoicing.notification_disputed.view_invoice'|trans({}, 'email'), url('_invoices_view', {'id': invoice.id}), 'primary', 'large') }}
+
+    {{ email.spacer('md') }}
+{%- endblock -%}

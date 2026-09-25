@@ -16,7 +16,7 @@ namespace Augias\ElectronicInvoicingBundle\Manager;
 use Augias\CoreBundle\Entity\Company;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
-use Augias\ElectronicInvoicingBundle\Enum\RefusalReason;
+use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use RuntimeException;
 
 interface ElectronicInvoiceReceiptManagerInterface
@@ -40,7 +40,8 @@ interface ElectronicInvoiceReceiptManagerInterface
 
     /**
      * Whether the company can answer this invoice: the provider it came
-     * through is in use and able to carry an answer, and none was given yet.
+     * through is in use and able to carry an answer, and none was given yet
+     * — or only a dispute, which an acceptance or a refusal still ends.
      */
     public function canRespond(ElectronicInvoiceReceipt $receipt): bool;
 
@@ -51,5 +52,5 @@ interface ElectronicInvoiceReceiptManagerInterface
      * @throws RuntimeException when it cannot be sent; the message is a
      *                          translation key or the platform's own words
      */
-    public function respond(ElectronicInvoiceReceipt $receipt, ReceiptResponse $response, ?RefusalReason $reason = null, ?string $comment = null): void;
+    public function respond(ElectronicInvoiceReceipt $receipt, ReceiptResponse $response, ?ResponseReason $reason = null, ?string $comment = null): void;
 }

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Provider;
 
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
-use Augias\ElectronicInvoicingBundle\Enum\RefusalReason;
+use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use RuntimeException;
 
 /**
@@ -28,5 +28,5 @@ interface ElectronicInvoiceResponderInterface
      *
      * @throws RuntimeException when the platform does not take the answer
      */
-    public function respond(array $config, string $externalReference, ReceiptResponse $response, ?RefusalReason $reason = null, ?string $comment = null): void;
+    public function respond(array $config, string $externalReference, ReceiptResponse $response, ?ResponseReason $reason = null, ?string $comment = null): void;
 }

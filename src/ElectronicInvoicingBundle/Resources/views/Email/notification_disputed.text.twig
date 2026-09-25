@@ -1,0 +1,32 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) HERC SI <opensource@herc-si.fr>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{# Plain text: nothing here is HTML, and a French apostrophe must not come out as &#039;. #}
+{% autoescape false %}
+{{ 'einvoicing.notification_disputed.heading'|trans({}, 'email') }}
+{{ '='|repeat(60) }}
+
+⚠️  {{ 'einvoicing.notification_disputed.alert'|trans({}, 'email') }}
+
+{{ 'einvoicing.notification_disputed.message'|trans({}, 'email') }}
+
+{{ 'einvoicing.notification_disputed.invoice_number'|trans({}, 'email') }}: {{ invoice.invoiceId ?? invoice.id }}
+{% if client -%}
+{{ 'einvoicing.notification_disputed.client'|trans({}, 'email') }}: {{ client.name }}
+{% endif -%}
+{% if reason -%}
+{{ 'einvoicing.notification_disputed.reason'|trans({}, 'email') }}: {{ reason|trans }}
+{% endif -%}
+{% if note -%}
+{{ 'einvoicing.notification_disputed.note'|trans({}, 'email') }}: {{ note }}
+{% endif %}
+
+{{ '-'|repeat(60) }}
+{{ 'einvoicing.notification_disputed.view_invoice'|trans({}, 'email') }}: {{ url('_invoices_view', {'id': invoice.id}) }}
+{% endautoescape %}

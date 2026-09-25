@@ -16,6 +16,7 @@ namespace Augias\ElectronicInvoicingBundle\Tests\Manager;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
+use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceReceiptManager;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceReceiptManagerInterface;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
@@ -54,6 +55,46 @@ final class ReceiptResponseTest extends KernelTestCase
         $this->expectExceptionObject(new RuntimeException('einvoicing.response.reason_required'));
 
         $this->manager()->respond($receipt, ReceiptResponse::Refused, null, 'Mauvais prix');
+    }
+
+    /**
+     * A dispute leaves the invoice open: it can still be accepted or refused
+     * once settled with the supplier — but not disputed a second time.
+     */
+    public function testADisputeLeavesTheInvoiceOpenForAnAcceptanceOrARefusal(): void
+    {
+        $receipt = $this->receipt(withProvider: true);
+        $this->platformTakesIt(2);
+
+        $this->manager()->respond($receipt, ReceiptResponse::Disputed, ResponseReason::Quantity, '8 cartons livrés sur 10');
+
+        self::assertSame(ReceiptResponse::Disputed, $receipt->getResponse());
+        self::assertTrue($this->manager()->canRespond($receipt));
+
+        try {
+            $this->manager()->respond($receipt, ReceiptResponse::Disputed, ResponseReason::UnitPrice);
+            self::fail('Disputed once, not twice.');
+        } catch (RuntimeException $e) {
+            self::assertSame('einvoicing.response.already_answered', $e->getMessage());
+        }
+
+        $this->manager()->respond($receipt, ReceiptResponse::Accepted);
+
+        self::assertSame(ReceiptResponse::Accepted, $receipt->getResponse());
+        self::assertFalse($this->manager()->canRespond($receipt));
+    }
+
+    /**
+     * A quantity the buyer disagrees with is a dispute: the platform turns
+     * such a code down for a refusal, so it is not sent as one.
+     */
+    public function testARefusalTakesOnlyAReasonForRefusing(): void
+    {
+        $receipt = $this->receipt(withProvider: true);
+
+        $this->expectExceptionObject(new RuntimeException('einvoicing.response.reason_not_allowed'));
+
+        $this->manager()->respond($receipt, ReceiptResponse::Refused, ResponseReason::Quantity);
     }
 
     /**
@@ -110,12 +151,16 @@ final class ReceiptResponseTest extends KernelTestCase
         return $receipt;
     }
 
-    private function platformTakesIt(): void
+    private function platformTakesIt(int $answers = 1): void
     {
-        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
-            static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token'])),
-            static fn (): MockResponse => new MockResponse((string) json_encode(['id' => 1, 'status_code' => 'fr:205'])),
-        ]));
+        $responses = [];
+
+        for ($i = 0; $i < $answers; ++$i) {
+            $responses[] = static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token']));
+            $responses[] = static fn (): MockResponse => new MockResponse((string) json_encode(['id' => 1]));
+        }
+
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient($responses));
     }
 
     private function manager(): ElectronicInvoiceReceiptManagerInterface

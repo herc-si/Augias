@@ -31,12 +31,16 @@ enum ElectronicInvoiceProcessingStatus: string implements HasStatusLabel
     case Accepted = 'accepted';
     case Rejected = 'rejected';
 
+    /** The client disputes part of it (fr:207): up to the company to settle. */
+    case Disputed = 'disputed';
+
     public function getLabel(): string
     {
         return match ($this) {
             self::Pending => 'Pending',
             self::Accepted => 'Accepted',
             self::Rejected => 'Rejected',
+            self::Disputed => 'Disputed',
         };
     }
 
@@ -46,6 +50,7 @@ enum ElectronicInvoiceProcessingStatus: string implements HasStatusLabel
             self::Pending => 'yellow',
             self::Accepted => 'green',
             self::Rejected => 'red',
+            self::Disputed => 'orange',
         };
     }
 }

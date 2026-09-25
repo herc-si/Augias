@@ -15,7 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Action;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
-use Augias\ElectronicInvoicingBundle\Enum\RefusalReason;
+use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use Augias\ElectronicInvoicingBundle\Form\Type\ReceiptResponseType;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceReceiptManagerInterface;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceReceiptRepository;
@@ -35,7 +35,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 use function assert;
 
 /**
- * Accept a received invoice, or refuse it with a reason — sent back through
+ * Accept a received invoice, dispute it or refuse it with a reason — sent back through
  * the platform it came from, so the supplier learns the outcome.
  *
  * @see \Augias\ElectronicInvoicingBundle\Tests\Action\RespondToIncomingInvoiceTest
@@ -63,11 +63,11 @@ final readonly class RespondToIncomingInvoice
             return ['receipt' => $receipt, 'form' => null];
         }
 
-        $form = $this->formFactory->create(ReceiptResponseType::class);
+        $form = $this->formFactory->create(ReceiptResponseType::class, null, ['previous' => $receipt->getResponse()]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var array{response: ReceiptResponse, reason: RefusalReason|null, comment: string|null} $data */
+            /** @var array{response: ReceiptResponse, reason: ResponseReason|null, comment: string|null} $data */
             $data = $form->getData();
 
             try {
@@ -80,7 +80,11 @@ final readonly class RespondToIncomingInvoice
 
             $session = $request->getSession();
             assert($session instanceof Session);
-            $session->getFlashBag()->add('success', $data['response'] === ReceiptResponse::Accepted ? 'einvoicing.response.flash.accepted' : 'einvoicing.response.flash.refused');
+            $session->getFlashBag()->add('success', match ($data['response']) {
+                ReceiptResponse::Accepted => 'einvoicing.response.flash.accepted',
+                ReceiptResponse::Disputed => 'einvoicing.response.flash.disputed',
+                ReceiptResponse::Refused => 'einvoicing.response.flash.refused',
+            });
 
             return new RedirectResponse($this->router->generate('_einvoicing_incoming'));
         }

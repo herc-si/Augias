@@ -18,6 +18,7 @@ use Augias\CoreBundle\Test\Traits\ConsoleTesterTrait;
 use Augias\ElectronicInvoicingBundle\Command\PollSuperPdpInvoiceStatusCommand;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
+use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceDisputedNotification;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceRejectedNotification;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
@@ -166,6 +167,78 @@ final class PollSuperPdpInvoiceStatusCommandTest extends KernelTestCase
         $refreshed = $repository->find($submission->getId());
 
         self::assertSame('fr:213', $refreshed?->getStatusCode());
+    }
+
+    /**
+     * A client's dispute reaches the company with what they dispute and why,
+     * in their own words — the status alone would not say what to settle.
+     */
+    public function testCommandNotifiesUsersWhenAClientDisputesAnInvoice(): void
+    {
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+
+        $setting = new ElectronicInvoiceProviderSetting();
+        $setting->setCompany($this->company)
+            ->setName('SUPER PDP')
+            ->setProvider('super_pdp')
+            ->setSettings(['client_id' => 'id', 'client_secret' => 'secret'])
+            ->setActive(true);
+        $entityManager->persist($setting);
+
+        $client = ClientFactory::createOne(['company' => $this->company]);
+        $invoice = InvoiceFactory::createOne(['company' => $this->company, 'client' => $client]);
+
+        $submission = new ElectronicInvoiceSubmission();
+        $submission->setCompany($this->company)
+            ->setInvoice($invoice)
+            ->setProvider('super_pdp')
+            ->setSuccess(true)
+            ->setExternalReference('749192');
+        $entityManager->persist($submission);
+        $entityManager->flush();
+
+        // As the sandbox returned it on 25/09/2026.
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
+            static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token', 'expires_in' => 3600])),
+            static fn (): MockResponse => new MockResponse((string) json_encode([
+                'id' => 749192,
+                'events' => [
+                    ['id' => 2634600, 'status_code' => 'fr:202', 'details' => [[]]],
+                    ['id' => 2634658, 'status_code' => 'fr:207', 'details' => [[
+                        'reason' => 'QTE_ERR',
+                        'notes' => [['content_code' => '', 'contents' => [['content' => '8 cartons livrés sur 10']]]],
+                    ]]],
+                ],
+            ])),
+        ]));
+
+        $notificationManager = M::mock(NotificationManager::class);
+        $notificationManager->shouldReceive('sendNotification')
+            ->once()
+            ->with(M::on(static fn (mixed $notification): bool => $notification instanceof ElectronicInvoiceDisputedNotification
+                && 'einvoicing.response_reason.QTE_ERR' === $notification->getParameters()['reason']
+                && '8 cartons livrés sur 10' === $notification->getParameters()['note']));
+
+        $command = new PollSuperPdpInvoiceStatusCommand(
+            self::getContainer()->get('doctrine'),
+            self::getContainer()->get(ElectronicInvoiceSubmissionRepository::class),
+            self::getContainer()->get(ElectronicInvoiceProviderSettingRepository::class),
+            self::getContainer()->get(SuperPdpClient::class),
+            $notificationManager,
+            new NullLogger(),
+        );
+
+        $this->initOutput([]);
+        $this->input = new ArrayInput([]);
+        $this->input->setStream(self::createStream([]));
+        $command->setIo(new IO($this->input, $this->output));
+
+        Assert::assertThat($command->run($this->input, $this->output), new CommandIsSuccessful());
+
+        $entityManager->clear();
+        $refreshed = self::getContainer()->get('doctrine')->getRepository(ElectronicInvoiceSubmission::class)->find($submission->getId());
+
+        self::assertSame('fr:207', $refreshed?->getStatusCode());
     }
 
     private function runTestCommand(): string
