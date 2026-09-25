@@ -13,11 +13,13 @@ declare(strict_types=1);
 
 namespace Augias\TaxBundle\Calculator;
 
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\InvoiceBundle\Entity\BaseInvoice;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Calculator\Result\CalculationResult;
 use Augias\TaxBundle\Calculator\Result\InvoiceLevelBreakdown;
+use Augias\TaxBundle\Calculator\Result\LineBreakdown;
 use Augias\TaxBundle\Calculator\Result\TaxSummaryRow;
 use Brick\Math\BigDecimal;
 use Brick\Math\BigNumber;
@@ -168,10 +170,24 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
     {
         $subTotal = BigDecimal::zero();
         $disbursementTotal = BigDecimal::zero();
+        $lineBreakdowns = [];
 
         foreach ($document->getLines() as $line) {
             $line->updateTotal();
             $amount = BigNumber::of($line->getTotal())->toBigDecimal();
+
+            // One per line, tax at nothing, as for a liable company: whoever
+            // reads the result pairs breakdowns with lines by position. Left
+            // empty, the e-invoice found no breakdown for any line and sent an
+            // invoice with none — every invoice of a company in franchise was
+            // rejected from 07/09/2026, when VAT started disappearing here.
+            $lineBreakdowns[] = new LineBreakdown(
+                $amount,
+                $amount,
+                BigDecimal::zero(),
+                [],
+                $line->isDisbursement() ? SupplyType::Services : $line->getSupplyType(),
+            );
 
             // Still kept apart with no tax in sight. A company in franchise en
             // base charges none either way, but a disbursement is not its
@@ -189,7 +205,7 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
             subTotal: $subTotal,
             totalLineTax: BigDecimal::zero(),
             total: $subTotal->plus($disbursementTotal),
-            lineBreakdowns: [],
+            lineBreakdowns: $lineBreakdowns,
             invoiceLevelBreakdown: InvoiceLevelBreakdown::empty(),
             summaryRows: [],
             disbursementTotal: $disbursementTotal,

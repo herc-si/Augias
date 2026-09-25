@@ -268,6 +268,36 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         );
     }
 
+    /**
+     * A company in franchise en base: every line on the invoice, in category
+     * E, with the article 293 B mention as the exemption reason. From
+     * 07/09/2026 the lines were all missing, and the platform rejected every
+     * such invoice.
+     */
+    public function testAnInvoiceInFranchiseCarriesItsLinesAsExempt(): void
+    {
+        self::getContainer()->get(SystemConfig::class)->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, '1');
+        TaxIdentifierFactory::createOne([
+            'company' => $this->company,
+            'client' => null,
+            'label' => 'SIRET',
+            'value' => '11111111100011',
+        ]);
+
+        $xml = $this->xmlOf(false, SupplyType::Services, SupplyType::Goods);
+
+        self::assertSame(2, substr_count($xml, '<ram:IncludedSupplyChainTradeLineItem>'));
+        self::assertStringContainsString('<ram:CategoryCode>E</ram:CategoryCode>', $xml);
+        self::assertStringContainsString('293 B', $xml);
+        self::assertStringContainsString('<ram:GrandTotalAmount>200.00</ram:GrandTotalAmount>', $xml);
+        // What the SUPER PDP validator asked for on 25/09/2026: a zero rate
+        // for category E (BR-E-05), the SIRET as tax registration when there
+        // is no VAT number (BR-E-02), and the French franchise code.
+        self::assertStringContainsString('<ram:RateApplicablePercent>0.00</ram:RateApplicablePercent>', $xml);
+        self::assertMatchesRegularExpression('/<ram:SpecifiedTaxRegistration>\s*<ram:ID schemeID="FC">\d+<\/ram:ID>/', $xml);
+        self::assertStringContainsString('<ram:ExemptionReasonCode>VATEX-FR-FRANCHISE</ram:ExemptionReasonCode>', $xml);
+    }
+
     private function xmlFor(SupplyType ...$types): string
     {
         return $this->xmlOf(false, ...$types);

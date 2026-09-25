@@ -66,6 +66,9 @@ use function substr;
  */
 final readonly class FacturXInvoiceBuilder
 {
+    /** The exemption reason code for a French company in franchise en base (BT-121). */
+    private const string VATEX_FRANCHISE = 'VATEX-FR-FRANCHISE';
+
     /** UNTDID 2475 "5": the tax falls due on the invoice date. */
     private const string VAT_DUE_ON_INVOICE_DATE = '5';
 
@@ -251,9 +254,13 @@ final readonly class FacturXInvoiceBuilder
         $documentBuilder->setDocumentSeller($name);
         $this->setAddress($documentBuilder->setDocumentSellerAddress(...), $this->companyAddress());
 
+        $vatNumber = null;
+        $companyNumber = null;
+
         foreach ($this->taxIdentifierRepository->findCompanyIdentifiers($company->getId()) as $identifier) {
             if ($this->isFrenchCompanyNumber($identifier)) {
                 $siret = $identifier->getValue();
+                $companyNumber = $siret;
                 $globalSiren = $this->sirenForScheme0002($siret);
 
                 if ($globalSiren !== null) {
@@ -267,8 +274,18 @@ final readonly class FacturXInvoiceBuilder
             }
 
             if ($identifier->getLabel() === 'TVA intracommunautaire') {
-                $documentBuilder->addDocumentSellerVATRegistrationNumber($identifier->getValue());
+                $vatNumber = $identifier->getValue();
+                $documentBuilder->addDocumentSellerVATRegistrationNumber($vatNumber);
             }
+        }
+
+        // BR-E-02: an exempt invoice has to name the seller for tax purposes,
+        // by VAT number (BT-31) or tax registration (BT-32). A company in
+        // franchise en base usually has no VAT number at all; its SIRET, under
+        // scheme "FC", is the tax registration it does have — the fix the
+        // French Factur-X implementations settled on for micro-entrepreneurs.
+        if (null === $vatNumber && null !== $companyNumber && $this->systemConfig->isVatExempt()) {
+            $documentBuilder->addDocumentSellerTaxNumber($companyNumber);
         }
     }
 
@@ -475,21 +492,33 @@ final readonly class FacturXInvoiceBuilder
      */
     private function lineVatCategory(Line $line): TaxCategory
     {
+        // A company in franchise charges no VAT on any line, whatever rate a
+        // line still carries — copied from a quote, or set before the company
+        // was marked exempt. The calculator already ignores that rate; the
+        // category has to say the same, or the line goes out as standard-rated.
+        if ($this->systemConfig->isVatExempt()) {
+            return TaxCategory::Exempt;
+        }
+
         $firstTax = $line->getTaxes()->first();
 
         if ($firstTax instanceof LineTax) {
             return $firstTax->getCategorySnapshot();
         }
 
-        return $this->systemConfig->isVatExempt() ? TaxCategory::Exempt : TaxCategory::ZeroRated;
+        return TaxCategory::ZeroRated;
     }
 
     private function categoryRate(TaxCategory $category, ?TaxSummaryRow $taxRow): ?float
     {
-        // BR-O-05 (and the equivalent rule for Exempt): a line whose VAT category is
-        // "Not subject to VAT" or "Exempt" must not carry a VAT rate at all.
-        if ($category === TaxCategory::Exempt || $category === TaxCategory::OutOfScope) {
+        // BR-O-05: "Not subject to VAT" carries no rate at all. "Exempt" is not
+        // the same: BR-E-05 wants its rate, and it is zero.
+        if ($category === TaxCategory::OutOfScope) {
             return null;
+        }
+
+        if ($category === TaxCategory::Exempt) {
+            return 0.0;
         }
 
         return $taxRow !== null ? (float) $taxRow->rate : 0.0;
@@ -514,13 +543,15 @@ final readonly class FacturXInvoiceBuilder
         return match ($category) {
             // BR-O-10: category "O" needs an exemption reason code or text.
             TaxCategory::OutOfScope => ['Non soumis à la TVA', ZugferdVATExemptionReasonCode::VATEX_EU_O],
-            // The equivalent rule for "E": no single EU code fits every possible
-            // national exemption basis, so free text is used instead of a code.
-            // The company's own wording when it has one — for a French
-            // micro-entreprise that is the article 293 B mention it is required
-            // to carry, and the receiving platform should see the same reason
-            // the printed invoice does.
-            TaxCategory::Exempt => [$this->exemptionText(), null],
+            // The equivalent rule for "E". In franchise en base the French code
+            // is VATEX-FR-FRANCHISE, next to the company's own wording — the
+            // article 293 B mention it is required to carry, so the receiving
+            // platform sees the same reason the printed invoice does. Any other
+            // exemption keeps the text alone: no single code fits every basis.
+            TaxCategory::Exempt => [
+                $this->exemptionText(),
+                $this->systemConfig->isVatExempt() ? self::VATEX_FRANCHISE : null,
+            ],
             default => [null, null],
         };
     }
