@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Action;
 
 use Augias\CoreBundle\Response\FlashResponse;
-use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceManager;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceManagerInterface;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Generator;
@@ -22,6 +21,7 @@ use LogicException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\RouterInterface;
+use function str_starts_with;
 
 /**
  * @see \Augias\ElectronicInvoicingBundle\Tests\Action\SendElectronicInvoiceTest
@@ -50,9 +50,12 @@ final class SendElectronicInvoice
         }
 
         if (! $submission->isSuccess()) {
-            $reason = $submission->getMessage() === ElectronicInvoiceManager::ONLY_DISBURSEMENTS
-                ? ElectronicInvoiceManager::ONLY_DISBURSEMENTS
-                : 'einvoicing.send.failed';
+            // A reason Augias itself worked out — an invoice of disbursements
+            // alone, an account the platform has not verified — is a
+            // translation key and says more than "failed". The platform's own
+            // messages stay on the invoice page, where there is room for them.
+            $message = (string) $submission->getMessage();
+            $reason = str_starts_with($message, 'einvoicing.') ? $message : 'einvoicing.send.failed';
 
             return new class($route, $reason) extends RedirectResponse implements FlashResponse {
                 public function __construct(

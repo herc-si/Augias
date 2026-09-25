@@ -1250,6 +1250,26 @@ datagrid:
 delete_client: 'Delete Client'
 edit_client: 'Edit Party'
 einvoicing:
+    account:
+        check: 'Check the account'
+        environment:
+            production: 'Production'
+            sandbox: 'Sandbox'
+        explain:
+            failed: 'SUPER PDP refused to link these credentials to the company. Nothing can be sent or received: contact their support.'
+            needs_review: 'A discrepancy (name, registration…) is being reviewed by SUPER PDP support. Until then the platform refuses every submission and every download.'
+            unknown: 'The platform could not be reached.'
+        help: 'Until the platform has verified the company''s identity, it refuses every submission and every download.'
+        title: 'Account on the platform'
+        verification:
+            failed: 'Identity refused'
+            needs_review: 'Verification in progress'
+            unknown: 'Status unknown'
+            verified: 'Identity verified'
+        warning:
+            vat_on_debits: 'The option for VAT on debits differs between Augias and SUPER PDP. It decides which payments SUPER PDP files in e-reporting: align it in your SUPER PDP account.'
+            vat_regime_missing: 'No VAT regime is set at SUPER PDP. It sets the e-reporting schedule: fill it in in your SUPER PDP account.'
+            vat_regime_mismatch: 'The VAT regime set at SUPER PDP does not match the VAT filing rhythm chosen in Augias.'
     grid:
         amount: "Amount"
         invoice_number: "Invoice #"
@@ -1289,10 +1309,13 @@ einvoicing:
             updated: 'Provider updated'
             validation_errors: 'Please correct the validation errors'
         super_pdp:
+            bad_credentials: 'SUPER PDP refuses these credentials: check the client ID and secret, and that they belong to the intended environment (sandbox or production).'
             build_failed: 'Could not build or send the Factur-X document. Please check the invoice data and try again.'
             client_id: 'Client ID'
             client_secret: 'Client secret'
             display_name: 'SUPER PDP'
+            needs_review: 'SUPER PDP has not verified the company''s identity yet: its support is reviewing the account. No invoice can be sent until then.'
+            verification_failed: 'SUPER PDP refused to link these credentials to the company: no invoice can be sent. Contact their support.'
             missing_credentials: 'The SUPER PDP client ID and client secret must be configured.'
             tagline: 'Send Factur-X invoices through SUPER PDP, a French Plateforme Agréée (PA/PDP).'
         test:

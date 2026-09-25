@@ -16,6 +16,8 @@ namespace Augias\ElectronicInvoicingBundle\Twig\Components;
 use Augias\CoreBundle\Response\FlashResponse;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Form\Type\ElectronicInvoiceProviderSettingType;
+use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceAccountCheckerInterface;
+use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -53,11 +55,50 @@ final class ElectronicInvoiceProviderConfiguration extends AbstractController
     #[LiveProp(writable: true)]
     public ?bool $showDeleteConfirmation = false;
 
+    /**
+     * What the platform said when asked — null until the button is pressed.
+     * Asked on demand, never on page load: it is a round trip to a third
+     * party, and the page should not wait on it.
+     *
+     * @var array{verification: string, companyName: ?string, companyNumber: ?string, environment: ?string, error: ?string, warnings: list<string>}|null
+     */
+    #[LiveProp]
+    public ?array $accountStatus = null;
+
     public function __construct(
         private readonly ElectronicInvoiceProviderSettingRepository $repository,
         private readonly EntityManagerInterface $entityManager,
         private readonly RequestStack $requestStack,
+        private readonly ElectronicInvoiceProviderRegistry $providers,
     ) {
+    }
+
+    /**
+     * Whether this provider can say who its account belongs to and whether
+     * that identity is verified — the button is only offered then.
+     */
+    #[ExposeInTemplate]
+    public function canCheckAccount(): bool
+    {
+        return ! $this->isNewSetting()
+            && $this->providers->get($this->providerSetting()->getProvider()) instanceof ElectronicInvoiceAccountCheckerInterface;
+    }
+
+    /**
+     * Asks the platform, with the saved credentials, whose account this is and
+     * whether it may be used — a platform refuses everything until it has
+     * verified the company's identity, and says nothing more useful than 403.
+     */
+    #[LiveAction]
+    public function checkAccount(): void
+    {
+        $provider = $this->providers->get($this->providerSetting()->getProvider());
+
+        if (! $provider instanceof ElectronicInvoiceAccountCheckerInterface) {
+            return;
+        }
+
+        $this->accountStatus = $provider->checkAccount($this->providerSetting()->getSettings())->toArray();
     }
 
     #[ExposeInTemplate]

@@ -27,7 +27,8 @@ final class SuperPdpApiException extends RuntimeException
     public function __construct(
         string $message,
         private readonly ?int $apiCode = null,
-        ?Throwable $previous = null
+        ?Throwable $previous = null,
+        private readonly ?int $httpStatus = null,
     ) {
         parent::__construct($message, 0, $previous);
     }
@@ -35,5 +36,20 @@ final class SuperPdpApiException extends RuntimeException
     public function getApiCode(): ?int
     {
         return $this->apiCode;
+    }
+
+    /**
+     * 403 is what SUPER PDP answers on every route but the session one while
+     * the company behind the credentials is not verified.
+     */
+    public function isForbidden(): bool
+    {
+        return 403 === $this->httpStatus;
+    }
+
+    /** The credentials themselves were refused. */
+    public function isUnauthorized(): bool
+    {
+        return 401 === $this->httpStatus;
     }
 }
