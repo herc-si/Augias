@@ -20,6 +20,7 @@ use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Augias\ElectronicInvoicingBundle\Enum\RefusalReason;
 use Augias\ElectronicInvoicingBundle\Form\Type\Provider\SuperPdpConfigType;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\ElectronicAddressResolver;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\FacturXInvoiceBuilder;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApiException;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
@@ -78,6 +79,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         private SuperPdpClient $client,
         private LoggerInterface $logger,
         private SystemConfig $systemConfig,
+        private ElectronicAddressResolver $addressResolver,
     ) {
     }
 
@@ -226,8 +228,12 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         [$clientId, $clientSecret] = $credentials;
 
         try {
-            $document = $this->documentBuilder->build($invoice);
             $accessToken = $this->client->getAccessToken($clientId, $clientSecret);
+            // Where the invoice goes, and where answers come back to — found
+            // in the directory when nobody typed it. Before building, since
+            // the e-invoice carries both addresses.
+            $this->addressResolver->resolve($accessToken, $invoice->getCompany(), $invoice->getClient());
+            $document = $this->documentBuilder->build($invoice);
             $response = $this->client->sendInvoice($accessToken, $document, (string) $invoice->getId());
         } catch (SuperPdpApiException $e) {
             $this->logger->error('SUPER PDP rejected the invoice submission.', ['exception' => $e, 'invoice' => (string) $invoice->getId()]);

@@ -43,6 +43,9 @@ final class TaxIdentifierType extends AbstractType
 
     public const string VAT_NUMBER = 'TVA intracommunautaire';
 
+    /** Where e-invoices, and the answers to them, are delivered. */
+    public const string ELECTRONIC_ADDRESS = 'Adresse électronique';
+
     /**
      * The three identifiers every French business has, which the company and
      * client forms ask for in fields of their own rather than in the list —
@@ -57,7 +60,7 @@ final class TaxIdentifierType extends AbstractType
      *
      * @var list<string>
      */
-    public const array OTHER_LABELS = ['Adresse électronique', 'RCS', 'Code APE/NAF', 'Autre'];
+    public const array OTHER_LABELS = [self::ELECTRONIC_ADDRESS, 'RCS', 'Code APE/NAF', 'Autre'];
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {

@@ -47,6 +47,9 @@ final class SuperPdpProviderTest extends KernelTestCase
     {
         self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
             static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token', 'expires_in' => 3600])),
+            // The directory, asked for both addresses: nothing listed.
+            static fn (): MockResponse => new MockResponse((string) json_encode(['data' => []])),
+            static fn (): MockResponse => new MockResponse((string) json_encode(['data' => []])),
             static fn (): MockResponse => new MockResponse((string) json_encode(['id' => 4242, 'events' => []])),
         ]));
 
@@ -75,6 +78,9 @@ final class SuperPdpProviderTest extends KernelTestCase
     {
         self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
             static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token', 'expires_in' => 3600])),
+            // The directory, asked for both addresses: nothing listed.
+            static fn (): MockResponse => new MockResponse((string) json_encode(['data' => []])),
+            static fn (): MockResponse => new MockResponse((string) json_encode(['data' => []])),
             static fn (): MockResponse => new MockResponse(
                 (string) json_encode(['code' => 1, 'http_status_code' => 400, 'message' => 'Invalid document']),
                 ['http_code' => 400],
@@ -100,6 +106,9 @@ final class SuperPdpProviderTest extends KernelTestCase
     {
         self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
             static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token'])),
+            // The directory, asked for both addresses: nothing listed.
+            static fn (): MockResponse => new MockResponse((string) json_encode(['data' => []])),
+            static fn (): MockResponse => new MockResponse((string) json_encode(['data' => []])),
             static fn (): MockResponse => new MockResponse((string) json_encode(['message' => 'Forbidden']), ['http_code' => 403]),
             static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token'])),
             static fn (): MockResponse => new MockResponse((string) json_encode(['created_at' => '2026-09-25T09:58:15Z', 'company_verification_status' => 'needs_review'])),
