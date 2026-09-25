@@ -1815,6 +1815,7 @@ invoice:
         date_start: "Start Date"
         discount: "Discount"
         due_date: "Due Date"
+        electronic_status: 'E-invoice'
         end_date: "End Date"
         frequency: "Frequency"
         invoice_date: "Invoice Date"

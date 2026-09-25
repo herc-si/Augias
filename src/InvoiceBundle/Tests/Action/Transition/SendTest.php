@@ -321,6 +321,46 @@ final class SendTest extends TestCase
         self::assertContains([FlashResponse::FLASH_SUCCESS, 'einvoicing.send.success'], $flashPairs);
     }
 
+    /**
+     * A mail server down does not keep the invoice off the platform: the
+     * electronic copy is the one the tax administration counts.
+     */
+    public function testAFailedEmailStillSendsTheElectronicInvoice(): void
+    {
+        $invoice = new Invoice();
+        $invoice->addUser(new Contact()->setEmail('test@example.com'));
+        $invoice->setStatus(InvoiceStatus::Pending);
+
+        $workflow = $this->createStub(WorkflowInterface::class);
+        $mailer = $this->createStub(MailerInterface::class);
+        $mailer->method('send')->willThrowException(new TransportException('Connection refused'));
+        $router = $this->createStub(RouterInterface::class);
+        $router->method('generate')->willReturn('/invoices/view/123');
+
+        $em = $this->createStub(ObjectManager::class);
+        $doctrine = $this->createStub(ManagerRegistry::class);
+        $doctrine->method('getManager')->willReturn($em);
+
+        $submission = new ElectronicInvoiceSubmission();
+        $submission->setSuccess(true);
+
+        $electronicInvoiceManager = $this->createMock(ElectronicInvoiceManagerInterface::class);
+        $electronicInvoiceManager->method('isEligible')->willReturn(true);
+        $electronicInvoiceManager->expects($this->once())->method('send')->with($invoice)->willReturn($submission);
+
+        $action = new Send($workflow, $mailer, $router, $this->createGate(false), $this->createLogger(), $electronicInvoiceManager);
+        $action->setDoctrine($doctrine);
+
+        $response = $action(new Request(), $invoice);
+
+        self::assertInstanceOf(FlashResponse::class, $response);
+
+        $flashPairs = $this->flashPairs($response);
+        self::assertContains([FlashResponse::FLASH_ERROR, 'invoice.email.send_failed'], $flashPairs);
+        self::assertContains([FlashResponse::FLASH_SUCCESS, 'einvoicing.send.success'], $flashPairs);
+        self::assertNotContains([FlashResponse::FLASH_SUCCESS, 'invoice.transition.action.sent'], $flashPairs);
+    }
+
     public function testEligibleInvoiceWithFailedElectronicInvoiceSendStillReportsTheEmailSuccess(): void
     {
         $invoice = new Invoice();

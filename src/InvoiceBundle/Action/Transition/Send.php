@@ -77,27 +77,27 @@ final class Send
 
         $this->save($invoice);
 
+        $emailSent = true;
+
         try {
             $this->mailer->send(new InvoiceEmail($invoice));
         } catch (TransportExceptionInterface $e) {
             $this->logger->error('Failed to send invoice email: ' . $e->getMessage(), ['exception' => $e]);
-
-            return new class($route) extends RedirectResponse implements FlashResponse {
-                public function getFlash(): Generator
-                {
-                    yield FlashResponse::FLASH_ERROR => 'invoice.email.send_failed';
-                }
-            };
+            $emailSent = false;
         }
 
+        // The email and the electronic invoice are two deliveries of the same
+        // invoice: a mail server down must not keep it off the platform, where
+        // it is the copy that counts for the tax administration.
         $electronicInvoiceFlash = $this->sendElectronicInvoiceIfEligible($invoice);
 
-        return new class($route, $electronicInvoiceFlash) extends RedirectResponse implements FlashResponse {
+        return new class($route, $emailSent, $electronicInvoiceFlash) extends RedirectResponse implements FlashResponse {
             /**
              * @param array{string, string}|null $electronicInvoiceFlash
              */
             public function __construct(
                 string $url,
+                private readonly bool $emailSent,
                 private readonly ?array $electronicInvoiceFlash,
             ) {
                 parent::__construct($url);
@@ -105,7 +105,11 @@ final class Send
 
             public function getFlash(): Generator
             {
-                yield FlashResponse::FLASH_SUCCESS => 'invoice.transition.action.sent';
+                if ($this->emailSent) {
+                    yield FlashResponse::FLASH_SUCCESS => 'invoice.transition.action.sent';
+                } else {
+                    yield FlashResponse::FLASH_ERROR => 'invoice.email.send_failed';
+                }
 
                 if ($this->electronicInvoiceFlash !== null) {
                     yield $this->electronicInvoiceFlash[0] => $this->electronicInvoiceFlash[1];
@@ -116,7 +120,7 @@ final class Send
 
     /**
      * Electronic invoicing only applies to eligible clients (setting enabled, an active
-     * provider, client has a SIRET) — publishing an invoice for anyone else is unaffected.
+     * provider, client has a SIRET or a SIREN) — publishing an invoice for anyone else is unaffected.
      * A failure here must not undo the invoice having already been published and emailed,
      * so it only adds a second flash rather than changing the response.
      *

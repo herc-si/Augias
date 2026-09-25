@@ -82,6 +82,14 @@ abstract class BaseInvoiceGrid extends Grid
                 ->label('invoice.grid.due_date')
                 ->width('long')
                 ->filter(new DateRangeFilter('due')),
+            // Where the invoice stands on the e-invoicing platform — accepted,
+            // disputed, refused — without opening it. Empty when it never
+            // went out electronically: a private client, or no platform.
+            StringColumn::new('electronicInvoiceSubmissions')
+                ->label('invoice.grid.electronic_status')
+                ->searchable(false)
+                ->sortable(false)
+                ->twigFunction('einvoicing_latest_status_label'),
 
             // Hidden by default: secondary detail, one toggle away.
             RelativeDateColumn::new('invoiceDate')
