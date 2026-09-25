@@ -69,6 +69,25 @@ final class VatExemptCalculationTest extends KernelTestCase
         self::assertSame([], $result->summaryRows);
     }
 
+    /**
+     * Still one breakdown per line, at no tax: readers pair them with the
+     * lines by position, and the e-invoice found none for any line.
+     */
+    public function testEachLineStillHasItsBreakdownWhenExempt(): void
+    {
+        $invoice = $this->invoiceWithTaxedLine();
+
+        self::getContainer()->get(SystemConfig::class)
+            ->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, '1');
+
+        $result = $this->calculate($invoice);
+
+        self::assertCount(1, $result->lineBreakdowns);
+        self::assertSame('10000', (string) $result->lineBreakdowns[0]->lineSubtotal);
+        self::assertSame('0', (string) $result->lineBreakdowns[0]->lineTax);
+        self::assertSame([], $result->lineBreakdowns[0]->taxRows);
+    }
+
     private function calculate(Invoice $invoice): \Augias\TaxBundle\Calculator\Result\CalculationResult
     {
         $calculator = self::getContainer()->get(TaxCalculatorInterface::class);
