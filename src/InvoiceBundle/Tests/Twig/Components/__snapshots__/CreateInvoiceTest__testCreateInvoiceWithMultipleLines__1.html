@@ -1,5 +1,5 @@
 <html><body>
-<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateInvoice" data-live-url-value="/_components/CreateInvoice" data-live-props-value='{"isEdit":false,"invoiceEntity":null,"previousClientId":null,"catalogProductId":null,"formName":"invoice","invoice":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","disbursement":null},{"description":"","price":"100.00","qty":"1","disbursement":null}],"invoiceId":"1","terms":"","notes":"","total":0,"baseTotal":0,"tax":0,"invoiceDate":"2021-01-01","due":"","customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateInvoice" data-live-url-value="/_components/CreateInvoice" data-live-props-value='{"isEdit":false,"invoiceEntity":null,"previousClientId":null,"catalogProductId":null,"formName":"invoice","invoice":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","disbursement":null},{"description":"","price":"100.00","qty":"1","disbursement":null}],"invoiceId":"1","terms":"","notes":"","total":0,"baseTotal":0,"tax":0,"invoiceDate":"2021-01-01","deliveryDate":"","due":"","customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
     
     <form name="invoice" method="post" data-model="on(change)|*">
 
@@ -78,6 +78,9 @@
 </div>
                         <div class="mb-3">    
             <label class="control-label form-label" for="invoice_due">Due Date</label><input type="date" id="invoice_due" name="invoice[due]" class="form-control">
+</div>
+                                                <div class="mb-3">    
+            <label class="control-label form-label" for="invoice_deliveryDate">Delivery date</label><input type="date" id="invoice_deliveryDate" name="invoice[deliveryDate]" aria-describedby="invoice_deliveryDate_help" class="form-control"><div class="form-text text-muted mb-0" id="invoice_deliveryDate_help">When the goods are delivered, or the service carried out, on a day other than the invoice date. Leave empty otherwise.</div>
 </div>
                     </div>
                         <label for="invoice_discount_value">Discount</label>

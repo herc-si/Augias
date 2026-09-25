@@ -41,6 +41,15 @@ enum LedgerEntrySource: string
     /** A credit note taking goods back, in the sales journal. */
     case CreditNoteIssued = 'credit_note_issued';
 
+    /**
+     * A deposit on goods, in the sales journal: its tax fell due when it was
+     * received, so it comes off what the invoice files for the delivery.
+     */
+    case DepositReceived = 'deposit_received';
+
+    /** That deposit given back: its goods fall due on delivery again. */
+    case DepositRefunded = 'deposit_refunded';
+
     /** A supplier's bill whose VAT is deductible on its date, in the purchase journal. */
     case BillReceived = 'bill_received';
 
@@ -57,6 +66,8 @@ enum LedgerEntrySource: string
             self::BillPayment => 'Supplier payment',
             self::InvoiceIssued => 'Invoice issued',
             self::CreditNoteIssued => 'Credit note issued',
+            self::DepositReceived => 'Deposit received',
+            self::DepositRefunded => 'Deposit refunded',
             self::BillReceived => 'Supplier bill received',
             self::BillCancelled => 'Supplier bill cancelled',
             self::Manual => 'Manual entry',
@@ -71,6 +82,8 @@ enum LedgerEntrySource: string
             self::BillPayment => 'accounting.entry.source.bill_payment',
             self::InvoiceIssued => 'accounting.entry.source.invoice_issued',
             self::CreditNoteIssued => 'accounting.entry.source.credit_note_issued',
+            self::DepositReceived => 'accounting.entry.source.deposit_received',
+            self::DepositRefunded => 'accounting.entry.source.deposit_refunded',
             self::BillReceived => 'accounting.entry.source.bill_received',
             self::BillCancelled => 'accounting.entry.source.bill_cancelled',
             self::Manual => 'accounting.entry.source.manual',

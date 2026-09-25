@@ -35,6 +35,7 @@ use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\SettingsBundle\SystemConfig;
+use Augias\TaxBundle\Enum\TaxCategory;
 use Brick\Math\BigDecimal;
 use Brick\Math\BigInteger;
 use Brick\Math\BigNumber;
@@ -204,13 +205,96 @@ final readonly class LedgerFeeder
         // The tax contained in what was received, split by rate. Worked out
         // here because an entry is immutable once its period is sealed, and
         // because a single amount cannot be taken apart afterwards.
-        $split = $this->taxSplitter->forInvoicePayment($invoice, $received, $disbursed);
+        $deposit = $this->isDeposit($invoice, $entry->getEntryDate());
+        $split = $this->taxSplitter->forInvoicePayment($invoice, $received, $disbursed, $deposit);
 
         if ($split instanceof LedgerTaxSplit) {
             $entry->setTax($split->net, $split->tax, $split->toArray());
         }
 
-        return $this->persist($entry, $profile);
+        $entry = $this->persist($entry, $profile);
+
+        if ($deposit && $split instanceof LedgerTaxSplit) {
+            $this->recordDeposit($invoice, $id, $split, LedgerEntrySource::DepositReceived);
+        }
+
+        return $entry;
+    }
+
+    /**
+     * Whether money received on this day came before the goods were
+     * delivered — a deposit, whose tax on goods falls due on receipt rather
+     * than on delivery (CGI art. 269, 2-a, second sentence).
+     *
+     * Only for goods: a service is taxed on receipt anyway, or on the invoice
+     * under the option for debits, which comes first here since a payment
+     * needs an issued invoice.
+     */
+    private function isDeposit(Invoice $invoice, DateTimeImmutable $received): bool
+    {
+        return $received->format('Y-m-d') < $invoice->getSupplyDate()->format('Y-m-d')
+            && $this->hasGoods($invoice);
+    }
+
+    /**
+     * Takes a deposit's goods out of the sales journal — or puts them back
+     * when it is refunded.
+     *
+     * The invoice filed all its goods' tax there, for the delivery date. The
+     * part a deposit paid for fell due earlier, on the payment, which already
+     * declared it; left in the journal too, it would be declared twice. So
+     * this writes the same shares against it, on the delivery date. Given
+     * back, the deposit no longer paid for anything, and the goods fall due on
+     * delivery again: the same entry the other way.
+     *
+     * Only against an invoice the journal holds. One filed before the books
+     * were kept had nothing filed for its goods, and the deposit's receipt is
+     * then the whole of the story.
+     */
+    private function recordDeposit(Invoice $invoice, Ulid $paymentId, LedgerTaxSplit $paid, LedgerEntrySource $source): void
+    {
+        $goods = $paid->goodsDueOnIssue();
+        $invoiceId = $invoice->getId();
+        $company = $invoice->getCompany();
+        $client = $invoice->getClient();
+
+        if (! $goods instanceof LedgerTaxSplit || ! $invoiceId instanceof Ulid || null === $client) {
+            return;
+        }
+
+        $profile = $this->books($company, LedgerBook::Sales);
+
+        if (! $profile instanceof AccountingProfile
+            || ! $this->entryRepository->findBySource($company, LedgerBook::Sales, LedgerEntrySource::InvoiceIssued, $invoiceId) instanceof LedgerEntry
+            || $this->entryRepository->findBySource($company, LedgerBook::Sales, $source, $paymentId) instanceof LedgerEntry) {
+            return;
+        }
+
+        // Received: out of the journal. Refunded: back in, as it was.
+        if ($source === LedgerEntrySource::DepositReceived) {
+            $goods = $goods->negated();
+        }
+
+        $entry = new LedgerEntry()
+            ->setBook(LedgerBook::Sales)
+            ->setSource($source)
+            ->setSourceId($paymentId)
+            ->setEntryDate(DateTimeImmutable::createFromInterface($invoice->getSupplyDate()))
+            ->setLabel($this->label('accounting.entry.label.' . $source->value, $company))
+            ->setDocumentReference($invoice->getInvoiceId())
+            ->setAmount($goods->net->plus($goods->tax))
+            ->setCurrencyCode($client->getCurrency()->getCode())
+            ->setActivityNature(ActivityNature::SaleOfGoods)
+            ->setCounterparty($client)
+            ->setTax($goods->net, $goods->tax, $goods->toArray());
+
+        $entry->setCompany($company);
+
+        if ('' === $entry->getCounterpartyName()) {
+            $entry->setCounterpartyName((string) $client->getName());
+        }
+
+        $this->persist($entry, $profile);
     }
 
     /**
@@ -403,6 +487,33 @@ final readonly class LedgerFeeder
         $net = $original->getNetAmount();
         $tax = $original->getTaxAmount();
 
+        // A deposit given back: its goods fall due on delivery again, so the
+        // sales journal takes back the entry that had set them aside.
+        $setAside = $this->entryRepository->findBySource($company, LedgerBook::Sales, LedgerEntrySource::DepositReceived, $id);
+
+        if ($setAside instanceof LedgerEntry && null !== $setAside->getNetAmount() && null !== $setAside->getTaxAmount()) {
+            $this->recordDeposit(
+                $invoice,
+                $id,
+                new LedgerTaxSplit(
+                    $setAside->getNetAmount()->toBigInteger()->negated(),
+                    $setAside->getTaxAmount()->toBigInteger()->negated(),
+                    array_map(
+                        static fn (array $share): TaxShare => new TaxShare(
+                            $share['rate'],
+                            TaxCategory::from($share['category']),
+                            BigInteger::of($share['base'])->negated(),
+                            BigInteger::of($share['tax'])->negated(),
+                            true,
+                            true,
+                        ),
+                        $setAside->getTaxBreakdown() ?? [],
+                    ),
+                ),
+                LedgerEntrySource::DepositRefunded,
+            );
+        }
+
         if (null !== $net && null !== $tax) {
             $entry->setTax(
                 BigInteger::of((string) $net)->negated(),
@@ -461,7 +572,9 @@ final readonly class LedgerFeeder
             $invoice,
             $invoice->getCompany(),
             LedgerEntrySource::InvoiceIssued,
-            DateTimeImmutable::createFromInterface($invoice->getInvoiceDate()),
+            // On delivery, which the invoice date stands in for when no other
+            // date was given.
+            DateTimeImmutable::createFromInterface($invoice->getSupplyDate()),
             $invoice->getInvoiceId(),
             $client,
             'accounting.entry.label.invoice_issued',
@@ -566,10 +679,14 @@ final readonly class LedgerFeeder
      */
     private function hasTaxDueOnIssue(Invoice | CreditNote $document): bool
     {
-        if ($document->isVatOnDebits()) {
-            return true;
-        }
+        return $document->isVatOnDebits() || $this->hasGoods($document);
+    }
 
+    /**
+     * Whether any line sells goods. Disbursements sell nothing.
+     */
+    private function hasGoods(Invoice | CreditNote $document): bool
+    {
         foreach ($document->getLines() as $line) {
             if ($line->getSupplyType()->isTaxedOnIssue() && ! $line->isDisbursement()) {
                 return true;

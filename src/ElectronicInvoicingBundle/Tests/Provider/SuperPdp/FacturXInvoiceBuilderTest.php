@@ -24,6 +24,7 @@ use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\LineTax;
 use Augias\TaxBundle\Test\Factory\TaxIdentifierFactory;
+use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use function json_encode;
@@ -233,6 +234,38 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
 
         self::assertStringNotContainsString('DueDateTypeCode', $onReceipts);
         self::assertStringNotContainsString(Invoice::VAT_ON_DEBITS_MENTION, $onReceipts);
+    }
+
+    /**
+     * BT-72 carries the delivery date when the invoice gives one, and falls
+     * back to the invoice date otherwise.
+     */
+    public function testTheDeliveryDateIsSentAsTheSupplyDate(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+
+        $invoice = new Invoice();
+        $invoice->setCompany($this->company);
+        $invoice->setClient($client);
+        $invoice->setInvoiceId('INV-BT72');
+        $invoice->setStatus(InvoiceStatus::Draft);
+        $invoice->setInvoiceDate(new DateTimeImmutable('2026-03-01'));
+        $invoice->setDeliveryDate(new DateTimeImmutable('2026-05-15'));
+
+        $line = new Line();
+        $line->setDescription('Screens')->setPrice(10000)->setQty(1)->setSupplyType(SupplyType::Goods)->updateTotal();
+        $invoice->addLine($line);
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($invoice);
+        $entityManager->flush();
+
+        $xml = self::getContainer()->get(FacturXInvoiceBuilder::class)->buildDocument($invoice)->getContent();
+
+        self::assertMatchesRegularExpression(
+            '/<ram:ActualDeliverySupplyChainEvent>\s*<ram:OccurrenceDateTime>\s*<udt:DateTimeString format="102">20260515<\/udt:DateTimeString>/',
+            $xml,
+        );
     }
 
     private function xmlFor(SupplyType ...$types): string

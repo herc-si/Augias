@@ -44,6 +44,12 @@ final readonly class TaxShare
          * since the money did contain it, but declared from the sales journal.
          */
         public bool $dueOnIssue = false,
+        /**
+         * Whether the share is tax on goods. Known while the entry is being
+         * written, and not stored: a deposit needs it to take its goods back
+         * out of the sales journal, and nothing reads it afterwards.
+         */
+        public bool $goods = false,
     ) {
     }
 
@@ -52,7 +58,7 @@ final readonly class TaxShare
      */
     public function negated(): self
     {
-        return new self($this->rate, $this->category, $this->base->negated(), $this->tax->negated(), $this->dueOnIssue);
+        return new self($this->rate, $this->category, $this->base->negated(), $this->tax->negated(), $this->dueOnIssue, $this->goods);
     }
 
     /**

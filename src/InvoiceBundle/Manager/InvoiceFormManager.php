@@ -50,6 +50,7 @@ final readonly class InvoiceFormManager
         // Map DTO fields to entity
         $invoice->setInvoiceId($dto->invoiceId);
         $invoice->setInvoiceDate($dto->invoiceDate ?? CarbonImmutable::now());
+        $invoice->setDeliveryDate($dto->deliveryDate);
         $invoice->setDue($dto->due);
         $invoice->setDiscount($dto->discount);
         $invoice->setTerms($dto->terms);
@@ -93,6 +94,7 @@ final readonly class InvoiceFormManager
     {
         $invoice->setInvoiceId($dto->invoiceId);
         $invoice->setInvoiceDate($dto->invoiceDate ?? CarbonImmutable::now());
+        $invoice->setDeliveryDate($dto->deliveryDate);
         $invoice->setDue($dto->due);
         $invoice->setDiscount($dto->discount);
         $invoice->setTerms($dto->terms);
@@ -152,6 +154,7 @@ final readonly class InvoiceFormManager
         // Map entity fields to DTO
         $dto->invoiceId = $invoice->getInvoiceId();
         $dto->invoiceDate = $invoice->getInvoiceDate();
+        $dto->deliveryDate = $invoice->getDeliveryDate();
         $dto->due = $invoice->getDue();
         $dto->discount = $invoice->getDiscount();
         $dto->terms = $invoice->getTerms();

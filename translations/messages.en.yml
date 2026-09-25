@@ -156,7 +156,9 @@ accounting:
             bill_payment: 'Supplier payment'
             bill_received: 'Supplier bill: VAT deductible on receipt'
             credit_note_issued: 'Credit note: VAT taken back on issue'
-            invoice_issued: 'Invoice: VAT due on issue'
+            deposit_received: 'Deposit: VAT already declared on receipt'
+            deposit_refunded: 'Deposit refunded: VAT due on delivery'
+            invoice_issued: 'Invoice issued: VAT due'
             invoice_payment: 'Invoice payment'
             invoice_payment_with_disbursement: 'Invoice payment, excluding %disbursed% of disbursements'
             invoice_refund: 'Refund to client'
@@ -166,6 +168,8 @@ accounting:
             bill_payment: 'Supplier payment'
             bill_received: 'Supplier bill received'
             credit_note_issued: 'Credit note issued'
+            deposit_received: 'Deposit received'
+            deposit_refunded: 'Deposit refunded'
             invoice_issued: 'Invoice issued'
             invoice_payment: 'Invoice payment'
             invoice_refund: 'Refund to client'
@@ -1415,6 +1419,8 @@ form:
         disbursement: "Disbursement"
         disbursement.help: "Money advanced in this client's name, re-billed to the euro"
         supply_type: "Supply"
+        delivery_date: "Delivery date"
+        delivery_date.help: "When the goods are delivered, or the service carried out, on a day other than the invoice date. Leave empty otherwise."
         domain: "Domain"
         eid: "EID"
         email: "Email"
@@ -1638,6 +1644,7 @@ invoice:
         view: 'View Invoice'
     add_payment: 'Add Payment'
     amount_payable: 'Amount payable'
+    delivery_date_mention: 'Delivery date: %date%'
     archive:
         success: 'Invoice has been archived'
     balance: 'Outstanding Balance'

@@ -141,10 +141,10 @@ final readonly class FacturXInvoiceBuilder
             $documentBuilder->addDocumentNote(Invoice::VAT_ON_DEBITS_MENTION);
         }
 
-        // Without a delivery/supply date, zugferd still emits an empty
-        // ApplicableHeaderTradeDelivery element, which PEPPOL-EN16931-R008 rejects.
-        // The invoice date stands in for a supply date Augias doesn't track.
-        $documentBuilder->setDocumentSupplyChainEvent($invoice->getInvoiceDate());
+        // BT-72, the actual delivery date. Without one, zugferd still emits an
+        // empty ApplicableHeaderTradeDelivery element, which PEPPOL-EN16931-R008
+        // rejects — so the invoice date stands in when no delivery date was given.
+        $documentBuilder->setDocumentSupplyChainEvent($invoice->getSupplyDate());
 
         $this->setSeller($documentBuilder, $invoice->getCompany());
 

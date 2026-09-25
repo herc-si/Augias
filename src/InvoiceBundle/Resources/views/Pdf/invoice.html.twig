@@ -457,6 +457,9 @@
 {% if vatMention %}
     <div style="margin-top: 12px; font-size: 9pt; color: #64748b;">{{ vatMention }}</div>
 {% endif %}
+{% if invoice.hasDistinctDeliveryDate %}
+    <div style="margin-top: 12px; font-size: 9pt; color: #64748b;">{{ 'invoice.delivery_date_mention'|trans({'%date%': invoice.deliveryDate|format_date('long')}) }}</div>
+{% endif %}
 {% set debitsMention = vat_on_debits_mention(invoice) %}
 {% if debitsMention %}
     <div style="margin-top: 12px; font-size: 9pt; color: #64748b;">{{ debitsMention }}</div>

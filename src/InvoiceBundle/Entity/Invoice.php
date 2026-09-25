@@ -177,6 +177,20 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
     #[Groups(['invoice_api:read', 'invoice_api:write'])]
     private DateTimeInterface $invoiceDate;
 
+    /**
+     * When the goods were delivered or the service carried out, when that is
+     * not the invoice date.
+     *
+     * The law asks for it on the invoice in that case (CGI ann. II, art. 242
+     * nonies A, I-7°), and it is the day the VAT on goods falls due (CGI art.
+     * 269, 2-a) — unless a deposit came first. Empty means the invoice date,
+     * which is what it was taken to be before it could be told apart.
+     */
+    #[ORM\Column(name: 'delivery_date', type: Types::DATE_IMMUTABLE, nullable: true)]
+    #[Assert\Type(type: DateTimeInterface::class)]
+    #[Groups(['invoice_api:read', 'invoice_api:write'])]
+    private ?DateTimeImmutable $deliveryDate = null;
+
     #[ORM\Column(name: 'paid_date', type: Types::DATE_IMMUTABLE, nullable: true)]
     #[Assert\Type(type: DateTimeInterface::class)]
     #[Groups(['invoice_api:read', 'invoice_api:write'])]
@@ -678,6 +692,37 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
         $this->invoiceDate = $invoiceDate;
 
         return $this;
+    }
+
+    public function getDeliveryDate(): ?DateTimeImmutable
+    {
+        return $this->deliveryDate;
+    }
+
+    public function setDeliveryDate(?DateTimeInterface $deliveryDate): self
+    {
+        $this->deliveryDate = null === $deliveryDate ? null : DateTimeImmutable::createFromInterface($deliveryDate);
+
+        return $this;
+    }
+
+    /**
+     * The day the supply took place: the delivery date when there is one, the
+     * invoice date otherwise.
+     */
+    public function getSupplyDate(): DateTimeInterface
+    {
+        return $this->deliveryDate ?? $this->invoiceDate;
+    }
+
+    /**
+     * Whether the delivery date has to be printed: only when it is not the
+     * invoice date, which is when the law asks for it.
+     */
+    public function hasDistinctDeliveryDate(): bool
+    {
+        return $this->deliveryDate instanceof DateTimeInterface
+            && $this->deliveryDate->format('Y-m-d') !== $this->invoiceDate->format('Y-m-d');
     }
 
     #[Groups(['searchable'])]

@@ -51,6 +51,29 @@ final readonly class LedgerTaxSplit
     }
 
     /**
+     * The shares on goods alone, marked as due on issue — what a deposit
+     * takes back out of the sales journal. Null when there are none.
+     */
+    public function goodsDueOnIssue(): ?self
+    {
+        $net = BigInteger::zero();
+        $tax = BigInteger::zero();
+        $shares = [];
+
+        foreach ($this->shares as $share) {
+            if (! $share->goods) {
+                continue;
+            }
+
+            $shares[] = new TaxShare($share->rate, $share->category, $share->base, $share->tax, true, true);
+            $net = $net->plus($share->base);
+            $tax = $tax->plus($share->tax);
+        }
+
+        return [] === $shares ? null : new self($net, $tax, $shares);
+    }
+
+    /**
      * @return list<array{rate: string, category: string, base: string, tax: string, due?: string}>
      */
     public function toArray(): array

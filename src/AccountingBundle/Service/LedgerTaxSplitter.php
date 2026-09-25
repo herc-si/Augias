@@ -81,11 +81,17 @@ final readonly class LedgerTaxSplitter
      * the entry leaves out. It changes the net, never the tax: a disbursement
      * line carries none.
      *
+     * $deposit says the money came before the goods were delivered. The tax on
+     * the goods it pays for then falls due now, on receipt (CGI art. 269, 2-a,
+     * second sentence), so those shares are not marked as due on issue: this
+     * payment is where they are declared. The shares still say they are goods,
+     * for the entry that takes them back out of the sales journal.
+     *
      * @throws MathException
      */
-    public function forInvoicePayment(Invoice $invoice, BigNumber $paid, ?BigNumber $disbursed = null): ?LedgerTaxSplit
+    public function forInvoicePayment(Invoice $invoice, BigNumber $paid, ?BigNumber $disbursed = null, bool $deposit = false): ?LedgerTaxSplit
     {
-        return $this->forDocument($invoice, $paid, $disbursed);
+        return $this->forDocument($invoice, $paid, $disbursed, $deposit);
     }
 
     /**
@@ -133,6 +139,7 @@ final readonly class LedgerTaxSplitter
                 $this->round($group['base']),
                 $this->round($group['tax']),
                 dueOnIssue: true,
+                goods: $group['goods'],
             );
 
             $net = $net->plus($share->base);
@@ -183,9 +190,9 @@ final readonly class LedgerTaxSplitter
     /**
      * @throws MathException
      */
-    private function forDocument(BaseInvoice $document, BigNumber $settled, ?BigNumber $disbursed): ?LedgerTaxSplit
+    private function forDocument(BaseInvoice $document, BigNumber $settled, ?BigNumber $disbursed, bool $deposit = false): ?LedgerTaxSplit
     {
-        $groups = $this->groups($document);
+        $groups = $this->groups($document, $deposit);
 
         if ([] === $groups) {
             return null;
@@ -195,37 +202,42 @@ final readonly class LedgerTaxSplitter
     }
 
     /**
-     * The document's tax, grouped by rate, category and when it falls due.
+     * The document's tax, grouped by rate, category, when it falls due and
+     * whether it is on goods.
      *
-     * @return array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal, dueOnIssue: bool}>
+     * Goods fall due on issue — unless $deposit, see forInvoicePayment().
+     * Services fall due on issue under the option for VAT on debits, read off
+     * the document, where it was frozen when the document went out.
+     *
+     * @return array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal, dueOnIssue: bool, goods: bool}>
      *
      * @throws MathException
      */
-    private function groups(BaseInvoice $document): array
+    private function groups(BaseInvoice $document, bool $deposit = false): array
     {
         $result = $this->taxCalculator->calculate($document);
 
-        // Under the option for VAT on debits, services fall due on issue too,
-        // and so does everything on the document. The option is read off the
-        // document, where it was frozen when it went out.
-        $onDebits = $document->isVatOnDebits();
+        $goodsDueOnIssue = ! $deposit;
+        $servicesDueOnIssue = $document->isVatOnDebits();
 
         $groups = [];
 
         foreach ($result->lineBreakdowns as $line) {
+            $goods = $line->supplyType->isTaxedOnIssue();
+
             foreach ($line->taxRows as $row) {
                 // The line's own net is the base the rate applied to. Several
                 // taxes on one line each take that same base: compounding one
                 // VAT onto another is not a thing this has to model.
-                $this->collect($groups, $row, $line->lineSubtotal, $row->amount, $onDebits || $line->supplyType->isTaxedOnIssue());
+                $this->collect($groups, $row, $line->lineSubtotal, $row->amount, $goods ? $goodsDueOnIssue : $servicesDueOnIssue, $goods);
             }
         }
 
         // A document-level tax applies to the document's net, not to any one
-        // line — so to its goods and its services alike, in proportion. The
-        // goods part falls due on issue with the rest of the goods; without
-        // goods on the document this is the whole row, as it always was.
-        $goods = $onDebits ? $result->subTotal : $this->goodsSubtotal($result);
+        // line — so to its goods and its services alike, in proportion, and
+        // each part falls due with the lines it is on. Without goods on the
+        // document this is the whole row, as it always was.
+        $goods = $this->goodsSubtotal($result);
         $goodsRatio = $result->subTotal->isPositive() && $goods->isPositive()
             ? $goods->dividedBy($result->subTotal, 10, RoundingMode::HalfEven)
             : BigDecimal::zero();
@@ -234,11 +246,11 @@ final readonly class LedgerTaxSplitter
             $goodsTax = $row->amount->multipliedBy($goodsRatio);
 
             if ($goods->isPositive()) {
-                $this->collect($groups, $row, $goods, $goodsTax, true);
+                $this->collect($groups, $row, $goods, $goodsTax, $goodsDueOnIssue, true);
             }
 
             if ($result->subTotal->isGreaterThan($goods)) {
-                $this->collect($groups, $row, $result->subTotal->minus($goods), $row->amount->minus($goodsTax), false);
+                $this->collect($groups, $row, $result->subTotal->minus($goods), $row->amount->minus($goodsTax), $servicesDueOnIssue, false);
             }
         }
 
@@ -265,9 +277,9 @@ final readonly class LedgerTaxSplitter
     }
 
     /**
-     * @param array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal, dueOnIssue: bool}> $groups
+     * @param array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal, dueOnIssue: bool, goods: bool}> $groups
      */
-    private function collect(array &$groups, TaxSummaryRow $row, BigDecimal $base, BigDecimal $tax, bool $dueOnIssue): void
+    private function collect(array &$groups, TaxSummaryRow $row, BigDecimal $base, BigDecimal $tax, bool $dueOnIssue, bool $goods): void
     {
         // Withholding is not tax the company collected, and an informational
         // row is a mention on a document rather than a figure.
@@ -275,7 +287,7 @@ final readonly class LedgerTaxSplitter
             return;
         }
 
-        $key = $row->rate . '|' . $row->category->value . '|' . ($dueOnIssue ? TaxShare::DUE_ON_ISSUE : '');
+        $key = $row->rate . '|' . $row->category->value . '|' . ($dueOnIssue ? TaxShare::DUE_ON_ISSUE : '') . ($goods ? '|goods' : '');
 
         $groups[$key] ??= [
             'rate' => $row->rate,
@@ -283,6 +295,7 @@ final readonly class LedgerTaxSplitter
             'base' => BigDecimal::zero(),
             'tax' => BigDecimal::zero(),
             'dueOnIssue' => $dueOnIssue,
+            'goods' => $goods,
         ];
 
         $groups[$key]['base'] = $groups[$key]['base']->plus($base);
@@ -306,7 +319,7 @@ final readonly class LedgerTaxSplitter
     }
 
     /**
-     * @param array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal, dueOnIssue: bool}> $groups
+     * @param array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal, dueOnIssue: bool, goods: bool}> $groups
      *
      * @throws MathException
      */
@@ -340,6 +353,7 @@ final readonly class LedgerTaxSplitter
                 $this->round($group['base']->multipliedBy($ratio)),
                 $this->round($group['tax']->multipliedBy($ratio)),
                 $group['dueOnIssue'],
+                $group['goods'],
             );
 
             $taxSoFar = $taxSoFar->plus($shares[$key]->tax);
@@ -381,6 +395,7 @@ final readonly class LedgerTaxSplitter
             $shares[$largest]->base->plus($baseResidual),
             $shares[$largest]->tax->plus($taxResidual),
             $shares[$largest]->dueOnIssue,
+            $shares[$largest]->goods,
         );
 
         return $shares;
