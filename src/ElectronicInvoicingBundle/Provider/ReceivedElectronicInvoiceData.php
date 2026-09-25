@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Provider;
 
+use Augias\CoreBundle\Enum\SupplyType;
 use Brick\Math\BigNumber;
 use DateTimeImmutable;
 
@@ -46,6 +47,21 @@ final readonly class ReceivedElectronicInvoiceData
         public ?BigNumber $totalAmount,
         public ?string $currencyCode,
         public ?string $statusCode,
+        /**
+         * The VAT the supplier charged (BT-110), minor units — null when the
+         * invoice does not say.
+         */
+        public ?BigNumber $taxAmount = null,
+        /**
+         * Goods or services, from the billing framework (BT-23). Null for a
+         * mixed invoice: no single answer, and the bill keeps its default.
+         */
+        public ?SupplyType $supplyType = null,
+        /**
+         * Whether the supplier's VAT falls due on the invoice date (BT-8) —
+         * its option for VAT on debits.
+         */
+        public bool $supplierVatOnDebits = false,
     ) {
     }
 }

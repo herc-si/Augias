@@ -14,8 +14,10 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Entity;
 
 use Augias\CoreBundle\Doctrine\Type\BigIntegerType;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
+use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceReceiptRepository;
 use Brick\Math\BigNumber;
 use DateTimeImmutable;
@@ -94,6 +96,24 @@ class ElectronicInvoiceReceipt
      */
     #[ORM\Column(name: 'status_code', type: Types::STRING, length: 64, nullable: true)]
     private ?string $statusCode = null;
+
+    /**
+     * The VAT the supplier charged, as the invoice states it (BT-110) — what
+     * the bill made from this receipt deducts, so that nobody types it again.
+     */
+    #[ORM\Column(name: 'tax_amount', type: BigIntegerType::NAME, nullable: true)]
+    private ?BigNumber $taxAmount = null;
+
+    /**
+     * Goods or services, from the invoice's billing framework (BT-23): with
+     * the supplier's option for debits, it decides when that VAT is
+     * deductible. Null for a mixed invoice.
+     */
+    #[ORM\Column(name: 'supply_type', type: Types::STRING, length: 10, nullable: true, enumType: SupplyType::class)]
+    private ?SupplyType $supplyType = null;
+
+    #[ORM\Column(name: 'supplier_vat_on_debits', type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $supplierVatOnDebits = false;
 
     /**
      * Relative path from the project root to the downloaded document on local
@@ -222,6 +242,51 @@ class ElectronicInvoiceReceipt
         }
 
         return new Money((string) $this->totalAmount, new Currency($this->currencyCode));
+    }
+
+    public function getTaxAmount(): ?BigNumber
+    {
+        return $this->taxAmount;
+    }
+
+    public function setTaxAmount(?BigNumber $taxAmount): self
+    {
+        $this->taxAmount = $taxAmount;
+
+        return $this;
+    }
+
+    public function getSupplyType(): ?SupplyType
+    {
+        return $this->supplyType;
+    }
+
+    public function setSupplyType(?SupplyType $supplyType): self
+    {
+        $this->supplyType = $supplyType;
+
+        return $this;
+    }
+
+    public function isSupplierVatOnDebits(): bool
+    {
+        return $this->supplierVatOnDebits;
+    }
+
+    public function setSupplierVatOnDebits(bool $supplierVatOnDebits): self
+    {
+        $this->supplierVatOnDebits = $supplierVatOnDebits;
+
+        return $this;
+    }
+
+    /**
+     * The company's answer to this invoice, if it has given one — read off
+     * the lifecycle status, which is where the platform keeps it too.
+     */
+    public function getResponse(): ?ReceiptResponse
+    {
+        return ReceiptResponse::tryFrom((string) $this->statusCode);
     }
 
     public function getStatusCode(): ?string

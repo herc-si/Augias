@@ -17,7 +17,9 @@ use Augias\BillBundle\Entity\Bill;
 use Augias\BillBundle\Enum\BillStatus;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Repository\ClientRepository;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
+use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\TaxIdentifier;
 use Brick\Math\BigInteger;
 use Doctrine\ORM\EntityManagerInterface;
@@ -36,6 +38,7 @@ final readonly class BillManager
     public function __construct(
         private EntityManagerInterface $entityManager,
         private ClientRepository $clientRepository,
+        private SystemConfig $systemConfig,
     ) {
     }
 
@@ -49,7 +52,18 @@ final readonly class BillManager
             ->setIssueDate($receipt->getIssueDate())
             ->setTotalAmount($receipt->getTotalAmount() ?? BigInteger::zero())
             ->setCurrencyCode($receipt->getCurrencyCode() ?? 'EUR')
-            ->setElectronicInvoiceReceipt($receipt);
+            ->setElectronicInvoiceReceipt($receipt)
+            // When its VAT is deductible, read off the invoice rather than
+            // typed again: goods or services, and whether the supplier opted
+            // for debits.
+            ->setSupplyType($receipt->getSupplyType() ?? SupplyType::Services)
+            ->setSupplierVatOnDebits($receipt->isSupplierVatOnDebits());
+
+        // Only for a company that deducts VAT at all — one in franchise en
+        // base has no use for it, and is not asked for it on the form either.
+        if (! $this->systemConfig->isVatExempt($receipt->getCompany())) {
+            $bill->setTaxAmount($receipt->getTaxAmount());
+        }
 
         $this->entityManager->persist($bill);
         $this->entityManager->flush();

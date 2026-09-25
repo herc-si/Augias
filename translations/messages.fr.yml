@@ -1275,10 +1275,46 @@ einvoicing:
             vat_on_debits: "L'option pour la TVA sur les débits ne correspond pas entre Augias et SUPER PDP. Elle décide des paiements que SUPER PDP transmet en e-reporting : alignez-la dans votre espace SUPER PDP."
             vat_regime_missing: "Aucun régime de TVA n'est déclaré chez SUPER PDP. C'est lui qui fixe le calendrier de l'e-reporting : renseignez-le dans votre espace SUPER PDP."
             vat_regime_mismatch: "Le régime de TVA déclaré chez SUPER PDP ne correspond pas au rythme de déclaration de TVA choisi dans Augias."
+    refusal_reason:
+        ADR_ERR: 'Adresse de facturation électronique erronée'
+        CALCUL_ERR: 'Erreur de calcul de la facture'
+        CMD_ERR: 'N° de commande incorrect ou manquant'
+        CONTRAT_TERM: 'Contrat terminé'
+        DEST_ERR: 'Erreur de destinataire'
+        DOUBLE_FACT: 'Double facturation'
+        DOUBLON: 'Facture en doublon'
+        EMMET_INC: 'Émetteur inconnu'
+        MONTANTTOTAL_ERR: 'Montant total erroné'
+        NON_CONFORME: 'Mention légale manquante'
+        REF_CT_ABSENT: 'Référence contractuelle manquante'
+        TRANSAC_INC: 'Transaction inconnue'
+        TX_TVA_ERR: 'Taux de TVA erroné'
+    response:
+        accepted: 'Acceptée'
+        action: 'Accepter ou refuser'
+        already_answered: 'Cette facture a déjà reçu une réponse.'
+        already_answered_as: 'Réponse déjà envoyée au fournisseur : %response%.'
+        flash:
+            accepted: 'Facture acceptée : le fournisseur en est informé.'
+            refused: 'Facture refusée : le fournisseur en est informé, avec votre motif.'
+        form:
+            comment: 'Précisions pour le fournisseur (facultatif)'
+            reason: 'Motif du refus'
+            reason_help: 'Obligatoire pour un refus : un code normalisé, que la plateforme exige.'
+            reason_placeholder: 'Choisissez un motif'
+            response: 'Votre réponse'
+        help: "La réponse part chez le fournisseur par la plateforme d'où vient la facture. Elle est définitive."
+        none: 'Sans réponse'
+        reason_required: 'Indiquez le motif du refus.'
+        refused: 'Refusée'
+        submit: 'Envoyer la réponse'
+        title: 'Répondre à une facture reçue'
+        unavailable: "Aucune plateforme en service ne peut porter la réponse : vérifiez que celle d'où vient la facture est active et que son compte est vérifié."
     grid:
         amount: "Montant"
         invoice_number: "N° de facture"
         issue_date: "Date d'émission"
+        response: 'Réponse'
         provider: "Plateforme"
         received: "Reçue le"
         seller_name: "Fournisseur"

@@ -30,7 +30,12 @@ final class TaxIdentifierType extends AbstractType
     /**
      * @var list<string>
      */
-    public const array PRESET_LABELS = ['SIRET', 'SIREN', 'TVA intracommunautaire', 'RCS', 'Code APE/NAF', 'Autre'];
+    /**
+     * "Adresse électronique" is where e-invoices — and the answers to them —
+     * are delivered, when it is not simply the SIREN: an address with a
+     * suffix, one per establishment or per department.
+     */
+    public const array PRESET_LABELS = ['SIRET', 'SIREN', 'TVA intracommunautaire', 'Adresse électronique', 'RCS', 'Code APE/NAF', 'Autre'];
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {

@@ -1275,10 +1275,46 @@ einvoicing:
             vat_on_debits: 'The option for VAT on debits differs between Augias and SUPER PDP. It decides which payments SUPER PDP files in e-reporting: align it in your SUPER PDP account.'
             vat_regime_missing: 'No VAT regime is set at SUPER PDP. It sets the e-reporting schedule: fill it in in your SUPER PDP account.'
             vat_regime_mismatch: 'The VAT regime set at SUPER PDP does not match the VAT filing rhythm chosen in Augias.'
+    refusal_reason:
+        ADR_ERR: 'Wrong e-invoicing address'
+        CALCUL_ERR: 'Calculation error'
+        CMD_ERR: 'Purchase order number wrong or missing'
+        CONTRAT_TERM: 'Contract ended'
+        DEST_ERR: 'Wrong recipient'
+        DOUBLE_FACT: 'Billed twice'
+        DOUBLON: 'Duplicate invoice'
+        EMMET_INC: 'Unknown issuer'
+        MONTANTTOTAL_ERR: 'Wrong total amount'
+        NON_CONFORME: 'Legal mention missing'
+        REF_CT_ABSENT: 'Contract reference missing'
+        TRANSAC_INC: 'Unknown transaction'
+        TX_TVA_ERR: 'Wrong VAT rate'
+    response:
+        accepted: 'Accepted'
+        action: 'Accept or refuse'
+        already_answered: 'This invoice has already been answered.'
+        already_answered_as: 'Answer already sent to the supplier: %response%.'
+        flash:
+            accepted: 'Invoice accepted: the supplier has been told.'
+            refused: 'Invoice refused: the supplier has been told, with your reason.'
+        form:
+            comment: 'Details for the supplier (optional)'
+            reason: 'Reason for refusing'
+            reason_help: 'Required to refuse: a normalised code, which the platform insists on.'
+            reason_placeholder: 'Choose a reason'
+            response: 'Your answer'
+        help: 'The answer goes to the supplier through the platform the invoice came from. It is final.'
+        none: 'No answer'
+        reason_required: 'Give the reason for refusing.'
+        refused: 'Refused'
+        submit: 'Send the answer'
+        title: 'Answer a received invoice'
+        unavailable: 'No platform in use can carry the answer: check that the one the invoice came from is active and its account verified.'
     grid:
         amount: "Amount"
         invoice_number: "Invoice #"
         issue_date: "Issue Date"
+        response: 'Answer'
         provider: "Provider"
         received: "Received"
         seller_name: "Supplier"

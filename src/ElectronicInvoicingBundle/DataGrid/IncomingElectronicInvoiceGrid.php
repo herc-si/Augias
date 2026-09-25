@@ -22,6 +22,7 @@ use Augias\DataGridBundle\GridBuilder\Column\MoneyColumn;
 use Augias\DataGridBundle\GridBuilder\Column\StringColumn;
 use Augias\DataGridBundle\GridBuilder\Filter\DateRangeFilter;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
+use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Override;
 use Symfony\Component\Translation\TranslatableMessage;
 use function str_replace;
@@ -60,6 +61,14 @@ final class IncomingElectronicInvoiceGrid extends Grid
                 ->label('einvoicing.grid.amount')
                 ->searchable(false)
                 ->sortableField('totalAmount'),
+            // The company's answer, once given — the rest of the lifecycle is
+            // the platform's business, and "received" says nothing new here.
+            StringColumn::new('statusCode')
+                ->label('einvoicing.grid.response')
+                ->searchable(false)
+                ->formatValue(static fn (?string $value): TranslatableMessage => new TranslatableMessage(
+                    ReceiptResponse::tryFrom((string) $value)?->translationKey() ?? 'einvoicing.response.none',
+                )),
             DateTimeColumn::new('created')
                 ->label('einvoicing.grid.received')
                 ->width('long')
@@ -77,6 +86,10 @@ final class IncomingElectronicInvoiceGrid extends Grid
             Action::new('_einvoicing_incoming_download', ['id' => 'id'])
                 ->icon('download')
                 ->label('Download'),
+            Action::new('_einvoicing_incoming_respond', ['id' => 'id'])
+                ->icon('file-check')
+                ->label('einvoicing.response.action')
+                ->inMenu(),
             // Idempotent: opens the existing Bill if this receipt was already
             // converted, otherwise creates one — see BillBundle\Action\CreateFromReceipt.
             Action::new('_bills_create_from_receipt', ['id' => 'id'])

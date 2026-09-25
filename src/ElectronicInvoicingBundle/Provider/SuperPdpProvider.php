@@ -13,9 +13,12 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Provider;
 
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
+use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
+use Augias\ElectronicInvoicingBundle\Enum\RefusalReason;
 use Augias\ElectronicInvoicingBundle\Form\Type\Provider\SuperPdpConfigType;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\FacturXInvoiceBuilder;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApiException;
@@ -45,8 +48,17 @@ use function usort;
  * @see \Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdpProviderTest
  */
 #[AsTaggedItem('super_pdp')]
-final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface, ElectronicInvoiceAccountCheckerInterface
+final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface, ElectronicInvoiceAccountCheckerInterface, ElectronicInvoiceResponderInterface
 {
+    /**
+     * BT-8 values meaning the supplier's VAT falls due on the invoice date —
+     * its option for debits. SUPER PDP reports "3" (UNTDID 2005, the semantic
+     * model's list) for what a CII invoice carries as "5" (UNTDID 2475).
+     *
+     * @var list<string>
+     */
+    private const array VAT_ON_INVOICE_DATE_CODES = ['3', '5'];
+
     /**
      * `fr:*` codes per https://api.superpdp.tech/openapi/superpdp.json that mean
      * the invoice reached its recipient without being refused (fr:205 Accepted,
@@ -371,7 +383,60 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
             totalAmount: $this->toMinorUnits($totals['amount_due_for_payment'] ?? null),
             currencyCode: is_string($enInvoice['currency_code'] ?? null) ? $enInvoice['currency_code'] : null,
             statusCode: self::latestStatusCode($item['events'] ?? null),
+            taxAmount: $this->toMinorUnits(is_array($totals['total_vat_amount'] ?? null) ? ($totals['total_vat_amount']['value'] ?? null) : null),
+            supplyType: $this->supplyType($enInvoice),
+            supplierVatOnDebits: in_array($enInvoice['vat_point_date_code'] ?? null, self::VAT_ON_INVOICE_DATE_CODES, true),
         );
+    }
+
+    /**
+     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     *
+     * @throws SuperPdpApiException
+     */
+    public function respond(array $config, string $externalReference, ReceiptResponse $response, ?RefusalReason $reason = null, ?string $comment = null): void
+    {
+        $credentials = $this->credentials($config);
+
+        if ($credentials === null) {
+            throw new SuperPdpApiException('einvoicing.provider.super_pdp.missing_credentials');
+        }
+
+        [$clientId, $clientSecret] = $credentials;
+
+        try {
+            $this->client->createInvoiceEvent(
+                $this->client->getAccessToken($clientId, $clientSecret),
+                (int) $externalReference,
+                $response->value,
+                $reason?->value,
+                $comment,
+            );
+        } catch (SuperPdpApiException $e) {
+            $this->logger->error('SUPER PDP did not take the answer to a received invoice.', ['exception' => $e, 'invoice' => $externalReference]);
+
+            throw new SuperPdpApiException($this->forbiddenReason($clientId, $clientSecret, $e), $e->getApiCode(), $e);
+        }
+    }
+
+    /**
+     * Goods or services, from the billing framework code (BT-23): "B…" is
+     * goods, "S…" services. "M…" — both — has no single answer and leaves it
+     * to the bill's default, services, whose VAT is deducted on payment: the
+     * later of the two dates, and so never too early.
+     *
+     * @param array<string, mixed> $enInvoice
+     */
+    private function supplyType(array $enInvoice): ?SupplyType
+    {
+        $control = is_array($enInvoice['process_control'] ?? null) ? $enInvoice['process_control'] : [];
+        $code = is_string($control['business_process_type'] ?? null) ? $control['business_process_type'] : '';
+
+        return match ($code[0] ?? '') {
+            'B' => SupplyType::Goods,
+            'S' => SupplyType::Services,
+            default => null,
+        };
     }
 
     /**
