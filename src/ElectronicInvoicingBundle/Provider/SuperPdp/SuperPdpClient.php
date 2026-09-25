@@ -66,14 +66,17 @@ final readonly class SuperPdpClient
 
     /**
      * Sends a lifecycle status for an invoice — for a received one, the
-     * buyer's answer: fr:205 accepted, fr:210 refused. SUPER PDP queues it
-     * and carries it to the supplier's platform.
+     * buyer's answer: fr:205 accepted, fr:210 refused; for a sent one,
+     * fr:212 paid, with what was received. SUPER PDP queues it and carries
+     * it to the other party's platform.
+     *
+     * @param list<array<string, string>> $reportedData MDG-43, e.g. the amounts received
      *
      * @return array<string, mixed>
      *
      * @throws SuperPdpApiException
      */
-    public function createInvoiceEvent(string $accessToken, int $invoiceId, string $statusCode, ?string $reasonCode = null, ?string $note = null): array
+    public function createInvoiceEvent(string $accessToken, int $invoiceId, string $statusCode, ?string $reasonCode = null, ?string $note = null, array $reportedData = []): array
     {
         $payload = ['invoice_id' => $invoiceId, 'status_code' => $statusCode];
         $detail = [];
@@ -85,6 +88,10 @@ final readonly class SuperPdpClient
 
         if (null !== $note && '' !== $note) {
             $detail['notes'] = [['contents' => [['content' => $note]]]];
+        }
+
+        if ([] !== $reportedData) {
+            $detail['reported_data'] = $reportedData;
         }
 
         if ([] !== $detail) {

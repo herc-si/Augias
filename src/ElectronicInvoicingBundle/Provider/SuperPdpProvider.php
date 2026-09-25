@@ -67,10 +67,12 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
     /**
      * `fr:*` codes per https://api.superpdp.tech/openapi/superpdp.json that mean
      * the invoice reached its recipient without being refused (fr:205 Accepted,
-     * fr:206 Partly accepted, fr:209 Completed) — the single source of truth for
-     * this, also consumed by {@see \Augias\ElectronicInvoicingBundle\Command\PollSuperPdpInvoiceStatusCommand}.
+     * fr:206 Partly accepted, fr:209 Completed), or was paid (fr:211 Payment
+     * sent, fr:212 Payment received — which Augias sends itself, and can come
+     * back as the latest status before any acceptance does) — the single
+     * source of truth for this, also consumed by {@see \Augias\ElectronicInvoicingBundle\Command\PollSuperPdpInvoiceStatusCommand}.
      */
-    public const array ACCEPTED_STATUS_CODES = ['fr:205', 'fr:206', 'fr:209'];
+    public const array ACCEPTED_STATUS_CODES = ['fr:205', 'fr:206', 'fr:209', 'fr:211', 'fr:212'];
 
     /**
      * fr:210 Refused, fr:213 Rejected, fr:501 Inadmissible, plus the `api:*`
@@ -475,6 +477,34 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
             ],
             $payments,
         )));
+    }
+
+    /**
+     * fr:212 with the amount received by VAT rate ("MEN", tax included).
+     * Once per payment: a second one on the same invoice adds to the first.
+     *
+     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     *
+     * @throws SuperPdpApiException
+     */
+    public function reportPaymentReceived(array $config, string $invoiceReference, ReportedPayment $payment): array
+    {
+        return $this->report($config, fn (string $token): array => ['data' => [$this->client->createInvoiceEvent(
+            $token,
+            (int) $invoiceReference,
+            'fr:212',
+            reportedData: array_map(
+                static fn (string $rate, string $amount): array => [
+                    'type_code' => 'MEN',
+                    'amount' => $amount,
+                    'currency_code' => $payment->currency,
+                    'date' => $payment->date->format('Y-m-d'),
+                    'value_percent' => $rate,
+                ],
+                array_keys($payment->amounts),
+                array_values($payment->amounts),
+            ),
+        )]]);
     }
 
     /**
