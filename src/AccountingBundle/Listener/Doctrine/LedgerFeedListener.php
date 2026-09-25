@@ -16,7 +16,9 @@ namespace Augias\AccountingBundle\Listener\Doctrine;
 use Augias\AccountingBundle\Entity\LedgerEntry;
 use Augias\AccountingBundle\Service\LedgerFeeder;
 use Augias\BillBundle\Entity\BillPayment;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
+use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\PaymentBundle\Entity\Payment;
 use Brick\Math\Exception\MathException;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
@@ -45,7 +47,7 @@ use function array_merge;
 #[AsDoctrineListener(Events::postFlush)]
 final class LedgerFeedListener
 {
-    /** @var list<Payment|BillPayment|CreditNoteAllocation> */
+    /** @var list<Payment|BillPayment|CreditNoteAllocation|Invoice|CreditNote> */
     private array $pending = [];
 
     /**
@@ -72,7 +74,10 @@ final class LedgerFeedListener
         // written first and captured a moment later, and only the second of
         // those is the event the book cares about.
         foreach (array_merge($unitOfWork->getScheduledEntityInsertions(), $unitOfWork->getScheduledEntityUpdates()) as $entity) {
-            if ($entity instanceof Payment || $entity instanceof BillPayment || $entity instanceof CreditNoteAllocation) {
+            // Invoices and credit notes too: the VAT on goods falls due when
+            // the document is issued, so that is an event the books record.
+            if ($entity instanceof Payment || $entity instanceof BillPayment || $entity instanceof CreditNoteAllocation
+                || $entity instanceof Invoice || $entity instanceof CreditNote) {
                 $this->pending[] = $entity;
             }
         }
@@ -114,8 +119,20 @@ final class LedgerFeedListener
      * @return iterable<LedgerEntry|null>
      * @throws MathException
      */
-    private function entriesFor(Payment | BillPayment | CreditNoteAllocation $subject): iterable
+    private function entriesFor(Payment | BillPayment | CreditNoteAllocation | Invoice | CreditNote $subject): iterable
     {
+        if ($subject instanceof Invoice) {
+            yield $this->feeder->recordInvoiceIssue($subject);
+
+            return;
+        }
+
+        if ($subject instanceof CreditNote) {
+            yield $this->feeder->recordCreditNoteIssue($subject);
+
+            return;
+        }
+
         if ($subject instanceof BillPayment) {
             yield $this->feeder->recordBillPayment($subject);
 

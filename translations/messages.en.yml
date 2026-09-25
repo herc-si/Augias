@@ -42,6 +42,8 @@ accounting:
         purchase: 'Purchase register'
         revenue_is_automatic: 'Every payment the application captures files itself here.'
         revenue: 'Revenue book'
+        sales: 'Sales journal'
+        sales_notice: 'VAT on goods falls due on delivery, not on payment. Every invoice issued with goods on it files itself here on its date, and so does every credit note that takes goods back. This journal feeds the VAT return; turnover stays what was received, in the revenue book.'
     books:
         title: Books
     declaration:
@@ -149,12 +151,16 @@ accounting:
             tax: Tax
         label:
             bill_payment: 'Supplier payment'
+            credit_note_issued: 'Credit note on a supply of goods'
+            invoice_issued: 'Invoice for a supply of goods'
             invoice_payment: 'Invoice payment'
             invoice_payment_with_disbursement: 'Invoice payment, excluding %disbursed% of disbursements'
             invoice_refund: 'Refund to client'
             invoice_refund_with_disbursement: 'Refund to client, excluding %disbursed% of disbursements'
         source:
             bill_payment: 'Supplier payment'
+            credit_note_issued: 'Credit note issued'
+            invoice_issued: 'Invoice issued'
             invoice_payment: 'Invoice payment'
             invoice_refund: 'Refund to client'
             manual: 'Manual entry'

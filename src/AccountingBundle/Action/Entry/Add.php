@@ -73,6 +73,10 @@ final readonly class Add
             throw new NotFoundHttpException('This company does not keep that book.');
         }
 
+        if (! $ledgerBook->acceptsManualEntries()) {
+            throw new NotFoundHttpException('That book is written by the application alone.');
+        }
+
         $entry = new LedgerEntry()
             ->setBook($ledgerBook)
             ->setSource(LedgerEntrySource::Manual)

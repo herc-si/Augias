@@ -15,9 +15,11 @@ namespace Augias\AccountingBundle\Service;
 
 use Augias\AccountingBundle\Model\LedgerTaxSplit;
 use Augias\AccountingBundle\Model\TaxShare;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\InvoiceBundle\Entity\BaseInvoice;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\TaxBundle\Calculator\Result\CalculationResult;
 use Augias\TaxBundle\Calculator\Result\TaxSummaryRow;
 use Augias\TaxBundle\Calculator\TaxCalculatorInterface;
 use Augias\TaxBundle\Entity\Tax;
@@ -28,6 +30,7 @@ use Brick\Math\BigInteger;
 use Brick\Math\BigNumber;
 use Brick\Math\Exception\MathException;
 use Brick\Math\RoundingMode;
+use function array_filter;
 use function array_key_first;
 use function array_values;
 use function count;
@@ -51,6 +54,13 @@ use function count;
  * invoiced back at cost is not the company's turnover (CGI art. 267-II-2°),
  * so it is in the receipt but not in the entry: the tax is still the payment's
  * share of the document's, and the net is what is left of the booked amount.
+ *
+ * Goods are the exception to all of this. Their VAT falls due when they are
+ * delivered, not when they are paid for (CGI art. 269, 2-a), so the shares
+ * for goods lines are marked as due on issue: a payment still records them,
+ * since the money did contain that tax, but the return takes them from the
+ * sales journal, where {@see self::forIssue()} puts the whole of them on the
+ * day the document goes out.
  *
  * @see \Augias\AccountingBundle\Tests\Service\LedgerTaxSplitterTest
  */
@@ -89,6 +99,47 @@ final readonly class LedgerTaxSplitter
     public function forCreditNoteRefund(CreditNote $creditNote, BigNumber $refunded, ?BigNumber $disbursed = null): ?LedgerTaxSplit
     {
         return $this->forDocument($creditNote, $refunded, $disbursed);
+    }
+
+    /**
+     * The tax that falls due when the document is issued: the whole of what
+     * its goods lines carry, by rate.
+     *
+     * Whole, not pro-rated — nothing has been paid, and nothing needs to be.
+     * Null when the document has no goods, or no tax at all.
+     *
+     * @throws MathException
+     */
+    public function forIssue(BaseInvoice $document): ?LedgerTaxSplit
+    {
+        $groups = array_filter(
+            $this->groups($document),
+            static fn (array $group): bool => $group['dueOnIssue'],
+        );
+
+        if ([] === $groups) {
+            return null;
+        }
+
+        $net = BigInteger::zero();
+        $tax = BigInteger::zero();
+        $shares = [];
+
+        foreach ($groups as $group) {
+            $share = new TaxShare(
+                $group['rate'],
+                $group['category'],
+                $this->round($group['base']),
+                $this->round($group['tax']),
+                dueOnIssue: true,
+            );
+
+            $net = $net->plus($share->base);
+            $tax = $tax->plus($share->tax);
+            $shares[] = $share;
+        }
+
+        return new LedgerTaxSplit($net, $tax, $shares);
     }
 
     /**
@@ -133,25 +184,7 @@ final readonly class LedgerTaxSplitter
      */
     private function forDocument(BaseInvoice $document, BigNumber $settled, ?BigNumber $disbursed): ?LedgerTaxSplit
     {
-        $result = $this->taxCalculator->calculate($document);
-
-        /** @var array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal}> $groups */
-        $groups = [];
-
-        foreach ($result->lineBreakdowns as $line) {
-            foreach ($line->taxRows as $row) {
-                // The line's own net is the base the rate applied to. Several
-                // taxes on one line each take that same base: compounding one
-                // VAT onto another is not a thing this has to model.
-                $this->collect($groups, $row, $line->lineSubtotal);
-            }
-        }
-
-        foreach ($result->invoiceLevelBreakdown->taxRows as $row) {
-            // A document-level tax applies to the document's net, not to any
-            // one line.
-            $this->collect($groups, $row, $result->subTotal);
-        }
+        $groups = $this->groups($document);
 
         if ([] === $groups) {
             return null;
@@ -161,9 +194,74 @@ final readonly class LedgerTaxSplitter
     }
 
     /**
-     * @param array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal}> $groups
+     * The document's tax, grouped by rate, category and when it falls due.
+     *
+     * @return array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal, dueOnIssue: bool}>
+     *
+     * @throws MathException
      */
-    private function collect(array &$groups, TaxSummaryRow $row, BigDecimal $base): void
+    private function groups(BaseInvoice $document): array
+    {
+        $result = $this->taxCalculator->calculate($document);
+
+        $groups = [];
+
+        foreach ($result->lineBreakdowns as $line) {
+            foreach ($line->taxRows as $row) {
+                // The line's own net is the base the rate applied to. Several
+                // taxes on one line each take that same base: compounding one
+                // VAT onto another is not a thing this has to model.
+                $this->collect($groups, $row, $line->lineSubtotal, $row->amount, $line->supplyType->isTaxedOnIssue());
+            }
+        }
+
+        // A document-level tax applies to the document's net, not to any one
+        // line — so to its goods and its services alike, in proportion. The
+        // goods part falls due on issue with the rest of the goods; without
+        // goods on the document this is the whole row, as it always was.
+        $goods = $this->goodsSubtotal($result);
+        $goodsRatio = $result->subTotal->isPositive() && $goods->isPositive()
+            ? $goods->dividedBy($result->subTotal, 10, RoundingMode::HalfEven)
+            : BigDecimal::zero();
+
+        foreach ($result->invoiceLevelBreakdown->taxRows as $row) {
+            $goodsTax = $row->amount->multipliedBy($goodsRatio);
+
+            if ($goods->isPositive()) {
+                $this->collect($groups, $row, $goods, $goodsTax, true);
+            }
+
+            if ($result->subTotal->isGreaterThan($goods)) {
+                $this->collect($groups, $row, $result->subTotal->minus($goods), $row->amount->minus($goodsTax), false);
+            }
+        }
+
+        return $groups;
+    }
+
+    /**
+     * The part of the document's subtotal its goods lines make up.
+     *
+     * Disbursements are already outside the subtotal and never come in here:
+     * their breakdown always reads as services.
+     */
+    private function goodsSubtotal(CalculationResult $result): BigDecimal
+    {
+        $goods = BigDecimal::zero();
+
+        foreach ($result->lineBreakdowns as $line) {
+            if ($line->supplyType === SupplyType::Goods) {
+                $goods = $goods->plus($line->lineSubtotal);
+            }
+        }
+
+        return $goods;
+    }
+
+    /**
+     * @param array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal, dueOnIssue: bool}> $groups
+     */
+    private function collect(array &$groups, TaxSummaryRow $row, BigDecimal $base, BigDecimal $tax, bool $dueOnIssue): void
     {
         // Withholding is not tax the company collected, and an informational
         // row is a mention on a document rather than a figure.
@@ -171,17 +269,18 @@ final readonly class LedgerTaxSplitter
             return;
         }
 
-        $key = $row->rate . '|' . $row->category->value;
+        $key = $row->rate . '|' . $row->category->value . '|' . ($dueOnIssue ? TaxShare::DUE_ON_ISSUE : '');
 
         $groups[$key] ??= [
             'rate' => $row->rate,
             'category' => $row->category,
             'base' => BigDecimal::zero(),
             'tax' => BigDecimal::zero(),
+            'dueOnIssue' => $dueOnIssue,
         ];
 
         $groups[$key]['base'] = $groups[$key]['base']->plus($base);
-        $groups[$key]['tax'] = $groups[$key]['tax']->plus($row->amount);
+        $groups[$key]['tax'] = $groups[$key]['tax']->plus($tax);
     }
 
     /**
@@ -201,7 +300,7 @@ final readonly class LedgerTaxSplitter
     }
 
     /**
-     * @param array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal}> $groups
+     * @param array<string, array{rate: string, category: TaxCategory, base: BigDecimal, tax: BigDecimal, dueOnIssue: bool}> $groups
      *
      * @throws MathException
      */
@@ -234,6 +333,7 @@ final readonly class LedgerTaxSplitter
                 $group['category'],
                 $this->round($group['base']->multipliedBy($ratio)),
                 $this->round($group['tax']->multipliedBy($ratio)),
+                $group['dueOnIssue'],
             );
 
             $taxSoFar = $taxSoFar->plus($shares[$key]->tax);
@@ -274,6 +374,7 @@ final readonly class LedgerTaxSplitter
             $shares[$largest]->category,
             $shares[$largest]->base->plus($baseResidual),
             $shares[$largest]->tax->plus($taxResidual),
+            $shares[$largest]->dueOnIssue,
         );
 
         return $shares;

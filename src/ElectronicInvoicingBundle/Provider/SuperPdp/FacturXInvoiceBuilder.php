@@ -18,6 +18,7 @@ use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\Discount;
+use Augias\CoreBundle\Enum\SupplyType;
 use Augias\CoreBundle\Pdf\Generator;
 use Augias\CoreBundle\Templates\BillingTemplateChannel;
 use Augias\CoreBundle\Templates\BillingTemplateResolver;
@@ -122,13 +123,12 @@ final readonly class FacturXInvoiceBuilder
             $client?->getCurrencyCode() ?? $this->systemConfig->getCurrency()->getCode(),
         );
 
-        // BT-23: mandatory "cadre de facturation" code. Augias doesn't track
-        // whether an invoice is for goods, services or both, so a mixed code like
-        // "M1" would be tempting — but SUPER PDP rejects "M*" codes outright
-        // whenever it classifies the flow as B2BInt (international), where only a
-        // goods-or-services code is accepted. "S1" (services, standard) is used
-        // instead: it's valid for both domestic B2B and B2BInt, unlike any M-code.
-        $documentBuilder->setDocumentBusinessProcess('S1');
+        // BT-23: mandatory "cadre de facturation" code, read off the lines. An
+        // invoice of goods alone is "B1". Anything with a service stays "S1",
+        // mixed included: "M1" would be the exact code, but SUPER PDP rejects
+        // "M*" codes outright whenever it classifies the flow as B2BInt
+        // (international), where only a goods-or-services code is accepted.
+        $documentBuilder->setDocumentBusinessProcess($this->businessProcess($invoice));
 
         $this->addMandatoryFrenchNotes($documentBuilder);
 
@@ -417,6 +417,29 @@ final readonly class FacturXInvoiceBuilder
             null,
             'AAB',
         );
+    }
+
+    /**
+     * "B1" when every line sold is goods, "S1" otherwise. Disbursements sell
+     * nothing and do not count either way.
+     */
+    private function businessProcess(Invoice $invoice): string
+    {
+        $goods = false;
+
+        foreach ($invoice->getLines() as $line) {
+            if ($line->isDisbursement()) {
+                continue;
+            }
+
+            if ($line->getSupplyType() !== SupplyType::Goods) {
+                return 'S1';
+            }
+
+            $goods = true;
+        }
+
+        return $goods ? 'B1' : 'S1';
     }
 
     /**

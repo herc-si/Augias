@@ -38,7 +38,13 @@ final readonly class CompanyBooks
     }
 
     /**
-     * The books the law asks of this company.
+     * The books the law asks of this company: its regime's, and the sales
+     * journal once it charges VAT.
+     *
+     * The sales journal is not the regime's to decide, for the same reason the
+     * VAT return is not a regime: a micro-entrepreneur over the franchise
+     * threshold charges VAT on goods exactly as a company au réel does, and
+     * owes it on the same day.
      *
      * @return list<LedgerBook>
      */
@@ -46,7 +52,17 @@ final readonly class CompanyBooks
     {
         $regime = $this->registry->forProfile($profile);
 
-        return $regime instanceof RegimeInterface ? $regime->books($profile) : [];
+        if (! $regime instanceof RegimeInterface) {
+            return [];
+        }
+
+        $books = $regime->books($profile);
+
+        if (! $profile->vatExempt) {
+            $books[] = LedgerBook::Sales;
+        }
+
+        return $books;
     }
 
     /**

@@ -269,7 +269,10 @@ class LedgerEntryRepository extends EntityRepository
                 continue;
             }
 
-            foreach ($entry->getTaxBreakdown() ?? [] as $share) {
+            // What fell due on this entry's date: from the sales journal, the
+            // goods on the invoices issued; from the revenue book, the rest of
+            // what was received. See LedgerEntry::collectedShares().
+            foreach ($entry->collectedShares() as $share) {
                 $key = $share['rate'] . '|' . $share['category'];
                 $collected[$key] ??= [
                     'rate' => $share['rate'],

@@ -35,6 +35,12 @@ enum LedgerEntrySource: string
 
     case BillPayment = 'bill_payment';
 
+    /** An invoice issued with goods on it, in the sales journal. */
+    case InvoiceIssued = 'invoice_issued';
+
+    /** A credit note taking goods back, in the sales journal. */
+    case CreditNoteIssued = 'credit_note_issued';
+
     case Manual = 'manual';
 
     public function getLabel(): string
@@ -43,6 +49,8 @@ enum LedgerEntrySource: string
             self::InvoicePayment => 'Invoice payment',
             self::InvoiceRefund => 'Refund to client',
             self::BillPayment => 'Supplier payment',
+            self::InvoiceIssued => 'Invoice issued',
+            self::CreditNoteIssued => 'Credit note issued',
             self::Manual => 'Manual entry',
         };
     }
@@ -53,6 +61,8 @@ enum LedgerEntrySource: string
             self::InvoicePayment => 'accounting.entry.source.invoice_payment',
             self::InvoiceRefund => 'accounting.entry.source.invoice_refund',
             self::BillPayment => 'accounting.entry.source.bill_payment',
+            self::InvoiceIssued => 'accounting.entry.source.invoice_issued',
+            self::CreditNoteIssued => 'accounting.entry.source.credit_note_issued',
             self::Manual => 'accounting.entry.source.manual',
         };
     }

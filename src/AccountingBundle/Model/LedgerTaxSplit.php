@@ -37,7 +37,21 @@ final readonly class LedgerTaxSplit
     }
 
     /**
-     * @return list<array{rate: string, category: string, base: string, tax: string}>
+     * The same split, going the other way: net, tax and every share. A split
+     * whose shares kept their sign under a negative tax would be declared as
+     * tax collected.
+     */
+    public function negated(): self
+    {
+        return new self(
+            $this->net->negated(),
+            $this->tax->negated(),
+            array_map(static fn (TaxShare $share): TaxShare => $share->negated(), $this->shares),
+        );
+    }
+
+    /**
+     * @return list<array{rate: string, category: string, base: string, tax: string, due?: string}>
      */
     public function toArray(): array
     {

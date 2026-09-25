@@ -83,6 +83,34 @@ final class LedgerEntryHasherTest extends TestCase
         }
     }
 
+    /**
+     * When a share's tax fell due decides which return declares it, so it is
+     * sealed with the rest.
+     */
+    public function testTheDueDateOfAShareIsCommittedTo(): void
+    {
+        $hasher = new LedgerEntryHasher();
+        $share = ['rate' => '20.0000', 'category' => 'Standard', 'base' => '100000', 'tax' => '20000'];
+
+        self::assertNotSame(
+            $hasher->hash($this->entry()->setTax(BigInteger::of(100000), BigInteger::of(20000), [$share]), null),
+            $hasher->hash($this->entry()->setTax(BigInteger::of(100000), BigInteger::of(20000), [$share + ['due' => 'issue']]), null),
+        );
+    }
+
+    /**
+     * A share without a due date — every share sealed before there was one —
+     * reads exactly as it did then, so books already sealed still verify.
+     */
+    public function testAShareWithoutADueDateHashesAsItAlwaysDid(): void
+    {
+        $entry = $this->entry()->setTax(BigInteger::of(100000), BigInteger::of(20000), [
+            ['rate' => '20.0000', 'category' => 'Standard', 'base' => '100000', 'tax' => '20000'],
+        ]);
+
+        self::assertStringEndsWith('|100000|20000|20.0000:Standard:100000:20000', new LedgerEntryHasher()->canonicalForm($entry, null));
+    }
+
     private function entry(): LedgerEntry
     {
         return new LedgerEntry()
