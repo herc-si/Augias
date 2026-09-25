@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\InvoiceBundle\Tests\Repository;
 
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\ReminderType;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
@@ -26,6 +27,8 @@ use Psr\Clock\ClockInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Clock\MockClock;
 use Symfony\Component\Uid\Ulid;
+use function array_map;
+use function iterator_to_array;
 
 #[CoversClass(InvoiceRepository::class)]
 final class InvoiceRepositoryTest extends KernelTestCase
@@ -238,6 +241,33 @@ final class InvoiceRepositoryTest extends KernelTestCase
 
         self::assertCount(1, $results);
         self::assertSame($overdueInvoice->getId()->toBase32(), $results[0]['invoiceId']->toBase32());
+    }
+
+    /**
+     * The clock reads 10:00 on 1 February: an invoice due that day is not late
+     * yet, one due the day before is.
+     */
+    public function testAnInvoiceDueTodayIsNotOverdueUntilTomorrow(): void
+    {
+        $dueToday = InvoiceFactory::createOne([
+            'company' => $this->company,
+            'status' => InvoiceStatus::Pending,
+            'due' => new DateTimeImmutable('2024-02-01'),
+        ]);
+
+        $dueYesterday = InvoiceFactory::createOne([
+            'company' => $this->company,
+            'status' => InvoiceStatus::Pending,
+            'due' => new DateTimeImmutable('2024-01-31'),
+        ]);
+
+        $overdueIds = array_map(
+            static fn (Invoice $invoice): string => $invoice->getId()->toBase32(),
+            iterator_to_array($this->repository->getPendingOverdueInvoices(), false),
+        );
+
+        self::assertSame([$dueYesterday->getId()->toBase32()], $overdueIds);
+        self::assertNotContains($dueToday->getId()->toBase32(), $overdueIds);
     }
 
     public function testCountCreatedInMonthCountsInvoicesInTheCalendarMonth(): void

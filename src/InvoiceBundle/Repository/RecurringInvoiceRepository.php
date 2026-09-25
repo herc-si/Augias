@@ -21,9 +21,8 @@ use Augias\InvoiceBundle\Enum\RecurringInvoiceStatus;
 use Augias\InvoiceBundle\Recurring\RecurringSchedule;
 use Brick\Math\BigInteger;
 use Brick\Math\Exception\MathException;
-use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use DateTime;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
@@ -145,12 +144,16 @@ class RecurringInvoiceRepository extends EntityRepository
     /**
      * Get upcoming recurring invoices that will be generated within the next N days.
      *
+     * Both bounds are inclusive whole days: a series ending today still shows.
+     * `date_start` and `date_end` are DATE columns, so the bounds are bound as
+     * dates — as datetimes, the time of day dropped a series ending today.
+     *
      * @return RecurringInvoice[]
      */
     public function getUpcomingRecurringInvoices(int $days = 7, int $limit = 3): array
     {
-        $now = Carbon::now();
-        $futureDate = new DateTime(sprintf('+%d days', $days));
+        $today = $this->clock->now();
+        $futureDate = $today->modify(sprintf('+%d days', $days));
 
         $qb = $this->createQueryBuilder('ri');
 
@@ -161,10 +164,10 @@ class RecurringInvoiceRepository extends EntityRepository
             ->addSelect('ro')
             ->where('ri.status = :status')
             ->andWhere('ri.dateStart <= :futureDate')
-            ->andWhere('(ri.dateEnd IS NULL OR ri.dateEnd >= :now)')
+            ->andWhere('(ri.dateEnd IS NULL OR ri.dateEnd >= :today)')
             ->setParameter('status', RecurringInvoiceStatus::Active->value)
-            ->setParameter('now', $now)
-            ->setParameter('futureDate', $futureDate)
+            ->setParameter('today', $today, Types::DATE_IMMUTABLE)
+            ->setParameter('futureDate', $futureDate, Types::DATE_IMMUTABLE)
             ->orderBy('ri.dateStart', 'ASC')
             ->setMaxResults($limit);
 
