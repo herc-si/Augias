@@ -15,6 +15,8 @@ namespace Augias\CoreBundle\Repository;
 
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
+use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 use LogicException;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
@@ -85,6 +87,19 @@ class CompanyRepository extends EntityRepository
             ->setMaxResults(1)
             ->getQuery()
             ->getOneOrNullResult();
+    }
+
+    /**
+     * @return list<Company> the companies scheduled for closure on or before $date
+     */
+    public function findClosingBefore(DateTimeImmutable $date): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.closesAt IS NOT NULL')
+            ->andWhere('c.closesAt <= :date')
+            ->setParameter('date', $date, Types::DATETIME_IMMUTABLE)
+            ->getQuery()
+            ->getResult();
     }
 
     public function deleteCompany(?Ulid $companyId): void

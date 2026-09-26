@@ -726,6 +726,13 @@ client_create: 'Créer un tiers'
 clients: Tiers
 close: Fermer
 company:
+    closing:
+        read_only: "Cette société sera fermée le %date% : elle est en lecture seule d'ici là. Vous pouvez encore exporter ses données."
+        banner:
+            title: 'Cette société sera fermée le %date%.'
+            text: "Elle est en lecture seule d'ici là, puis sera supprimée définitivement avec toutes ses données, factures comprises. Vous devez conserver vos factures pendant 10 ans : exportez vos données avant cette date."
+            export: 'Exporter les données'
+            cancel: 'Annuler la fermeture'
     create:
         back: Retour
         cancel_anytime: 'Annulable à tout moment'
@@ -1469,6 +1476,8 @@ feature:
     view_all_plans: 'Voir tous les plans'
 flash:
     company_deleted: 'Société supprimée avec succès.'
+    company_closure_scheduled: "La fermeture est programmée pour le %date%. D'ici là, la société est en lecture seule : téléchargez l'export complet de vos données."
+    company_closure_cancelled: 'La fermeture a été annulée.'
 forgot_password:
     check_email:
         content: "Un e-mail a été envoyé. Il contient un lien sur lequel vous devez cliquer pour réinitialiser votre mot de passe.\n\nSi vous ne recevez pas d'e-mail, vérifiez votre dossier spam ou réessayez.\n"
@@ -3363,15 +3372,16 @@ settings:
             phone_placeholder: '+33 1 23 45 67 89'
             profile: 'Profil de la société'
         danger:
-            delete: 'Supprimer la société'
-            delete_help: 'Supprime définitivement votre société et toutes les données associées. Cette action est irréversible.'
+            delete: 'Fermer la société'
+            delete_help: "La société passe en lecture seule pendant 30 jours, puis elle est supprimée définitivement avec toutes ses données, factures comprises. Vous pouvez annuler d'ici là."
             modal:
                 company_name_aria: 'Nom de la société à saisir'
-                confirm_prompt: 'Pour confirmer la suppression, veuillez saisir le nom de la société exactement comme indiqué ci-dessous :'
+                confirm_prompt: 'Pour confirmer la fermeture, saisissez le nom de la société exactement comme indiqué ci-dessous :'
+                export: "Télécharger l'export complet de vos données"
                 input_placeholder: 'Saisissez le nom de la société pour confirmer'
-                title: 'Confirmer la suppression de la société'
+                title: 'Fermer la société ?'
                 warning: Attention !
-                warning_help: 'Cette action supprimera définitivement votre société et toutes les données associées, y compris les factures, devis, clients et paiements. Cette action est irréversible.'
+                warning_help: "Dans 30 jours, la société sera supprimée définitivement avec toutes ses données : factures, avoirs, devis, clients, paiements, comptabilité. Augias ne les conservera pas. La loi vous impose de conserver vos factures pendant 10 ans : téléchargez l'export complet avant la date de fermeture. D'ici là, la société est en lecture seule et vous pouvez annuler la fermeture."
             title: 'Zone dangereuse'
         design:
             template:

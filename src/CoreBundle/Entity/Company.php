@@ -41,6 +41,7 @@ use Augias\UserBundle\Entity\Membership;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Entity\UserInvitation;
 use Augias\UserBundle\Enum\CompanyRole;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -88,6 +89,17 @@ class Company implements Stringable, SubscribableInterface
 
     #[Assert\NotBlank()]
     public ?string $currency = '';
+
+    /**
+     * When the company goes, once its owner has asked for it to be closed.
+     *
+     * Not at once: until this date the company is read-only, its data can be
+     * taken out, and the owner can change their mind. Then it is deleted,
+     * issued invoices and all — keeping them is the company's obligation,
+     * not the service's, which is what the owner is told when they ask.
+     */
+    #[ORM\Column(name: 'closes_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $closesAt = null;
 
     #[ORM\Column(name: 'custom_domain', type: Types::STRING, length: 253, unique: true, nullable: true)]
     #[Assert\Length(max: 253)]
@@ -310,6 +322,30 @@ class Company implements Stringable, SubscribableInterface
     public function removeUser(User $user): self
     {
         $user->removeCompany($this);
+
+        return $this;
+    }
+
+    public function getClosesAt(): ?DateTimeImmutable
+    {
+        return $this->closesAt;
+    }
+
+    public function isClosing(): bool
+    {
+        return $this->closesAt instanceof DateTimeImmutable;
+    }
+
+    public function scheduleClosure(DateTimeImmutable $closesAt): self
+    {
+        $this->closesAt = $closesAt;
+
+        return $this;
+    }
+
+    public function cancelClosure(): self
+    {
+        $this->closesAt = null;
 
         return $this;
     }

@@ -1,0 +1,27 @@
+{#
+ # Shown on every page of a company scheduled for closure: when it goes, that
+ # it is read-only until then, and the two things still worth doing.
+ #}
+{% set closesAt = company_closes_at() %}
+{% if closesAt %}
+    <div class="alert alert-warning d-flex flex-column flex-md-row align-items-md-center gap-3 no-print" role="alert">
+        <div class="flex-fill">
+            <strong>{{ 'company.closing.banner.title'|trans({'%date%': closesAt|date('d/m/Y')}) }}</strong>
+            <div class="small">{{ 'company.closing.banner.text'|trans }}</div>
+        </div>
+        <div class="d-flex gap-2 flex-shrink-0">
+            {% if route_allowed('_export_list') %}
+                <a class="btn btn-sm btn-primary" href="{{ path('_export_list') }}">
+                    {{ ux_icon('tabler:database-export', {width: 16, height: 16, 'aria-hidden': 'true'}) }}
+                    {{ 'company.closing.banner.export'|trans }}
+                </a>
+            {% endif %}
+            {% if is_granted('company.close') %}
+                <form method="post" action="{{ path('_cancel_company_closure') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('cancel_company_closure') }}">
+                    <button class="btn btn-sm">{{ 'company.closing.banner.cancel'|trans }}</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}

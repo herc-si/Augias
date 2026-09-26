@@ -19,6 +19,7 @@ use Augias\UserBundle\Enum\CompanyPermission;
 use Augias\UserBundle\Security\CompanyAccess;
 use Augias\UserBundle\Security\RoleDoesNotAllow;
 use Augias\UserBundle\Security\RoutePermissionMap;
+use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\HttpFoundation\Request;
@@ -60,6 +61,16 @@ final readonly class EnforceCompanyRoleListener
 
         if (! $permission instanceof CompanyPermission || $this->access->can($permission)) {
             return;
+        }
+
+        // Closing, not the role, is then what stands in the way — and what the
+        // member is told.
+        $closesAt = $this->access->membership()?->getCompany()->getClosesAt();
+
+        if ($closesAt instanceof DateTimeImmutable) {
+            throw new RoleDoesNotAllow($this->translator->trans('company.closing.read_only', [
+                '%date%' => $closesAt->format('d/m/Y'),
+            ]));
         }
 
         $role = $this->access->role();

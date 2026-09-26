@@ -193,6 +193,7 @@ final class RoutePermissionMap
         '_member_leave' => null,
 
         // The company itself.
+        '_cancel_company_closure' => CompanyPermission::CloseCompany,
         '_delete_company' => CompanyPermission::CloseCompany,
         '_member_transfer_ownership' => CompanyPermission::CloseCompany,
     ];
