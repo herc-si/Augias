@@ -16,7 +16,7 @@ namespace Augias\SaasBundle\Retention;
 use Augias\CoreBundle\Company\ClosureReason;
 use Augias\CoreBundle\Entity\Company;
 use DateTimeImmutable;
-use Doctrine\Bundle\DoctrineBundle\Attribute\AsEntityListener;
+use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\PostUpdateEventArgs;
 use Doctrine\ORM\Events;
 use Psr\Clock\ClockInterface;
@@ -33,7 +33,7 @@ use function spl_object_id;
  *
  * @see \Augias\SaasBundle\Tests\Retention\SubscriptionEndRetentionTest
  */
-#[AsEntityListener(event: Events::postUpdate, method: 'postUpdate', entity: Subscription::class)]
+#[AsDoctrineListener(event: Events::postUpdate)]
 final readonly class RenewalCancelsClosureListener
 {
     public function __construct(
@@ -41,8 +41,14 @@ final readonly class RenewalCancelsClosureListener
     ) {
     }
 
-    public function postUpdate(Subscription $subscription, PostUpdateEventArgs $event): void
+    public function postUpdate(PostUpdateEventArgs $event): void
     {
+        $subscription = $event->getObject();
+
+        if (! $subscription instanceof Subscription) {
+            return;
+        }
+
         $company = $subscription->getSubscriber();
 
         if (! $company instanceof Company || ClosureReason::SubscriptionEnded !== $company->getClosureReason()) {

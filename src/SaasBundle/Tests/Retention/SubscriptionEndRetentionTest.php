@@ -168,17 +168,7 @@ final class SubscriptionEndRetentionTest extends KernelTestCase
 
         $this->em()->clear();
         self::assertNull($this->em()->find(Company::class, $companyId));
-        $conn = $this->em()->getConnection();
-        fwrite(STDERR, 'DIAG2 ' . json_encode(['s' => $conn->fetchAllAssociative('select hex(id) id, typeof(id) t, hex(subscriber_id) h from saas_subscription'), 'found' => null !== $this->em()->find(Subscription::class, $subscriptionId), 'listeners' => $this->em()->getClassMetadata(Company::class)->entityListeners, 'subListeners' => $this->em()->getClassMetadata(Subscription::class)->entityListeners, 'kernel' => self::$kernel::class, 'bundles' => array_keys(self::$kernel->getBundles())], JSON_INVALID_UTF8_SUBSTITUTE) . PHP_EOL);
-        fwrite(STDERR, 'DIAG ' . json_encode(['c' => $conn->fetchAllAssociative('select hex(id) id, typeof(id) t from companies')], JSON_INVALID_UTF8_SUBSTITUTE) . PHP_EOL);
-        self::assertNull($this->em()->find(Subscription::class, $subscriptionId), 'DIAG ' . json_encode([
-            'sqlite' => $conn->fetchOne('select sqlite_version()'),
-            'fk' => $conn->fetchOne('PRAGMA foreign_keys'),
-            'sub' => $conn->fetchAllAssociative('select hex(id) id, typeof(id) t, typeof(subscriber_id) st, hex(subscriber_id) h from saas_subscription'),
-            'company' => [(string) $companyId, $companyId->toRfc4122()],
-            'ddl' => $conn->fetchOne("select sql from sqlite_master where name = 'saas_subscription'"),
-            'listeners' => array_map(static fn ($l) => $l::class, iterator_to_array((function () { yield from []; })())),
-        ], JSON_INVALID_UTF8_SUBSTITUTE));
+        self::assertNull($this->em()->find(Subscription::class, $subscriptionId));
         $this->mailer()->sentEmails()->last()->assertTo('owner@gone.test')->assertSubject("Ended Shop's data has been deleted");
     }
 
