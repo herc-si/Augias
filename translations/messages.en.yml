@@ -16,6 +16,13 @@ access_log:
         when: When
     title: 'Access log'
 accounting:
+    fec:
+        title: 'Accounting entries file (FEC)'
+        subtitle: 'The books of a financial year in the format the French tax administration asks for in an audit.'
+        year: 'Financial year %year%'
+        download: 'Download the FEC'
+        notice: 'Descriptive notice'
+        help: 'Required for computerised accounts under a réel regime; a micro-entrepreneur is not bound by it. Always hand the notice over with the file.'
     month:
         1: 'January'
         2: 'February'

@@ -28,6 +28,7 @@ use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 use function array_column;
+use function array_map;
 use function is_string;
 
 /**
@@ -179,6 +180,33 @@ class LedgerEntryRepository extends EntityRepository
             ->getArrayResult();
 
         return $rows;
+    }
+
+    /**
+     * The entries of the given books between two dates, in the order a FEC
+     * lists them: by date, then book, then each book's own sequence.
+     *
+     * @param list<LedgerBook> $books
+     *
+     * @return list<LedgerEntry>
+     */
+    public function findForFec(Company $company, DateTimeImmutable $from, DateTimeImmutable $to, array $books): array
+    {
+        return $this->createQueryBuilder('e')
+            ->andWhere('e.company = :company')
+            ->andWhere('e.book IN (:books)')
+            ->andWhere('e.entryDate >= :from')
+            ->andWhere('e.entryDate <= :to')
+            ->setParameter('company', $company->getId(), UlidType::NAME)
+            ->setParameter('books', array_map(static fn (LedgerBook $book): string => $book->value, $books))
+            ->setParameter('from', $from, Types::DATE_IMMUTABLE)
+            ->setParameter('to', $to, Types::DATE_IMMUTABLE)
+            ->orderBy('e.entryDate', 'ASC')
+            ->addOrderBy('e.book', 'ASC')
+            ->addOrderBy('e.sequenceNumber', 'ASC')
+            ->addOrderBy('e.id', 'ASC')
+            ->getQuery()
+            ->getResult();
     }
 
     /**

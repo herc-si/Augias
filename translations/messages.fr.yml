@@ -16,6 +16,13 @@ access_log:
         when: Date
     title: "Journal d'accès"
 accounting:
+    fec:
+        title: 'Fichier des écritures comptables (FEC)'
+        subtitle: "Les livres d'un exercice au format exigé par l'administration fiscale en cas de contrôle."
+        year: 'Exercice %year%'
+        download: 'Télécharger le FEC'
+        notice: 'Notice descriptive'
+        help: "Obligatoire pour une comptabilité tenue par informatique au réel ; un micro-entrepreneur n'y est pas tenu. Remettez toujours la notice avec le fichier."
     month:
         1: 'Janvier'
         2: 'Février'
