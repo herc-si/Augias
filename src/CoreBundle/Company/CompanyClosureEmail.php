@@ -20,6 +20,7 @@ final class CompanyClosureEmail extends TemplatedEmail
 {
     public function __construct(
         ClosureNotice $notice,
+        ClosureReason $reason,
         string $companyName,
         ?DateTimeImmutable $closesAt,
         ?string $exportUrl,
@@ -32,6 +33,7 @@ final class CompanyClosureEmail extends TemplatedEmail
         $this->textTemplate('@AugiasCore/Email/company_closure.text.twig');
         $this->context([
             'notice' => $notice->value,
+            'keys' => $reason->emailKeys(),
             'companyName' => $companyName,
             'closesAt' => $closesAt,
             'exportUrl' => $exportUrl,

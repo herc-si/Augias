@@ -18,6 +18,7 @@ use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\ApiBundle\ApiTokenManager;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\CoreBundle\Company\ClosureReason;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
@@ -126,6 +127,39 @@ final class CompanyRolesTest extends WebTestCase
         $this->as($billing)
             ->visit('/invoices/create/' . $this->client->getId())
             ->assertSuccessful();
+    }
+
+    /**
+     * A deletion that follows the end of the subscription is not the owner's
+     * to call off: renewing is.
+     */
+    public function testTheOwnerCannotCallOffADeletionThatFollowsTheSubscription(): void
+    {
+        $owner = $this->member(CompanyRole::Owner);
+        $shop = $this->em->find(Company::class, $this->shop->getId());
+        self::assertInstanceOf(Company::class, $shop);
+        // Asked for first, only to be handed the form's token.
+        $shop->scheduleClosure(new DateTimeImmutable('+60 days'));
+        $this->em->flush();
+        $browser = $this->as($owner)->visit('/dashboard')->assertSuccessful();
+        $token = $browser->crawler()->filter('form[action="/cancel-company-closure"] input[name=_token]')->attr('value');
+
+        $shop = $this->em->find(Company::class, $this->shop->getId());
+        self::assertInstanceOf(Company::class, $shop);
+        $shop->scheduleClosure(new DateTimeImmutable('+60 days'), ClosureReason::SubscriptionEnded);
+        $this->em->flush();
+
+        $browser->visit('/dashboard');
+        self::assertCount(0, $browser->crawler()->filter('form[action="/cancel-company-closure"]'), 'No button for it.');
+
+        $browser->post('/cancel-company-closure', ['body' => ['_token' => $token]])
+            ->assertSuccessful()
+            ->assertSee('renewing it is what calls it off');
+
+        $this->em->clear();
+        $shop = $this->em->find(Company::class, $this->shop->getId());
+        self::assertInstanceOf(Company::class, $shop);
+        self::assertSame(ClosureReason::SubscriptionEnded, $shop->getClosureReason());
     }
 
     /**

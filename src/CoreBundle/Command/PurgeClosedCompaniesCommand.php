@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Command;
 
+use Augias\CoreBundle\Company\ClosureSchedule;
 use Augias\CoreBundle\Company\CompanyClosure;
 use SolidWorx\Platform\PlatformBundle\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 use function count;
 use function implode;
@@ -34,14 +36,23 @@ use function sprintf;
 #[AsCronTask('#daily', schedule: 'purge_closed_companies')]
 final class PurgeClosedCompaniesCommand extends Command
 {
+    /**
+     * @param iterable<ClosureSchedule> $schedules
+     */
     public function __construct(
         private readonly CompanyClosure $closure,
+        #[AutowireIterator(ClosureSchedule::TAG)]
+        private readonly iterable $schedules = [],
     ) {
         parent::__construct();
     }
 
     protected function handle(): int
     {
+        foreach ($this->schedules as $schedule) {
+            $schedule->reconcile();
+        }
+
         $reminded = $this->closure->remindDue();
         $deleted = $this->closure->purgeDue();
 

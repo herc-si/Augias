@@ -749,7 +749,7 @@ company:
                 body: 'La société et toutes ses données ont été supprimées définitivement, comme prévu. Votre compte Augias reste actif pour les autres sociétés dont vous êtes membre.'
             retention: "La loi vous impose de conserver vos factures pendant 10 ans. Augias ne les conserve pas après la fermeture : l'export complet contient les factures et avoirs en PDF, les justificatifs et la comptabilité."
             export: "Télécharger l'export complet"
-            cancel_hint: "Vous pouvez encore annuler la fermeture depuis Augias, jusqu'à la date prévue."
+            hint: "Vous pouvez encore annuler la fermeture depuis Augias, jusqu'à la date prévue."
         read_only: "Cette société sera fermée le %date% : elle est en lecture seule d'ici là. Vous pouvez encore exporter ses données."
         banner:
             title: 'Cette société sera fermée le %date%.'
@@ -783,6 +783,26 @@ company:
         create_new_help: 'Configurez un autre espace de travail pour gérer une autre activité'
         subtitle: 'Sélectionnez une société pour continuer'
         welcome_back: 'Bon retour, %name%'
+    subscription_ended:
+        email:
+            scheduled:
+                subject: 'Abonnement terminé : %company% sera supprimée le %date%'
+                heading: "L'abonnement de %company% a pris fin. Ses données seront supprimées le %date%."
+                body: "Comme le prévoient les conditions générales, les données sont conservées quatre-vingt-dix jours après la fin de l'abonnement pour vous permettre de les exporter. À cette date, la société sera supprimée définitivement avec toutes ses données : factures, avoirs, devis, clients, paiements, comptabilité."
+            reminder:
+                subject: '%company% sera supprimée le %date%'
+                heading: 'Plus que quelques jours : les données de %company% seront supprimées le %date%.'
+                body: "C'est le dernier rappel. Votre abonnement a pris fin et, à cette date, la société sera supprimée définitivement avec toutes ses données. Si ce n'est pas encore fait, téléchargez l'export complet maintenant."
+            deleted:
+                subject: 'Les données de %company% ont été supprimées'
+                heading: 'Les données de %company% ont été supprimées.'
+                body: "Quatre-vingt-dix jours après la fin de son abonnement, la société et toutes ses données ont été supprimées définitivement, comme le prévoient les conditions générales. Votre compte Augias reste actif pour les autres sociétés dont vous êtes membre."
+            hint: "Renouveler l'abonnement avant cette date annule la suppression."
+        banner:
+            title: "L'abonnement a pris fin : cette société sera supprimée le %date%."
+            text: "Ses données, factures comprises, seront alors supprimées définitivement. Vous devez conserver vos factures pendant 10 ans : exportez vos données avant cette date, ou renouvelez l'abonnement."
+            renew: "Renouveler l'abonnement"
+        cannot_cancel: "Cette suppression suit la fin de l'abonnement : c'est en le renouvelant qu'on l'annule."
 contact:
     email: E-mail
     firstName: Prénom
@@ -3036,8 +3056,6 @@ saas:
         contact_support_short: 'Contacter le support'
         switch_company: 'Changer de société'
     cancelled:
-        changed_mind: 'Vous avez changé d''avis ?'
-        data_safe: "Nous serions ravis de vous revoir ! Vos données sont en sécurité et vous attendront lors de votre réactivation."
         feature_clients: 'Gestion des clients et des contacts'
         feature_history: 'Accès à l''historique des paiements et aux rapports'
         feature_invoices: 'Création de nouvelles factures et devis'
@@ -3178,6 +3196,10 @@ saas:
             cta: 'Prolonger mon essai'
             message: "Ajoutez vos informations de paiement avant la fin de votre essai et nous le prolongerons de %days% jours. Aucun frais aujourd'hui, annulable à tout moment."
             title: 'Obtenez %days% jours de plus, gratuitement'
+    retention:
+        export: 'Exporter les données'
+        text: "Comme le prévoient les conditions générales, elles sont conservées quatre-vingt-dix jours après la fin de l'abonnement, le temps de les exporter ou de vous réabonner, puis supprimées définitivement, factures comprises. Vous devez conserver vos factures pendant 10 ans."
+        title: 'Vos données seront supprimées le %date%.'
     trial_expired:
         activate: 'Activer l''abonnement'
         activate_save: 'Activer et économiser %percent%%'

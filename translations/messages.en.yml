@@ -749,7 +749,7 @@ company:
                 body: 'The company and all its data have been permanently deleted, as planned. Your Augias account remains active for the other companies you belong to.'
             retention: 'The law requires you to keep your invoices for 10 years. Augias does not keep them after the closure: the full export holds the invoices and credit notes as PDF, the receipts and the accounting.'
             export: 'Download the full export'
-            cancel_hint: 'You can still cancel the closure from Augias until the planned date.'
+            hint: 'You can still cancel the closure from Augias until the planned date.'
         read_only: 'This company will close on %date%: it is read-only until then. You can still export its data.'
         banner:
             title: 'This company will close on %date%.'
@@ -783,6 +783,26 @@ company:
         create_new_help: 'Set up another workspace to manage a different business'
         subtitle: 'Select a company to continue'
         welcome_back: 'Welcome Back %name%'
+    subscription_ended:
+        email:
+            scheduled:
+                subject: 'Subscription ended: %company% will be deleted on %date%'
+                heading: "%company%'s subscription has ended. Its data will be deleted on %date%."
+                body: 'As the terms of service provide, the data is kept for ninety days after the subscription ends so that you can export it. On that date the company will be permanently deleted with all its data: invoices, credit notes, quotes, clients, payments, accounting.'
+            reminder:
+                subject: '%company% will be deleted on %date%'
+                heading: "Only a few days left: %company%'s data will be deleted on %date%."
+                body: 'This is the last reminder. Your subscription has ended and, on that date, the company will be permanently deleted with all its data. If you have not done so yet, download the full export now.'
+            deleted:
+                subject: "%company%'s data has been deleted"
+                heading: "%company%'s data has been deleted."
+                body: 'Ninety days after its subscription ended, the company and all its data have been permanently deleted, as the terms of service provide. Your Augias account remains active for the other companies you belong to.'
+            hint: 'Renewing the subscription before that date calls the deletion off.'
+        banner:
+            title: 'The subscription has ended: this company will be deleted on %date%.'
+            text: 'Its data, invoices included, will then be permanently deleted. You must keep your invoices for 10 years: export your data before that date, or renew the subscription.'
+            renew: 'Renew the subscription'
+        cannot_cancel: 'This deletion follows the end of the subscription: renewing it is what calls it off.'
 contact:
     email: Email
     firstName: 'First Name'
@@ -3036,8 +3056,6 @@ saas:
         contact_support_short: 'Contact support'
         switch_company: 'Switch company'
     cancelled:
-        changed_mind: 'Changed your mind?'
-        data_safe: "We'd love to have you back! Your data is safe and will be waiting for you when you reactivate."
         feature_clients: 'Client and contact management'
         feature_history: 'Access to payment history and reports'
         feature_invoices: 'Create new invoices and quotes'
@@ -3178,6 +3196,10 @@ saas:
             cta: 'Extend my trial'
             message: "Add your payment details before your trial ends and we'll extend it by %days% days. No charge today, cancel anytime."
             title: 'Get %days% more days, free'
+    retention:
+        export: 'Export the data'
+        text: 'As the terms of service provide, it is kept for ninety days after the subscription ends, time enough to export it or to subscribe again, then permanently deleted, invoices included. You must keep your invoices for 10 years.'
+        title: 'Your data will be deleted on %date%.'
     trial_expired:
         activate: 'Activate Subscription'
         activate_save: 'Activate & Save %percent%%'

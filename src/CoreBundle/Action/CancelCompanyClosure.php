@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Action;
 
+use Augias\CoreBundle\Company\ClosureReason;
 use Augias\CoreBundle\Company\CompanyClosure;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
@@ -45,6 +46,13 @@ final class CancelCompanyClosure extends AbstractController
 
         if (! $company instanceof Company) {
             throw $this->createNotFoundException();
+        }
+
+        // Following the end of the subscription, renewing calls it off.
+        if (ClosureReason::SubscriptionEnded === $company->getClosureReason()) {
+            $this->addFlash('warning', 'company.subscription_ended.cannot_cancel');
+
+            return $this->redirectToRoute('_dashboard');
         }
 
         $this->closure->cancel($company);

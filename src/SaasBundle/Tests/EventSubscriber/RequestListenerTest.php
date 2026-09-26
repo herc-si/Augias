@@ -192,6 +192,42 @@ final class RequestListenerTest extends KernelTestCase
         self::assertNull($event->getResponse());
     }
 
+    /**
+     * The terms promise the data can be taken out for ninety days after the
+     * end: the export stays open, the rest does not.
+     */
+    #[DataProvider('provideEndedSubscriptionExports')]
+    public function testTheExportStaysOpenOnceTheSubscriptionHasEnded(SubscriptionStatus $status, string $route): void
+    {
+        $subscription = $this->createSubscription($status, CarbonImmutable::parse('2024-01-10'));
+        $listener = $this->createListener(new User(), CarbonImmutable::parse('2024-01-15'), $subscription);
+
+        $request = new Request();
+        $request->attributes->set('_route', $route);
+
+        $event = new RequestEvent(
+            M::mock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        );
+
+        $listener->onRequest($event);
+
+        self::assertNull($event->getResponse());
+    }
+
+    /**
+     * @return iterable<string, array{SubscriptionStatus, string}>
+     */
+    public static function provideEndedSubscriptionExports(): iterable
+    {
+        foreach ([SubscriptionStatus::CANCELLED, SubscriptionStatus::EXPIRED, SubscriptionStatus::TRIAL] as $status) {
+            foreach (['_export_list', '_export_request', '_export_download'] as $route) {
+                yield $status->value . ' ' . $route => [$status, $route];
+            }
+        }
+    }
+
     public function testOnRequestWithTrialStatusAfterEndDate(): void
     {
         $now = CarbonImmutable::parse('2024-01-15');

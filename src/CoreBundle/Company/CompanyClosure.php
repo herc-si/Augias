@@ -51,12 +51,21 @@ final class CompanyClosure
     public function schedule(Company $company): DateTimeImmutable
     {
         $closesAt = DateTimeImmutable::createFromInterface($this->clock->now())->modify(sprintf('+%d days', self::GRACE_DAYS));
-        $company->scheduleClosure($closesAt);
+        $this->scheduleAt($company, $closesAt, ClosureReason::Requested);
+
+        return $closesAt;
+    }
+
+    /**
+     * Sets the date and tells the people who run the company, in the words
+     * that fit the reason.
+     */
+    public function scheduleAt(Company $company, DateTimeImmutable $closesAt, ClosureReason $reason): void
+    {
+        $company->scheduleClosure($closesAt, $reason);
         $this->entityManager->flush();
 
         $this->notifier?->notify($company, ClosureNotice::Scheduled);
-
-        return $closesAt;
     }
 
     public function cancel(Company $company): void
@@ -99,6 +108,19 @@ final class CompanyClosure
     {
         $deleted = [];
 
+        foreach ($this->companies->findClosingBefore(DateTimeImmutable::createFromInterface($this->clock->now())) as $company) {
+            $this->purge($company);
+            $deleted[] = (string) $company->getName();
+        }
+
+        return $deleted;
+    }
+
+    /**
+     * Deletes the company and everything in it, then says so to those who ran it.
+     */
+    public function purge(Company $company): void
+    {
         // Archived documents go with the company too: hidden by the filter,
         // they would escape the cascade and, on SQLite, stay behind.
         $filters = $this->entityManager->getFilters();
@@ -108,20 +130,17 @@ final class CompanyClosure
             $filters->disable('archivable');
         }
 
-        foreach ($this->companies->findClosingBefore(DateTimeImmutable::createFromInterface($this->clock->now())) as $company) {
+        try {
             // Read before the memberships go with the company.
             $recipients = $this->notifier?->recipients($company) ?? [];
 
             $this->context->during($company, fn () => $this->companies->deleteCompany($company->getId()));
-
-            $deleted[] = (string) $company->getName();
-            $this->notifier?->notify($company, ClosureNotice::Deleted, $recipients);
+        } finally {
+            if ($archivable) {
+                $filters->enable('archivable');
+            }
         }
 
-        if ($archivable) {
-            $filters->enable('archivable');
-        }
-
-        return $deleted;
+        $this->notifier?->notify($company, ClosureNotice::Deleted, $recipients);
     }
 }

@@ -4,10 +4,12 @@
  #}
 {% set closesAt = company_closes_at() %}
 {% if closesAt %}
+    {% set subscriptionEnded = company_closure_reason() == 'subscription_ended' %}
+    {% set keys = subscriptionEnded ? 'company.subscription_ended.banner' : 'company.closing.banner' %}
     <div class="alert alert-warning d-flex flex-column flex-md-row align-items-md-center gap-3 no-print" role="alert">
         <div class="flex-fill">
-            <strong>{{ 'company.closing.banner.title'|trans({'%date%': closesAt|date('d/m/Y')}) }}</strong>
-            <div class="small">{{ 'company.closing.banner.text'|trans }}</div>
+            <strong>{{ (keys ~ '.title')|trans({'%date%': closesAt|date('d/m/Y')}) }}</strong>
+            <div class="small">{{ (keys ~ '.text')|trans }}</div>
         </div>
         <div class="d-flex gap-2 flex-shrink-0">
             {% if route_allowed('_export_list') %}
@@ -16,7 +18,12 @@
                     {{ 'company.closing.banner.export'|trans }}
                 </a>
             {% endif %}
-            {% if is_granted('company.close') %}
+            {% if subscriptionEnded %}
+                {% set renewUrl = optional_path('saas_subscription_plans') %}
+                {% if renewUrl %}
+                    <a class="btn btn-sm" href="{{ renewUrl }}">{{ 'company.subscription_ended.banner.renew'|trans }}</a>
+                {% endif %}
+            {% elseif is_granted('company.close') %}
                 <form method="post" action="{{ path('_cancel_company_closure') }}">
                     <input type="hidden" name="_token" value="{{ csrf_token('cancel_company_closure') }}">
                     <button class="btn btn-sm">{{ 'company.closing.banner.cancel'|trans }}</button>
