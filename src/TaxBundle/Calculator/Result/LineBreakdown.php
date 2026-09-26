@@ -27,6 +27,8 @@ use Brick\Math\BigDecimal;
  */
 final readonly class LineBreakdown
 {
+    public BigDecimal $taxableAmount;
+
     /**
      * @param list<TaxSummaryRow> $taxRows
      */
@@ -40,6 +42,14 @@ final readonly class LineBreakdown
          * can tell which part falls due on issue and which on payment.
          */
         public SupplyType $supplyType = SupplyType::Services,
+        /**
+         * The net the tax was charged on: the line's subtotal less its share
+         * of a discount on the document. The subtotal is what the line
+         * shows; this is what the tax, the books and the e-invoice's VAT
+         * breakdown are based on. Null reads as the subtotal.
+         */
+        ?BigDecimal $taxableAmount = null,
     ) {
+        $this->taxableAmount = $taxableAmount ?? $lineSubtotal;
     }
 }

@@ -297,6 +297,13 @@
                             <span class="totals-value">{{ quote.baseTotal|formatCurrency(currency) }}</span>
                         </div>
 
+                        {% if discount(quote).isPositive() %}
+                            <div class="totals-row totals-row-discount">
+                                <span class="totals-label">{{ 'quote.discount'|trans }}</span>
+                                <span class="totals-value">-{{ discount(quote)|formatCurrency(currency) }}</span>
+                            </div>
+                        {% endif %}
+
                         {% set _tb = tax_breakdown(quote) %}
                         {% if quote.tax.positive %}
                             <div class="totals-row">
@@ -322,13 +329,6 @@
                                 <span class="totals-value text-muted">{{ 'quote.invoice_taxes.informational'|trans }}</span>
                             </div>
                         {% endfor %}
-
-                        {% if discount(quote).isPositive() %}
-                            <div class="totals-row totals-row-discount">
-                                <span class="totals-label">{{ 'quote.discount'|trans }}</span>
-                                <span class="totals-value">-{{ discount(quote)|formatCurrency(currency) }}</span>
-                            </div>
-                        {% endif %}
 
                         <div class="totals-row totals-row-final">
                             <span class="totals-label">{{ 'quote.total'|trans }}</span>

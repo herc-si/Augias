@@ -55,8 +55,8 @@
             <div class="row justify-content-end mt-4">
                 <div class="col-md-5">
                     <div class="d-flex justify-content-between mb-2"><span>{{ 'quote.subtotal'|trans }}</span><span>{{ quote.baseTotal|formatCurrency(currency) }}</span></div>
-                    {% if quote.tax.positive %}<div class="d-flex justify-content-between mb-2"><span>{{ 'quote.tax'|trans }}</span><span>{{ quote.tax|formatCurrency(currency) }}</span></div>{% endif %}
                     {% if quote.discount.type is not empty %}<div class="d-flex justify-content-between mb-2"><span>{{ 'quote.discount'|trans }}</span><span style="color: #a2492b;">-{{ discount(quote)|formatCurrency(currency) }}</span></div>{% endif %}
+                    {% if quote.tax.positive %}<div class="d-flex justify-content-between mb-2"><span>{{ 'quote.tax'|trans }}</span><span>{{ quote.tax|formatCurrency(currency) }}</span></div>{% endif %}
                     <div class="d-flex justify-content-between p-3 rounded" style="background: #a2492b; color: #faf3e6;">
                         <strong>{{ 'quote.total'|trans }}</strong>
                         <strong>{{ quote.total|formatCurrency(currency) }}</strong>

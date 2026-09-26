@@ -226,10 +226,11 @@ final readonly class LedgerTaxSplitter
             $goods = $line->supplyType->isTaxedOnIssue();
 
             foreach ($line->taxRows as $row) {
-                // The line's own net is the base the rate applied to. Several
-                // taxes on one line each take that same base: compounding one
-                // VAT onto another is not a thing this has to model.
-                $this->collect($groups, $row, $line->lineSubtotal, $row->amount, $goods ? $goodsDueOnIssue : $servicesDueOnIssue, $goods);
+                // The line's net, less its share of any discount, is the base
+                // the rate applied to. Several taxes on one line each take that
+                // same base: compounding one VAT onto another is not a thing
+                // this has to model.
+                $this->collect($groups, $row, $line->taxableAmount, $row->amount, $goods ? $goodsDueOnIssue : $servicesDueOnIssue, $goods);
             }
         }
 
@@ -238,8 +239,8 @@ final readonly class LedgerTaxSplitter
         // each part falls due with the lines it is on. Without goods on the
         // document this is the whole row, as it always was.
         $goods = $this->goodsSubtotal($result);
-        $goodsRatio = $result->subTotal->isPositive() && $goods->isPositive()
-            ? $goods->dividedBy($result->subTotal, 10, RoundingMode::HalfEven)
+        $goodsRatio = $result->taxableTotal->isPositive() && $goods->isPositive()
+            ? $goods->dividedBy($result->taxableTotal, 10, RoundingMode::HalfEven)
             : BigDecimal::zero();
 
         foreach ($result->invoiceLevelBreakdown->taxRows as $row) {
@@ -249,8 +250,8 @@ final readonly class LedgerTaxSplitter
                 $this->collect($groups, $row, $goods, $goodsTax, $goodsDueOnIssue, true);
             }
 
-            if ($result->subTotal->isGreaterThan($goods)) {
-                $this->collect($groups, $row, $result->subTotal->minus($goods), $row->amount->minus($goodsTax), $servicesDueOnIssue, false);
+            if ($result->taxableTotal->isGreaterThan($goods)) {
+                $this->collect($groups, $row, $result->taxableTotal->minus($goods), $row->amount->minus($goodsTax), $servicesDueOnIssue, false);
             }
         }
 
@@ -258,7 +259,7 @@ final readonly class LedgerTaxSplitter
     }
 
     /**
-     * The part of the document's subtotal its goods lines make up.
+     * The part of the document's taxable net its goods lines make up.
      *
      * Disbursements are already outside the subtotal and never come in here:
      * their breakdown always reads as services.
@@ -269,7 +270,7 @@ final readonly class LedgerTaxSplitter
 
         foreach ($result->lineBreakdowns as $line) {
             if ($line->supplyType === SupplyType::Goods) {
-                $goods = $goods->plus($line->lineSubtotal);
+                $goods = $goods->plus($line->taxableAmount);
             }
         }
 

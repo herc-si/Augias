@@ -288,6 +288,18 @@
         </tr>
 
         {# Tax breakdown #}
+        {# Discount #}
+        {% if invoice.discount.type is not empty %}
+            <tr class="discount-row">
+                <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
+                    {{ 'invoice.discount'|trans }}
+                </td>
+                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #ef4444;">
+                    -{{ discount(invoice)|formatCurrency(currency) }}
+                </td>
+            </tr>
+        {% endif %}
+
         {% set _tb = tax_breakdown(invoice) %}
         {% if invoice.tax.positive %}
             <tr class="tax-row">
@@ -329,18 +341,6 @@
                 </td>
             </tr>
         {% endfor %}
-
-        {# Discount #}
-        {% if invoice.discount.type is not empty %}
-            <tr class="discount-row">
-                <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
-                    {{ 'invoice.discount'|trans }}
-                </td>
-                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #ef4444;">
-                    -{{ discount(invoice)|formatCurrency(currency) }}
-                </td>
-            </tr>
-        {% endif %}
 
         {# Partial Payments. Disbursements are not on this document - they go out
            on a note of their own - and each payment covered both, so with

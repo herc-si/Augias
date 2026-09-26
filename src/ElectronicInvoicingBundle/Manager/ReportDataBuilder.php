@@ -226,8 +226,9 @@ final readonly class ReportDataBuilder
     }
 
     /**
-     * The document's lines as sold: category, net, and VAT rows (rate,
-     * amount). Disbursements are left out — money advanced for the client is
+     * The document's lines as sold: category, net — less its share of any
+     * discount, which lowers the price — and VAT rows (rate, amount).
+     * Disbursements are left out — money advanced for the client is
      * not a sale.
      *
      * A tax set on the whole document applies to its net, not to any one
@@ -256,7 +257,30 @@ final readonly class ReportDataBuilder
                 }
             }
 
-            $out[] = [$breakdown->supplyType === SupplyType::Goods ? 'TLB1' : 'TPS1', $breakdown->lineSubtotal, $rows];
+            $out[] = [$breakdown->supplyType === SupplyType::Goods ? 'TLB1' : 'TPS1', $breakdown->taxableAmount, $rows];
+        }
+
+        if (! $result->taxableTotal->isPositive()) {
+            return $out;
+        }
+
+        foreach ($result->invoiceLevelBreakdown->taxRows as $row) {
+            if (TaxDirection::Additive !== $row->direction) {
+                continue;
+            }
+
+            $left = $row->amount;
+            $last = array_key_last($out);
+
+            foreach ($out as $index => [, $subtotal]) {
+                // The last line takes what is left, so the shares add up to
+                // the tax the document shows.
+                $share = $index === $last
+                    ? $left
+                    : $row->amount->multipliedBy($subtotal)->dividedBy($result->taxableTotal, 10, RoundingMode::HalfEven);
+                $left = $left->minus($share);
+                $out[$index][2][] = [$this->rate($row->rate), $share];
+            }
         }
 
         if (! $result->subTotal->isPositive()) {

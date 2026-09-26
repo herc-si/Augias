@@ -17,7 +17,6 @@ use Augias\CoreBundle\Entity\Discount;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\MoneyBundle\Calculator;
 use Brick\Math\BigDecimal;
-use Brick\Math\BigInteger;
 use Brick\Math\Exception\MathException;
 use PHPUnit\Framework\TestCase;
 
@@ -44,7 +43,9 @@ final class CalculatorTest extends TestCase
      * A percentage is applied exactly as stored. The scale used to be guessed
      * from the magnitude — anything above 100 was divided by a hundred — to
      * absorb the form filing 15% as 1500. Nothing writes a scaled percentage
-     * any more, and the guess made a 150% discount read as 1.5%.
+     * any more, and the guess made a 150% discount read as 1.5%. Read as
+     * 150%, it takes the whole net and no more: a discount does not leave the
+     * client owed money.
      *
      * @throws MathException
      */
@@ -59,7 +60,7 @@ final class CalculatorTest extends TestCase
         $entity->setDiscount($discount);
         $entity->setBaseTotal(20000);
 
-        self::assertEquals(BigDecimal::of(30000), $calculator->calculateDiscount($entity));
+        self::assertEquals(BigDecimal::of(20000), $calculator->calculateDiscount($entity));
     }
 
     /**
@@ -97,7 +98,7 @@ final class CalculatorTest extends TestCase
         $entity->setDiscount($discount);
         $entity->setBaseTotal(200);
 
-        self::assertEquals(BigInteger::of(35), $calculator->calculateDiscount($entity));
+        self::assertEquals(BigDecimal::of(35), $calculator->calculateDiscount($entity));
     }
 
     /**

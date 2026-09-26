@@ -18,6 +18,7 @@ use Brick\Math\BigDecimal;
 use Brick\Math\BigInteger;
 use Brick\Math\BigNumber;
 use Brick\Math\Exception\MathException;
+use Brick\Math\RoundingMode;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute as Serialize;
@@ -115,5 +116,37 @@ class Discount
         $this->setValueMoney(BigDecimal::zero());
 
         return $this;
+    }
+
+    /**
+     * What the discount takes off a net amount, in the same minor units,
+     * rounded to the cent.
+     *
+     * The net is the tax-exclusive fees: a discount on the invoice lowers
+     * the price, and so the base VAT is charged on (CGI art. 267-II-1°). It
+     * never goes below nothing, nor above the net — a discount larger than
+     * the sale does not make the client owed money.
+     *
+     * @throws MathException
+     */
+    public function amountOn(BigNumber $net): BigDecimal
+    {
+        $net = $net->toBigDecimal();
+
+        if (! $net->isPositive()) {
+            return BigDecimal::zero();
+        }
+
+        $amount = self::TYPE_MONEY === $this->getType()
+            ? $this->getValueMoney()->toBigDecimal()
+            : $net->multipliedBy(BigDecimal::of((string) ($this->getValuePercentage() ?? 0.0)))->dividedBy(100, 10, RoundingMode::HalfEven);
+
+        $amount = $amount->toScale(0, RoundingMode::HalfUp);
+
+        if ($amount->isNegative()) {
+            return BigDecimal::zero();
+        }
+
+        return $amount->isGreaterThan($net) ? $net : $amount;
     }
 }

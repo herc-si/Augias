@@ -325,6 +325,13 @@
                             <span class="totals-value">{{ invoice.baseTotal|formatCurrency(currency) }}</span>
                         </div>
 
+                        {% if invoice.hasDiscount %}
+                            <div class="totals-row totals-row-discount">
+                                <span class="totals-label">{{ 'invoice.discount'|trans }}</span>
+                                <span class="totals-value">-{{ discount(invoice)|formatCurrency(currency) }}</span>
+                            </div>
+                        {% endif %}
+
                         {% set _tb = tax_breakdown(invoice) %}
                         {% if invoice.tax.positive %}
                             <div class="totals-row">
@@ -350,13 +357,6 @@
                                 <span class="totals-value text-muted">{{ 'invoice.invoice_taxes.informational'|trans }}</span>
                             </div>
                         {% endfor %}
-
-                        {% if invoice.hasDiscount %}
-                            <div class="totals-row totals-row-discount">
-                                <span class="totals-label">{{ 'invoice.discount'|trans }}</span>
-                                <span class="totals-value">-{{ discount(invoice)|formatCurrency(currency) }}</span>
-                            </div>
-                        {% endif %}
 
                         {%- if invoice.hasDisbursements %}
                             <div class="totals-row totals-row-disbursement">

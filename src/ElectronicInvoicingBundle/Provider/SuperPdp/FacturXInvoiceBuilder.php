@@ -17,7 +17,6 @@ use const JSON_THROW_ON_ERROR;
 use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Entity\Company;
-use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\CoreBundle\Pdf\Generator;
 use Augias\CoreBundle\Templates\BillingTemplateChannel;
@@ -83,6 +82,9 @@ final readonly class FacturXInvoiceBuilder
 
     /** UNTDID 2475 "5": the tax falls due on the invoice date. */
     private const string VAT_DUE_ON_INVOICE_DATE = '5';
+
+    /** UNTDID 5189 "95": discount, the reason of a document-level allowance. */
+    private const string DISCOUNT_REASON_CODE = '95';
 
     /**
      * BT-34/BT-49 (seller/buyer electronic address): SUPER PDP's directory only
@@ -172,7 +174,7 @@ final readonly class FacturXInvoiceBuilder
         /** @var list<Line> $lines */
         $lines = array_values($invoice->getLines()->toArray());
 
-        /** @var array<string, array{category: TaxCategory, rate: ?float, basis: float, tax: float}> $vatGroups */
+        /** @var array<string, array{category: TaxCategory, rate: ?float, net: float, basis: float, tax: float}> $vatGroups */
         $vatGroups = [];
         $lineTotal = 0.0;
         $documentTax = $this->documentVat($result);
@@ -212,7 +214,7 @@ final readonly class FacturXInvoiceBuilder
             // platform refused the invoice (BR-CO-14).
             if ($documentTax instanceof TaxSummaryRow && ! $line->getTaxes()->first() instanceof LineTax && ! $this->systemConfig->isVatExempt()) {
                 $category = $documentTax->category;
-                $taxRow = $this->share($documentTax, $breakdown->lineSubtotal, $result->subTotal);
+                $taxRow = $this->share($documentTax, $breakdown->taxableAmount, $result->taxableTotal);
             }
 
             $categoryCode = $this->mapVatCategory($category);
@@ -227,20 +229,43 @@ final readonly class FacturXInvoiceBuilder
             $vatGroups[$groupKey] ??= [
                 'category' => $category,
                 'rate' => $rate,
+                'net' => 0.0,
                 'basis' => 0.0,
                 'tax' => 0.0,
             ];
-            $vatGroups[$groupKey]['basis'] += $lineNet;
+            $vatGroups[$groupKey]['net'] += $lineNet;
+            $vatGroups[$groupKey]['basis'] += $this->minorToFloat($breakdown->taxableAmount);
             $vatGroups[$groupKey]['tax'] += $taxAmount;
         }
+
+        $allowanceTotal = 0.0;
 
         foreach ($vatGroups as $group) {
             [$exemptionReason, $exemptionReasonCode] = $this->exemptionReasonFor($group['category']);
 
+            // A discount on the invoice is a document-level allowance (BG-20),
+            // one per VAT category and rate, since each lowers the base of its
+            // own breakdown: the lines keep their price, the breakdown is
+            // charged on what is left.
+            $allowance = round($group['net'] - $group['basis'], 2);
+
+            if ($allowance > 0.0) {
+                $documentBuilder->addDocumentAllowanceCharge(
+                    $allowance,
+                    false,
+                    $this->mapVatCategory($group['category']),
+                    ZugferdVatTypeCodes::VALUE_ADDED_TAX,
+                    $group['rate'],
+                    reasonCode: self::DISCOUNT_REASON_CODE,
+                    reason: 'Remise',
+                );
+                $allowanceTotal += $allowance;
+            }
+
             $documentBuilder->addDocumentTax(
                 $this->mapVatCategory($group['category']),
                 ZugferdVatTypeCodes::VALUE_ADDED_TAX,
-                $group['basis'],
+                round($group['basis'], 2),
                 // Shares of a document-level tax are not whole cents; their
                 // sum is.
                 round($group['tax'], 2),
@@ -265,8 +290,8 @@ final readonly class FacturXInvoiceBuilder
             $this->minorToFloat($invoice->getFeesPayableAmount()),
             $lineTotal,
             null,
-            $this->discountAmount($invoice),
-            $lineTotal,
+            $allowanceTotal > 0.0 ? round($allowanceTotal, 2) : null,
+            round($lineTotal - $allowanceTotal, 2),
             $this->minorToFloat($invoice->getTax()),
         );
 
@@ -663,22 +688,5 @@ final readonly class FacturXInvoiceBuilder
     private function minorToFloat(BigNumber $minorUnits): float
     {
         return $minorUnits->toFloat() / 100;
-    }
-
-    private function discountAmount(Invoice $invoice): ?float
-    {
-        if (! $invoice->hasDiscount()) {
-            return null;
-        }
-
-        $discount = $invoice->getDiscount();
-
-        if ($discount->getType() === Discount::TYPE_MONEY) {
-            return $this->minorToFloat($discount->getValueMoney());
-        }
-
-        $percentage = $discount->getValuePercentage() ?? 0.0;
-
-        return $this->minorToFloat($invoice->getBaseTotal()) * ($percentage / 100);
     }
 }

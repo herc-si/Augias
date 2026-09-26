@@ -184,9 +184,9 @@ final class CreateCreditNote extends AbstractController
 
     /**
      * Recalculated from the lines rather than read off the DTO: a percentage
-     * discount is worked out against baseTotal + tax, and those two arrive as
-     * hidden fields the browser maintains. While a line is being edited they
-     * lag, and a discount read against a stale zero shows as none at all.
+     * discount is worked out against baseTotal, and that arrives as a
+     * hidden field the browser maintains. While a line is being edited it
+     * lags, and a discount read against a stale zero shows as none at all.
      */
     #[ExposeInTemplate]
     public function getDiscountAmount(): string

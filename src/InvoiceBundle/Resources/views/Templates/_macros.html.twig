@@ -116,6 +116,17 @@
                 {{ invoice.baseTotal|formatCurrency(currency) }}
             </td>
         </tr>
+        {% if invoice.discount.type is not empty %}
+            <tr>
+                <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
+                    {{ 'invoice.discount'|trans }}
+                </td>
+                <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: {{ p.discountColor }};">
+                    -{{ discount(invoice)|formatCurrency(currency) }}
+                </td>
+            </tr>
+        {% endif %}
+
         {% set _tb = tax_breakdown(invoice) %}
         {% if invoice.tax.positive %}
             <tr>
@@ -157,16 +168,6 @@
                 </td>
             </tr>
         {% endfor %}
-        {% if invoice.discount.type is not empty %}
-            <tr>
-                <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
-                    {{ 'invoice.discount'|trans }}
-                </td>
-                <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: {{ p.discountColor }};">
-                    -{{ discount(invoice)|formatCurrency(currency) }}
-                </td>
-            </tr>
-        {% endif %}
         {#
          # Disbursements are not on this document — they go out on a note of
          # their own. Each payment covered both, so with disbursements on the

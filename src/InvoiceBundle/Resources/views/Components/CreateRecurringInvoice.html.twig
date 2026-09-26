@@ -189,17 +189,17 @@
                             <span class="totals-value">{{ invoice.baseTotal|formatCurrency(currency) }}</span>
                         </div>
 
+                        <div class="totals-row totals-row-discount">
+                            <span class="totals-label">{{ 'billing.discount'|trans }}</span>
+                            <span class="totals-value">{{ discount(invoice)|formatCurrency(currency) }}</span>
+                        </div>
+
                         {% if hasTax %}
                             <div class="totals-row">
                                 <span class="totals-label">{{ 'billing.tax'|trans }}</span>
                                 <span class="totals-value">{{ invoice.tax|formatCurrency(currency) }}</span>
                             </div>
                         {% endif %}
-
-                        <div class="totals-row totals-row-discount">
-                            <span class="totals-label">{{ 'billing.discount'|trans }}</span>
-                            <span class="totals-value">{{ discount(invoice)|formatCurrency(currency) }}</span>
-                        </div>
 
                         {# A recurring invoice can carry a disbursement line — the column is
                          # on the shared table and the API can set it — and the invoices it
