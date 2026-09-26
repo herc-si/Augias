@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\InstallBundle\Installer\Database;
 
+use Augias\CoreBundle\Doctrine\ForeignKeys;
 use Carbon\CarbonImmutable;
 use Doctrine\Migrations\DependencyFactory;
 use Doctrine\Migrations\Metadata\MigrationPlanList;
@@ -78,23 +79,32 @@ final readonly class Migration
      */
     public function migrate(?callable $callback = null): Generator
     {
-        $metadataStorage = $this->migrationDependencyFactory->getMetadataStorage();
+        // SQLite alters a table by dropping and recreating it: with foreign
+        // keys on, the drop would cascade into the child tables.
+        $connection = $this->entityManager->getConnection();
+        ForeignKeys::suspend($connection);
 
-        $metadataStorage->ensureInitialized();
+        try {
+            $metadataStorage = $this->migrationDependencyFactory->getMetadataStorage();
 
-        $plan = $this->planToLatestVersion();
-        $tracked = count($metadataStorage->getExecutedMigrations()->getItems()) > 0;
+            $metadataStorage->ensureInitialized();
 
-        if ($tracked) {
-            yield from $this->runPlan($plan, $callback);
-        }
+            $plan = $this->planToLatestVersion();
+            $tracked = count($metadataStorage->getExecutedMigrations()->getItems()) > 0;
 
-        // Still checked on a tracked database: a schema change that shipped
-        // without a migration would otherwise never reach it.
-        yield from $this->updateSchema($callback);
+            if ($tracked) {
+                yield from $this->runPlan($plan, $callback);
+            }
 
-        if (! $tracked) {
-            $this->recordAsExecuted($plan, $metadataStorage);
+            // Still checked on a tracked database: a schema change that shipped
+            // without a migration would otherwise never reach it.
+            yield from $this->updateSchema($callback);
+
+            if (! $tracked) {
+                $this->recordAsExecuted($plan, $metadataStorage);
+            }
+        } finally {
+            ForeignKeys::restore($connection);
         }
     }
 
