@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Tests\Export\Message\Handler;
 
+use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\ExportJob;
 use Augias\CoreBundle\Export\CompanyExporter;
@@ -23,6 +24,8 @@ use Augias\CoreBundle\Export\Message\Handler\ProcessCompanyExportHandler;
 use Augias\CoreBundle\Export\Message\RequestCompanyExport;
 use Augias\CoreBundle\Repository\ExportJobRepository;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
+use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Augias\UserBundle\Test\Factory\UserFactory;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -69,6 +72,42 @@ final class ProcessCompanyExportHandlerTest extends KernelTestCase
         $this->mailer()->sentEmails()->first()->assertTo('exporter@example.com');
 
         new Filesystem()->remove($absolutePath);
+    }
+
+    /**
+     * The archive carries the documents a company has to keep, as issued —
+     * not only the rows. Drafts were never issued and stay out.
+     */
+    public function testTheArchiveHoldsTheIssuedInvoicesAsPdf(): void
+    {
+        $user = UserFactory::createOne(['email' => 'archive@example.com', 'companies' => [$this->company]]);
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+        InvoiceFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => InvoiceStatus::Paid, 'invoiceId' => 'EXP-1']);
+        InvoiceFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => InvoiceStatus::Draft, 'invoiceId' => 'EXP-DRAFT']);
+
+        $repository = $this->exportJobRepository();
+        $job = new ExportJob($user->getId(), ExportFormat::Json)->setCompany($this->company);
+        $repository->save($job);
+
+        self::getContainer()->get(ProcessCompanyExportHandler::class)(new RequestCompanyExport($job->getId(), $this->company->getId(), $user->getId()));
+        self::getContainer()->get(CompanySelector::class)->switchCompany($this->company->getId());
+
+        $reloaded = $repository->find($job->getId());
+        self::assertInstanceOf(ExportJob::class, $reloaded);
+        self::assertSame(ExportStatus::Completed, $reloaded->getStatus(), (string) $reloaded->getFailureReason());
+        $path = $reloaded->resolveAbsolutePath(self::getContainer()->getParameter('kernel.project_dir'));
+        self::assertNotNull($path);
+
+        $zip = new ZipArchive();
+        self::assertTrue($zip->open($path));
+        $pdf = $zip->getFromName('files/invoices/EXP-1.pdf');
+        $draft = $zip->locateName('files/invoices/EXP-DRAFT.pdf');
+        $zip->close();
+        new Filesystem()->remove($path);
+
+        self::assertIsString($pdf);
+        self::assertStringStartsWith('%PDF', $pdf);
+        self::assertFalse($draft);
     }
 
     public function testSkipsWhenJobIsNotPending(): void

@@ -88,6 +88,42 @@ final class CompanyRolesTest extends WebTestCase
         $this->assertStillMember($admin);
     }
 
+    /**
+     * Closing waits thirty days, during which the company is read-only for
+     * everyone, its data can still be exported, and the owner can call it off.
+     */
+    public function testTheOwnerClosesTheCompanyAndCanCallItOff(): void
+    {
+        $owner = $this->member(CompanyRole::Owner);
+        $billing = $this->member(CompanyRole::Billing);
+
+        $browser = $this->as($owner)->visit('/settings')->assertSuccessful();
+        $token = $browser->crawler()->filter('#deleteCompanyForm input[name=_csrf_token]')->attr('value');
+
+        $browser->post('/delete-company', ['body' => ['_csrf_token' => $token]])
+            ->assertSuccessful()
+            ->assertOn('/profile/exports')
+            ->assertSee('The closure is scheduled for');
+
+        $this->as($billing)
+            ->visit('/invoices/')
+            ->assertSuccessful()
+            ->assertSee('This company will close on')
+            ->visit('/invoices/create/' . $this->client->getId())
+            ->assertStatus(403)
+            ->assertSee('read-only');
+
+        $browser = $this->as($owner)->visit('/dashboard')->assertSuccessful();
+        $cancel = $browser->crawler()->filter('form[action="/cancel-company-closure"] input[name=_token]')->attr('value');
+        $browser->post('/cancel-company-closure', ['body' => ['_token' => $cancel]])
+            ->assertSuccessful()
+            ->assertSee('The closure was cancelled.');
+
+        $this->as($billing)
+            ->visit('/invoices/create/' . $this->client->getId())
+            ->assertSuccessful();
+    }
+
     public function testTheMenuOnlyOffersWhatTheRoleOpens(): void
     {
         $billing = $this->member(CompanyRole::Billing);

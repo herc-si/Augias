@@ -523,7 +523,7 @@
                                 class="btn btn-outline-danger flex-shrink-0 gap-2"
                                 aria-label="{{ 'settings.page.danger.delete'|trans }}"
                                 {{ stimulus_action('delete-company', 'showModal', 'click') }}>
-                            {{ ux_icon('tabler:trash', {width: 16, height: 16, 'aria-hidden': 'true'}) }}
+                            {{ ux_icon('tabler:power', {width: 16, height: 16, 'aria-hidden': 'true'}) }}
                             {{ 'settings.page.danger.delete'|trans }}
                         </button>
                     </div>
@@ -552,6 +552,12 @@
                                 <div>
                                     <strong>{{ 'settings.page.danger.modal.warning'|trans }}</strong>
                                     {{ 'settings.page.danger.modal.warning_help'|trans }}
+                                    <div class="mt-2">
+                                        <a href="{{ path('_export_list') }}" class="alert-link">
+                                            {{ ux_icon('tabler:database-export', {width: 16, height: 16, 'aria-hidden': 'true'}) }}
+                                            {{ 'settings.page.danger.modal.export'|trans }}
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                             <p class="mb-2">
@@ -585,7 +591,7 @@
                                         aria-label="{{ 'settings.page.danger.delete'|trans }}"
                                         {{ stimulus_target('delete-company', 'confirmButton') }}
                                         disabled>
-                                    {{ ux_icon('tabler:trash', {width: 16, height: 16, 'aria-hidden': 'true'}) }}
+                                    {{ ux_icon('tabler:power', {width: 16, height: 16, 'aria-hidden': 'true'}) }}
                                     {{ 'settings.page.danger.delete'|trans }}
                                 </button>
                             </form>

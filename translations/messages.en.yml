@@ -726,6 +726,13 @@ client_create: 'Create Party'
 clients: Parties
 close: Close
 company:
+    closing:
+        read_only: 'This company will close on %date%: it is read-only until then. You can still export its data.'
+        banner:
+            title: 'This company will close on %date%.'
+            text: 'It is read-only until then, and will then be permanently deleted with all its data, invoices included. You have to keep your invoices for 10 years: export your data before that date.'
+            export: 'Export the data'
+            cancel: 'Cancel the closure'
     create:
         back: Back
         cancel_anytime: 'Cancel anytime'
@@ -1469,6 +1476,8 @@ feature:
     view_all_plans: 'View all plans'
 flash:
     company_deleted: 'Company deleted successfully.'
+    company_closure_scheduled: 'The closure is scheduled for %date%. Until then the company is read-only: download the full export of your data.'
+    company_closure_cancelled: 'The closure was cancelled.'
 forgot_password:
     check_email:
         content: "An email has been sent. It contains a link you must click to reset your password.\n\nIf you don't get an email check your spam folder or try again.\n"
@@ -3365,15 +3374,16 @@ settings:
             phone_placeholder: '+1 (555) 123-4567'
             profile: 'Company Profile'
         danger:
-            delete: 'Delete Company'
-            delete_help: 'Permanently delete your company and all associated data. This action cannot be undone.'
+            delete: 'Close Company'
+            delete_help: "The company becomes read-only for 30 days, then it is permanently deleted with all its data, invoices included. You can cancel until then."
             modal:
                 company_name_aria: 'Company name to type'
-                confirm_prompt: 'To confirm deletion, please type the company name exactly as shown below:'
+                confirm_prompt: 'To confirm the closure, type the company name exactly as shown below:'
+                export: "Download the full export of your data"
                 input_placeholder: 'Enter company name to confirm'
-                title: 'Confirm Company Deletion'
+                title: 'Close the company?'
                 warning: Warning!
-                warning_help: 'This action will permanently delete your company and all associated data including invoices, quotes, clients, and payments. This cannot be undone.'
+                warning_help: "In 30 days the company will be permanently deleted with all its data: invoices, credit notes, quotes, clients, payments, accounting. Augias will not keep them. The law requires you to keep your invoices for 10 years: download the full export before the closure date. Until then the company is read-only and you can cancel the closure."
             title: 'Danger Zone'
         design:
             template:

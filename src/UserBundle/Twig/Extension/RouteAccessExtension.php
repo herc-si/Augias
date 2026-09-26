@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Augias\UserBundle\Twig\Extension;
 
+use Augias\UserBundle\Security\CompanyAccess;
 use Augias\UserBundle\Security\RouteAccess;
+use DateTimeImmutable;
 use Twig\Attribute\AsTwigFunction;
 
 /**
@@ -24,6 +26,7 @@ final readonly class RouteAccessExtension
 {
     public function __construct(
         private RouteAccess $routeAccess,
+        private CompanyAccess $companyAccess,
     ) {
     }
 
@@ -31,5 +34,15 @@ final readonly class RouteAccessExtension
     public function allowed(string $route): bool
     {
         return $this->routeAccess->allows($route);
+    }
+
+    /**
+     * `company_closes_at()`: when the open company goes, if its owner has
+     * asked for it to be closed — for the banner every page then carries.
+     */
+    #[AsTwigFunction('company_closes_at')]
+    public function closesAt(): ?DateTimeImmutable
+    {
+        return $this->companyAccess->membership()?->getCompany()->getClosesAt();
     }
 }

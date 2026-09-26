@@ -115,6 +115,7 @@
 
         <div class="page-body">
             <div class="container-xl">
+                {% include "@AugiasCore/Company/_closing_banner.html.twig" %}
                 {% include "@AugiasCore/flash.html.twig" %}
 
                 {{ block('content') is defined ? block('content') }}

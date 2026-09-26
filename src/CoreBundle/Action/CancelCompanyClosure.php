@@ -21,30 +21,23 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
- * Closes the company — at the end of a grace period, not now.
- *
- * Until then the company is read-only, its data can be exported and the
- * owner can call the closure off; CompanyClosure deletes it afterwards. The
- * route keeps its name: what changed is what happens behind it.
+ * The owner changes their mind before the closure date: the company is
+ * back as it was, nothing having been deleted.
  */
-final class DeleteCompany extends AbstractController
+final class CancelCompanyClosure extends AbstractController
 {
     public function __construct(
         private readonly CompanyRepository $companyRepository,
         private readonly CompanySelector $companySelector,
         private readonly CompanyClosure $closure,
-        private readonly TranslatorInterface $translator,
     ) {
     }
 
     public function __invoke(Request $request): Response
     {
-        $csrfToken = $request->request->get('_csrf_token');
-
-        if (! $this->isCsrfTokenValid('delete_company', $csrfToken)) {
+        if (! $this->isCsrfTokenValid('cancel_company_closure', (string) $request->request->get('_token'))) {
             throw new BadRequestHttpException('Invalid CSRF token.');
         }
 
@@ -54,10 +47,9 @@ final class DeleteCompany extends AbstractController
             throw $this->createNotFoundException();
         }
 
-        $closesAt = $this->closure->schedule($company);
+        $this->closure->cancel($company);
+        $this->addFlash('success', 'flash.company_closure_cancelled');
 
-        $this->addFlash('warning', $this->translator->trans('flash.company_closure_scheduled', ['%date%' => $closesAt->format('d/m/Y')]));
-
-        return $this->redirectToRoute('_export_list');
+        return $this->redirectToRoute('_dashboard');
     }
 }

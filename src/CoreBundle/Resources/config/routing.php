@@ -12,6 +12,7 @@ declare(strict_types=1);
  */
 
 use Augias\CoreBundle\Action\AccessLog;
+use Augias\CoreBundle\Action\CancelCompanyClosure;
 use Augias\CoreBundle\Action\Category\Add as CategoryAdd;
 use Augias\CoreBundle\Action\Category\Edit as CategoryEdit;
 use Augias\CoreBundle\Action\Category\Index as CategoryIndex;
@@ -81,6 +82,12 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_delete_company', '/delete-company')
         ->controller(DeleteCompany::class)
+        ->methods(['POST'])
+    ;
+
+    $routingConfigurator
+        ->add('_cancel_company_closure', '/cancel-company-closure')
+        ->controller(CancelCompanyClosure::class)
         ->methods(['POST'])
     ;
 

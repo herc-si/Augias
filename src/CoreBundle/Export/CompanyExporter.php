@@ -15,6 +15,7 @@ namespace Augias\CoreBundle\Export;
 
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\ExportJob;
+use Augias\CoreBundle\Export\Attachment\ExportAttachmentProvider;
 use Augias\CoreBundle\Export\Discovery\EntityDiscovery;
 use Augias\CoreBundle\Export\Discovery\EntityExportSpec;
 use Augias\CoreBundle\Export\Enum\ExportFormat;
@@ -27,11 +28,13 @@ use RecursiveIteratorIterator;
 use RuntimeException;
 use SplFileInfo;
 use Symfony\Bridge\Doctrine\Types\UlidType;
+use Symfony\Component\DependencyInjection\Attribute\AutowireIterator;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Uid\Ulid;
 use ZipArchive;
 use function array_map;
 use function bin2hex;
+use function ltrim;
 use function random_bytes;
 use function sys_get_temp_dir;
 
@@ -45,8 +48,8 @@ use function sys_get_temp_dir;
  * TODO(streaming): the current implementation materializes each entity's full result
  *   set before encoding. Switch to Doctrine's toIterable() + chunked writes and a
  *   streaming JSON/XML writer (e.g. XMLWriter) when we start seeing large tenants.
- * TODO(binary-attachments): include PDF invoices, uploaded receipts, and company
- *   logos under a `files/` subdirectory in the archive.
+ * Files — the issued documents as PDF, the receipts kept beside them — come
+ * from the ExportAttachmentProvider services, under `files/`.
  */
 final readonly class CompanyExporter
 {
@@ -59,6 +62,9 @@ final readonly class CompanyExporter
         private Filesystem $filesystem,
         private CompanySelector $companySelector,
         private string $projectDir,
+        /** @var iterable<ExportAttachmentProvider> */
+        #[AutowireIterator(ExportAttachmentProvider::TAG)]
+        private iterable $attachmentProviders = [],
     ) {
     }
 
@@ -91,6 +97,7 @@ final readonly class CompanyExporter
 
         try {
             $counts = $this->writeEntityFiles($manager, $specs, $format, $stagingDir);
+            $counts['files'] = $this->writeAttachments($stagingDir);
 
             $manifest = $this->manifestGenerator->generate($job, $counts);
             // JSON_THROW_ON_ERROR surfaces encoder failures (e.g. a non-UTF-8 byte
@@ -114,6 +121,24 @@ final readonly class CompanyExporter
         } finally {
             $this->filesystem->remove($stagingDir);
         }
+    }
+
+    /**
+     * The documents and receipts themselves, under files/ — what the company
+     * has to keep, as it was issued.
+     */
+    private function writeAttachments(string $stagingDir): int
+    {
+        $written = 0;
+
+        foreach ($this->attachmentProviders as $provider) {
+            foreach ($provider->attachments() as $attachment) {
+                $this->filesystem->dumpFile($stagingDir . '/files/' . ltrim($attachment->path, '/'), ($attachment->contents)());
+                ++$written;
+            }
+        }
+
+        return $written;
     }
 
     /**
