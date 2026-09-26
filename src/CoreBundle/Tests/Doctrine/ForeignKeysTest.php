@@ -15,6 +15,7 @@ namespace Augias\CoreBundle\Tests\Doctrine;
 
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Doctrine\ForeignKeys;
+use Augias\CoreBundle\Doctrine\Listener\SuspendForeignKeysForSchemaCommands;
 use Augias\CoreBundle\Doctrine\Middleware\SqliteForeignKeys;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
@@ -29,6 +30,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Event\ConsoleCommandEvent;
+use Symfony\Component\Console\Event\ConsoleTerminateEvent;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\NullOutput;
 
 /**
  * The schema's ON DELETE rules hold on SQLite too — they did not, and a
@@ -36,6 +42,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
  */
 #[CoversClass(SqliteForeignKeys::class)]
 #[CoversClass(ForeignKeys::class)]
+#[CoversClass(SuspendForeignKeysForSchemaCommands::class)]
 final class ForeignKeysTest extends KernelTestCase
 {
     use EnsureApplicationInstalled;
@@ -131,6 +138,24 @@ final class ForeignKeysTest extends KernelTestCase
             'INSERT INTO parent (id) SELECT id FROM __temp__parent',
             'DROP TABLE __temp__parent',
         ]];
+    }
+
+    public function testTheSchemaCommandsSuspendThem(): void
+    {
+        $connection = DriverManager::getConnection(['driver' => 'pdo_sqlite', 'memory' => true]);
+        $connection->executeStatement('PRAGMA foreign_keys = ON');
+        $listener = new SuspendForeignKeysForSchemaCommands($connection);
+        $input = new ArrayInput([]);
+        $output = new NullOutput();
+
+        $listener->onCommand(new ConsoleCommandEvent(new Command('doctrine:schema:update'), $input, $output));
+        self::assertSame(0, (int) $connection->fetchOne('PRAGMA foreign_keys'));
+
+        $listener->onTerminate(new ConsoleTerminateEvent(new Command('doctrine:schema:update'), $input, $output, 0));
+        self::assertSame(1, (int) $connection->fetchOne('PRAGMA foreign_keys'));
+
+        $listener->onCommand(new ConsoleCommandEvent(new Command('cache:clear'), $input, $output));
+        self::assertSame(1, (int) $connection->fetchOne('PRAGMA foreign_keys'), 'Other commands keep them.');
     }
 
     public function testMigrationsSuspendThem(): void
