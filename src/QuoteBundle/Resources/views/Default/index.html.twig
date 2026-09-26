@@ -14,10 +14,12 @@
 {% endblock title %}
 
 {% block heading %}
+    {% if route_allowed('_quotes_create') %}
     <a class="btn btn-primary" href="{{ path("_quotes_create") }}">
         {{ ux_icon('tabler:plus', {width: 18, height: 18}) }}
         {{ "quote.create.title"|trans }}
     </a>
+    {% endif %}
 {% endblock %}
 
 {% block content %}

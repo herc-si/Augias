@@ -50,24 +50,30 @@
             <div class="doc-view-primary-actions">
                 {# Editing is a draft-only affair; once issued the document is fixed. #}
                 {% if not creditNote.issued %}
+                    {% if route_allowed('_credit_notes_edit') %}
                     <a href="{{ path('_credit_notes_edit', {'id': creditNote.id}) }}" class="btn btn-outline-primary">
                         {{ ux_icon('tabler:pencil', {width: 18, height: 18}) }}
                         {{ 'action.edit'|trans }}
                     </a>
+                    {% endif %}
                 {% endif %}
 
                 {% if workflow_can(creditNote, 'issue') %}
+                    {% if route_allowed('_action_credit_note') %}
                     <a href="{{ path('_action_credit_note', {'action': 'issue', 'id': creditNote.id}) }}" class="btn btn-primary">
                         {{ ux_icon('tabler:check', {width: 18, height: 18}) }}
                         {{ 'credit_note.action.issue'|trans }}
                     </a>
+                    {% endif %}
                 {% endif %}
 
                 {% if creditNote.users|length > 0 %}
+                    {% if route_allowed('_credit_notes_send') %}
                     <a href="{{ path('_credit_notes_send', {'id': creditNote.id}) }}" class="btn btn-outline-primary">
                         {{ ux_icon('tabler:send', {width: 18, height: 18}) }}
                         {{ 'credit_note.action.send'|trans }}
                     </a>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>

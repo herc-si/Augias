@@ -16,8 +16,11 @@ namespace Augias\UserBundle\Action;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
+use Augias\UserBundle\Entity\Membership;
+use Augias\UserBundle\Repository\MembershipRepository;
 use Augias\UserBundle\Repository\UserInvitationRepository;
 use Augias\UserBundle\Repository\UserRepository;
+use Augias\UserBundle\Security\CompanyAccess;
 use Symfony\Bridge\Twig\Attribute\Template;
 
 final readonly class Users
@@ -27,11 +30,13 @@ final readonly class Users
         private UserInvitationRepository $invitationRepository,
         private CompanySelector $companySelector,
         private CompanyRepository $companyRepository,
+        private MembershipRepository $membershipRepository,
+        private CompanyAccess $access,
     ) {
     }
 
     /**
-     * @return array{totalActiveUsers: int, totalPendingInvitations: int, recentlyJoinedCount: int, seatsUsage: int}
+     * @return array{totalActiveUsers: int, totalPendingInvitations: int, recentlyJoinedCount: int, seatsUsage: int, members: list<Membership>, me: ?Membership}
      */
     #[Template('@AugiasUser/Users/index.html.twig')]
     public function __invoke(): array
@@ -51,6 +56,8 @@ final readonly class Users
             'totalPendingInvitations' => $totalPendingInvitations,
             'recentlyJoinedCount' => $recentlyJoinedCount,
             'seatsUsage' => $seatsUsage,
+            'members' => $company instanceof Company ? $this->membershipRepository->forCompany($company) : [],
+            'me' => $this->access->membership(),
         ];
     }
 }

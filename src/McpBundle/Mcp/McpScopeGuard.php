@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Augias\McpBundle\Mcp;
 
 use Augias\McpBundle\Security\McpScope;
+use Augias\UserBundle\Enum\CompanyPermission;
 use Mcp\Exception\ToolCallException;
+use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 /**
  * Enforces that the current MCP request carries the required OAuth scope.
@@ -24,6 +26,7 @@ final readonly class McpScopeGuard
 {
     public function __construct(
         private McpSecurityContext $context,
+        private AuthorizationCheckerInterface $authorization,
     ) {
     }
 
@@ -39,6 +42,18 @@ final readonly class McpScopeGuard
                 'This tool requires the "%s" scope. Granted: %s.',
                 $required->value,
                 $granted === [] ? '(none)' : implode(', ', $granted),
+            ));
+        }
+
+        // A scope is what the person let the assistant do; their role is what
+        // they may do themselves, and the assistant never gets more. An
+        // accountant's assistant reads, whatever scope it was granted.
+        $permission = McpScope::Write === $required ? CompanyPermission::BillingWrite : CompanyPermission::BillingRead;
+
+        if (! $this->authorization->isGranted($permission->value)) {
+            throw new ToolCallException(sprintf(
+                'Your role in this company does not allow this: it needs the right to %s documents.',
+                McpScope::Write === $required ? 'change' : 'read',
             ));
         }
     }

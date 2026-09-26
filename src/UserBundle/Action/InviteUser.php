@@ -24,6 +24,7 @@ use Augias\UserBundle\Enum\InvitationStatus;
 use Augias\UserBundle\Form\Type\UserInviteType;
 use Augias\UserBundle\Repository\UserInvitationRepository;
 use Augias\UserBundle\Repository\UserRepository;
+use Augias\UserBundle\Security\CompanyAccess;
 use Augias\UserBundle\UserInvitation\UserInvitation as SendUserInvitation;
 use Exception;
 use Generator;
@@ -50,6 +51,7 @@ final class InviteUser extends AbstractController
         private readonly SendUserInvitation $userInvitation,
         private readonly UserInvitationRepository $userInvitationRepository,
         private readonly FeatureGate $featureGate,
+        private readonly CompanyAccess $access,
     ) {
     }
 
@@ -68,7 +70,9 @@ final class InviteUser extends AbstractController
             return $this->render('@AugiasUser/Users/invite_gated.html.twig');
         }
 
-        $form = $this->createForm(UserInviteType::class);
+        $form = $this->createForm(UserInviteType::class, null, [
+            'assignable_roles' => $this->access->role()?->assignable() ?? [],
+        ]);
 
         $form->handleRequest($request);
 

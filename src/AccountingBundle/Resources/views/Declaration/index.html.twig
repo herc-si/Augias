@@ -93,6 +93,7 @@
                                 </td>
                                 <td class="text-end"></td>
                                 <td>
+                                    {% if route_allowed('_accounting_period_create') %}
                                     <form method="post" action="{{ path('_accounting_period_create') }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('accounting_period_create') }}">
                                         {#
@@ -110,6 +111,7 @@
                                             {{ 'accounting.period.create'|trans }}
                                         </button>
                                     </form>
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}

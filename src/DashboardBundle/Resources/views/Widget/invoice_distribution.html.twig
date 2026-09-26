@@ -21,10 +21,12 @@
                     {{ ux_icon('tabler:chart-donut', {width: 48, height: 48}) }}
                 </div>
                 <p class="dashboard-chart-empty-text">{{ 'dashboard.charts.no_invoices'|trans }}</p>
+                {% if route_allowed('_invoices_create') %}
                 <a href="{{ path('_invoices_create') }}" class="btn btn-primary btn-sm">
                     {{ ux_icon('tabler:plus', {width: 16, height: 16}) }}
                     {{ 'dashboard.actions.create_invoice'|trans }}
                 </a>
+                {% endif %}
             </div>
         {% else %}
             <div class="dashboard-donut-center">

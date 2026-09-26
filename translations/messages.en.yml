@@ -1208,6 +1208,7 @@ datagrid:
         remove: 'Click to remove'
     filters: Filters
     flash:
+        not_allowed: "Your role in this company does not allow this action."
         not_found: 'Action not found.'
         not_implemented: 'Action not implemented.'
         select_one: 'Please select at least one item.'
@@ -3608,6 +3609,48 @@ user:
             invited_by: "Invited By"
             status: "Status"
 users:
+    role:
+        owner: Owner
+        admin: Administrator
+        billing: Billing
+        accountant: Accountant
+    role_description:
+        owner: "Every right, including closing the company and handing it over."
+        admin: "Everything but closing the company: settings, members, billing, accounting."
+        billing: "Clients, quotes, invoices, credit notes, payments and purchases. No settings, no accounting."
+        accountant: "Sees everything, keeps the books and exports the data. Creates and changes no document."
+    permission_denied:
+        company:
+            billing:
+                read: "Your role (%role%) gives no access to this company's documents."
+                write: "Your role (%role%) lets you see documents, not create or change them."
+            accounting:
+                write: "Your role (%role%) lets you see the books, not keep them."
+            export: "Your role (%role%) does not allow exporting the company's data."
+            settings: "Only the owner and administrators can change the company's settings."
+            members: "Only the owner and administrators can manage the company's members."
+            close: "Only the owner can close the company or hand it over."
+    members:
+        role: Role
+        you: you
+        never: Never
+        leave: "Leave the company"
+        leave_confirm: "Leave this company? You will no longer have access unless invited again."
+        make_owner: "Make owner"
+        make_owner_confirm: "Hand the company over to %email%? You will stay on as an administrator."
+        remove: Remove
+        remove_confirm: "Take %email%'s access to this company away? Their account is not deleted."
+        role_changed: "The role was changed."
+        removed: "The access was taken away."
+        ownership_transferred: "The company was handed over."
+        left: "You left the company."
+        error:
+            owner_role: "The owner's role only changes by handing the company over."
+            role_not_assignable: "You cannot give or take away this role."
+            remove_owner: "The owner cannot be removed: they have to hand the company over first."
+            owner_leaves: "The owner cannot leave the company: hand it over to another member first."
+            not_owner: "Only the owner can hand the company over."
+            not_a_member: "This person is not a member of the company."
     add: 'Add User'
     create:
         generate_password: 'Generate Random Password'
@@ -3635,6 +3678,8 @@ users:
             description: 'All invitations have been accepted or there are no pending invitations.'
             title: 'No pending invitations'
     invite:
+        role:
+            label: "Role in the company"
         details:
             description: 'Enter the email address of the person you want to invite'
             title: 'Invitation Details'

@@ -21,6 +21,10 @@ use Augias\UserBundle\Action\ForgotPassword\Request;
 use Augias\UserBundle\Action\ForgotPassword\Reset;
 use Augias\UserBundle\Action\InviteUser;
 use Augias\UserBundle\Action\LoginHistory;
+use Augias\UserBundle\Action\Member\ChangeMemberRole;
+use Augias\UserBundle\Action\Member\LeaveCompany;
+use Augias\UserBundle\Action\Member\RemoveMember;
+use Augias\UserBundle\Action\Member\TransferOwnership;
 use Augias\UserBundle\Action\Notifications;
 use Augias\UserBundle\Action\Profile;
 use Augias\UserBundle\Action\Register;
@@ -67,6 +71,26 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_user_delete_invite', '/users/invite/{id}/delete')
         ->controller(DeleteUserInvite::class);
+
+    $routingConfigurator
+        ->add('_member_role', '/users/members/{id}/role')
+        ->controller(ChangeMemberRole::class)
+        ->methods(['POST']);
+
+    $routingConfigurator
+        ->add('_member_remove', '/users/members/{id}/remove')
+        ->controller(RemoveMember::class)
+        ->methods(['POST']);
+
+    $routingConfigurator
+        ->add('_member_transfer_ownership', '/users/members/{id}/make-owner')
+        ->controller(TransferOwnership::class)
+        ->methods(['POST']);
+
+    $routingConfigurator
+        ->add('_member_leave', '/users/leave')
+        ->controller(LeaveCompany::class)
+        ->methods(['POST']);
 
     $routingConfigurator
         ->add('_user_accept_invite', '/invite/accept/{id}')

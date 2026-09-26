@@ -64,10 +64,12 @@
                         {% endif %}
 
                         <li>
+                            {% if route_allowed('_invoices_clone') %}
                             <a class="dropdown-item" href="{{ path('_invoices_clone', {'id' : invoice.id}) }}">
                                 {{ ux_icon('tabler:copy', {width: 16, height: 16}) }}
                                 {{ "invoice.view.toolbar.clone"|trans }}
                             </a>
+                            {% endif %}
                         </li>
 
                         {% if invoice.status in [enum('Augias\\InvoiceBundle\\Enum\\InvoiceStatus').Pending, enum('Augias\\InvoiceBundle\\Enum\\InvoiceStatus').Overdue] and invoice.users|length > 0 %}
@@ -104,48 +106,58 @@
                         {% if showElectronicInvoiceAction %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
+                                {% if route_allowed('_einvoicing_send') %}
                                 <a class="dropdown-item" href="{{ path('_einvoicing_send', {'id' : invoice.id}) }}">
                                     {{ ux_icon('tabler:building-broadcast-tower', {width: 16, height: 16}) }}
                                     {{ "invoice.view.toolbar.send_electronic"|trans }}
                                 </a>
+                                {% endif %}
                             </li>
                         {% endif %}
 
                         {% if workflow_can(invoice, 'edit') %}
                             <li>
+                                {% if route_allowed('_invoices_edit') %}
                                 <a class="dropdown-item" href="{{ path('_invoices_edit', {'id' : invoice.id}) }}">
                                     {{ ux_icon('tabler:pencil', {width: 16, height: 16}) }}
                                     {{ "invoice.view.toolbar.edit"|trans }}
                                 </a>
+                                {% endif %}
                             </li>
                         {% endif %}
 
                         {% if workflow_can(invoice, 'reopen') %}
                             <li>
+                                {% if route_allowed('_action_invoice') %}
                                 <a class="dropdown-item" href="{{ path('_action_invoice', {'action' : 'reopen', 'id' : invoice.id}) }}">
                                     {{ ux_icon('tabler:refresh', {width: 16, height: 16}) }}
                                     {{ "invoice.view.toolbar.reopen"|trans }}
                                 </a>
+                                {% endif %}
                             </li>
                         {% endif %}
 
                         {% if workflow_can(invoice, 'archive') %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
+                                {% if route_allowed('_action_invoice') %}
                                 <a class="dropdown-item" href="{{ path('_action_invoice', {'action' : 'archive', 'id' : invoice.id}) }}">
                                     {{ ux_icon('tabler:archive', {width: 16, height: 16}) }}
                                     {{ "invoice.view.toolbar.archive"|trans }}
                                 </a>
+                                {% endif %}
                             </li>
                         {% endif %}
 
                         {% if workflow_can(invoice, 'cancel') %}
                             <li><hr class="dropdown-divider"></li>
                             <li>
+                                {% if route_allowed('_action_invoice') %}
                                 <a class="dropdown-item text-danger" href="{{ path('_action_invoice', {'action' : 'cancel', 'id' : invoice.id}) }}">
                                     {{ ux_icon('tabler:x', {width: 16, height: 16}) }}
                                     {{ "invoice.view.toolbar.cancel"|trans }}
                                 </a>
+                                {% endif %}
                             </li>
                         {% endif %}
                     </ul>
@@ -168,17 +180,21 @@
                         </button>
                     </span>
                 {% else %}
+                    {% if route_allowed('_send_invoice') %}
                     <a href="{{ path('_send_invoice', {'id' : invoice.id}) }}" class="btn btn-primary btn-hero {{ invoice.status == enum('Augias\\InvoiceBundle\\Enum\\InvoiceStatus').Overdue ? 'btn-hero-urgent' : '' }}">
                         {{ ux_icon('tabler:send', {width: 18, height: 18}) }}
                         {{ "invoice.view.toolbar.send"|trans }}
                     </a>
+                    {% endif %}
                 {% endif %}
             {% elseif workflow_can(invoice, 'accept') %}
                 <div class="btn-group">
+                    {% if route_allowed('_action_invoice') %}
                     <a href="{{ path('_action_invoice', {'action' : 'accept', 'id' : invoice.id}) }}" class="btn btn-primary btn-hero">
                         {{ ux_icon('tabler:check', {width: 18, height: 18}) }}
                         {{ 'invoice.save.publish'|trans }}
                     </a>
+                    {% endif %}
                     <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="visually-hidden">{{ 'invoice.view.toolbar.toggle_dropdown'|trans }}</span>
                     </button>
@@ -194,10 +210,12 @@
                                     </button>
                                 </span>
                             {% else %}
+                                {% if route_allowed('_send_invoice') %}
                                 <a class="dropdown-item" href="{{ path('_send_invoice', {'id' : invoice.id}) }}">
                                     {{ ux_icon('tabler:send', {width: 16, height: 16}) }}
                                     {{ 'invoice.view.toolbar.publish_and_send'|trans }}
                                 </a>
+                                {% endif %}
                             {% endif %}
                         </li>
                     </ul>
@@ -580,6 +598,7 @@
                                                 {{ receipt.filename }}
                                             </a>
                                             {% if canRemoveReceipts %}
+                                                {% if route_allowed('_invoices_disbursement_receipt_delete') %}
                                                 <form method="post" action="{{ path('_invoices_disbursement_receipt_delete', {'id': receipt.id}) }}">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('delete_disbursement_receipt' ~ receipt.id) }}">
                                                     <button type="submit" class="btn btn-ghost btn-sm btn-icon" title="{{ 'invoice.disbursement.receipt.delete'|trans }}">
@@ -587,6 +606,7 @@
                                                         <span class="visually-hidden">{{ 'invoice.disbursement.receipt.delete'|trans }}</span>
                                                     </button>
                                                 </form>
+                                                {% endif %}
                                             {% endif %}
                                         </div>
                                     {% else %}
@@ -596,6 +616,7 @@
                                         </div>
                                     {% endfor %}
 
+                                    {% if route_allowed('_invoices_disbursement_receipt_upload') %}
                                     <form method="post" enctype="multipart/form-data" class="d-flex gap-2 mt-2" action="{{ path('_invoices_disbursement_receipt_upload', {'id': item.id}) }}">
                                         <input type="hidden" name="_token" value="{{ csrf_token('disbursement_receipt' ~ item.id) }}">
                                         <input type="file" name="receipt" class="form-control form-control-sm" required
@@ -603,6 +624,7 @@
                                                aria-label="{{ 'invoice.disbursement.receipt.add'|trans }}">
                                         <button type="submit" class="btn btn-sm">{{ 'invoice.disbursement.receipt.add'|trans }}</button>
                                     </form>
+                                    {% endif %}
                                 </div>
                             {% endfor %}
                         </div>
@@ -693,6 +715,7 @@
 
             <twig:block name="footer">
                 <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">{{ 'invoice.view.toolbar.cancel'|trans }}</button>
+                {% if route_allowed('_send_manual_reminder') %}
                 <form method="post" action="{{ path('_send_manual_reminder', {'id': invoice.id}) }}" class="d-inline">
                     <input type="hidden" name="_token" value="{{ csrf_token('send_manual_reminder') }}">
                     <button type="submit" class="btn btn-primary">
@@ -700,6 +723,7 @@
                         {{ 'invoice.modal.send_reminder.confirm'|trans }}
                     </button>
                 </form>
+                {% endif %}
             </twig:block>
         </twig:Ui:Modal>
     {% endif %}
@@ -728,10 +752,12 @@
 
             <twig:block name="footer">
                 <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">{{ 'invoice.view.toolbar.cancel'|trans }}</button>
+                {% if route_allowed('_send_invoice') %}
                 <a href="{{ path('_send_invoice', {'id': invoice.id}) }}" class="btn btn-primary">
                     {{ ux_icon('tabler:send', {width: 16, height: 16}) }}
                     {{ 'invoice.modal.send_paid.confirm'|trans }}
                 </a>
+                {% endif %}
             </twig:block>
         </twig:Ui:Modal>
     {% endif %}

@@ -24,6 +24,7 @@ use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Entity\UserSetting;
+use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Enum\UserSettingType;
 use Augias\UserBundle\Onboarding\DTO\OnboardingData;
 use Augias\UserBundle\Repository\UserSettingRepository;
@@ -108,7 +109,7 @@ final readonly class OnboardingManager
     {
         // 1. Create company
         $company = $this->createCompany($data);
-        $user->addCompany($company);
+        $user->addCompany($company, CompanyRole::Owner);
         $this->entityManager->persist($user);
 
         // 2. Create client (if not skipped)

@@ -29,6 +29,7 @@
         <span>{{ 'dashboard.accounting.vat_rhythm_title'|trans }}</span>
     </div>
     <div class="attention-items">
+        {% if route_allowed('_settings') %}
         <a href="{{ path('_settings') }}" class="attention-item">
             <span class="attention-item-main">
                 <span class="attention-item-id">{{ 'dashboard.accounting.vat_rhythm_monthly_due'|trans }}</span>
@@ -44,5 +45,6 @@
                 <span class="attention-item-amount">{{ tax|formatCurrency(currencyCode) }}</span>
             </span>
         </a>
+        {% endif %}
     </div>
 </div>

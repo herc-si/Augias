@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Doctrine\Filter;
 
+use Augias\UserBundle\Entity\Membership;
 use Augias\UserBundle\Entity\User;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
@@ -74,6 +75,13 @@ class CompanyFilter extends SQLFilter
         }
 
         if (! $targetEntity->hasAssociation('company')) {
+            return '';
+        }
+
+        // Someone's memberships span every company they belong to. Scoped to
+        // the current one, the list of companies to switch to would only ever
+        // hold the company already open.
+        if (Membership::class === $targetEntity->getName()) {
             return '';
         }
 

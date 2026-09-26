@@ -53,6 +53,7 @@
                      # to make on its own. The other two steps only navigate.
                      #}
                     {% if item.action.value == 'create' %}
+                        {% if route_allowed('_accounting_period_create') %}
                         <form method="post" action="{{ path('_accounting_period_create') }}" class="attention-item-form">
                             <input type="hidden" name="_token" value="{{ csrf_token('accounting_period_create') }}">
                             <input type="hidden" name="date" value="{{ item.startDate|date('Y-m-d') }}">
@@ -68,6 +69,7 @@
                                 </span>
                             </button>
                         </form>
+                        {% endif %}
                     {% else %}
                         <a href="{{ item.action.value == 'close'
                             ? path('_accounting_index')

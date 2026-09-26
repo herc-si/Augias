@@ -18,6 +18,7 @@ use Augias\DashboardBundle\Checklist\DTO\ChecklistProgressDTO;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\UserSettingType;
 use Augias\UserBundle\Repository\UserSettingRepository;
+use Augias\UserBundle\Security\RouteAccess;
 
 /**
  * Manages the onboarding checklist items and user progress.
@@ -31,6 +32,7 @@ final readonly class ChecklistManager
     public function __construct(
         private iterable $items,
         private UserSettingRepository $userSettingRepository,
+        private ?RouteAccess $routeAccess = null,
     ) {
     }
 
@@ -41,7 +43,12 @@ final readonly class ChecklistManager
      */
     public function getItems(): array
     {
-        $items = array_filter([...$this->items], static fn (ChecklistItemInterface $item): bool => $item->active());
+        // A step whose screen the member's role does not open is not theirs to
+        // take: "customise the settings" means nothing to an accountant.
+        $items = array_filter(
+            [...$this->items],
+            fn (ChecklistItemInterface $item): bool => $item->active() && (! $this->routeAccess instanceof RouteAccess || $this->routeAccess->allows($item->getRoute())),
+        );
         usort($items, static fn (ChecklistItemInterface $a, ChecklistItemInterface $b): int => $b->getPriority() <=> $a->getPriority());
 
         return $items;

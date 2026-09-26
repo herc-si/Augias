@@ -31,6 +31,7 @@ use Symfony\Component\Uid\Ulid;
 #[Group('functional')]
 final class RecurringInvoiceCreateTest extends KernelTestCase
 {
+    use SignsInMember;
     use EnsureApplicationInstalled;
 
     public function testCreateMonthlyRecurringInvoice(): void
@@ -190,5 +191,6 @@ final class RecurringInvoiceCreateTest extends KernelTestCase
         $selector = $container->get(CompanySelector::class);
         self::assertInstanceOf(CompanySelector::class, $selector);
         $selector->switchCompany($this->company->getId());
+        $this->signInMember();
     }
 }

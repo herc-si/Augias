@@ -18,10 +18,12 @@
             <p class="empty-title">{{ 'client.quotes.empty.title'|trans }}</p>
             <p class="empty-subtitle text-secondary">{{ 'client.quotes.empty.description'|trans }}</p>
             <div class="empty-action">
+                {% if route_allowed('_quotes_create') %}
                 <a href="{{ path('_quotes_create', {'client': client.id}) }}" class="btn btn-primary">
                     {{ ux_icon('tabler:plus', {width: 16, height: 16}) }}
                     {{ 'client.view.actions.create_quote'|trans }}
                 </a>
+                {% endif %}
             </div>
         </div>
     {% endif %}

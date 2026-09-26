@@ -39,6 +39,7 @@ use Symfony\Component\Uid\Ulid;
 #[Group('functional')]
 final class WriteToolFlowTest extends KernelTestCase
 {
+    use SignsInMember;
     use EnsureApplicationInstalled;
 
     public function testReadOnlyTokenRejectsWrite(): void
@@ -252,5 +253,6 @@ final class WriteToolFlowTest extends KernelTestCase
         $selector = $container->get(CompanySelector::class);
         self::assertInstanceOf(CompanySelector::class, $selector);
         $selector->switchCompany($this->company->getId());
+        $this->signInMember();
     }
 }

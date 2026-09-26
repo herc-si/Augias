@@ -43,12 +43,14 @@
                 </span>
                 <span class="profile-nav-text">{{ 'profile.nav.connected_apps'|trans }}</span>
             </a>
+            {% if route_allowed('_export_list') %}
             <a href="{{ path('_export_list') }}" class="profile-nav-item{{ menuItem is defined and menuItem is same as('data-export') ? ' active' : '' }}">
                 <span class="profile-nav-icon">
                     {{ ux_icon('tabler:database-export', {width: 20, height: 20}) }}
                 </span>
                 <span class="profile-nav-text">{{ 'profile.nav.data_export'|trans }}</span>
             </a>
+            {% endif %}
         </nav>
     </div>
 </aside>

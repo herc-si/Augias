@@ -59,8 +59,8 @@ class UserRepository extends \SolidWorx\Platform\PlatformBundle\Repository\UserR
         $qb = $this->createQueryBuilder('u');
 
         $qb->select('COUNT(u.id)')
-            ->innerJoin('u.companies', 'c')
-            ->where('c.id = :companyId')
+            ->innerJoin('u.memberships', 'm')
+            ->where('m.company = :companyId')
             ->setParameter('companyId', $company->getId(), UlidType::NAME);
 
         try {

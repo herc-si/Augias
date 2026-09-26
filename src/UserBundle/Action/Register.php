@@ -87,7 +87,7 @@ final class Register extends AbstractController
 
             // If invited, add to existing company
             if ($invitation instanceof UserInvitation) {
-                $user->addCompany($invitation->getCompany());
+                $user->addCompany($invitation->getCompany(), $invitation->getRole());
                 $this->invitationRepository->delete($invitation);
             }
 

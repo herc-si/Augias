@@ -57,7 +57,7 @@ final readonly class AcceptInvitation
         $existingUser = $this->userRepository->findOneBy(['email' => $invitation->getEmail()]);
 
         if ($existingUser instanceof User) {
-            $existingUser->addCompany($invitation->getCompany());
+            $existingUser->addCompany($invitation->getCompany(), $invitation->getRole());
             $this->userRepository->save($existingUser);
 
             $this->repository->delete($invitation);

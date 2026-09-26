@@ -46,6 +46,7 @@
     {% else %}
         <div class="attention-items">
             {% for receipt in receipts %}
+                {% if route_allowed('_bills_create_from_receipt') %}
                 <a href="{{ path('_bills_create_from_receipt', {id: receipt.id}) }}" class="attention-item">
                     <span class="attention-item-main">
                         {% if receipt.invoiceNumber %}
@@ -73,6 +74,7 @@
                         {% endif %}
                     </span>
                 </a>
+                {% endif %}
             {% endfor %}
         </div>
 

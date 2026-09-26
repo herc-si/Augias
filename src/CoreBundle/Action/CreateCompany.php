@@ -18,6 +18,7 @@ use Augias\CoreBundle\Form\Type\CompanyType;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\SaasBundle\Plan\DefaultPlanProvider;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Enum\CompanyRole;
 use DateInterval;
 use Money\Currencies\ISOCurrencies;
 use Money\Formatter\IntlMoneyFormatter;
@@ -58,8 +59,7 @@ final class CreateCompany extends AbstractController
             $company = $form->getData();
             assert($company instanceof Company);
 
-            $company->addUser($user);
-            // @TODO: Set the user as the owner of the company
+            $company->addUser($user, CompanyRole::Owner);
 
             $this->companyRepository->save($company);
 

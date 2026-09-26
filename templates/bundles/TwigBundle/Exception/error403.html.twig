@@ -13,4 +13,14 @@
 
 {% block error_title %}{{ 'exception.403.title'|trans }}{% endblock %}
 
-{% block error_message %}{{ 'exception.403.text'|trans }}{% endblock %}
+{#
+ # A refusal that comes from the member's role says which role and what it
+ # leaves out; any other keeps the general wording.
+ #}
+{% block error_message %}
+    {%- if exception is defined and exception.class == 'Augias\\UserBundle\\Security\\RoleDoesNotAllow' -%}
+        {{ exception.message }}
+    {%- else -%}
+        {{ 'exception.403.text'|trans }}
+    {%- endif -%}
+{% endblock %}

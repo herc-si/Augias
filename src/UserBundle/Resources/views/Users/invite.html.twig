@@ -54,6 +54,19 @@
                                 }
                             }) }}
                         </div>
+                        <div class="form-field form-field-wide">
+                            {{ form_label(form.role) }}
+                            {% for choice in form.role %}
+                                <label class="form-selectgroup-item flex-fill mb-2 d-block">
+                                    <div class="form-check">
+                                        {{ form_widget(choice, {attr: {class: 'form-check-input'}}) }}
+                                        <span class="form-check-label fw-medium">{{ choice.vars.label|trans }}</span>
+                                        <div class="form-hint">{{ ('users.role_description.' ~ choice.vars.value)|trans }}</div>
+                                    </div>
+                                </label>
+                            {% endfor %}
+                            {{ form_errors(form.role) }}
+                        </div>
                     </div>
                 </div>
             </section>

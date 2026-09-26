@@ -37,8 +37,10 @@ use Augias\SettingsBundle\Entity\Setting;
 use Augias\TaxBundle\Entity\Tax;
 use Augias\UserBundle\Entity\ApiToken;
 use Augias\UserBundle\Entity\ApiTokenHistory;
+use Augias\UserBundle\Entity\Membership;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Entity\UserInvitation;
+use Augias\UserBundle\Enum\CompanyRole;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -79,10 +81,10 @@ class Company implements Stringable, SubscribableInterface
     private string $name;
 
     /**
-     * @var Collection<int, User>
+     * @var Collection<int, Membership>
      */
-    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'companies')]
-    private Collection $users;
+    #[ORM\OneToMany(targetEntity: Membership::class, mappedBy: 'company', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $memberships;
 
     #[Assert\NotBlank()]
     public ?string $currency = '';
@@ -253,7 +255,7 @@ class Company implements Stringable, SubscribableInterface
         $this->creditNoteAllocations = new ArrayCollection();
         $this->recurringInvoices = new ArrayCollection();
         $this->invoiceLines = new ArrayCollection();
-        $this->users = new ArrayCollection();
+        $this->memberships = new ArrayCollection();
         $this->invoiceReminders = new ArrayCollection();
         $this->electronicInvoiceProviderSettings = new ArrayCollection();
         $this->electronicInvoiceSubmissions = new ArrayCollection();
@@ -287,24 +289,27 @@ class Company implements Stringable, SubscribableInterface
      */
     public function getUsers(): Collection
     {
-        return $this->users;
+        return $this->memberships->map(static fn (Membership $membership): User => $membership->getUser());
     }
 
-    public function addUser(User $user): self
+    /**
+     * @return Collection<int, Membership>
+     */
+    public function getMemberships(): Collection
     {
-        if (! $this->users->contains($user)) {
-            $this->users->add($user);
-            $user->addCompany($this);
-        }
+        return $this->memberships;
+    }
+
+    public function addUser(User $user, CompanyRole $role = CompanyRole::Admin): self
+    {
+        $user->addCompany($this, $role);
 
         return $this;
     }
 
     public function removeUser(User $user): self
     {
-        if ($this->users->removeElement($user)) {
-            $user->removeCompany($this);
-        }
+        $user->removeCompany($this);
 
         return $this;
     }

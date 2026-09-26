@@ -44,6 +44,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 #[Group('functional')]
 final class CrossTenantTest extends KernelTestCase
 {
+    use SignsInMember;
     use EnsureApplicationInstalled;
 
     /**
@@ -208,5 +209,6 @@ final class CrossTenantTest extends KernelTestCase
         $selector = $container->get(CompanySelector::class);
         self::assertInstanceOf(CompanySelector::class, $selector);
         $selector->switchCompany($this->company->getId());
+        $this->signInMember();
     }
 }
