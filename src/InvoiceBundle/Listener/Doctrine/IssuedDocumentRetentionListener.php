@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Listener\Doctrine;
 
-use Augias\CoreBundle\Company\CompanyClosure;
+use Augias\CoreBundle\Company\CompanyPurgeContext;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Exception\DocumentMustBeKept;
 use Augias\InvoiceBundle\Entity\CreditNote;
@@ -44,7 +44,7 @@ use function sprintf;
 final class IssuedDocumentRetentionListener
 {
     public function __construct(
-        private readonly ?CompanyClosure $closure = null,
+        private readonly ?CompanyPurgeContext $purges = null,
     ) {
     }
 
@@ -81,6 +81,6 @@ final class IssuedDocumentRetentionListener
      */
     private function closing(Company $company): bool
     {
-        return $this->closure?->isPurging($company) ?? false;
+        return $this->purges?->isPurging($company) ?? false;
     }
 }

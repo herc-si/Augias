@@ -727,6 +727,22 @@ clients: Tiers
 close: Fermer
 company:
     closing:
+        email:
+            scheduled:
+                subject: 'Fermeture de %company% programmée le %date%'
+                heading: 'La fermeture de %company% est programmée pour le %date%.'
+                body: "D'ici là, la société est en lecture seule pour tous ses membres. À cette date, elle sera supprimée définitivement avec toutes ses données : factures, avoirs, devis, clients, paiements, comptabilité."
+            reminder:
+                subject: '%company% sera fermée le %date%'
+                heading: 'Plus que quelques jours : %company% sera fermée le %date%.'
+                body: "C'est le dernier rappel. À cette date, la société sera supprimée définitivement avec toutes ses données. Si ce n'est pas encore fait, téléchargez l'export complet maintenant."
+            deleted:
+                subject: '%company% a été fermée'
+                heading: '%company% a été fermée.'
+                body: 'La société et toutes ses données ont été supprimées définitivement, comme prévu. Votre compte Augias reste actif pour les autres sociétés dont vous êtes membre.'
+            retention: "La loi vous impose de conserver vos factures pendant 10 ans. Augias ne les conserve pas après la fermeture : l'export complet contient les factures et avoirs en PDF, les justificatifs et la comptabilité."
+            export: "Télécharger l'export complet"
+            cancel_hint: "Vous pouvez encore annuler la fermeture depuis Augias, jusqu'à la date prévue."
         read_only: "Cette société sera fermée le %date% : elle est en lecture seule d'ici là. Vous pouvez encore exporter ses données."
         banner:
             title: 'Cette société sera fermée le %date%.'

@@ -18,10 +18,6 @@ use Augias\CoreBundle\Repository\CompanyRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Clock\ClockInterface;
-use Symfony\Component\Uid\Ulid;
-use function array_diff;
-use function array_values;
-use function in_array;
 use function sprintf;
 
 /**
@@ -32,7 +28,7 @@ use function sprintf;
  * data can be taken out and a mistake undone. After that it is deleted with
  * everything in it, issued invoices included. Those are otherwise kept
  * whatever happens (see IssuedDocumentRetentionListener); the one exception
- * is this, which is why the guard asks isPurging().
+ * is this, which the guard learns from CompanyPurgeContext.
  *
  * @see \Augias\CoreBundle\Tests\Company\CompanyClosureTest
  */
@@ -40,13 +36,15 @@ final class CompanyClosure
 {
     public const int GRACE_DAYS = 30;
 
-    /** @var list<string> the companies being deleted right now, by id */
-    private array $purging = [];
+    /** How long before the date the last reminder goes out. */
+    public const int REMINDER_DAYS = 7;
 
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly CompanyRepository $companies,
         private readonly ClockInterface $clock,
+        private readonly ?CompanyClosureNotifier $notifier = null,
+        private readonly CompanyPurgeContext $context = new CompanyPurgeContext(),
     ) {
     }
 
@@ -56,6 +54,8 @@ final class CompanyClosure
         $company->scheduleClosure($closesAt);
         $this->entityManager->flush();
 
+        $this->notifier?->notify($company, ClosureNotice::Scheduled);
+
         return $closesAt;
     }
 
@@ -63,6 +63,31 @@ final class CompanyClosure
     {
         $company->cancelClosure();
         $this->entityManager->flush();
+    }
+
+    /**
+     * Reminds, once, the companies closing within REMINDER_DAYS.
+     *
+     * @return int how many were reminded
+     */
+    public function remindDue(): int
+    {
+        $now = DateTimeImmutable::createFromInterface($this->clock->now());
+        $reminded = 0;
+
+        foreach ($this->companies->findClosingBefore($now->modify(sprintf('+%d days', self::REMINDER_DAYS))) as $company) {
+            if (null !== $company->getClosureRemindedAt() || $company->getClosesAt() <= $now) {
+                continue;
+            }
+
+            $this->notifier?->notify($company, ClosureNotice::Reminder);
+            $company->markClosureReminded($now);
+            ++$reminded;
+        }
+
+        $this->entityManager->flush();
+
+        return $reminded;
     }
 
     /**
@@ -84,15 +109,13 @@ final class CompanyClosure
         }
 
         foreach ($this->companies->findClosingBefore(DateTimeImmutable::createFromInterface($this->clock->now())) as $company) {
-            $id = $company->getId()->toBase32();
-            $this->purging[] = $id;
+            // Read before the memberships go with the company.
+            $recipients = $this->notifier?->recipients($company) ?? [];
 
-            try {
-                $this->companies->deleteCompany($company->getId());
-                $deleted[] = (string) $company->getName();
-            } finally {
-                $this->purging = array_values(array_diff($this->purging, [$id]));
-            }
+            $this->context->during($company, fn () => $this->companies->deleteCompany($company->getId()));
+
+            $deleted[] = (string) $company->getName();
+            $this->notifier?->notify($company, ClosureNotice::Deleted, $recipients);
         }
 
         if ($archivable) {
@@ -100,16 +123,5 @@ final class CompanyClosure
         }
 
         return $deleted;
-    }
-
-    public function isPurging(Company | Ulid | null $company): bool
-    {
-        if (null === $company) {
-            return false;
-        }
-
-        $id = $company instanceof Company ? $company->getId() : $company;
-
-        return in_array($id->toBase32(), $this->purging, true);
     }
 }

@@ -1,0 +1,42 @@
+{#
+ # A company's closure: asked for, a week away, done. One template, three
+ # moments — `notice` says which.
+ #}
+{% extends "@AugiasCore/Layout/Email/notification.html.twig" %}
+{% import "@AugiasCore/Layout/Email/components.html.twig" as email %}
+
+{%- block title -%}
+    {{ ('company.closing.email.' ~ notice ~ '.subject')|trans({'%company%': companyName, '%date%': closesAt ? closesAt|date('d/m/Y') : ''}) }}
+{%- endblock -%}
+
+{%- block content -%}
+    {% apply inky_to_html %}
+        <row>
+            <columns>
+                <p style="color: #b45309; font-size: 18px; font-weight: 600; line-height: 1.5; margin: 0 0 16px 0; Margin: 0 0 16px 0;">
+                    {{ ('company.closing.email.' ~ notice ~ '.heading')|trans({'%company%': companyName, '%date%': closesAt ? closesAt|date('d/m/Y') : ''}) }}
+                </p>
+                <p style="color: #1e293b; font-size: 16px; line-height: 1.5; margin: 0 0 16px 0; Margin: 0 0 16px 0;">
+                    {{ ('company.closing.email.' ~ notice ~ '.body')|trans({'%company%': companyName, '%date%': closesAt ? closesAt|date('d/m/Y') : ''}) }}
+                </p>
+                <p style="color: #1e293b; font-size: 16px; line-height: 1.5; margin: 0 0 24px 0; Margin: 0 0 24px 0;">
+                    {{ 'company.closing.email.retention'|trans }}
+                </p>
+            </columns>
+        </row>
+    {% endapply %}
+
+    {% if exportUrl %}
+        {{ email.button('company.closing.email.export'|trans, exportUrl, 'primary', 'large') }}
+        {{ email.spacer('md') }}
+        {% apply inky_to_html %}
+            <row>
+                <columns>
+                    <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 0; Margin: 0;">
+                        {{ 'company.closing.email.cancel_hint'|trans }}
+                    </p>
+                </columns>
+            </row>
+        {% endapply %}
+    {% endif %}
+{%- endblock -%}

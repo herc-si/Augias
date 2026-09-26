@@ -101,6 +101,13 @@ class Company implements Stringable, SubscribableInterface
     #[ORM\Column(name: 'closes_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $closesAt = null;
 
+    /**
+     * When the last reminder that the closure is near went out — once per
+     * closure, so that a daily task does not send it every day.
+     */
+    #[ORM\Column(name: 'closure_reminded_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $closureRemindedAt = null;
+
     #[ORM\Column(name: 'custom_domain', type: Types::STRING, length: 253, unique: true, nullable: true)]
     #[Assert\Length(max: 253)]
     #[Assert\Hostname(requireTld: true)]
@@ -339,6 +346,7 @@ class Company implements Stringable, SubscribableInterface
     public function scheduleClosure(DateTimeImmutable $closesAt): self
     {
         $this->closesAt = $closesAt;
+        $this->closureRemindedAt = null;
 
         return $this;
     }
@@ -346,6 +354,19 @@ class Company implements Stringable, SubscribableInterface
     public function cancelClosure(): self
     {
         $this->closesAt = null;
+        $this->closureRemindedAt = null;
+
+        return $this;
+    }
+
+    public function getClosureRemindedAt(): ?DateTimeImmutable
+    {
+        return $this->closureRemindedAt;
+    }
+
+    public function markClosureReminded(DateTimeImmutable $at): self
+    {
+        $this->closureRemindedAt = $at;
 
         return $this;
     }
