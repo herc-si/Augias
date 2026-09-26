@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Tests\Export\Message\Handler;
 
+use Augias\AccountingBundle\Entity\LedgerEntry;
+use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\ExportJob;
@@ -27,6 +29,8 @@ use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Augias\UserBundle\Test\Factory\UserFactory;
+use Brick\Math\BigInteger;
+use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Filesystem\Filesystem;
@@ -84,6 +88,16 @@ final class ProcessCompanyExportHandlerTest extends KernelTestCase
         $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
         InvoiceFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => InvoiceStatus::Paid, 'invoiceId' => 'EXP-1']);
         InvoiceFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => InvoiceStatus::Draft, 'invoiceId' => 'EXP-DRAFT']);
+        $entry = new LedgerEntry()
+            ->setBook(LedgerBook::Revenue)
+            ->setEntryDate(new DateTimeImmutable('today'))
+            ->setLabel('Paid')
+            ->setCounterpartyName('Client')
+            ->setAmount(BigInteger::of(1000))
+            ->setCurrencyCode('EUR');
+        $entry->setCompany($this->company);
+        self::getContainer()->get('doctrine')->getManager()->persist($entry);
+        self::getContainer()->get('doctrine')->getManager()->flush();
 
         $repository = $this->exportJobRepository();
         $job = new ExportJob($user->getId(), ExportFormat::Json)->setCompany($this->company);
@@ -102,12 +116,22 @@ final class ProcessCompanyExportHandlerTest extends KernelTestCase
         self::assertTrue($zip->open($path));
         $pdf = $zip->getFromName('files/invoices/EXP-1.pdf');
         $draft = $zip->locateName('files/invoices/EXP-DRAFT.pdf');
+        $fecFiles = [];
+        for ($i = 0; $i < $zip->numFiles; ++$i) {
+            $name = (string) $zip->getNameIndex($i);
+            if (str_starts_with($name, 'files/fec/')) {
+                $fecFiles[] = $name;
+            }
+        }
         $zip->close();
         new Filesystem()->remove($path);
 
         self::assertIsString($pdf);
         self::assertStringStartsWith('%PDF', $pdf);
         self::assertFalse($draft);
+        // The books too, in the form the administration asks for, with their notice.
+        self::assertCount(2, $fecFiles);
+        self::assertContains('files/fec/Notice_FEC' . new DateTimeImmutable('today')->format('Y') . '1231.txt', $fecFiles);
     }
 
     public function testSkipsWhenJobIsNotPending(): void

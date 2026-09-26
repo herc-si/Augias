@@ -16,6 +16,7 @@ namespace Augias\AccountingBundle\Action;
 use Augias\AccountingBundle\Entity\AccountingPeriod;
 use Augias\AccountingBundle\Entity\ThresholdAlert;
 use Augias\AccountingBundle\Enum\LedgerBook;
+use Augias\AccountingBundle\Fec\FecGenerator;
 use Augias\AccountingBundle\Model\AccountingProfile;
 use Augias\AccountingBundle\Model\LimitUsage;
 use Augias\AccountingBundle\Model\TurnoverSummary;
@@ -57,6 +58,7 @@ final readonly class Index
         private ThresholdAlertRepository $alertRepository,
         private LedgerLockDate $lockDate,
         private CompanyBooks $books,
+        private FecGenerator $fec,
     ) {
     }
 
@@ -71,7 +73,8 @@ final readonly class Index
      *     periodHasEnded: bool,
      *     alerts: list<ThresholdAlert>,
      *     year: int,
-     *     lockDate: DateTimeImmutable|null
+     *     lockDate: DateTimeImmutable|null,
+     *     fecYears: list<int>
      * }
      */
     #[Template('@AugiasAccounting/Default/index.html.twig')]
@@ -95,6 +98,9 @@ final readonly class Index
                 'alerts' => [],
                 'year' => $year,
                 'lockDate' => null,
+                // Entries can exist before a regime is chosen; their FEC can
+                // be taken all the same.
+                'fecYears' => $company instanceof Company ? $this->fec->years($company, $today) : [],
             ];
         }
 
@@ -116,6 +122,7 @@ final readonly class Index
             // What the books are shut up to: the date the user set, or the end
             // of the last period sealed, whichever is later.
             'lockDate' => $this->lockDate->forCompany($company),
+            'fecYears' => $this->fec->years($company, $today),
         ];
     }
 }

@@ -224,5 +224,44 @@
                 </twig:Ui:Card>
             </div>
         </div>
+
+    {% endif %}
+
+    {#
+     # The FEC: the books of a financial year in the form the tax
+     # administration asks for them, with the notice that goes with it.
+     #}
+    {% if fecYears|default([]) is not empty and route_allowed('_accounting_fec') %}
+        <div class="row row-cards mt-2">
+            <div class="col-12">
+                <twig:Ui:Card>
+                    <twig:block name="header">
+                        <div>
+                            <h3 class="card-title">{{ 'accounting.fec.title'|trans }}</h3>
+                            <p class="card-subtitle text-card-subtitle">{{ 'accounting.fec.subtitle'|trans }}</p>
+                        </div>
+                    </twig:block>
+                    <div class="list-group list-group-flush">
+                        {% for fecYear in fecYears %}
+                            <div class="list-group-item d-flex flex-wrap align-items-center justify-content-between gap-2">
+                                <span class="fw-medium">{{ 'accounting.fec.year'|trans({'%year%': fecYear}) }}</span>
+                                <span class="d-flex gap-2">
+                                    <a class="btn btn-sm btn-outline-primary" href="{{ path('_accounting_fec', {year: fecYear}) }}">
+                                        {{ ux_icon('tabler:download', {width: 16, height: 16, 'aria-hidden': 'true'}) }}
+                                        {{ 'accounting.fec.download'|trans }}
+                                    </a>
+                                    <a class="btn btn-sm btn-ghost" href="{{ path('_accounting_fec', {year: fecYear, part: 'notice'}) }}">
+                                        {{ 'accounting.fec.notice'|trans }}
+                                    </a>
+                                </span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <twig:block name="footer">
+                        <span class="text-muted small">{{ 'accounting.fec.help'|trans }}</span>
+                    </twig:block>
+                </twig:Ui:Card>
+            </div>
+        </div>
     {% endif %}
 {% endblock %}

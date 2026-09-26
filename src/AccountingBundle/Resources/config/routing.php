@@ -17,6 +17,7 @@ use Augias\AccountingBundle\Action\CreatePeriod;
 use Augias\AccountingBundle\Action\Declaration\Index as DeclarationIndex;
 use Augias\AccountingBundle\Action\Declaration\Submit as DeclarationSubmit;
 use Augias\AccountingBundle\Action\Declaration\View as DeclarationView;
+use Augias\AccountingBundle\Action\DownloadFec;
 use Augias\AccountingBundle\Action\Entry\Add;
 use Augias\AccountingBundle\Action\Entry\Delete;
 use Augias\AccountingBundle\Action\Entry\DeleteAttachment;
@@ -29,6 +30,13 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_accounting_index', '/')
         ->controller(Index::class)
+        ->methods(['GET']);
+
+    $routingConfigurator
+        ->add('_accounting_fec', '/fec/{year}/{part}')
+        ->controller(DownloadFec::class)
+        ->requirements(['year' => '\\d{4}', 'part' => 'file|notice'])
+        ->defaults(['part' => 'file'])
         ->methods(['GET']);
 
     $routingConfigurator

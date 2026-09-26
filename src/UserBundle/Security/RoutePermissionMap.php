@@ -162,6 +162,7 @@ final class RoutePermissionMap
         '_accounting_period_create' => CompanyPermission::AccountingWrite,
 
         // Taking the data out.
+        '_accounting_fec' => CompanyPermission::Export,
         '_datagrid_export' => CompanyPermission::Export,
         '_export_download' => CompanyPermission::Export,
         '_export_list' => CompanyPermission::Export,

@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\UserBundle\Tests\Functional;
 
+use Augias\AccountingBundle\Entity\LedgerEntry;
+use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\ApiBundle\ApiTokenManager;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
@@ -25,6 +27,8 @@ use Augias\UserBundle\Entity\UserInvitation;
 use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Repository\MembershipRepository;
 use Augias\UserBundle\Test\Factory\UserFactory;
+use Brick\Math\BigInteger;
+use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Zenstruck\Browser\KernelBrowser;
@@ -122,6 +126,44 @@ final class CompanyRolesTest extends WebTestCase
         $this->as($billing)
             ->visit('/invoices/create/' . $this->client->getId())
             ->assertSuccessful();
+    }
+
+    /**
+     * The FEC is the books taken out: an accountant downloads it, billing
+     * does not, like any export.
+     */
+    public function testTheFecGoesToWhoMayExport(): void
+    {
+        $accountant = $this->member(CompanyRole::Accountant);
+        $billing = $this->member(CompanyRole::Billing);
+
+        $entry = new LedgerEntry()
+            ->setBook(LedgerBook::Revenue)
+            ->setEntryDate(new DateTimeImmutable('2026-03-10'))
+            ->setLabel('Paid')
+            ->setCounterpartyName('Acme')
+            ->setAmount(BigInteger::of(12000))
+            ->setCurrencyCode('EUR');
+        $entry->setCompany($this->em->find(Company::class, $this->shop->getId()));
+        $this->em->persist($entry);
+        $this->em->flush();
+
+        $this->as($accountant)
+            ->visit('/accounting/')
+            ->assertSuccessful()
+            ->assertSee('FEC')
+            ->visit('/accounting/fec/2026')
+            ->assertSuccessful()
+            ->use(static function (KernelBrowser $browser): void {
+                // A text file, not a page: read the response itself.
+                $response = $browser->client()->getResponse();
+                self::assertStringContainsString('FEC20261231.txt', (string) $response->headers->get('Content-Disposition'));
+                self::assertStringStartsWith("JournalCode\t", (string) $response->getContent());
+            });
+
+        $this->as($billing)
+            ->visit('/accounting/fec/2026')
+            ->assertStatus(403);
     }
 
     public function testTheMenuOnlyOffersWhatTheRoleOpens(): void
