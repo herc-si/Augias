@@ -89,7 +89,9 @@ Le Client peut à tout moment demander depuis l'application un **export complet 
 
 À la fin du contrat, quelle qu'en soit la cause, les données sont conservées pendant **[À COMPLÉTER : délai de rétention post-contrat — quatre-vingt-dix jours est un usage répandu et laisse le temps de récupérer une comptabilité]** afin de permettre leur export, puis supprimées des systèmes de production. Les sauvegardes s'effacent selon leur propre cycle, décrit dans la [politique de confidentialité](./politique-de-confidentialite.md).
 
-Il appartient au Client de conserver ses pièces comptables pendant les durées légales qui lui incombent, notamment dix ans au titre de l'article L123-22 du code de commerce. **Le service n'est pas un lieu d'archivage légal** et ne dispense pas le Client de ses propres archives.
+Le propriétaire d'une entreprise peut en demander la **fermeture** depuis l'application. La fermeture prend effet trente jours après la demande. Pendant ce délai, l'entreprise est accessible en lecture seule à tous ses membres, son export complet reste disponible, et le propriétaire peut annuler la fermeture. Le propriétaire et les administrateurs de l'entreprise en sont avertis par courriel lors de la demande, puis sept jours avant la date de fermeture. À cette date, l'entreprise et l'ensemble de ses données — factures, avoirs, devis, clients, paiements et écritures comptables compris — sont **supprimées définitivement** des systèmes de production, sans que le Prestataire en conserve de copie autre que les sauvegardes, effacées selon leur propre cycle.
+
+Il appartient au Client de conserver ses pièces comptables pendant les durées légales qui lui incombent, notamment dix ans au titre de l'article L123-22 du code de commerce. **Le service n'est pas un lieu d'archivage légal** et ne dispense pas le Client de ses propres archives. L'export complet contient à cette fin les factures et avoirs émis au format PDF, les justificatifs enregistrés et les écritures comptables ; il revient au Client de le télécharger avant toute fermeture.
 
 ## 11. Disponibilité et maintenance
 

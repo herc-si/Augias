@@ -1,0 +1,12 @@
+{% set params = {'%company%': companyName, '%date%': closesAt ? closesAt|date('d/m/Y') : ''} %}
+{{ ('company.closing.email.' ~ notice ~ '.heading')|trans(params)|upper }}
+
+{{ ('company.closing.email.' ~ notice ~ '.body')|trans(params) }}
+
+{{ 'company.closing.email.retention'|trans }}
+{% if exportUrl %}
+
+{{ 'company.closing.email.export'|trans }} : {{ exportUrl }}
+
+{{ 'company.closing.email.cancel_hint'|trans }}
+{% endif %}

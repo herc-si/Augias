@@ -22,7 +22,8 @@ use function implode;
 use function sprintf;
 
 /**
- * Deletes the companies whose closure date has passed.
+ * Reminds the companies about to close, then deletes those whose closure
+ * date has passed.
  *
  * @see \Augias\CoreBundle\Tests\Company\CompanyClosureTest
  */
@@ -41,7 +42,12 @@ final class PurgeClosedCompaniesCommand extends Command
 
     protected function handle(): int
     {
+        $reminded = $this->closure->remindDue();
         $deleted = $this->closure->purgeDue();
+
+        if ($reminded > 0) {
+            $this->io->note(sprintf('Reminded %d compan(ies) closing within %d days.', $reminded, CompanyClosure::REMINDER_DAYS));
+        }
 
         $this->io->success(0 === count($deleted)
             ? 'No company was due to close.'

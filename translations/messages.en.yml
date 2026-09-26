@@ -727,6 +727,22 @@ clients: Parties
 close: Close
 company:
     closing:
+        email:
+            scheduled:
+                subject: '%company% is set to close on %date%'
+                heading: '%company% is set to close on %date%.'
+                body: 'Until then the company is read-only for all its members. On that date it will be permanently deleted with all its data: invoices, credit notes, quotes, clients, payments, accounting.'
+            reminder:
+                subject: '%company% closes on %date%'
+                heading: 'Only a few days left: %company% closes on %date%.'
+                body: 'This is the last reminder. On that date the company will be permanently deleted with all its data. If you have not done so yet, download the full export now.'
+            deleted:
+                subject: '%company% has been closed'
+                heading: '%company% has been closed.'
+                body: 'The company and all its data have been permanently deleted, as planned. Your Augias account remains active for the other companies you belong to.'
+            retention: 'The law requires you to keep your invoices for 10 years. Augias does not keep them after the closure: the full export holds the invoices and credit notes as PDF, the receipts and the accounting.'
+            export: 'Download the full export'
+            cancel_hint: 'You can still cancel the closure from Augias until the planned date.'
         read_only: 'This company will close on %date%: it is read-only until then. You can still export its data.'
         banner:
             title: 'This company will close on %date%.'
