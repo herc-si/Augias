@@ -148,6 +148,8 @@
                 {% endif %}
 
                 {# Export button with format picker #}
+                {# Taking the data out is a right of its own: see RoutePermissionMap. #}
+                {% if route_allowed('_datagrid_export') %}
                 {% set exportQuery = {
                     grid: name,
                     sort: sort,
@@ -201,6 +203,7 @@
                         </div>
                     </div>
                 </div>
+                {% endif %}
 
                 {# Column Visibility Picker #}
                 {% block column_picker %}

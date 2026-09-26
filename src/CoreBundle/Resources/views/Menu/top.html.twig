@@ -46,22 +46,30 @@
                         {{ 'menu.button.create'|trans }}
                     </button>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                        {% if route_allowed('_clients_add') %}
                         <a href="{{ path('_clients_add') }}" class="dropdown-item">
                             {{ ux_icon('tabler:user-plus', {width: 16, height: 16}) }}
                             {{ 'dashboard.create.client'|trans }}
                         </a>
+                        {% endif %}
+                        {% if route_allowed('_suppliers_add') %}
                         <a href="{{ path('_suppliers_add') }}" class="dropdown-item">
                             {{ ux_icon('tabler:building-store', {width: 16, height: 16}) }}
                             {{ 'dashboard.create.supplier'|trans }}
                         </a>
+                        {% endif %}
+                        {% if route_allowed('_quotes_create') %}
                         <a href="{{ path('_quotes_create') }}" class="dropdown-item">
                             {{ ux_icon('tabler:file-text', {width: 16, height: 16}) }}
                             {{ 'dashboard.create.quote'|trans }}
                         </a>
+                        {% endif %}
+                        {% if route_allowed('_invoices_create') %}
                         <a href="{{ path('_invoices_create') }}" class="dropdown-item">
                             {{ ux_icon('tabler:file-invoice', {width: 16, height: 16}) }}
                             {{ 'dashboard.create.invoice'|trans }}
                         </a>
+                        {% endif %}
                     </div>
                 </div>
                 {% endif %}

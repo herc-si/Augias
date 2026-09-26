@@ -27,10 +27,12 @@
         <twig:Ui:Card title="{{ 'accounting.setup.title'|trans }}">
             <p class="text-muted mb-4">{{ 'accounting.setup.description'|trans }}</p>
 
+            {% if route_allowed('_settings') %}
             <a class="btn btn-primary" href="{{ path('_settings') }}">
                 {{ ux_icon('tabler:settings', {width: 18, height: 18}) }}
                 {{ 'accounting.setup.action'|trans }}
             </a>
+            {% endif %}
         </twig:Ui:Card>
     {% else %}
         <div class="row row-cards">
@@ -212,10 +214,12 @@
                     </dl>
 
                     <twig:block name="footer">
+                        {% if route_allowed('_settings') %}
                         <a class="btn btn-ghost" href="{{ path('_settings') }}">
                             {{ ux_icon('tabler:settings', {width: 18, height: 18}) }}
                             {{ 'accounting.setup.edit'|trans }}
                         </a>
+                        {% endif %}
                     </twig:block>
                 </twig:Ui:Card>
             </div>
