@@ -29,8 +29,10 @@ use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\SettingsBundle\SystemConfig;
+use Augias\TaxBundle\Entity\InvoiceTax;
 use Augias\TaxBundle\Entity\LineTax;
 use Augias\TaxBundle\Enum\TaxCategory;
+use Augias\TaxBundle\Enum\TaxDirection;
 use Augias\TaxBundle\Enum\TaxType;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -113,6 +115,60 @@ final class ReportDataBuilderTest extends KernelTestCase
         self::assertSame(['20.00' => '60.00'], $payment->amounts);
     }
 
+    /**
+     * A rate set on the whole invoice rather than on its lines is VAT all the
+     * same: each category carries its share, in proportion to its net, and a
+     * payment reports its services' share of it.
+     */
+    public function testATaxOnTheWholeInvoiceIsSharedBetweenItsCategories(): void
+    {
+        $this->liable();
+        $invoice = $this->invoice([[SupplyType::Goods, 10000, null], [SupplyType::Services, 5000, null]], '20');
+
+        [$goods, $services] = $this->builder()->transactions($invoice);
+
+        self::assertSame('TLB1', $goods->category);
+        self::assertSame('100.00', $goods->taxExclusiveAmount);
+        self::assertSame('20.00', $goods->taxTotal);
+        self::assertSame(['20.00' => ['taxable' => '100.00', 'tax' => '20.00']], $goods->subtotals);
+
+        self::assertSame('TPS1', $services->category);
+        self::assertSame(['20.00' => ['taxable' => '50.00', 'tax' => '10.00']], $services->subtotals);
+
+        $payment = $this->builder()->payment($this->paid($invoice, 9000));
+
+        self::assertNotNull($payment);
+        self::assertSame(['20.00' => '30.00'], $payment->amounts, 'Half the invoice paid: half of its services, tax included.');
+    }
+
+    /**
+     * Cents a share cannot carry go to the last line: what is declared adds
+     * up to the tax the invoice shows.
+     */
+    public function testTheSharesOfATaxOnTheWholeInvoiceAddUpToIt(): void
+    {
+        $this->liable();
+        $invoice = $this->invoice([[SupplyType::Services, 3333, null], [SupplyType::Services, 3333, null], [SupplyType::Services, 3334, null]], '5.5');
+
+        [$services] = $this->builder()->transactions($invoice);
+
+        self::assertSame('100.00', $services->taxExclusiveAmount);
+        self::assertSame('5.50', $services->taxTotal);
+    }
+
+    /**
+     * Withholding is not VAT the company collected: it changes nothing here.
+     */
+    public function testWithholdingOnTheWholeInvoiceIsNotReported(): void
+    {
+        $this->liable();
+        $invoice = $this->invoice([[SupplyType::Services, 10000, '20']], '10', TaxDirection::Deductive);
+
+        [$services] = $this->builder()->transactions($invoice);
+
+        self::assertSame(['20.00' => ['taxable' => '100.00', 'tax' => '20.00']], $services->subtotals);
+    }
+
     public function testNoPaymentIsReportedUnderTheOptionForDebits(): void
     {
         $this->liable();
@@ -175,8 +231,9 @@ final class ReportDataBuilderTest extends KernelTestCase
 
     /**
      * @param list<array{0: SupplyType, 1: int, 2: string|null}> $lines
+     * @param string|null                                          $invoiceRate a tax on the whole invoice
      */
-    private function invoice(array $lines): Invoice
+    private function invoice(array $lines, ?string $invoiceRate = null, TaxDirection $direction = TaxDirection::Additive): Invoice
     {
         $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
         self::assertInstanceOf(Client::class, $client);
@@ -196,6 +253,10 @@ final class ReportDataBuilderTest extends KernelTestCase
             }
 
             $invoice->addLine($line->updateTotal());
+        }
+
+        if (null !== $invoiceRate) {
+            $invoice->addInvoiceTax(new InvoiceTax()->setNameSnapshot('TVA')->setRateSnapshot($invoiceRate)->setTypeSnapshot(TaxType::Exclusive)->setCategorySnapshot(TaxCategory::Standard)->setDirection($direction));
         }
 
         $entityManager = self::getContainer()->get('doctrine')->getManager();
