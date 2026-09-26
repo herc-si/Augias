@@ -28,6 +28,7 @@ use Augias\TaxBundle\Form\Type\TaxIdentifierType;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;
+use function array_key_last;
 use function array_map;
 use function array_values;
 use function in_array;
@@ -229,6 +230,11 @@ final readonly class ReportDataBuilder
      * amount). Disbursements are left out — money advanced for the client is
      * not a sale.
      *
+     * A tax set on the whole document applies to its net, not to any one
+     * line: each line carries its share, in proportion to its net, so that
+     * the tax lands in the category of what it was charged on — the split
+     * the books make too. Left out, the sale was declared at no VAT at all.
+     *
      * @return list<array{0: string, 1: BigDecimal, 2: list<array{0: string, 1: BigDecimal}>}>
      */
     private function lines(Invoice | CreditNote $document): array
@@ -246,14 +252,42 @@ final readonly class ReportDataBuilder
 
             foreach ($breakdown->taxRows as $row) {
                 if (TaxDirection::Additive === $row->direction) {
-                    $rows[] = [BigDecimal::of($row->rate)->toScale(2, RoundingMode::HalfEven)->__toString(), $row->amount];
+                    $rows[] = [$this->rate($row->rate), $row->amount];
                 }
             }
 
             $out[] = [$breakdown->supplyType === SupplyType::Goods ? 'TLB1' : 'TPS1', $breakdown->lineSubtotal, $rows];
         }
 
+        if (! $result->subTotal->isPositive()) {
+            return $out;
+        }
+
+        foreach ($result->invoiceLevelBreakdown->taxRows as $row) {
+            if (TaxDirection::Additive !== $row->direction) {
+                continue;
+            }
+
+            $left = $row->amount;
+            $last = array_key_last($out);
+
+            foreach ($out as $index => [, $subtotal]) {
+                // The last line takes what is left, so the shares add up to
+                // the tax the document shows.
+                $share = $index === $last
+                    ? $left
+                    : $row->amount->multipliedBy($subtotal)->dividedBy($result->subTotal, 10, RoundingMode::HalfEven);
+                $left = $left->minus($share);
+                $out[$index][2][] = [$this->rate($row->rate), $share];
+            }
+        }
+
         return $out;
+    }
+
+    private function rate(string $rate): string
+    {
+        return BigDecimal::of($rate)->toScale(2, RoundingMode::HalfEven)->__toString();
     }
 
     /**
