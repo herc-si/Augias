@@ -13,7 +13,9 @@ declare(strict_types=1);
 
 namespace Augias\MoneyBundle\Formatter;
 
+use Augias\MoneyBundle\Currency\CurrencyScale;
 use Augias\SettingsBundle\SystemConfig;
+use Brick\Math\BigDecimal;
 use Brick\Math\BigNumber;
 use Brick\Math\Exception\MathException;
 use Money\Currencies\ISOCurrencies;
@@ -38,6 +40,8 @@ final class MoneyFormatter implements MoneyFormatterInterface
 
     private NumberFormatter $numberFormatter;
 
+    private readonly ISOCurrencies $currencies;
+
     /**
      * @throws MethodArgumentNotImplementedException|MethodArgumentValueNotImplementedException
      */
@@ -51,13 +55,26 @@ final class MoneyFormatter implements MoneyFormatterInterface
             $this->numberFormatter = new NumberFormatter('en', NumberFormatter::CURRENCY);
         }
 
-        $this->formatter = new IntlMoneyFormatter($this->numberFormatter, new ISOCurrencies());
+        $this->currencies = new ISOCurrencies();
+        $this->formatter = new IntlMoneyFormatter($this->numberFormatter, $this->currencies);
         $this->locale = $locale;
     }
 
     public function format(Money $money): string
     {
-        return $this->formatter->format($money);
+        if ($this->currencies->contains($money->getCurrency())) {
+            return $this->formatter->format($money);
+        }
+
+        // A code moneyphp does not know — a currency withdrawn from circulation,
+        // on an incoming e-invoice — would throw inside the template and answer
+        // 500. It degrades the way CurrencyScale stores it: two decimals, and
+        // the code beside them for want of a symbol.
+        $decimal = new NumberFormatter($this->numberFormatter->getLocale() ?: 'en', NumberFormatter::DECIMAL);
+        $decimal->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, CurrencyScale::DEFAULT_SUBUNIT);
+        $decimal->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, CurrencyScale::DEFAULT_SUBUNIT);
+
+        return $decimal->format(BigDecimal::of($money->getAmount())->withPointMovedLeft(CurrencyScale::DEFAULT_SUBUNIT)->toFloat()) . ' ' . $money->getCurrency()->getCode();
     }
 
     /**

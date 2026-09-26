@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\MoneyBundle\Twig\Extension;
 
+use Augias\MoneyBundle\Currency\CurrencyScale;
 use Augias\MoneyBundle\Formatter\MoneyFormatterInterface;
 use Augias\SettingsBundle\SystemConfig;
 use Brick\Math\BigNumber;
@@ -121,7 +122,8 @@ class MoneyFormatterExtension extends AbstractExtension
                     $value = $value->toScale(0, RoundingMode::HalfEven);
                 }
 
-                $fractionDigits = $this->currencies->subunitFor($currency);
+                // An unknown code gets the two decimals it was stored with (CurrencyScale).
+                $fractionDigits = $this->currencies->contains($currency) ? $this->currencies->subunitFor($currency) : CurrencyScale::DEFAULT_SUBUNIT;
 
                 $this->numberFormatter->setAttribute(NumberFormatter::MIN_FRACTION_DIGITS, $fractionDigits);
                 $this->numberFormatter->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, $fractionDigits);

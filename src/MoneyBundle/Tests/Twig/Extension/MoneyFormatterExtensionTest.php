@@ -66,4 +66,19 @@ final class MoneyFormatterExtensionTest extends TestCase
         self::assertSame('formatCurrencyAmount', $filters[1]->getName());
         self::assertSame('12.00', call_user_func($filters[1]->getCallable(), 1200, 'USD'));
     }
+
+    /**
+     * `CUC`, withdrawn in 2021, is unknown to moneyphp and may still come in
+     * on a supplier's e-invoice: shown, not a 500.
+     */
+    public function testACurrencyOutOfCirculationIsShownRatherThanFailing(): void
+    {
+        $systemConfig = $this->createStub(SystemConfig::class);
+        $extension = new MoneyFormatterExtension(new MoneyFormatter('en_US', $systemConfig), $systemConfig);
+
+        $filters = $extension->getFilters();
+
+        self::assertSame('1,234.56 CUC', call_user_func($filters[0]->getCallable(), 123456, 'CUC'));
+        self::assertSame('1,234.56', call_user_func($filters[1]->getCallable(), 123456, 'CUC'));
+    }
 }
