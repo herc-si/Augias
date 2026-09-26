@@ -181,17 +181,17 @@
                             <span class="totals-value">{{ dto.baseTotal|formatCurrency(currency) }}</span>
                         </div>
 
-                        {% if hasTax %}
-                            <div class="totals-row">
-                                <span class="totals-label">{{ 'billing.tax'|trans }}</span>
-                                <span class="totals-value">{{ dto.tax|formatCurrency(currency) }}</span>
-                            </div>
-                        {% endif %}
-
                         {% if form.discount is defined %}
                             <div class="totals-row totals-row-discount">
                                 <span class="totals-label">{{ 'billing.discount'|trans }}</span>
                                 <span class="totals-value">{{ discountAmount|formatCurrency(currency) }}</span>
+                            </div>
+                        {% endif %}
+
+                        {% if hasTax %}
+                            <div class="totals-row">
+                                <span class="totals-label">{{ 'billing.tax'|trans }}</span>
+                                <span class="totals-value">{{ dto.tax|formatCurrency(currency) }}</span>
                             </div>
                         {% endif %}
 

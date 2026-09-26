@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\TaxBundle\Calculator;
 
+use Augias\CoreBundle\Entity\LineInterface;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\InvoiceBundle\Entity\BaseInvoice;
 use Augias\QuoteBundle\Entity\Quote;
@@ -24,6 +25,12 @@ use Augias\TaxBundle\Calculator\Result\TaxSummaryRow;
 use Brick\Math\BigDecimal;
 use Brick\Math\BigNumber;
 use Brick\Math\Exception\MathException;
+use Brick\Math\RoundingMode;
+use function array_fill;
+use function array_filter;
+use function array_keys;
+use function array_pop;
+use function count;
 
 /**
  * Orchestrates {@see LineTaxCalculator} and {@see InvoiceTaxCalculator}, returning a
@@ -59,19 +66,15 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
 
         $subTotal = BigDecimal::zero();
         $disbursementTotal = BigDecimal::zero();
-        $total = BigDecimal::zero();
-        $totalLineTax = BigDecimal::zero();
+        $lines = [];
         $lineBreakdowns = [];
-        $perLineSummary = [];
 
         foreach ($document->getLines() as $line) {
             $line->updateTotal();
 
+            $lines[] = $line;
             $breakdown = $this->lineTaxCalculator->calculateLine($line, $rounder);
-
             $lineBreakdowns[] = $breakdown;
-            $total = $total->plus($breakdown->lineTotal);
-            $totalLineTax = $totalLineTax->plus($breakdown->lineTax);
 
             // A disbursement is owed — it is in the total — but it is not part
             // of the subtotal, because the subtotal is what a document-level
@@ -85,6 +88,29 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
             }
 
             $subTotal = $subTotal->plus($breakdown->lineSubtotal);
+        }
+
+        // A discount on the document lowers the price, and so the base the
+        // tax is charged on (CGI art. 267-II-1°): each line takes its share
+        // of it before its tax is worked out. It used to come off the total
+        // after tax, which charged VAT on money the client never paid.
+        $discount = $document->getDiscount()->amountOn($subTotal);
+        $shares = $this->discountShares($lines, $lineBreakdowns, $discount, $subTotal);
+
+        $total = BigDecimal::zero();
+        $totalLineTax = BigDecimal::zero();
+        $perLineSummary = [];
+
+        foreach ($lineBreakdowns as $index => $breakdown) {
+            $breakdown = $this->lineTaxCalculator->discountLine($lines[$index], $breakdown, $shares[$index], $rounder);
+            $lineBreakdowns[$index] = $breakdown;
+
+            $total = $total->plus($breakdown->lineTotal);
+            $totalLineTax = $totalLineTax->plus($breakdown->lineTax);
+
+            if ($lines[$index]->isDisbursement()) {
+                continue;
+            }
 
             foreach ($breakdown->taxRows as $row) {
                 $perLineSummary[] = $row;
@@ -93,7 +119,7 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
 
         $invoiceLevel = $this->invoiceTaxCalculator->calculateInvoiceLevel(
             $document,
-            $subTotal,
+            $subTotal->minus($discount),
             $totalLineTax,
             $rounder
         );
@@ -110,6 +136,7 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
             invoiceLevelBreakdown: $invoiceLevel,
             summaryRows: $summaryRows,
             disbursementTotal: $disbursementTotal,
+            discount: $discount,
         );
     }
 
@@ -170,11 +197,13 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
     {
         $subTotal = BigDecimal::zero();
         $disbursementTotal = BigDecimal::zero();
+        $lines = [];
         $lineBreakdowns = [];
 
         foreach ($document->getLines() as $line) {
             $line->updateTotal();
             $amount = BigNumber::of($line->getTotal())->toBigDecimal();
+            $lines[] = $line;
 
             // One per line, tax at nothing, as for a liable company: whoever
             // reads the result pairs breakdowns with lines by position. Left
@@ -201,14 +230,62 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
             $subTotal = $subTotal->plus($amount);
         }
 
+        // No tax for the discount to lower, but it still comes off the price —
+        // and off each line's net, which is what e-reporting declares.
+        $discount = $document->getDiscount()->amountOn($subTotal);
+
+        foreach ($this->discountShares($lines, $lineBreakdowns, $discount, $subTotal) as $index => $share) {
+            $breakdown = $lineBreakdowns[$index];
+            $net = $breakdown->lineSubtotal->minus($share);
+            $lineBreakdowns[$index] = new LineBreakdown($breakdown->lineSubtotal, $net, BigDecimal::zero(), [], $breakdown->supplyType, $net);
+        }
+
         return new CalculationResult(
             subTotal: $subTotal,
             totalLineTax: BigDecimal::zero(),
-            total: $subTotal->plus($disbursementTotal),
+            total: $subTotal->minus($discount)->plus($disbursementTotal),
             lineBreakdowns: $lineBreakdowns,
             invoiceLevelBreakdown: InvoiceLevelBreakdown::empty(),
             summaryRows: [],
             disbursementTotal: $disbursementTotal,
+            discount: $discount,
         );
+    }
+
+    /**
+     * Each line's share of the discount, in whole cents, in proportion to
+     * its net. The last line sold takes what is left, so the shares add up
+     * to the discount. Disbursements take none: nothing comes off money
+     * advanced for the client.
+     *
+     * @param list<LineInterface> $lines
+     * @param list<LineBreakdown> $breakdowns
+     *
+     * @return list<BigDecimal> by line position
+     *
+     * @throws MathException
+     */
+    private function discountShares(array $lines, array $breakdowns, BigDecimal $discount, BigDecimal $subTotal): array
+    {
+        $shares = array_fill(0, count($lines), BigDecimal::zero());
+
+        if ($discount->isZero() || ! $subTotal->isPositive()) {
+            return $shares;
+        }
+
+        $sold = array_keys(array_filter($lines, static fn (LineInterface $line): bool => ! $line->isDisbursement()));
+        $last = array_pop($sold);
+        $left = $discount;
+
+        foreach ($sold as $index) {
+            $shares[$index] = $discount->multipliedBy($breakdowns[$index]->lineSubtotal)->dividedBy($subTotal, 0, RoundingMode::HalfEven);
+            $left = $left->minus($shares[$index]);
+        }
+
+        if (null !== $last) {
+            $shares[$last] = $left;
+        }
+
+        return $shares;
     }
 }

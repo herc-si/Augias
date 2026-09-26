@@ -191,6 +191,13 @@
                                             <div class="ext-doc-totals-label">{{ 'quote.subtotal'|trans }}</div>
                                             <div class="ext-doc-totals-value">{{ quote.baseTotal|formatCurrency(currency) }}</div>
                                         </div>
+                                        {% if quote.discount.type is not empty %}
+                                            <div class="ext-doc-totals-row">
+                                                <div class="ext-doc-totals-label">{{ 'quote.discount'|trans }}</div>
+                                                <div class="ext-doc-totals-value text-success">-{{ discount(quote)|formatCurrency(currency) }}</div>
+                                            </div>
+                                        {% endif %}
+
                                         {% set _tb = tax_breakdown(quote) %}
                                         {% if quote.tax.positive %}
                                             <div class="ext-doc-totals-row">
@@ -216,12 +223,6 @@
                                                 <div class="ext-doc-totals-value text-muted">{{ 'quote.invoice_taxes.informational'|trans }}</div>
                                             </div>
                                         {% endfor %}
-                                        {% if quote.discount.type is not empty %}
-                                            <div class="ext-doc-totals-row">
-                                                <div class="ext-doc-totals-label">{{ 'quote.discount'|trans }}</div>
-                                                <div class="ext-doc-totals-value text-success">-{{ discount(quote)|formatCurrency(currency) }}</div>
-                                            </div>
-                                        {% endif %}
                                         <div class="ext-doc-totals-final">
                                             <div class="ext-doc-totals-row">
                                                 <div class="ext-doc-totals-label">{{ 'quote.total'|trans }}</div>

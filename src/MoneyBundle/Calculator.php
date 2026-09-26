@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Augias\MoneyBundle;
 
-use Augias\CoreBundle\Entity\Discount;
 use Augias\InvoiceBundle\Entity\BaseInvoice;
 use Augias\MoneyBundle\Formatter\MoneyFormatter;
 use Augias\QuoteBundle\Entity\Quote;
@@ -32,24 +31,9 @@ final class Calculator
      */
     public function calculateDiscount(Quote | BaseInvoice $entity): BigNumber
     {
-        $discount = $entity->getDiscount();
-
-        $invoiceTotal = $entity->getBaseTotal()->toBigDecimal()->plus($entity->getTax());
-
-        // Anything that is not an explicit money discount is a percentage —
-        // the same reading Discount::getValue() takes, so an unset type cannot
-        // fall through to a zero money amount.
-        if (Discount::TYPE_MONEY === $discount->getType()) {
-            return $discount->getValueMoney();
-        }
-
-        // A percentage is stored as the percentage itself — 15 means 15% — so it
-        // goes straight to calculatePercentage(). It used to be handed over
-        // untouched too, but calculatePercentage() then guessed the scale from
-        // the magnitude and divided anything above 100 by a hundred, which was
-        // there to absorb the form storing 15% as 1500. The form no longer does
-        // that, so nothing has to be guessed.
-        return BigDecimal::of((string) $this->calculatePercentage($invoiceTotal, (float) (string) $discount->getValue()));
+        // Off the tax-exclusive fees, the way the tax calculator takes it:
+        // the discount lowers the base the tax is charged on.
+        return $entity->getDiscount()->amountOn($entity->getBaseTotal());
     }
 
     /**

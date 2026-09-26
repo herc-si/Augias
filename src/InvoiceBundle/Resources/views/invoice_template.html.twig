@@ -156,6 +156,19 @@
                                     </div>
                                 </td>
                             </tr>
+                            {% if invoice.hasDiscount %}
+                                <tr>
+                                    <td colspan="{{ footerSpan }}" class="no-line text-right">
+                                        <strong>{{ 'invoice.discount'|trans }}</strong>
+                                    </td>
+                                    <td class="no-line text-right">
+                                        <span class="text-danger invoice-discount">
+                                            -{{ discount(invoice)|formatCurrency(invoice.client.currency) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endif %}
+
                             {% set _tb = tax_breakdown(invoice) %}
                             {% if invoice.tax.positive %}
                                 <tr>
@@ -200,18 +213,6 @@
                                 </tr>
                             {% endfor %}
 
-                            {% if invoice.hasDiscount %}
-                                <tr>
-                                    <td colspan="{{ footerSpan }}" class="no-line text-right">
-                                        <strong>{{ 'invoice.discount'|trans }}</strong>
-                                    </td>
-                                    <td class="no-line text-right">
-                                        <span class="text-danger invoice-discount">
-                                            -{{ discount(invoice)|formatCurrency(invoice.client.currency) }}
-                                        </span>
-                                    </td>
-                                </tr>
-                            {% endif %}
                             {% set paid = 0 %}
                             {% if (isRecurring is not defined or isRecurring is same as(false)) and invoice.payments|length > 0 and not invoice.feesBalance.isZero %}
                                 {% for payment in invoice.payments|filter((v) => v.status == enum('Augias\\PaymentBundle\\Enum\\PaymentStatus').Captured) %}

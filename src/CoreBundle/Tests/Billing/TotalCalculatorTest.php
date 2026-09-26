@@ -20,7 +20,6 @@ use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
-use Augias\MoneyBundle\Calculator;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\SettingsBundle\SystemConfig;
@@ -47,7 +46,7 @@ final class TotalCalculatorTest extends KernelTestCase
      */
     public function testUpdateWithSingleItem(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $invoice = new Invoice();
         $invoice->setClient(ClientFactory::createOne(['currencyCode' => 'USD']));
@@ -66,7 +65,7 @@ final class TotalCalculatorTest extends KernelTestCase
 
     public function testUpdateWithSingleItemAndMultipleQtys(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $invoice = new Invoice();
         $invoice->setClient(ClientFactory::createOne(['currencyCode' => 'USD']));
@@ -85,7 +84,7 @@ final class TotalCalculatorTest extends KernelTestCase
 
     public function testUpdateWithPercentageDiscount(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $invoice = new Invoice();
         $invoice->setClient(ClientFactory::createOne(['currencyCode' => 'USD']));
@@ -119,7 +118,7 @@ final class TotalCalculatorTest extends KernelTestCase
      */
     public function testAPercentageDiscountLeavesADisbursementAlone(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $invoice = new Invoice();
         $invoice->setClient(ClientFactory::createOne(['currencyCode' => 'USD']));
@@ -149,7 +148,7 @@ final class TotalCalculatorTest extends KernelTestCase
      */
     public function testAnInvoiceWithoutDisbursementsTotalsThemAtZero(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $invoice = new Invoice();
         $invoice->setClient(ClientFactory::createOne(['currencyCode' => 'USD']));
@@ -164,7 +163,7 @@ final class TotalCalculatorTest extends KernelTestCase
 
     public function testUpdateWithMonetaryDiscount(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $invoice = new Invoice();
         $invoice->setClient(ClientFactory::createOne());
@@ -188,7 +187,7 @@ final class TotalCalculatorTest extends KernelTestCase
 
     public function testUpdateWithTaxIncl(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $tax = new Tax();
         $tax->setType(Tax::TYPE_INCLUSIVE)
@@ -217,7 +216,7 @@ final class TotalCalculatorTest extends KernelTestCase
 
     public function testUpdateWithTaxFlat(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $tax = new Tax();
         $tax->setType(Tax::TYPE_FLAT_RATE)
@@ -246,7 +245,7 @@ final class TotalCalculatorTest extends KernelTestCase
 
     public function testUpdateWithTaxExcl(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $tax = new Tax();
         $tax->setType(Tax::TYPE_EXCLUSIVE)
@@ -275,7 +274,7 @@ final class TotalCalculatorTest extends KernelTestCase
 
     public function testUpdateWithTaxInclAndPercentageDiscount(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $tax = new Tax();
         $tax->setType(Tax::TYPE_INCLUSIVE)
@@ -300,20 +299,17 @@ final class TotalCalculatorTest extends KernelTestCase
 
         $updater->calculateTotals($invoice);
 
-        // 30000 gross, of which 5000 is tax. A 15% discount is 4500 off that
-        // gross figure, not 3750 off the net one — Calculator::calculateDiscount()
-        // states the base is baseTotal + tax. The old expectation of 26250 could
-        // only arise from the tax being read as zero, which is what it was before
-        // the entity was given its tax ahead of the discount being applied.
-        self::assertEquals(BigDecimal::of(25500), $invoice->getTotal());
-        self::assertEquals(BigDecimal::of(25500), $invoice->getBalance());
+        // 30000 gross, of which 5000 is tax: 25000 net. The 15% comes off
+        // the net — 3750 — and the tax is charged on the 21250 left.
+        self::assertEquals(BigDecimal::of('25500.00'), $invoice->getTotal());
+        self::assertEquals(BigDecimal::of('25500.00'), $invoice->getBalance());
         self::assertEquals(BigDecimal::of('25000.00'), $invoice->getBaseTotal());
-        self::assertEquals(BigDecimal::of('5000.00'), $invoice->getTax());
+        self::assertEquals(BigDecimal::of('4250'), $invoice->getTax());
     }
 
     public function testUpdateWithTaxExclAndMonetaryDiscount(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $tax = new Tax();
         $tax->setType(Tax::TYPE_EXCLUSIVE)
@@ -338,10 +334,11 @@ final class TotalCalculatorTest extends KernelTestCase
 
         $updater->calculateTotals($invoice);
 
-        self::assertEquals(BigDecimal::of('35920'), $invoice->getTotal());
-        self::assertEquals(BigDecimal::of('35920'), $invoice->getBalance());
+        // 0.80 off the 300.00 net, then 20% on the 299.20 left.
+        self::assertEquals(BigDecimal::of('35904'), $invoice->getTotal());
+        self::assertEquals(BigDecimal::of('35904'), $invoice->getBalance());
         self::assertEquals(BigDecimal::of(30000), $invoice->getBaseTotal());
-        self::assertEquals(BigDecimal::of('6000'), $invoice->getTax());
+        self::assertEquals(BigDecimal::of('5984'), $invoice->getTax());
     }
 
     public function testUpdateTotalsWithPayments(): void
@@ -367,7 +364,7 @@ final class TotalCalculatorTest extends KernelTestCase
         $this->em->persist($invoice);
         $this->em->flush();
 
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $updater->calculateTotals($invoice);
 
@@ -384,7 +381,7 @@ final class TotalCalculatorTest extends KernelTestCase
      */
     public function testUpdateWithTaxExclRoundingIssue(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $tax = new Tax();
         $tax->setType(Tax::TYPE_EXCLUSIVE)
@@ -444,9 +441,9 @@ final class TotalCalculatorTest extends KernelTestCase
      * stale zero tax gives 4500 off and 31500, which is what this asserts
      * against.
      */
-    public function testPercentageDiscountAppliesToTheTaxInclusiveTotal(): void
+    public function testAPercentageDiscountComesOffTheNetBeforeTheTax(): void
     {
-        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new Calculator(), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
+        $updater = new TotalCalculator($this->em->getRepository(Payment::class), new TaxCalculator(new LineTaxCalculator(), new InvoiceTaxCalculator(), self::getContainer()->get(SystemConfig::class)));
 
         $invoice = new Invoice();
         $invoice->setClient(ClientFactory::createOne(['currencyCode' => 'USD']));
@@ -470,8 +467,11 @@ final class TotalCalculatorTest extends KernelTestCase
 
         $updater->calculateTotals($invoice);
 
+        // 4500 off the 30000 net, and 20% on the 25500 left (CGI art.
+        // 267-II-1°). The total is what it was when the discount came off
+        // after tax; the tax is not — it used to be charged on the 4500 too.
         self::assertEquals(BigDecimal::of(30000), $invoice->getBaseTotal());
-        self::assertEquals(BigDecimal::of(6000), $invoice->getTax());
+        self::assertEquals(BigDecimal::of(5100), $invoice->getTax());
         self::assertEquals(BigDecimal::of(30600), $invoice->getTotal());
     }
 }

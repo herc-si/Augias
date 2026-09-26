@@ -129,6 +129,58 @@ final class LineTaxCalculator
     }
 
     /**
+     * The same line once its share of a discount on the document is taken
+     * off: the tax is charged on what is left.
+     *
+     * Every percentage is then a rate on that discounted net — an inclusive
+     * price has already been split into net and tax, and what the discount
+     * lowers is the net. A flat amount does not move. The subtotal stays the
+     * line's own; the discounted net is its taxable amount.
+     *
+     * @throws MathException
+     */
+    public function discountLine(LineInterface $line, LineBreakdown $breakdown, BigDecimal $discount, Rounder $rounder): LineBreakdown
+    {
+        if ($discount->isZero() || $line->isDisbursement()) {
+            return $breakdown;
+        }
+
+        $taxable = $breakdown->lineSubtotal->minus($discount);
+        $totalTax = BigDecimal::zero();
+        $accumulatedNonCompound = BigDecimal::zero();
+        $taxRows = [];
+
+        foreach ($this->orderedTaxes($line) as $lineTax) {
+            $category = $lineTax->getCategorySnapshot();
+
+            if ($category === TaxCategory::Exempt) {
+                continue;
+            }
+
+            if ($category !== TaxCategory::Standard) {
+                $taxRows[] = $this->summary($lineTax, BigDecimal::zero());
+                continue;
+            }
+
+            $rate = BigDecimal::of($lineTax->getRateSnapshot());
+
+            $amount = match ($lineTax->getTypeSnapshot()) {
+                TaxType::FlatRate => $this->applyFlatRate($rate, $rounder),
+                default => $this->applyExclusive($lineTax->isCompound() ? $taxable->plus($accumulatedNonCompound) : $taxable, $rate, $rounder),
+            };
+
+            if (! $lineTax->isCompound()) {
+                $accumulatedNonCompound = $accumulatedNonCompound->plus($amount);
+            }
+
+            $totalTax = $totalTax->plus($amount);
+            $taxRows[] = $this->summary($lineTax, $amount);
+        }
+
+        return new LineBreakdown($breakdown->lineSubtotal, $taxable->plus($totalTax), $totalTax, $taxRows, $breakdown->supplyType, $taxable);
+    }
+
+    /**
      * Extract the inclusive tax component from a gross figure.
      *
      * @throws MathException

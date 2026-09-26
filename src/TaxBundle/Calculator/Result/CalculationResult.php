@@ -43,6 +43,11 @@ final readonly class CalculationResult
 
     public BigDecimal $amountPayable;
 
+    public BigDecimal $discount;
+
+    /** The subtotal less the discount: the net the tax was charged on. */
+    public BigDecimal $taxableTotal;
+
     /**
      * @param LineBreakdowns      $lineBreakdowns
      * @param list<TaxSummaryRow> $summaryRows
@@ -55,7 +60,14 @@ final readonly class CalculationResult
         public InvoiceLevelBreakdown $invoiceLevelBreakdown,
         public array $summaryRows,
         public BigDecimal $disbursementTotal,
+        /**
+         * What a discount on the document takes off the subtotal. Already
+         * out of the total and of the tax, which is charged on what is left.
+         */
+        ?BigDecimal $discount = null,
     ) {
+        $this->discount = $discount ?? BigDecimal::zero();
+        $this->taxableTotal = $this->subTotal->minus($this->discount);
         $this->totalWithholding = $invoiceLevelBreakdown->totalWithholding;
         $this->amountPayable = $this->total->minus($this->totalWithholding);
     }

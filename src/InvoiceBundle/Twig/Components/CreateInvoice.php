@@ -475,9 +475,9 @@ final class CreateInvoice extends AbstractController
             $tempInvoice = $this->formManager->createInvoiceFromDTO($this->dto);
 
             // Recalculated from the lines rather than trusted from the DTO: a
-            // percentage discount is worked out against baseTotal + tax, and
-            // those two arrive here as hidden form fields maintained by the
-            // browser. While a line is being edited they lag, and a discount
+            // percentage discount is worked out against baseTotal, and that
+            // arrives here as a hidden form field maintained by the
+            // browser. While a line is being edited it lags, and a discount
             // read against a stale zero shows as no discount at all.
             $this->totalCalculator->calculateTotals($tempInvoice);
 

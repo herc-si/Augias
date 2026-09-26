@@ -126,16 +126,16 @@
                                     <span class="totals-label">{{ 'invoice.subtotal'|trans }}</span>
                                     <span class="totals-value">{{ invoice.baseTotal|formatCurrency(invoice.client.currency) }}</span>
                                 </div>
-                                {% if invoice.tax.positive %}
-                                    <div class="totals-row">
-                                        <span class="totals-label">{{ 'invoice.tax'|trans }}</span>
-                                        <span class="totals-value">{{ invoice.tax|formatCurrency(invoice.client.currency) }}</span>
-                                    </div>
-                                {% endif %}
                                 {% if invoice.hasDiscount %}
                                     <div class="totals-row totals-row-discount">
                                         <span class="totals-label">{{ 'invoice.discount'|trans }}</span>
                                         <span class="totals-value">-{{ discount(invoice)|formatCurrency(invoice.client.currency) }}</span>
+                                    </div>
+                                {% endif %}
+                                {% if invoice.tax.positive %}
+                                    <div class="totals-row">
+                                        <span class="totals-label">{{ 'invoice.tax'|trans }}</span>
+                                        <span class="totals-value">{{ invoice.tax|formatCurrency(invoice.client.currency) }}</span>
                                     </div>
                                 {% endif %}
                                 {% if invoice.payments|length > 0 and not invoice.balance.isZero %}

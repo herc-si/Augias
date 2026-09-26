@@ -98,6 +98,11 @@
     {{ email.divider('md') }}
 
     {{ email.info_row('invoice.subtotal'|trans({}, 'email'), invoice.baseTotal|formatCurrency(invoice.client.currency)) }}
+    {% if invoice.discount.type is not empty %}
+        {{ email.spacer('xs') }}
+        {{ email.info_row('invoice.discount'|trans({}, 'email'), '-' ~ discount(invoice)|formatCurrency(invoice.client.currency)) }}
+    {% endif %}
+
     {% set _tb = tax_breakdown(invoice) %}
     {% if invoice.tax.positive %}
         {{ email.spacer('xs') }}
@@ -110,10 +115,6 @@
             {{ email.spacer('xs') }}
             {{ email.info_row(row.name ~ ' (' ~ row.rate ~ '%)', row.amount|formatCurrency(invoice.client.currency)) }}
         {% endfor %}
-    {% endif %}
-    {% if invoice.discount.type is not empty %}
-        {{ email.spacer('xs') }}
-        {{ email.info_row('invoice.discount'|trans({}, 'email'), '-' ~ discount(invoice)|formatCurrency(invoice.client.currency)) }}
     {% endif %}
     {%- if invoice.hasDisbursements %}
         {{ email.spacer('xs') }}

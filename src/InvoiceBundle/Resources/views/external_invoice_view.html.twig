@@ -208,6 +208,13 @@
                                         <div class="ext-doc-totals-label">{{ 'invoice.subtotal'|trans }}</div>
                                         <div class="ext-doc-totals-value">{{ invoice.baseTotal|formatCurrency(currency) }}</div>
                                     </div>
+                                    {% if invoice.hasDiscount %}
+                                        <div class="ext-doc-totals-row">
+                                            <div class="ext-doc-totals-label">{{ 'invoice.discount'|trans }}</div>
+                                            <div class="ext-doc-totals-value text-success">-{{ discount(invoice)|formatCurrency(currency) }}</div>
+                                        </div>
+                                    {% endif %}
+
                                     {% set _tb = tax_breakdown(invoice) %}
                                     {% if invoice.tax.positive %}
                                         <div class="ext-doc-totals-row">
@@ -233,12 +240,6 @@
                                             <div class="ext-doc-totals-value text-muted">{{ 'invoice.invoice_taxes.informational'|trans }}</div>
                                         </div>
                                     {% endfor %}
-                                    {% if invoice.hasDiscount %}
-                                        <div class="ext-doc-totals-row">
-                                            <div class="ext-doc-totals-label">{{ 'invoice.discount'|trans }}</div>
-                                            <div class="ext-doc-totals-value text-success">-{{ discount(invoice)|formatCurrency(currency) }}</div>
-                                        </div>
-                                    {% endif %}
                                     {% if invoice.payments|length > 0 and not invoice.feesBalance.isZero and invoice.hasDisbursements %}
                                         <div class="ext-doc-totals-row">
                                             <div class="ext-doc-totals-label">{{ 'invoice.disbursement.note.fees_paid'|trans }}</div>

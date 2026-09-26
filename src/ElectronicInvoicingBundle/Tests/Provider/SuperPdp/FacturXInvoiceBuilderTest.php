@@ -15,6 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdp;
 
 use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\FacturXInvoiceBuilder;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
@@ -373,6 +374,52 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         self::assertStringContainsString('<ram:CalculatedAmount>36.67</ram:CalculatedAmount>', $xml);
         self::assertStringContainsString('<ram:TaxTotalAmount currencyID="EUR">36.67</ram:TaxTotalAmount>', $xml);
         self::assertStringContainsString('<ram:GrandTotalAmount>220.00</ram:GrandTotalAmount>', $xml);
+    }
+
+    /**
+     * A discount on the invoice is a document-level allowance, one per VAT
+     * rate, and each breakdown is charged on its net less its allowance. It
+     * used to go out as a bare allowance total the rest did not add up to,
+     * and the platform refused the invoice (BR-CO-11, 13 and 15).
+     */
+    public function testADiscountIsAnAllowanceOnEachVatBreakdown(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+
+        $invoice = new Invoice();
+        $invoice->setCompany($this->company);
+        $invoice->setClient($client);
+        $invoice->setInvoiceId('INV-DISCOUNT');
+        $invoice->setStatus(InvoiceStatus::Draft);
+        $invoice->setDiscount(new Discount()->setType(Discount::TYPE_PERCENTAGE)->setValue(10));
+
+        foreach ([[20000, '20'], [10000, '5.5']] as [$price, $rate]) {
+            $line = new Line();
+            $line->setDescription('Service ' . $rate)->setPrice($price)->setQty(1)->updateTotal();
+            $line->addTax(new LineTax()->setNameSnapshot('TVA')->setRateSnapshot($rate)->setTypeSnapshot(TaxType::Exclusive)->setCategorySnapshot(TaxCategory::Standard));
+            $invoice->addLine($line);
+        }
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($invoice);
+        $entityManager->flush();
+
+        $xml = self::getContainer()->get(FacturXInvoiceBuilder::class)->buildDocument($invoice)->getContent();
+
+        // 20 € off the 200 € at 20 %, 10 € off the 100 € at 5.5 %.
+        self::assertSame(2, substr_count($xml, '<ram:SpecifiedTradeAllowanceCharge>'));
+        self::assertStringContainsString('<ram:ActualAmount>20.00</ram:ActualAmount>', $xml);
+        self::assertStringContainsString('<ram:ActualAmount>10.00</ram:ActualAmount>', $xml);
+        self::assertStringContainsString('<ram:ReasonCode>95</ram:ReasonCode>', $xml);
+        self::assertStringContainsString('<ram:BasisAmount>180.00</ram:BasisAmount>', $xml);
+        self::assertStringContainsString('<ram:CalculatedAmount>36.00</ram:CalculatedAmount>', $xml);
+        self::assertStringContainsString('<ram:BasisAmount>90.00</ram:BasisAmount>', $xml);
+        self::assertStringContainsString('<ram:CalculatedAmount>4.95</ram:CalculatedAmount>', $xml);
+        self::assertStringContainsString('<ram:LineTotalAmount>300.00</ram:LineTotalAmount>', $xml);
+        self::assertStringContainsString('<ram:AllowanceTotalAmount>30.00</ram:AllowanceTotalAmount>', $xml);
+        self::assertStringContainsString('<ram:TaxBasisTotalAmount>270.00</ram:TaxBasisTotalAmount>', $xml);
+        self::assertStringContainsString('<ram:TaxTotalAmount currencyID="EUR">40.95</ram:TaxTotalAmount>', $xml);
+        self::assertStringContainsString('<ram:GrandTotalAmount>310.95</ram:GrandTotalAmount>', $xml);
     }
 
     private function xmlFor(SupplyType ...$types): string

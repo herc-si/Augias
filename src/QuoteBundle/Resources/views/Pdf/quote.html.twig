@@ -277,6 +277,18 @@
         </tr>
 
         {# Tax breakdown #}
+        {# Discount #}
+        {% if quote.discount.type is not empty %}
+            <tr class="discount-row">
+                <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
+                    {{ 'quote.discount'|trans }}
+                </td>
+                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #ef4444;">
+                    -{{ discount(quote)|formatCurrency(currency) }}
+                </td>
+            </tr>
+        {% endif %}
+
         {% set _tb = tax_breakdown(quote) %}
         {% if quote.tax.positive %}
             <tr class="tax-row">
@@ -318,18 +330,6 @@
                 </td>
             </tr>
         {% endfor %}
-
-        {# Discount #}
-        {% if quote.discount.type is not empty %}
-            <tr class="discount-row">
-                <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
-                    {{ 'quote.discount'|trans }}
-                </td>
-                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #ef4444;">
-                    -{{ discount(quote)|formatCurrency(currency) }}
-                </td>
-            </tr>
-        {% endif %}
 
         {# Divider #}
         <tr class="divider-row">

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\TaxBundle\Tests\Calculator;
 
+use Augias\CoreBundle\Entity\Discount;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
@@ -86,6 +87,25 @@ final class VatExemptCalculationTest extends KernelTestCase
         self::assertSame('10000', (string) $result->lineBreakdowns[0]->lineSubtotal);
         self::assertSame('0', (string) $result->lineBreakdowns[0]->lineTax);
         self::assertSame([], $result->lineBreakdowns[0]->taxRows);
+    }
+
+    /**
+     * No tax for a discount to lower, but it still comes off the price, and
+     * off the line's net — the figure e-reporting declares.
+     */
+    public function testADiscountStillComesOffWhenExempt(): void
+    {
+        $invoice = $this->invoiceWithTaxedLine();
+        $invoice->setDiscount(new Discount()->setType(Discount::TYPE_PERCENTAGE)->setValue(10));
+
+        self::getContainer()->get(SystemConfig::class)
+            ->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, '1');
+
+        $result = $this->calculate($invoice);
+
+        self::assertSame('1000', (string) $result->discount);
+        self::assertSame('9000', (string) $result->total);
+        self::assertSame('9000', (string) $result->lineBreakdowns[0]->taxableAmount);
     }
 
     private function calculate(Invoice $invoice): \Augias\TaxBundle\Calculator\Result\CalculationResult
