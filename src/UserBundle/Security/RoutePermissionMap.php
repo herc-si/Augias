@@ -80,6 +80,7 @@ final class RoutePermissionMap
 
         // Seeing the company's documents and books: every member.
         '_accounting_attachment_download' => CompanyPermission::BillingRead,
+        '_accounting_bank' => CompanyPermission::BillingRead,
         '_accounting_book' => CompanyPermission::BillingRead,
         '_accounting_declaration_view' => CompanyPermission::BillingRead,
         '_accounting_declarations' => CompanyPermission::BillingRead,
@@ -111,6 +112,10 @@ final class RoutePermissionMap
         '_users_list' => CompanyPermission::BillingRead,
 
         // Changing them.
+        // Matching a bank line records the payment it proves: a billing act.
+        '_accounting_bank_account_add' => CompanyPermission::BillingWrite,
+        '_accounting_bank_import' => CompanyPermission::BillingWrite,
+        '_accounting_bank_reconcile' => CompanyPermission::BillingWrite,
         '_action_credit_note' => CompanyPermission::BillingWrite,
         '_action_invoice' => CompanyPermission::BillingWrite,
         '_action_recurring_invoice' => CompanyPermission::BillingWrite,

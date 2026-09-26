@@ -1,0 +1,161 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) HERC SI <opensource@herc-si.fr>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # The bank page: accounts, statement import, lines to reconcile — see
+ # Action\Bank\Index. Every change is a POST behind the "bank" token.
+ #}
+{% extends "@AugiasCore/Layout/default.html.twig" %}
+
+{% block title %}
+    {{ ux_icon('tabler:building-bank', {width: 24, height: 24, class: 'me-2'}) }}{{ 'accounting.bank.title'|trans }}
+{% endblock title %}
+
+{% block content %}
+    {% set token = csrf_token('bank') %}
+    {% set canWrite = route_allowed('_accounting_bank_import') %}
+
+    <p class="text-secondary">{{ 'accounting.bank.intro'|trans }}</p>
+
+    {% if accounts is not empty %}
+        <ul class="nav nav-tabs mb-3">
+            {% for candidate in accounts %}
+                <li class="nav-item">
+                    <a class="nav-link{{ account and candidate.id.equals(account.id) ? ' active' }}" href="{{ path('_accounting_bank', {'account': candidate.id}) }}">
+                        {{ candidate.name }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div class="row row-cards">
+        {% if account %}
+            <div class="col-lg-8">
+                <twig:Ui:Card>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <div class="btn-group" role="group">
+                            {% for choice in ['unmatched', 'matched', 'ignored'] %}
+                                <a class="btn btn-sm{{ status and status.value == choice ? ' btn-primary' : '' }}" href="{{ path('_accounting_bank', {'account': account.id, 'status': choice}) }}">
+                                    {{ ('accounting.bank.status.' ~ choice)|trans }}{% if choice == 'unmatched' %} <span class="badge ms-1">{{ unmatched }}</span>{% endif %}
+                                </a>
+                            {% endfor %}
+                            <a class="btn btn-sm{{ status is null ? ' btn-primary' : '' }}" href="{{ path('_accounting_bank', {'account': account.id, 'status': 'all'}) }}">{{ 'accounting.bank.status.all'|trans }}</a>
+                        </div>
+                    </div>
+
+                    {% if lines is empty %}
+                        <p class="text-secondary mb-0">{{ 'accounting.bank.empty'|trans }}</p>
+                    {% else %}
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>{{ 'accounting.bank.column.date'|trans }}</th>
+                                        <th>{{ 'accounting.bank.column.label'|trans }}</th>
+                                        <th class="text-end">{{ 'accounting.bank.column.amount'|trans }}</th>
+                                        <th>{{ 'accounting.bank.column.match'|trans }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for line in lines %}
+                                        <tr>
+                                            <td class="text-nowrap">{{ line.bookingDate|date('d/m/Y') }}</td>
+                                            <td>
+                                                <div>{{ line.label }}</div>
+                                                {% if line.counterpartyName %}<div class="small text-secondary">{{ line.counterpartyName }}</div>{% endif %}
+                                            </td>
+                                            <td class="text-end text-nowrap {{ line.credit ? 'text-green' : '' }}">{{ line.amount|formatCurrency(account.currencyCode) }}</td>
+                                            <td>
+                                                {% if line.status.value == 'unmatched' %}
+                                                    {% for suggestion in suggestions[line.id ~ ''] ?? [] %}
+                                                        {% if canWrite %}
+                                                            <form method="post" action="{{ path('_accounting_bank_reconcile', {'id': line.id, 'action': 'match'}) }}" class="mb-1">
+                                                                <input type="hidden" name="_token" value="{{ token }}">
+                                                                <input type="hidden" name="kind" value="{{ suggestion.kind }}">
+                                                                <input type="hidden" name="target" value="{{ suggestion.id }}">
+                                                                <input type="hidden" name="status" value="{{ status ? status.value : 'all' }}">
+                                                                <button class="btn btn-sm {{ suggestion.records ? 'btn-primary' : 'btn-outline-primary' }} text-start">
+                                                                    {{ ('accounting.bank.suggestion.' ~ suggestion.kind)|trans({'%number%': suggestion.label, '%counterparty%': suggestion.counterparty}) }}
+                                                                </button>
+                                                            </form>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <span class="text-secondary small">{{ 'accounting.bank.no_suggestion'|trans }}</span>
+                                                    {% endfor %}
+                                                    {% if canWrite %}
+                                                        <form method="post" action="{{ path('_accounting_bank_reconcile', {'id': line.id, 'action': 'ignore'}) }}">
+                                                            <input type="hidden" name="_token" value="{{ token }}">
+                                                            <input type="hidden" name="status" value="{{ status ? status.value : 'all' }}">
+                                                            <button class="btn btn-sm btn-link text-secondary px-0">{{ 'accounting.bank.ignore'|trans }}</button>
+                                                        </form>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="badge {{ line.status.value == 'matched' ? 'bg-green-lt' : 'bg-secondary-lt' }}">{{ ('accounting.bank.status.' ~ line.status.value)|trans }}</span>
+                                                    {% if line.payment and line.payment.invoice %}
+                                                        <a href="{{ path('_invoices_view', {'id': line.payment.invoice.id}) }}" class="small">{{ line.payment.invoice.invoiceId }}</a>
+                                                    {% elseif line.billPayment %}
+                                                        <a href="{{ path('_bills_view', {'id': line.billPayment.bill.id}) }}" class="small">{{ line.billPayment.bill.billNumber }}</a>
+                                                    {% endif %}
+                                                    {% if canWrite %}
+                                                        <form method="post" action="{{ path('_accounting_bank_reconcile', {'id': line.id, 'action': 'reopen'}) }}" class="d-inline">
+                                                            <input type="hidden" name="_token" value="{{ token }}">
+                                                            <input type="hidden" name="status" value="{{ status ? status.value : 'all' }}">
+                                                            <button class="btn btn-sm btn-link text-secondary">{{ 'accounting.bank.reopen'|trans }}</button>
+                                                        </form>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </twig:Ui:Card>
+            </div>
+        {% endif %}
+
+        <div class="{{ account ? 'col-lg-4' : 'col-lg-6' }}">
+            {% if account and canWrite %}
+                <twig:Ui:Card title="{{ 'accounting.bank.import.title'|trans }}" class="mb-3">
+                    <form method="post" action="{{ path('_accounting_bank_import', {'id': account.id}) }}" enctype="multipart/form-data">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <p class="small text-secondary">{{ 'accounting.bank.import.help'|trans }}</p>
+                        <input type="file" name="statement" class="form-control mb-2" accept=".csv,.ofx,.qfx,.xml,.txt" required>
+                        <button class="btn btn-primary w-100">
+                            {{ ux_icon('tabler:upload', {width: 18, height: 18}) }} {{ 'accounting.bank.import.submit'|trans }}
+                        </button>
+                    </form>
+                </twig:Ui:Card>
+            {% endif %}
+
+            {% if canWrite %}
+                <twig:Ui:Card title="{{ 'accounting.bank.account.title'|trans }}">
+                    <form method="post" action="{{ path('_accounting_bank_account_add') }}">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <div class="mb-2">
+                            <label class="form-label" for="bank-name">{{ 'accounting.bank.account.name'|trans }}</label>
+                            <input id="bank-name" name="name" class="form-control" required maxlength="100">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label" for="bank-iban">IBAN</label>
+                            <input id="bank-iban" name="iban" class="form-control" maxlength="42">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="bank-currency">{{ 'accounting.bank.account.currency'|trans }}</label>
+                            <input id="bank-currency" name="currency" class="form-control" value="{{ defaultCurrency }}" maxlength="3" required>
+                        </div>
+                        <button class="btn w-100">{{ ux_icon('tabler:plus', {width: 18, height: 18}) }} {{ 'accounting.bank.account.submit'|trans }}</button>
+                    </form>
+                </twig:Ui:Card>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

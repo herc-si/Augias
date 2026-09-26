@@ -43,6 +43,63 @@ accounting:
     alerts:
         line: 'Seuil atteint à %percent%% (limite : %amount%)'
         title: 'Alertes de seuil %year%'
+    bank:
+        title: Banque
+        intro: "Téléchargez vos relevés depuis le site de votre banque (CAMT.053, OFX ou CSV) et importez-les ici : chaque opération se rapproche du paiement qu'elle prouve. Aucun accès à votre banque n'est demandé."
+        empty: 'Aucune opération ici.'
+        no_suggestion: 'Rien de correspondant : enregistrez le paiement depuis la facture, ou écartez la ligne.'
+        ignore: Écarter
+        reopen: Annuler
+        status:
+            unmatched: 'À rapprocher'
+            matched: Rapprochées
+            ignored: Écartées
+            all: Toutes
+        column:
+            date: Date
+            label: Libellé
+            amount: Montant
+            match: Rapprochement
+        suggestion:
+            payment: 'Paiement déjà enregistré — %number% %counterparty%'
+            invoice: 'Encaisser la facture %number% — %counterparty%'
+            bill_payment: 'Règlement déjà enregistré — %number% %counterparty%'
+            bill: 'Payer la facture fournisseur %number% — %counterparty%'
+        import:
+            title: 'Importer un relevé'
+            help: "CAMT.053 (XML), OFX ou CSV. Réimporter un relevé déjà importé n'ajoute rien en double."
+            submit: Importer
+        account:
+            title: 'Ajouter un compte bancaire'
+            name: 'Nom du compte'
+            currency: Devise
+            submit: 'Ajouter le compte'
+        flash:
+            account_added: 'Le compte bancaire a été ajouté.'
+            imported: 'Relevé %format% importé : %imported% opération(s) ajoutée(s), %duplicates% déjà connue(s).'
+            no_file: 'Choisissez un fichier de relevé (5 Mo au plus).'
+            match: 'Opération rapprochée.'
+            ignore: 'Opération écartée.'
+            reopen: 'Opération remise à rapprocher.'
+        error:
+            empty: 'Le fichier est vide.'
+            format: "Ce fichier n'est pas un relevé reconnu (CAMT.053, OFX ou CSV)."
+            invalid_xml: "Le fichier XML n'est pas lisible."
+            missing_field: 'Une opération du relevé est incomplète (date ou montant manquant).'
+            invalid_amount: 'Montant illisible dans le relevé : « %value% ».'
+            invalid_date: 'Date illisible dans le relevé : « %value% ».'
+            csv_columns: "Colonnes introuvables dans le CSV : il faut une date, un libellé, et un montant ou des colonnes débit et crédit."
+            currency: 'Ce relevé est en %statement%, le compte en %account%.'
+        refused:
+            unknown_kind: 'Rapprochement inconnu.'
+            not_found: 'Le document proposé a disparu entre-temps.'
+            amount_mismatch: "Les montants ne correspondent pas."
+            already_matched: 'Ce paiement est déjà rapproché d''une autre opération.'
+            not_payable: "Ce document ne peut pas être réglé par cette opération."
+            exceeds_balance: "L'opération dépasse ce qui reste dû."
+            currency_mismatch: "La devise du document n'est pas celle du compte."
+            books_required: "Votre entreprise est assujettie à la TVA : le paiement d'un particulier ne peut être enregistré que si votre comptabilité est tenue dans Augias (CGI, art. 286). Choisissez d'abord votre régime comptable."
+            no_offline_method: "Aucun moyen de paiement hors ligne n'est configuré."
     book:
         bills: 'Journal des achats'
         bills_notice: "La TVA sur un achat se déduit quand elle devient exigible chez le fournisseur : à la date de sa facture pour des biens, ou pour des services s'il a opté pour les débits. Ces factures s'inscrivent ici à leur date ; leur règlement, au registre des achats, ne la déduit pas une seconde fois."
@@ -185,6 +242,7 @@ accounting:
         cancel_blocked: "Cette facture a été émise et ne peut plus être annulée. Établissez un avoir qui s'y rapporte."
         edit_blocked: "Cette facture a été émise et ne peut plus être modifiée. Établissez un avoir qui s'y rapporte."
     menu:
+        bank: Banque
         declarations: Déclarations
         main: Comptabilité
         overview: "Vue d'ensemble"

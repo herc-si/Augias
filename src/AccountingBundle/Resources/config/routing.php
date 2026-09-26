@@ -11,6 +11,10 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
+use Augias\AccountingBundle\Action\Bank\AddAccount as BankAddAccount;
+use Augias\AccountingBundle\Action\Bank\Import as BankImport;
+use Augias\AccountingBundle\Action\Bank\Index as BankIndex;
+use Augias\AccountingBundle\Action\Bank\Reconcile as BankReconcile;
 use Augias\AccountingBundle\Action\Book;
 use Augias\AccountingBundle\Action\ClosePeriod;
 use Augias\AccountingBundle\Action\CreatePeriod;
@@ -96,5 +100,28 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_accounting_period_close', '/period/{id}/close')
         ->controller(ClosePeriod::class)
+        ->methods(['POST']);
+
+    // Statements imported by hand — see Action\Bank\Index.
+    $routingConfigurator
+        ->add('_accounting_bank', '/bank/{account}')
+        ->controller(BankIndex::class)
+        ->defaults(['account' => null])
+        ->methods(['GET']);
+
+    $routingConfigurator
+        ->add('_accounting_bank_account_add', '/bank-accounts')
+        ->controller(BankAddAccount::class)
+        ->methods(['POST']);
+
+    $routingConfigurator
+        ->add('_accounting_bank_import', '/bank-accounts/{id}/import')
+        ->controller(BankImport::class)
+        ->methods(['POST']);
+
+    $routingConfigurator
+        ->add('_accounting_bank_reconcile', '/bank-lines/{id}/{action}')
+        ->controller(BankReconcile::class)
+        ->requirements(['action' => 'match|ignore|reopen'])
         ->methods(['POST']);
 };
