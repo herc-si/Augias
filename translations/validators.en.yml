@@ -11,6 +11,7 @@ client:
             min: 'You need to add at least one contact to this client'
         currency_code:
             exact_length: 'Currency code must be exactly {{ limit }} characters long.'
+        private_customer_needs_books: 'Your company is VAT-registered: to record the payments of a private customer it must keep its books in Augias, or the application would act as an uncertified cash register (French tax code, art. 286). Choose your accounting regime first, in the Accounting menu.'
         role_required: 'A client record needs to be at least a client or a supplier.'
         tax_identifiers:
             siret_required: 'Electronic invoicing is enabled: please add this client''s SIRET number to their tax identifiers.'

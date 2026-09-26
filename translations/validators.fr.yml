@@ -11,6 +11,7 @@ client:
             min: 'Vous devez ajouter au moins un contact à ce client'
         currency_code:
             exact_length: 'Le code de devise doit comporter exactement {{ limit }} caractères.'
+        private_customer_needs_books: "Votre entreprise est assujettie à la TVA : pour enregistrer les paiements d'un particulier, elle doit tenir sa comptabilité dans Augias, faute de quoi l'application ferait office de logiciel de caisse non certifié (CGI, art. 286). Choisissez d'abord votre régime comptable, dans le menu Comptabilité."
         role_required: 'Une fiche doit être au moins un client ou un fournisseur.'
         tax_identifiers:
             siret_required: 'La facturation électronique est activée : veuillez ajouter le numéro SIRET de ce client parmi ses identifiants fiscaux.'

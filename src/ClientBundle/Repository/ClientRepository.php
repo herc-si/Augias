@@ -43,6 +43,21 @@ class ClientRepository extends EntityRepository
         parent::__construct($registry, Client::class);
     }
 
+    /**
+     * Private individuals invoiced as customers — who make a VAT-registered
+     * company's payment records a cash register unless its books are kept
+     * (see \Augias\CoreBundle\Contracts\CashRegisterGateInterface).
+     */
+    public function countPrivateCustomers(): int
+    {
+        return (int) $this->createQueryBuilder('c')
+            ->select('COUNT(c.id)')
+            ->where('c.isClient = true')
+            ->andWhere('c.isCompany = false')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function getTotalClients(?ClientStatus $status = null): int
     {
         $qb = $this->createQueryBuilder('c');

@@ -1,0 +1,30 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) HERC SI <opensource@herc-si.fr>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # Books required before a private customer's payment can be recorded, as a
+ # section of the Attention Required card (see BooksRequiredSource).
+ #
+ # Danger rather than warning: a payment is being refused, not merely due.
+ # It links to the settings, where the regime is chosen.
+ #}
+<div class="attention-section">
+    <div class="attention-section-header attention-section-header--danger">
+        {{ ux_icon('tabler:book', {width: 16, height: 16}) }}
+        <span>{{ 'dashboard.accounting.books_required_title'|trans }}</span>
+    </div>
+    <div class="attention-items">
+        <a href="{{ route_allowed('_settings') ? path('_settings') : path('_accounting_index') }}" class="attention-item">
+            <span class="attention-item-main">
+                <span class="attention-item-id">{{ 'dashboard.accounting.books_required_action'|trans }}</span>
+                <span class="attention-item-client">{{ 'dashboard.accounting.books_required_line'|trans({'%count%': privateCustomers}) }}</span>
+            </span>
+        </a>
+    </div>
+</div>

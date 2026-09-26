@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\PaymentBundle\Tests\Functional\Api;
 
+use Augias\AccountingBundle\AccountingSettings;
+use Augias\AccountingBundle\Regime\Fr\MicroEntrepriseRegime;
 use Augias\ApiBundle\Test\ApiTestCase;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Company\CompanySelector;
@@ -21,6 +23,7 @@ use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Test\Factory\PaymentMethodFactory;
+use Augias\SettingsBundle\SystemConfig;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -56,6 +59,43 @@ final class RecordPaymentTest extends ApiTestCase
         self::assertSame('captured', $result['status']);
         self::assertSame(1000, $result['totalAmount']);
         self::assertSame('USD', $result['currencyCode']);
+    }
+
+    /**
+     * Recorded outside the books, a private customer's payment would make
+     * Augias an uncertified cash register: refused until a regime is chosen.
+     */
+    public function testAPrivateCustomersPaymentNeedsTheBooks(): void
+    {
+        $config = self::getContainer()->get(SystemConfig::class);
+        $config->set(AccountingSettings::REGIME, '');
+        $config->set(AccountingSettings::VAT_EXEMPT, '0');
+
+        $client = ClientFactory::createOne(['currencyCode' => 'USD', 'isCompany' => false]);
+        $invoice = InvoiceFactory::createOne(['status' => InvoiceStatus::Pending, 'client' => $client]);
+
+        PaymentMethodFactory::createOne([
+            'factoryName' => 'offline',
+            'enabled' => true,
+            'internal' => false,
+        ]);
+
+        $response = self::$client->request('POST', $this->getIriFromResource($invoice) . '/payments', [
+            'json' => ['amount' => 1000, 'currency' => 'USD'],
+            'headers' => ['content-type' => 'application/ld+json', 'accept' => 'application/ld+json'],
+        ]);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        self::assertStringContainsString('art. 286', $response->getContent(false));
+
+        $config->set(AccountingSettings::REGIME, MicroEntrepriseRegime::CODE);
+
+        self::$client->request('POST', $this->getIriFromResource($invoice) . '/payments', [
+            'json' => ['amount' => 1000, 'currency' => 'USD'],
+            'headers' => ['content-type' => 'application/ld+json', 'accept' => 'application/ld+json'],
+        ]);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_CREATED);
     }
 
     public function testCannotRecordPaymentForDraftInvoice(): void

@@ -16,6 +16,7 @@ namespace Augias\ApiBundle\State\Processor;
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
 use Augias\ApiBundle\DTO\RecordPaymentInput;
+use Augias\CoreBundle\Contracts\CashRegisterGateInterface;
 use Augias\InvoiceBundle\Model\Graph;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
 use Augias\PaymentBundle\Entity\Payment;
@@ -37,6 +38,7 @@ final readonly class RecordPaymentProcessor implements ProcessorInterface
         private PaymentMethodRepository $paymentMethodRepository,
         private ManagerRegistry $registry,
         private WorkflowInterface $invoiceStateMachine,
+        private CashRegisterGateInterface $cashRegister,
     ) {
     }
 
@@ -69,6 +71,10 @@ final readonly class RecordPaymentProcessor implements ProcessorInterface
             throw new UnprocessableEntityHttpException(
                 sprintf('Payment currency "%s" does not match invoice currency "%s".', $data->currency, $invoiceCurrency)
             );
+        }
+
+        if ($this->cashRegister->refusesPaymentFrom($invoice->getCompany(), $client)) {
+            throw new UnprocessableEntityHttpException('The company is VAT-registered and does not keep its books in Augias: the payment of a private customer cannot be recorded until an accounting regime is chosen (French tax code, art. 286, I, 3° bis).');
         }
 
         if (! $this->invoiceStateMachine->can($invoice, Graph::TRANSITION_PAY)) {

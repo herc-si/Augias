@@ -15,6 +15,7 @@ namespace Augias\PaymentBundle\Action;
 
 use const FILTER_VALIDATE_BOOLEAN;
 use Augias\CoreBundle\Company\CompanySelector;
+use Augias\CoreBundle\Contracts\CashRegisterGateInterface;
 use Augias\CoreBundle\Response\FlashResponse;
 use Augias\CoreBundle\Traits\SaveableTrait;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -76,6 +77,7 @@ final class Prepare
         private readonly RouterInterface $router,
         private readonly CompanySelector $companySelector,
         private readonly InvoiceRepository $invoiceRepository,
+        private readonly CashRegisterGateInterface $cashRegister,
     ) {
     }
 
@@ -117,6 +119,20 @@ final class Prepare
         }
 
         $this->companySelector->switchCompany($invoice->getCompany()->getId());
+
+        // Recorded by a user, the payment of a private customer must go
+        // straight into the books (see CashRegisterGateInterface). A customer
+        // paying online is not turned away: the money is theirs to send.
+        if ($isAuthenticated && $this->cashRegister->refusesPaymentFrom($invoice->getCompany(), $invoice->getClient())) {
+            $route = $this->router->generate('_invoices_view', ['id' => $invoice->getId()]);
+
+            return new class($route) extends RedirectResponse implements FlashResponse {
+                public function getFlash(): Generator
+                {
+                    yield self::FLASH_DANGER => 'payment.create.exception.books_required';
+                }
+            };
+        }
 
         if ($this->paymentMethodRepository->getTotalMethodsConfigured($isAuthenticated) < 1) {
             $url = $isAuthenticated

@@ -5,7 +5,7 @@ description: Conditions générales d'utilisation et de vente du service héberg
 
 # Conditions générales d'utilisation et de vente
 
-Dernière mise à jour : 18 septembre 2026
+Dernière mise à jour : 26 septembre 2026
 
 :::warning À compléter avant publication
 Ce document est un projet rédigé à partir du fonctionnement réel de l'application. Les mentions **[À COMPLÉTER]** attendent des informations ou des décisions de HERC SI, et l'ensemble doit être relu par un juriste avant d'engager la société.
@@ -80,6 +80,8 @@ Le Client s'interdit d'utiliser le service à des fins illicites, de tenter d'en
 Le Client demeure seul responsable du contenu qu'il saisit : l'exactitude de sa comptabilité, la conformité de ses factures aux règles fiscales qui lui sont applicables, et la licéité des données qu'il traite sur ses propres clients.
 
 **Le service est un outil, non un conseil.** Il n'a ni la qualité d'expert-comptable, ni celle de conseil fiscal ou juridique. Les seuils, taux, régimes et rythmes de déclaration que l'application affiche sont des aides à la saisie, dont la vérification incombe au Client et à son conseil.
+
+**Le service n'est pas un logiciel ou système de caisse certifié** au sens du 3° bis du I de l'article 286 du code général des impôts. Lorsque le Client est assujetti à la TVA et reçoit des paiements de particuliers, le service n'en permet l'enregistrement que si la comptabilité du Client y est tenue : chaque paiement enregistré y donne alors lieu, automatiquement et sans intervention humaine, à une écriture comptable, ce qui le fait sortir du champ de cette obligation. Le Client qui enregistre par ailleurs ses encaissements dans un autre outil, notamment une caisse enregistreuse ou un terminal de vente, demeure seul responsable de la conformité de celui-ci.
 
 ## 10. Données du Client
 
