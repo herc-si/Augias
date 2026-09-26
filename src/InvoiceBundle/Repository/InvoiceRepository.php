@@ -14,10 +14,12 @@ declare(strict_types=1);
 namespace Augias\InvoiceBundle\Repository;
 
 use Augias\ClientBundle\Entity\Client;
+use Augias\CoreBundle\Exception\DocumentMustBeKept;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\InvoiceReminder;
 use Augias\InvoiceBundle\Entity\ReminderType;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
+use Augias\InvoiceBundle\Listener\Doctrine\IssuedDocumentRetentionListener;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\SettingsBundle\Entity\Setting;
 use Brick\Math\BigInteger;
@@ -39,10 +41,13 @@ use Psr\Clock\ClockInterface;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
+use function array_filter;
 use function array_map;
 use function array_unique;
 use function array_values;
+use function implode;
 use function intval;
+use function sprintf;
 
 /**
  * @extends EntityRepository<Invoice>
@@ -250,16 +255,29 @@ class InvoiceRepository extends EntityRepository
 
         $em = $this->getEntityManager();
 
-        array_walk($ids, function (string $id) use ($em): void {
-            $entity = $this->find($id);
-            if ($entity instanceof Invoice) {
-                $em->remove($entity);
+        try {
+            $invoices = array_values(array_filter(array_map($this->find(...), $ids), static fn (mixed $entity): bool => $entity instanceof Invoice));
+
+            // All or nothing, and said before anything goes: a selection that
+            // mixes drafts with issued invoices deletes none of them, and
+            // names the ones that have to stay.
+            $issued = array_map(
+                static fn (Invoice $invoice): string => $invoice->getInvoiceId(),
+                array_filter($invoices, IssuedDocumentRetentionListener::wasIssued(...)),
+            );
+
+            if ($issued !== []) {
+                throw new DocumentMustBeKept(sprintf('Invoices %s have been issued and must be kept.', implode(', ', $issued)), 'invoice.delete.issued', ['%number%' => implode(', ', $issued)]);
             }
-        });
 
-        $em->flush();
+            foreach ($invoices as $invoice) {
+                $em->remove($invoice);
+            }
 
-        $filters->enable('archivable');
+            $em->flush();
+        } finally {
+            $filters->enable('archivable');
+        }
     }
 
     /**

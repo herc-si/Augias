@@ -19,6 +19,7 @@ use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\CreditReason;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Repository\CreditNoteRepository;
 use Augias\InvoiceBundle\Test\Factory\CreditNoteFactory;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
@@ -128,7 +129,10 @@ final class CreditNoteRepositoryTest extends KernelTestCase
         }
 
         $company = CompanyFactory::createOne();
-        $invoice = InvoiceFactory::createOne(['company' => $company]);
+        // A draft: only a draft can be deleted at all, an issued invoice being
+        // kept. The random status the factory picks would make this test fail
+        // whenever it drew an issued one.
+        $invoice = InvoiceFactory::createOne(['company' => $company, 'status' => InvoiceStatus::Draft]);
 
         $creditNote = CreditNoteFactory::createOne([
             'company' => $company,

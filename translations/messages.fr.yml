@@ -588,8 +588,9 @@ client:
     custom_fields: 'Champs personnalisés'
     delete:
         confirm:
-            message: 'Cette action supprimera définitivement ce client ainsi que toutes les données associées, y compris les factures, devis et paiements. Cette action est irréversible.'
+            message: 'Cette action supprimera définitivement ce client, ses devis et ses factures en brouillon. Un client qui a des factures ou des avoirs émis ne peut pas être supprimé : ils doivent être conservés. Archivez-le plutôt.'
             title: 'Supprimer %name% ?'
+        has_issued_documents: "%name% a des factures ou des avoirs émis, qui doivent être conservés : le client ne peut pas être supprimé. Archivez-le plutôt."
     delete_success: 'Le client a été supprimé avec succès'
     form:
         address_description: 'Ajoutez des adresses de facturation ou de livraison'
@@ -765,6 +766,8 @@ create_new: 'Créer nouveau'
 create_now: 'Créez-en un maintenant.'
 created: Créé
 credit_note:
+    delete:
+        issued: "L'avoir %number% a été émis et doit être conservé : il ne peut pas être supprimé."
     menu:
         main: 'Avoirs'
     list:
@@ -1727,6 +1730,8 @@ installation:
         locale_placeholder: 'Veuillez sélectionner une langue'
 invalid_file: 'Fichier invalide'
 invoice:
+    delete:
+        issued: "Une facture émise doit être conservée et ne peut pas être supprimée (%number%). Seuls les brouillons se suppriment ; pour corriger une facture émise, établissez un avoir."
     action:
         create: 'Créer une facture'
         create_recurring: 'Créer une facture récurrente'

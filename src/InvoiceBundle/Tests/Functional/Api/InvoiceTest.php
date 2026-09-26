@@ -21,6 +21,7 @@ use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
@@ -158,9 +159,27 @@ final class InvoiceTest extends ApiTestCase
     public function testDelete(): void
     {
         $client = ClientFactory::createOne();
-        $invoice = InvoiceFactory::createOne(['client' => $client]);
+        $invoice = InvoiceFactory::createOne(['client' => $client, 'status' => InvoiceStatus::Draft]);
 
         $this->requestDelete($this->getIriFromResource($invoice));
+    }
+
+    /**
+     * An issued invoice is kept, whoever asks: the API gets a conflict and a
+     * reason, not a 500, and the invoice is still there.
+     */
+    public function testDeletingAnIssuedInvoiceIsRefused(): void
+    {
+        $client = ClientFactory::createOne();
+        $invoice = InvoiceFactory::createOne(['client' => $client, 'status' => InvoiceStatus::Pending]);
+
+        self::$client->request('DELETE', $this->getIriFromResource($invoice), ['headers' => ['accept' => 'application/ld+json']]);
+
+        self::assertResponseStatusCodeSame(409);
+        self::assertStringContainsString('must be kept', self::$client->getResponse()?->getContent(false) ?? '');
+
+        self::getContainer()->get('doctrine')->getManager()->clear();
+        self::assertNotNull(self::getContainer()->get('doctrine')->getRepository(Invoice::class)->find($invoice->getId()));
     }
 
     public function testGet(): void

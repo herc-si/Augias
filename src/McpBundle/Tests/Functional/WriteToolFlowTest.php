@@ -211,6 +211,26 @@ final class WriteToolFlowTest extends KernelTestCase
     }
 
     /**
+     * A client that was sent an invoice stays: the assistant is told why, and
+     * the client and its invoice are both still there.
+     */
+    public function testDeletingAClientWithAnIssuedInvoiceIsRefused(): void
+    {
+        $this->setActiveScopes([McpScope::Write->value]);
+
+        $client = ClientFactory::createOne(['company' => $this->company]);
+        InvoiceFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => InvoiceStatus::Paid]);
+
+        $tool = self::getContainer()->get(ResourceWriteTools::class);
+        self::assertInstanceOf(ResourceWriteTools::class, $tool);
+
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessageIsOrContains('must be kept');
+
+        $tool->deleteResource('client', $client->getId()->toRfc4122());
+    }
+
+    /**
      * @param list<string> $scopes
      */
     private function setActiveScopes(array $scopes): void
