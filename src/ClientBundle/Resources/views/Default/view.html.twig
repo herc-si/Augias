@@ -52,23 +52,29 @@
 
             {# Quick Actions #}
             <div class="d-flex flex-wrap gap-2">
+                {% if route_allowed('_quotes_create') %}
                 <a href="{{ path('_quotes_create', {'client': client.id}) }}" class="btn btn-outline-primary">
                     {{ ux_icon('tabler:file-text', {width: 18, height: 18}) }}
                     {{ 'client.view.actions.create_quote'|trans }}
                 </a>
+                {% endif %}
+                {% if route_allowed('_invoices_create') %}
                 <a href="{{ path('_invoices_create', {'client': client.id}) }}" class="btn btn-primary">
                     {{ ux_icon('tabler:file-invoice', {width: 18, height: 18}) }}
                     {{ 'client.view.actions.create_invoice'|trans }}
                 </a>
+                {% endif %}
                 <div class="dropdown">
                     <button class="btn btn-outline-secondary" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ 'client.view.more_actions'|trans }}">
                         {{ ux_icon('tabler:dots-vertical', {width: 18, height: 18}) }}
                     </button>
                     <div class="dropdown-menu dropdown-menu-end">
+                        {% if route_allowed('_clients_edit') %}
                         <a class="dropdown-item d-flex align-items-center gap-2" href="{{ path('_clients_edit', {'id': client.id}) }}">
                             {{ ux_icon('tabler:pencil', {width: 16, height: 16}) }}
                             {{ 'client.view.actions.edit'|trans }}
                         </a>
+                        {% endif %}
                         <div class="dropdown-divider"></div>
                         <a class="dropdown-item text-danger d-flex align-items-center gap-2" href="#" data-bs-toggle="modal" data-bs-target="#delete-client-modal">
                             {{ ux_icon('tabler:trash', {width: 16, height: 16}) }}

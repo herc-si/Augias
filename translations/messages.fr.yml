@@ -1208,6 +1208,7 @@ datagrid:
         remove: 'Cliquer pour supprimer'
     filters: Filtres
     flash:
+        not_allowed: "Votre rôle dans cette entreprise ne permet pas cette action."
         not_found: 'Action introuvable.'
         not_implemented: 'Action non implémentée.'
         select_one: 'Veuillez sélectionner au moins un élément.'
@@ -3606,6 +3607,48 @@ user:
             invited_by: "Invité par"
             status: "Statut"
 users:
+    role:
+        owner: Propriétaire
+        admin: Administrateur
+        billing: Facturation
+        accountant: Comptable
+    role_description:
+        owner: "Tous les droits, y compris fermer l'entreprise et en transférer la propriété."
+        admin: "Tout sauf fermer l'entreprise : paramètres, membres, facturation, comptabilité."
+        billing: "Clients, devis, factures, avoirs, paiements et achats. Pas de paramètres ni de comptabilité."
+        accountant: "Consulte tout, tient la comptabilité et exporte les données. Ne crée ni ne modifie aucun document."
+    permission_denied:
+        company:
+            billing:
+                read: "Votre rôle (%role%) ne donne pas accès aux documents de cette entreprise."
+                write: "Votre rôle (%role%) permet de consulter les documents, pas de les créer ni de les modifier."
+            accounting:
+                write: "Votre rôle (%role%) permet de consulter la comptabilité, pas de la tenir."
+            export: "Votre rôle (%role%) ne permet pas d'exporter les données de l'entreprise."
+            settings: "Seuls le propriétaire et les administrateurs peuvent modifier les paramètres de l'entreprise."
+            members: "Seuls le propriétaire et les administrateurs peuvent gérer les membres de l'entreprise."
+            close: "Seul le propriétaire peut fermer l'entreprise ou en transférer la propriété."
+    members:
+        role: Rôle
+        you: vous
+        never: Jamais
+        leave: "Quitter l'entreprise"
+        leave_confirm: "Quitter cette entreprise ? Vous n'y aurez plus accès, sauf nouvelle invitation."
+        make_owner: "Rendre propriétaire"
+        make_owner_confirm: "Transférer la propriété de l'entreprise à %email% ? Vous resterez administrateur."
+        remove: Retirer
+        remove_confirm: "Retirer l'accès de %email% à cette entreprise ? Son compte n'est pas supprimé."
+        role_changed: "Le rôle a été modifié."
+        removed: "L'accès a été retiré."
+        ownership_transferred: "La propriété de l'entreprise a été transférée."
+        left: "Vous avez quitté l'entreprise."
+        error:
+            owner_role: "Le rôle du propriétaire ne change que par un transfert de propriété."
+            role_not_assignable: "Vous ne pouvez pas attribuer ou retirer ce rôle."
+            remove_owner: "Le propriétaire ne peut pas être retiré : il doit d'abord transférer la propriété."
+            owner_leaves: "Le propriétaire ne peut pas quitter l'entreprise : transférez d'abord la propriété à un autre membre."
+            not_owner: "Seul le propriétaire peut transférer la propriété."
+            not_a_member: "Cette personne n'est pas membre de l'entreprise."
     add: 'Ajouter un utilisateur'
     create:
         generate_password: 'Générer un mot de passe aléatoire'
@@ -3633,6 +3676,8 @@ users:
             description: 'Toutes les invitations ont été acceptées ou il n''y a aucune invitation en attente.'
             title: 'Aucune invitation en attente'
     invite:
+        role:
+            label: "Rôle dans l'entreprise"
         details:
             description: 'Saisissez l''adresse e-mail de la personne que vous souhaitez inviter'
             title: 'Détails de l''invitation'

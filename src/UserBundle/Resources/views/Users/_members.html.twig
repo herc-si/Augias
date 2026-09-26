@@ -1,0 +1,70 @@
+{#
+ # The company's members, their role, and what the person looking may do
+ # about each: change the role, take the access away, hand the company over.
+ #}
+{% set canManage = is_granted('company.members') %}
+<div class="table-responsive">
+    <table class="table table-vcenter card-table">
+        <thead>
+            <tr>
+                <th>{{ 'user.grid.email'|trans }}</th>
+                <th>{{ 'users.members.role'|trans }}</th>
+                <th class="d-none d-md-table-cell">{{ 'user.grid.last_login'|trans }}</th>
+                <th class="w-1"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member in members %}
+                {% set user = member.user %}
+                {% set isMe = me is not null and me.user.id.equals(user.id) %}
+                {% set isOwner = member.role.value == 'owner' %}
+                {% set assignable = me is not null ? me.role.assignable|filter(r => r.value != 'owner') : [] %}
+                <tr>
+                    <td>
+                        <div class="fw-medium">{{ user.email }}{% if isMe %} <span class="text-secondary">({{ 'users.members.you'|trans }})</span>{% endif %}</div>
+                        {% if user.firstName or user.lastName %}<div class="text-secondary small">{{ user.firstName }} {{ user.lastName }}</div>{% endif %}
+                    </td>
+                    <td>
+                        {% if canManage and not isOwner and member.role in assignable %}
+                            <form method="post" action="{{ path('_member_role', {id: user.id.toBase32}) }}" class="d-flex gap-2">
+                                <input type="hidden" name="_token" value="{{ csrf_token('member_role_' ~ user.id.toBase32) }}">
+                                <select name="role" class="form-select form-select-sm w-auto" onchange="this.form.requestSubmit()" aria-label="{{ 'users.members.role'|trans }}">
+                                    {% for role in assignable %}
+                                        <option value="{{ role.value }}" {{ role == member.role ? 'selected' }}>{{ role.labelKey|trans }}</option>
+                                    {% endfor %}
+                                </select>
+                                <noscript><button class="btn btn-sm">{{ 'action.save'|trans }}</button></noscript>
+                            </form>
+                        {% else %}
+                            <span class="badge {{ isOwner ? 'bg-primary-lt' : 'bg-secondary-lt' }}">{{ member.role.labelKey|trans }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="d-none d-md-table-cell text-secondary">
+                        {{ user.lastLogin ? user.lastLogin|date('d/m/Y H:i') : 'users.members.never'|trans }}
+                    </td>
+                    <td class="text-end text-nowrap">
+                        {% if isMe and not isOwner %}
+                            <form method="post" action="{{ path('_member_leave') }}" class="d-inline" onsubmit="return confirm('{{ 'users.members.leave_confirm'|trans|e('js') }}')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('member_leave') }}">
+                                <button class="btn btn-sm btn-ghost-danger">{{ 'users.members.leave'|trans }}</button>
+                            </form>
+                        {% elseif not isMe %}
+                            {% if is_granted('company.close') %}
+                                <form method="post" action="{{ path('_member_transfer_ownership', {id: user.id.toBase32}) }}" class="d-inline" onsubmit="return confirm('{{ 'users.members.make_owner_confirm'|trans({'%email%': user.email})|e('js') }}')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('member_owner_' ~ user.id.toBase32) }}">
+                                    <button class="btn btn-sm btn-ghost-primary">{{ 'users.members.make_owner'|trans }}</button>
+                                </form>
+                            {% endif %}
+                            {% if canManage and not isOwner and member.role in assignable %}
+                                <form method="post" action="{{ path('_member_remove', {id: user.id.toBase32}) }}" class="d-inline" onsubmit="return confirm('{{ 'users.members.remove_confirm'|trans({'%email%': user.email})|e('js') }}')">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('member_remove_' ~ user.id.toBase32) }}">
+                                    <button class="btn btn-sm btn-ghost-danger">{{ 'users.members.remove'|trans }}</button>
+                                </form>
+                            {% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

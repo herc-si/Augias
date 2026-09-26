@@ -15,7 +15,9 @@ namespace Augias\CoreBundle\Tests\Company;
 
 use Augias\CoreBundle\Company\AllUserCompanies;
 use Augias\CoreBundle\Entity\Company;
+use Augias\UserBundle\Entity\Membership;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Enum\CompanyRole;
 use Doctrine\Common\Collections\ArrayCollection;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -56,8 +58,11 @@ final class AllUserCompaniesTest extends TestCase
         $user = new User();
         // Simulate a sparse collection by reflection — same shape as a removeCompany()
         // followed by an addCompany().
-        $reflection = new ReflectionProperty(User::class, 'companies');
-        $reflection->setValue($user, new ArrayCollection([5 => $companyA, 9 => $companyB]));
+        $reflection = new ReflectionProperty(User::class, 'memberships');
+        $reflection->setValue($user, new ArrayCollection([
+            5 => new Membership($user, $companyA, CompanyRole::Admin),
+            9 => new Membership($user, $companyB, CompanyRole::Admin),
+        ]));
 
         $companies = new AllUserCompanies()->getFor($user);
 

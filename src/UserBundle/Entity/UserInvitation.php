@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\UserBundle\Entity;
 
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
+use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Enum\InvitationStatus;
 use Augias\UserBundle\Repository\UserInvitationRepository;
 use Carbon\CarbonImmutable;
@@ -68,6 +69,12 @@ class UserInvitation
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'invited_by_id', nullable: false)]
     private ?User $invitedBy = null;
+
+    /**
+     * What the person will be in the company once they accept.
+     */
+    #[ORM\Column(name: 'role', type: Types::STRING, length: 20, enumType: CompanyRole::class, options: ['default' => 'billing'])]
+    private CompanyRole $role = CompanyRole::Billing;
 
     public function __construct()
     {
@@ -153,6 +160,18 @@ class UserInvitation
         return $this->status === InvitationStatus::Expired
             || ($this->expiresAt instanceof DateTimeInterface
                 && $this->expiresAt < CarbonImmutable::now());
+    }
+
+    public function getRole(): CompanyRole
+    {
+        return $this->role;
+    }
+
+    public function setRole(CompanyRole $role): self
+    {
+        $this->role = $role;
+
+        return $this;
     }
 
     public function getStatus(): InvitationStatus

@@ -113,10 +113,12 @@
 
                         {% if workflow_can(invoice, 'edit') %}
                             <li>
+                                {% if route_allowed('_invoices_edit') %}
                                 <a class="dropdown-item" href="{{ path('_invoices_edit', {'id' : invoice.id}) }}">
                                     {{ ux_icon('tabler:pencil', {width: 16, height: 16}) }}
                                     {{ "invoice.view.toolbar.edit"|trans }}
                                 </a>
+                                {% endif %}
                             </li>
                         {% endif %}
 
@@ -168,10 +170,12 @@
                         </button>
                     </span>
                 {% else %}
+                    {% if route_allowed('_send_invoice') %}
                     <a href="{{ path('_send_invoice', {'id' : invoice.id}) }}" class="btn btn-primary btn-hero {{ invoice.status == enum('Augias\\InvoiceBundle\\Enum\\InvoiceStatus').Overdue ? 'btn-hero-urgent' : '' }}">
                         {{ ux_icon('tabler:send', {width: 18, height: 18}) }}
                         {{ "invoice.view.toolbar.send"|trans }}
                     </a>
+                    {% endif %}
                 {% endif %}
             {% elseif workflow_can(invoice, 'accept') %}
                 <div class="btn-group">
@@ -194,10 +198,12 @@
                                     </button>
                                 </span>
                             {% else %}
+                                {% if route_allowed('_send_invoice') %}
                                 <a class="dropdown-item" href="{{ path('_send_invoice', {'id' : invoice.id}) }}">
                                     {{ ux_icon('tabler:send', {width: 16, height: 16}) }}
                                     {{ 'invoice.view.toolbar.publish_and_send'|trans }}
                                 </a>
+                                {% endif %}
                             {% endif %}
                         </li>
                     </ul>
@@ -728,10 +734,12 @@
 
             <twig:block name="footer">
                 <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">{{ 'invoice.view.toolbar.cancel'|trans }}</button>
+                {% if route_allowed('_send_invoice') %}
                 <a href="{{ path('_send_invoice', {'id': invoice.id}) }}" class="btn btn-primary">
                     {{ ux_icon('tabler:send', {width: 16, height: 16}) }}
                     {{ 'invoice.modal.send_paid.confirm'|trans }}
                 </a>
+                {% endif %}
             </twig:block>
         </twig:Ui:Modal>
     {% endif %}

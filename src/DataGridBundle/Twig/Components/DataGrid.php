@@ -366,6 +366,14 @@ class DataGrid extends AbstractController
      */
     private function run(callable $action, array $ids, GridInterface $grid): bool
     {
+        // Seeing a list is not changing what is in it: whoever may run its
+        // batch actions is decided by what the list holds.
+        if (! $this->isGranted('datagrid.batch', $grid->entityFQCN())) {
+            $this->addFlash('danger', $this->translator->trans('datagrid.flash.not_allowed'));
+
+            return false;
+        }
+
         try {
             $action($this->registry->getRepository($grid->entityFQCN()), $ids);
         } catch (RuntimeException $exception) {

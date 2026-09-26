@@ -38,6 +38,8 @@
                     </div>
                 {% endif %}
 
+                {# Everything in it creates a document: a role that creates none gets no button. #}
+                {% if route_allowed('_invoices_create') %}
                 <div class="nav-item dropdown mx-4">
                     <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-label="{{ 'layout.aria.open_create_menu'|trans }}">
                         {{ ux_icon('tabler:plus', {width: 16, height: 16}) }}
@@ -62,6 +64,7 @@
                         </a>
                     </div>
                 </div>
+                {% endif %}
 
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="{{ 'layout.aria.open_user_menu'|trans }}">
@@ -82,10 +85,12 @@
                             {{ ux_icon('tabler:lock', {width: 16, height: 16}) }}
                             {{ 'layout.api_keys'|trans }}
                         </a>
+                        {% if route_allowed('_export_list') %}
                         <a href="{{ path('_export_list') }}" class="dropdown-item">
                             {{ ux_icon('tabler:database-export', {width: 16, height: 16}) }}
                             {{ 'layout.data_export'|trans }}
                         </a>
+                        {% endif %}
                         <twig:Ui:Security:LogoutLink />
                     </div>
                 </div>

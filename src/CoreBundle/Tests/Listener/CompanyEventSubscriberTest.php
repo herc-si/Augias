@@ -253,6 +253,42 @@ final class CompanyEventSubscriberTest extends TestCase
         self::assertNull($event->getResponse());
     }
 
+    /**
+     * Taken off a company, a member kept it open in their session — with full
+     * access — until they signed out. The company in the session is only
+     * reopened for someone who still belongs to it.
+     */
+    public function testACompanyTheUserNoLongerBelongsToIsNotReopened(): void
+    {
+        $router = M::mock(RouterInterface::class);
+        $registry = M::mock(ManagerRegistry::class);
+        $security = M::mock(Security::class);
+
+        $companySelector = new CompanySelector($registry);
+
+        $company = new Company();
+        $this->setCompanyId($company, new Ulid());
+
+        $security->shouldReceive('getUser')->andReturn(new User());
+        $router->shouldReceive('generate')->with('_select_company')->andReturn('/select-company');
+
+        $session = new Session(new MockArraySessionStorage());
+        $session->set('company', $company->getId());
+
+        $request = new Request();
+        $request->setSession($session);
+        $request->attributes->set('_route', '_invoices_index');
+
+        $listener = new CompanyEventSubscriber($router, $companySelector, $security, Carbon::now()->format('Y'));
+
+        $event = new RequestEvent(M::mock(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST);
+        $listener->onKernelRequest($event);
+
+        self::assertNull($companySelector->getCompany());
+        self::assertFalse($session->has('company'));
+        self::assertSame('/select-company', $event->getResponse()?->headers->get('Location'));
+    }
+
     public function testItSetsTheCompanyWhenItIsAvailableInTheSession(): void
     {
         $router = M::mock(RouterInterface::class);
@@ -261,13 +297,15 @@ final class CompanyEventSubscriberTest extends TestCase
 
         $companySelector = new CompanySelector($registry);
 
-        $security->shouldNotReceive('getUser');
-
         $router->shouldNotReceive('generate');
 
         $company = new Company();
         $this->setCompanyId($company, new Ulid());
         $filter = $this->expectSwitchCompanyCalls($registry, $company);
+
+        $user = new User();
+        $user->addCompany($company);
+        $security->shouldReceive('getUser')->andReturn($user);
 
         $session = new Session(new MockArraySessionStorage());
         $session->set('company', $company->getId());

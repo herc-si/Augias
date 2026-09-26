@@ -107,6 +107,7 @@
                         {% if period.isOpen and periodHasEnded %}
                             <p class="text-muted">{{ 'accounting.period.close_help'|trans }}</p>
 
+                            {% if route_allowed('_accounting_period_close') %}
                             <form method="post" action="{{ path('_accounting_period_close', {'id': period.id}) }}">
                                 <input type="hidden" name="_token" value="{{ csrf_token('close' ~ period.id) }}">
                                 <button type="submit" class="btn btn-outline-primary w-100">
@@ -114,6 +115,7 @@
                                     {{ 'accounting.period.close'|trans({'%period%': period.label}) }}
                                 </button>
                             </form>
+                            {% endif %}
                         {% elseif period.isOpen %}
                             {#
                              # No close button while the period is still running.

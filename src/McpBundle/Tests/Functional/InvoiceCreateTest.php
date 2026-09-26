@@ -32,6 +32,7 @@ use Symfony\Component\Uid\Ulid;
 #[Group('functional')]
 final class InvoiceCreateTest extends KernelTestCase
 {
+    use SignsInMember;
     use EnsureApplicationInstalled;
 
     public function testCreateInvoiceWithLineItems(): void
@@ -258,5 +259,6 @@ final class InvoiceCreateTest extends KernelTestCase
         $selector = $container->get(CompanySelector::class);
         self::assertInstanceOf(CompanySelector::class, $selector);
         $selector->switchCompany($this->company->getId());
+        $this->signInMember();
     }
 }

@@ -16,6 +16,7 @@ namespace Augias\UserBundle\Entity;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Export\Attribute\ExportIgnore;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
+use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -40,10 +41,10 @@ class User extends \SolidWorx\Platform\PlatformBundle\Model\User implements Tria
     private Collection $apiTokens;
 
     /**
-     * @var Collection<int, Company>
+     * @var Collection<int, Membership>
      */
-    #[ORM\ManyToMany(targetEntity: Company::class, inversedBy: 'users', cascade: ['persist'])]
-    private Collection $companies;
+    #[ORM\OneToMany(targetEntity: Membership::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $memberships;
 
     /**
      * @deprecated This should not be used anymore. Remove once all usages are gone.
@@ -54,7 +55,7 @@ class User extends \SolidWorx\Platform\PlatformBundle\Model\User implements Tria
     {
         parent::__construct();
         $this->apiTokens = new ArrayCollection();
-        $this->companies = new ArrayCollection();
+        $this->memberships = new ArrayCollection();
     }
 
     /**
@@ -89,17 +90,46 @@ class User extends \SolidWorx\Platform\PlatformBundle\Model\User implements Tria
     }
 
     /**
+     * The companies this user belongs to, whatever the role.
+     *
      * @return Collection<int, Company>
      */
     public function getCompanies(): Collection
     {
-        return $this->companies;
+        return $this->memberships->map(static fn (Membership $membership): Company => $membership->getCompany());
     }
 
-    public function addCompany(Company $company): static
+    /**
+     * @return Collection<int, Membership>
+     */
+    public function getMemberships(): Collection
     {
-        if (! $this->companies->contains($company)) {
-            $this->companies->add($company);
+        return $this->memberships;
+    }
+
+    public function getMembership(Company $company): ?Membership
+    {
+        foreach ($this->memberships as $membership) {
+            if ($membership->getCompany() === $company || $membership->getCompany()->getId()->equals($company->getId())) {
+                return $membership;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Joins the company in the given role, or changes nothing if already a
+     * member. Administrator by default, which is what every member was before
+     * roles existed; the places where someone joins — creating a company,
+     * accepting an invitation — say which role.
+     */
+    public function addCompany(Company $company, CompanyRole $role = CompanyRole::Admin): static
+    {
+        if (! $this->getMembership($company) instanceof Membership) {
+            $membership = new Membership($this, $company, $role);
+            $this->memberships->add($membership);
+            $company->getMemberships()->add($membership);
         }
 
         return $this;
@@ -107,8 +137,11 @@ class User extends \SolidWorx\Platform\PlatformBundle\Model\User implements Tria
 
     public function removeCompany(Company $company): static
     {
-        if ($this->companies->contains($company)) {
-            $this->companies->removeElement($company);
+        $membership = $this->getMembership($company);
+
+        if ($membership instanceof Membership) {
+            $this->memberships->removeElement($membership);
+            $company->getMemberships()->removeElement($membership);
         }
 
         return $this;

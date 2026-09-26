@@ -91,7 +91,25 @@ final readonly class CompanyEventSubscriber implements EventSubscriberInterface
         }
 
         if ($session->has('company')) {
-            $this->companySelector->switchCompany($session->get('company'));
+            $companyId = $session->get('company');
+            $user = $this->security->getUser();
+
+            // The company remembered in the session is only reopened for someone
+            // who still belongs to it. Taken off the company, a member kept full
+            // access until they signed out; now their next page asks them to
+            // pick one of the companies they are still in.
+            if ($user instanceof User && $companyId instanceof Ulid && ! $user->getCompanies()->exists(static fn (int $key, Company $company): bool => $company->getId()->equals($companyId))) {
+                $session->remove('company');
+
+                if (! $this->isOnCompanySelectionRoute($request)) {
+                    $event->setResponse(new RedirectResponse($this->router->generate('_select_company')));
+                    $event->stopPropagation();
+                }
+
+                return;
+            }
+
+            $this->companySelector->switchCompany($companyId);
         } elseif (! $this->isOnCompanySelectionRoute($request) && ($user = $this->security->getUser()) instanceof UserInterface) {
             assert($user instanceof User);
 

@@ -73,10 +73,12 @@
 
                         {% if quote.status != enum('Augias\\QuoteBundle\\Enum\\QuoteStatus').Accepted %}
                             <li>
+                                {% if route_allowed('_quotes_edit') %}
                                 <a class="dropdown-item" href="{{ path('_quotes_edit', {'id' : quote.id}) }}">
                                     {{ ux_icon('tabler:pencil', {width: 16, height: 16}) }}
                                     {{ "quote.view.toolbar.edit"|trans }}
                                 </a>
+                                {% endif %}
                             </li>
                         {% endif %}
 
@@ -133,10 +135,12 @@
                         </button>
                     </span>
                 {% else %}
+                    {% if route_allowed('_send_quote') %}
                     <a href="{{ path('_send_quote', {'id' : quote.id}) }}" class="btn btn-primary btn-hero">
                         {{ ux_icon('tabler:send', {width: 18, height: 18}) }}
                         {{ "quote.view.toolbar.send"|trans }}
                     </a>
+                    {% endif %}
                 {% endif %}
             {% elseif workflow_can(quote, 'publish') %}
                 {# Draft state: Publish button #}
@@ -160,10 +164,12 @@
                                     </button>
                                 </span>
                             {% else %}
+                                {% if route_allowed('_send_quote') %}
                                 <a class="dropdown-item" href="{{ path('_send_quote', {'id' : quote.id}) }}">
                                     {{ ux_icon('tabler:send', {width: 16, height: 16}) }}
                                     {{ 'quote.view.toolbar.publish_and_send'|trans }}
                                 </a>
+                                {% endif %}
                             {% endif %}
                         </li>
                     </ul>

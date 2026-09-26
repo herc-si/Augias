@@ -38,6 +38,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 #[Group('functional')]
 final class ReadToolFlowTest extends KernelTestCase
 {
+    use SignsInMember;
     use EnsureApplicationInstalled;
 
     public function testCompanyInfoToolReturnsActiveCompany(): void
@@ -160,5 +161,6 @@ final class ReadToolFlowTest extends KernelTestCase
         $selector = $container->get(CompanySelector::class);
         self::assertInstanceOf(CompanySelector::class, $selector);
         $selector->switchCompany($this->company->getId());
+        $this->signInMember();
     }
 }

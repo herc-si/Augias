@@ -499,8 +499,9 @@
         </div>
     {% endif %}
 
-    {# Danger Zone - Only for System Section #}
-    {% if section is same as('system') %}
+    {# Danger Zone - Only for System Section, and only for the owner: an
+     # administrator sees the settings but cannot close the company. #}
+    {% if section is same as('system') and is_granted('company.close') %}
         <div class="settings-danger-zone mt-4" role="region" aria-labelledby="danger-zone-heading"
              {{ stimulus_controller('delete-company', {'company-name': company_name()}) }}>
             <div class="card border-danger">

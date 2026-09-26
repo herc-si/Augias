@@ -15,6 +15,7 @@ namespace Augias\UserBundle\DataFixtures\ORM;
 
 use Augias\CoreBundle\Entity\Company;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Enum\CompanyRole;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 use RuntimeException;
@@ -35,7 +36,7 @@ class LoadData extends Fixture
         $user1 = new User()
             ->setEmail('test1@test.com')
             ->setPassword('test1')
-            ->addCompany($company)
+            ->addCompany($company, CompanyRole::Owner)
         ;
 
         $user2 = new User()
