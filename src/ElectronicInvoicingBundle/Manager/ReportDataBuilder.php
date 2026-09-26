@@ -283,29 +283,6 @@ final readonly class ReportDataBuilder
             }
         }
 
-        if (! $result->subTotal->isPositive()) {
-            return $out;
-        }
-
-        foreach ($result->invoiceLevelBreakdown->taxRows as $row) {
-            if (TaxDirection::Additive !== $row->direction) {
-                continue;
-            }
-
-            $left = $row->amount;
-            $last = array_key_last($out);
-
-            foreach ($out as $index => [, $subtotal]) {
-                // The last line takes what is left, so the shares add up to
-                // the tax the document shows.
-                $share = $index === $last
-                    ? $left
-                    : $row->amount->multipliedBy($subtotal)->dividedBy($result->subTotal, 10, RoundingMode::HalfEven);
-                $left = $left->minus($share);
-                $out[$index][2][] = [$this->rate($row->rate), $share];
-            }
-        }
-
         return $out;
     }
 
