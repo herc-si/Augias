@@ -2206,6 +2206,7 @@ layout:
         toggle_navigation: 'Toggle navigation'
     data_export: 'Data Export'
     profile: Profile
+    switch_company: 'Switch company'
     unsplash_credit: 'Download free do whatever you want high-resolution photos from Julian Zett'
     user_image: 'User Image'
 login_history:

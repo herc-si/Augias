@@ -2206,6 +2206,7 @@ layout:
         toggle_navigation: 'Basculer la navigation'
     data_export: 'Export de données'
     profile: Profil
+    switch_company: 'Changer de société'
     unsplash_credit: 'Téléchargez gratuitement des photos haute résolution de Julian Zett'
     user_image: 'Photo de l''utilisateur'
 login_history:
