@@ -1,4 +1,14 @@
 {# @var paginator \Pagerfanta\Pagerfanta #}
+{#
+ # What the member's role opens: a row action whose page it does not open,
+ # or batch actions on what it may not change, are not offered at all. The
+ # server refuses them anyway — see EnforceCompanyRoleListener and
+ # DataGridBatchVoter.
+ #}
+{# Both read once and kept as arrays: batchActions() is a generator, which can
+ # only be walked through once, and the template walks it several times. #}
+{% set rowActions = []|merge(grid.actions|filter(a => route_allowed(a.getRoute))) %}
+{% set batchActions = is_granted('datagrid.batch', grid.entityFQCN) ? []|merge(grid.batchActions) : [] %}
 {# @var grid \Augias\DataGridBundle\GridInterface #}
 
 <div {{ attributes.defaults({class: 'datagrid'}) }}>
@@ -257,7 +267,7 @@
                 <thead>
                     <tr>
                         {# Checkbox Column #}
-                        {% if grid.batchActions|length > 0 %}
+                        {% if batchActions|length > 0 %}
                             <th class="col-checkbox">
                                 <div class="datagrid-checkbox">
                                     <input
@@ -304,9 +314,9 @@
                         {% endfor %}
 
                         {# Actions Column #}
-                        {% if grid.actions|length > 0 or grid.batchActions|length > 0 %}
+                        {% if rowActions|length > 0 or batchActions|length > 0 %}
                             <th class="col-actions">
-                                <span class="visually-hidden">{{ 'datagrid.actions'|trans }}</span>
+                                <span class="visually-hidden">{{ 'datarowActions'|trans }}</span>
                             </th>
                         {% endif %}
                     </tr>
@@ -315,7 +325,7 @@
                     {% if paginator.nbResults is same as(0) %}
                         {# Empty State #}
                         <tr>
-                            <td colspan="{{ this.getVisibleColumns()|length + (grid.batchActions|length > 0 ? 1 : 0) + (grid.hasRowDetails() ? 1 : 0) + (grid.actions|length > 0 ? 1 : 0) }}">
+                            <td colspan="{{ this.getVisibleColumns()|length + (batchActions|length > 0 ? 1 : 0) + (grid.hasRowDetails() ? 1 : 0) + (rowActions|length > 0 ? 1 : 0) }}">
                                 {% set is_filtered = search is not empty or gridFilters is not empty %}
                                 {% include '@AugiasDataGrid/Components/_empty_state.html.twig' with {
                                     icon: 'tabler:database-off',
@@ -331,7 +341,7 @@
                         {% for row in paginator %}
                             <tr class="{{ this.entityId(row) in selectedItems ? 'selected' : '' }}" {% if grid.hasRowDetails() %}{{ stimulus_controller('datagrid-row-expand') }}{% endif %}>
                                 {# Selection Checkbox #}
-                                {% if grid.batchActions|length > 0 %}
+                                {% if batchActions|length > 0 %}
                                     <td class="col-checkbox">
                                         <div class="datagrid-checkbox">
                                             <input
@@ -368,11 +378,11 @@
                                 {% endfor %}
 
                                 {# Row Actions #}
-                                {% if grid.actions|length > 0 or grid.batchActions|length > 0 %}
+                                {% if rowActions|length > 0 or batchActions|length > 0 %}
                                     <td class="col-actions">
                                         <div class="datagrid-row-actions">
                                             {# Primary actions as icon buttons #}
-                                            {% for action in grid.actions %}
+                                            {% for action in rowActions %}
                                                 {% if action.isPrimary() %}
                                                     {% set params = {} %}
                                                     {% for p, v in action.parameters %}
@@ -391,8 +401,8 @@
                                             {% endfor %}
 
                                             {# Three-dot menu for secondary actions and batch actions #}
-                                            {% set menuActions = grid.actions|filter(a => not a.isPrimary()) %}
-                                            {% if menuActions|length > 0 or grid.batchActions|length > 0 %}
+                                            {% set menuActions = rowActions|filter(a => not a.isPrimary()) %}
+                                            {% if menuActions|length > 0 or batchActions|length > 0 %}
                                                 <div class="dropdown datagrid-more-menu">
                                                     <button
                                                         type="button"
@@ -424,12 +434,12 @@
                                                         {% endfor %}
 
                                                         {# Divider if both menu actions and batch actions exist #}
-                                                        {% if menuActions|length > 0 and grid.batchActions|length > 0 %}
+                                                        {% if menuActions|length > 0 and batchActions|length > 0 %}
                                                             <li><hr class="dropdown-divider"></li>
                                                         {% endif %}
 
                                                         {# Batch actions available for single item #}
-                                                        {% for action in grid.batchActions %}
+                                                        {% for action in batchActions %}
                                                             <li>
                                                                 {% if action.shouldConfirm %}
                                                                     {% set modalId = 'row_modal_' ~ action.getLabel|u.snake ~ '_' ~ loop.index ~ '_' ~ this.entityId(row) %}
@@ -472,7 +482,7 @@
                             {# Expandable Row Detail #}
                             {% if grid.hasRowDetails() %}
                                 <tr class="datagrid-detail-row">
-                                    <td colspan="{{ this.getVisibleColumns()|length + (grid.batchActions|length > 0 ? 1 : 0) + (grid.hasRowDetails() ? 1 : 0) + (grid.actions|length > 0 ? 1 : 0) }}">
+                                    <td colspan="{{ this.getVisibleColumns()|length + (batchActions|length > 0 ? 1 : 0) + (grid.hasRowDetails() ? 1 : 0) + (rowActions|length > 0 ? 1 : 0) }}">
                                         <div class="datagrid-detail-content">
                                             {# Render as Twig component for ApiTokenHistory #}
                                             {% if grid.getRowDetailTemplate() == '@AugiasUser/Components/ApiTokenHistory.html.twig' %}
@@ -519,7 +529,7 @@
     </div>
 
     {# Floating Bulk Action Bar #}
-    {% if grid.batchActions|length > 0 %}
+    {% if batchActions|length > 0 %}
         <div class="datagrid-bulk-bar {{ selectedItems|length > 0 ? 'visible' : '' }}" role="toolbar" aria-label="{{ 'datagrid.bulk_actions'|trans }}">
             <div class="datagrid-bulk-bar-inner">
                 <div class="datagrid-bulk-count">
@@ -530,7 +540,7 @@
                 <div class="datagrid-bulk-divider"></div>
 
                 <div class="datagrid-bulk-actions">
-                    {% for action in grid.batchActions %}
+                    {% for action in batchActions %}
                         {% set modalId = 'modal_' ~ action.getLabel|u.snake %}
 
                         {% if action.shouldConfirm %}
@@ -579,7 +589,7 @@
         {% set gridComponent = this %}
 
         {# Confirmation Modals for Batch Actions #}
-        {% for action in grid.batchActions %}
+        {% for action in batchActions %}
             {% if action.shouldConfirm %}
                 {% set modalId = 'modal_' ~ action.getLabel|u.snake %}
                 <twig:Ui:Modal id="{{ modalId }}" title="{{ 'action.confirm'|trans }}" status="{{ action.getColor|default('primary') }}">
@@ -606,7 +616,7 @@
 
         {# Confirmation Modals for Single Row Actions #}
         {% for row in paginator %}
-            {% for action in grid.batchActions %}
+            {% for action in batchActions %}
                 {% if action.shouldConfirm %}
                     {% set modalId = 'row_modal_' ~ action.getLabel|u.snake ~ '_' ~ loop.index ~ '_' ~ this.entityId(row) %}
                     <twig:Ui:Modal id="{{ modalId }}" title="{{ 'action.confirm'|trans }}" status="{{ action.getColor|default('primary') }}">
