@@ -22,7 +22,10 @@ use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\SettingsBundle\SystemConfig;
+use Augias\TaxBundle\Entity\InvoiceTax;
 use Augias\TaxBundle\Entity\LineTax;
+use Augias\TaxBundle\Enum\TaxCategory;
+use Augias\TaxBundle\Enum\TaxType;
 use Augias\TaxBundle\Test\Factory\TaxIdentifierFactory;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -330,6 +333,46 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         self::assertMatchesRegularExpression('/<ram:BuyerTradeParty>.*<ram:URIID schemeID="0225">315143296_92569<\/ram:URIID>.*<\/ram:BuyerTradeParty>/s', $xml);
         // The legal identity still comes from the SIRET.
         self::assertMatchesRegularExpression('/<ram:SpecifiedLegalOrganization>\s*<ram:ID schemeID="0002">000000001<\/ram:ID>/', $xml);
+    }
+
+    /**
+     * EN 16931 has no VAT on the invoice as a whole. A rate set on the
+     * document goes on every line that has none of its own, with its share of
+     * the tax, and the breakdown adds up to the total. The lines used to say
+     * 0 % beside a total with the tax in it, which the platform refuses.
+     */
+    public function testAVatRateOnTheWholeInvoiceGoesOnEachLine(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+
+        $invoice = new Invoice();
+        $invoice->setCompany($this->company);
+        $invoice->setClient($client);
+        $invoice->setInvoiceId('INV-DOC-VAT');
+        $invoice->setStatus(InvoiceStatus::Draft);
+
+        foreach ([10000, 5000, 3333] as $price) {
+            $line = new Line();
+            $line->setDescription('Service ' . $price)->setPrice($price)->setQty(1)->updateTotal();
+            $invoice->addLine($line);
+        }
+
+        $invoice->addInvoiceTax(new InvoiceTax()->setNameSnapshot('TVA')->setRateSnapshot('20')->setTypeSnapshot(TaxType::Exclusive)->setCategorySnapshot(TaxCategory::Standard));
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($invoice);
+        $entityManager->flush();
+
+        $xml = self::getContainer()->get(FacturXInvoiceBuilder::class)->buildDocument($invoice)->getContent();
+
+        self::assertStringNotContainsString('<ram:CategoryCode>Z</ram:CategoryCode>', $xml);
+        self::assertSame(4, substr_count($xml, '<ram:CategoryCode>S</ram:CategoryCode>'), 'Three lines and one breakdown, all standard-rated.');
+        self::assertSame(4, substr_count($xml, '<ram:RateApplicablePercent>20.00</ram:RateApplicablePercent>'));
+        // 183.33 net, 36.67 of tax (36.666 rounded), on the breakdown and in total.
+        self::assertStringContainsString('<ram:BasisAmount>183.33</ram:BasisAmount>', $xml);
+        self::assertStringContainsString('<ram:CalculatedAmount>36.67</ram:CalculatedAmount>', $xml);
+        self::assertStringContainsString('<ram:TaxTotalAmount currencyID="EUR">36.67</ram:TaxTotalAmount>', $xml);
+        self::assertStringContainsString('<ram:GrandTotalAmount>220.00</ram:GrandTotalAmount>', $xml);
     }
 
     private function xmlFor(SupplyType ...$types): string

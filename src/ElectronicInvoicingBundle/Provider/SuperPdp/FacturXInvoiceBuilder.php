@@ -25,14 +25,19 @@ use Augias\CoreBundle\Templates\BillingTemplateResolver;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\SettingsBundle\SystemConfig;
+use Augias\TaxBundle\Calculator\Result\CalculationResult;
 use Augias\TaxBundle\Calculator\Result\TaxSummaryRow;
 use Augias\TaxBundle\Calculator\TaxCalculatorInterface;
 use Augias\TaxBundle\Entity\LineTax;
 use Augias\TaxBundle\Entity\TaxIdentifier;
 use Augias\TaxBundle\Enum\TaxCategory;
+use Augias\TaxBundle\Enum\TaxDirection;
+use Augias\TaxBundle\Enum\TaxType;
 use Augias\TaxBundle\Form\Type\TaxIdentifierType;
 use Augias\TaxBundle\Repository\TaxIdentifierRepository;
+use Brick\Math\BigDecimal;
 use Brick\Math\BigNumber;
+use Brick\Math\RoundingMode;
 use horstoeko\zugferd\codelists\ZugferdInvoiceType;
 use horstoeko\zugferd\codelists\ZugferdSchemeIdentifiers;
 use horstoeko\zugferd\codelists\ZugferdUnitCodes;
@@ -47,6 +52,7 @@ use Twig\Environment;
 use function array_values;
 use function ctype_digit;
 use function json_decode;
+use function round;
 use function str_starts_with;
 use function strlen;
 use function substr;
@@ -169,6 +175,7 @@ final readonly class FacturXInvoiceBuilder
         /** @var array<string, array{category: TaxCategory, rate: ?float, basis: float, tax: float}> $vatGroups */
         $vatGroups = [];
         $lineTotal = 0.0;
+        $documentTax = $this->documentVat($result);
 
         foreach ($lines as $index => $line) {
             $breakdown = $result->lineBreakdowns[$index] ?? null;
@@ -194,10 +201,21 @@ final readonly class FacturXInvoiceBuilder
             $documentBuilder->setDocumentPositionNetPrice($unitPrice);
             $documentBuilder->setDocumentPositionQuantity($qty, ZugferdUnitCodes::REC20_ONE);
 
-            $category = $this->lineVatCategory($line);
-            $categoryCode = $this->mapVatCategory($category);
             /** @var TaxSummaryRow|null $taxRow */
             $taxRow = $breakdown->taxRows[0] ?? null;
+            $category = $this->lineVatCategory($line);
+
+            // EN 16931 has no VAT on the invoice as a whole: every line states
+            // its own. A rate set on the document goes on each line that has
+            // none of its own, with the line's share of the tax — without it,
+            // the lines said 0 % while the total carried the tax, and the
+            // platform refused the invoice (BR-CO-14).
+            if ($documentTax instanceof TaxSummaryRow && ! $line->getTaxes()->first() instanceof LineTax && ! $this->systemConfig->isVatExempt()) {
+                $category = $documentTax->category;
+                $taxRow = $this->share($documentTax, $breakdown->lineSubtotal, $result->subTotal);
+            }
+
+            $categoryCode = $this->mapVatCategory($category);
             $rate = $this->categoryRate($category, $taxRow);
             $taxAmount = $taxRow !== null ? $this->minorToFloat($taxRow->amount) : 0.0;
             [$exemptionReason, $exemptionReasonCode] = $this->exemptionReasonFor($category);
@@ -223,7 +241,9 @@ final readonly class FacturXInvoiceBuilder
                 $this->mapVatCategory($group['category']),
                 ZugferdVatTypeCodes::VALUE_ADDED_TAX,
                 $group['basis'],
-                $group['tax'],
+                // Shares of a document-level tax are not whole cents; their
+                // sum is.
+                round($group['tax'], 2),
                 $group['rate'],
                 $exemptionReason,
                 $exemptionReasonCode,
@@ -546,6 +566,40 @@ final readonly class FacturXInvoiceBuilder
         }
 
         return TaxCategory::ZeroRated;
+    }
+
+    /**
+     * The VAT set on the invoice as a whole, if any: the first rate added to
+     * it. A flat amount is not a rate a line can carry, withholding is not
+     * VAT, and a note is not an amount.
+     */
+    private function documentVat(CalculationResult $result): ?TaxSummaryRow
+    {
+        foreach ($result->invoiceLevelBreakdown->taxRows as $row) {
+            if (TaxDirection::Additive === $row->direction && TaxType::FlatRate !== $row->type) {
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The line's part of a tax on the whole invoice, in proportion to its net.
+     */
+    private function share(TaxSummaryRow $row, BigDecimal $lineSubtotal, BigDecimal $subTotal): TaxSummaryRow
+    {
+        return new TaxSummaryRow(
+            $row->name,
+            $row->rate,
+            $row->category,
+            $row->type,
+            $row->compound,
+            $subTotal->isPositive() ? $row->amount->multipliedBy($lineSubtotal)->dividedBy($subTotal, 10, RoundingMode::HalfEven) : BigDecimal::zero(),
+            $row->sequence,
+            $row->direction,
+            $row->note,
+        );
     }
 
     private function categoryRate(TaxCategory $category, ?TaxSummaryRow $taxRow): ?float
