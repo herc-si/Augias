@@ -15,6 +15,7 @@ namespace Augias\SupplierBundle\Action;
 
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Repository\ClientRepository;
+use Augias\CoreBundle\Exception\DocumentMustBeKept;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,7 +62,13 @@ final readonly class Delete
             return new RedirectResponse($this->router->generate('_clients_view', ['id' => $client->getId()]));
         }
 
-        $this->clientRepository->delete($client);
+        try {
+            $this->clientRepository->delete($client);
+        } catch (DocumentMustBeKept $refusal) {
+            $session->getFlashBag()->add('danger', $refusal->trans($this->translator));
+
+            return new RedirectResponse($this->router->generate('_suppliers_view', ['id' => $client->getId()]));
+        }
 
         $session->getFlashBag()->add('success', $this->translator->trans('supplier.delete_success'));
 

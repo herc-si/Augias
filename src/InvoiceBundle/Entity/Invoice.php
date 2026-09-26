@@ -623,6 +623,18 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
     }
 
     /**
+     * Lets go of the quote the invoice came from, which is being deleted. The
+     * invoice stays whatever happens to the quote: it is the document that
+     * counts, and the link is only where it came from.
+     */
+    public function detachQuote(): self
+    {
+        $this->quote = null;
+
+        return $this;
+    }
+
+    /**
      * @return Collection<int, Contact>
      */
     public function getUsers(): Collection

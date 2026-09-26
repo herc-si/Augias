@@ -15,7 +15,12 @@ namespace Augias\ClientBundle\Repository;
 
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Enum\ClientStatus;
+use Augias\CoreBundle\Exception\DocumentMustBeKept;
 use Augias\CoreBundle\Util\ArrayUtil;
+use Augias\InvoiceBundle\Entity\CreditNote;
+use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\InvoiceBundle\Enum\CreditNoteStatus;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
@@ -24,6 +29,9 @@ use Exception;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
+use function array_filter;
+use function array_map;
+use function sprintf;
 
 /**
  * @extends EntityRepository<Client>
@@ -211,19 +219,23 @@ class ClientRepository extends EntityRepository
 
         $em->getFilters()->disable('archivable');
 
-        foreach ($ids as $id) {
-            $entity = $this->find($id);
+        try {
+            $clients = array_filter(array_map($this->find(...), $ids), static fn (mixed $entity): bool => $entity instanceof Client);
 
-            if (! $entity instanceof Client) {
-                continue;
+            // Every client is checked before any goes: a selection with one
+            // that has to stay deletes none of them.
+            foreach ($clients as $client) {
+                $this->assertHoldsNoIssuedDocument($client);
             }
 
-            $em->remove($entity);
+            foreach ($clients as $client) {
+                $em->remove($client);
+            }
+
+            $em->flush();
+        } finally {
+            $em->getFilters()->enable('archivable');
         }
-
-        $em->flush();
-
-        $em->getFilters()->enable('archivable');
     }
 
     /**
@@ -260,7 +272,48 @@ class ClientRepository extends EntityRepository
 
     public function delete(Client $client): void
     {
+        $this->assertHoldsNoIssuedDocument($client);
+
         $this->getEntityManager()->remove($client);
         $this->getEntityManager()->flush();
+    }
+
+    /**
+     * A client goes with everything it owns, and among that may be invoices
+     * and credit notes it was sent — which have to be kept. Such a client is
+     * archived instead; the message says so.
+     *
+     * Archived documents count: archiving hides a document, it does not end
+     * the time it is kept for.
+     */
+    private function assertHoldsNoIssuedDocument(Client $client): void
+    {
+        $em = $this->getEntityManager();
+        $filters = $em->getFilters();
+        $archivable = $filters->isEnabled('archivable');
+
+        if ($archivable) {
+            $filters->disable('archivable');
+        }
+
+        try {
+            $invoices = (int) $em->createQuery(sprintf('SELECT COUNT(i.id) FROM %s i WHERE i.client = :client AND i.status NOT IN (:never)', Invoice::class))
+                ->setParameter('client', $client->getId(), UlidType::NAME)
+                ->setParameter('never', [InvoiceStatus::New->value, InvoiceStatus::Draft->value])
+                ->getSingleScalarResult();
+
+            $creditNotes = (int) $em->createQuery(sprintf('SELECT COUNT(c.id) FROM %s c WHERE c.client = :client AND c.status <> :draft', CreditNote::class))
+                ->setParameter('client', $client->getId(), UlidType::NAME)
+                ->setParameter('draft', CreditNoteStatus::Draft->value)
+                ->getSingleScalarResult();
+        } finally {
+            if ($archivable) {
+                $filters->enable('archivable');
+            }
+        }
+
+        if ($invoices + $creditNotes > 0) {
+            throw new DocumentMustBeKept(sprintf('Client %s has issued invoices or credit notes, which must be kept. Archive the client instead.', $client->getName()), 'client.delete.has_issued_documents', ['%name%' => (string) $client->getName()]);
+        }
     }
 }

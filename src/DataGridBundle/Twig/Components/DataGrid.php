@@ -37,6 +37,8 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Contracts\Translation\TranslatableInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveArg;
@@ -176,6 +178,7 @@ class DataGrid extends AbstractController
         #[AutowireLocator(AsDataGrid::DI_TAG, 'name')]
         private readonly ServiceLocator $serviceLocator,
         private readonly GridQueryService $gridQueryService,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -299,9 +302,9 @@ class DataGrid extends AbstractController
                     return;
                 }
 
-                $actionFn($this->registry->getRepository($grid->entityFQCN()), $this->selectedItems);
-
-                $this->addFlash('success', 'datagrid.flash.success');
+                if ($this->run($actionFn, $this->selectedItems, $grid)) {
+                    $this->addFlash('success', 'datagrid.flash.success');
+                }
 
                 return;
             }
@@ -339,15 +342,43 @@ class DataGrid extends AbstractController
                 return;
             }
 
-            $actionFn($this->registry->getRepository($grid->entityFQCN()), [$entityId]);
+            if ($this->run($actionFn, [$entityId], $grid)) {
+                $this->addFlash('success', 'datagrid.flash.success');
+            }
 
-            $this->addFlash('success', 'datagrid.flash.success');
             $this->dispatchBrowserEvent('modal:close');
 
             return;
         }
 
         $this->addFlash('warning', 'datagrid.flash.not_found');
+    }
+
+    /**
+     * Runs a batch action, and shows the reason when it refuses.
+     *
+     * An action that declines — deleting an invoice that has been issued, say —
+     * throws with a message meant for the person who asked. Without this the
+     * grid answered with an error page, or with "done" for something that was
+     * not.
+     *
+     * @param list<string> $ids
+     */
+    private function run(callable $action, array $ids, GridInterface $grid): bool
+    {
+        try {
+            $action($this->registry->getRepository($grid->entityFQCN()), $ids);
+        } catch (RuntimeException $exception) {
+            if (! $exception instanceof TranslatableInterface) {
+                throw $exception;
+            }
+
+            $this->addFlash('danger', $exception->trans($this->translator));
+
+            return false;
+        }
+
+        return true;
     }
 
     /**

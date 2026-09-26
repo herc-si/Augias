@@ -588,8 +588,9 @@ client:
     custom_fields: 'Custom fields'
     delete:
         confirm:
-            message: 'This will permanently delete this client and all associated data including invoices, quotes, and payments. This action cannot be undone.'
+            message: 'This will permanently delete this client, its quotes and its draft invoices. A client with issued invoices or credit notes cannot be deleted: they have to be kept. Archive it instead.'
             title: 'Delete %name%?'
+        has_issued_documents: "%name% has issued invoices or credit notes, which have to be kept: the client cannot be deleted. Archive it instead."
     delete_success: 'The client was deleted successfully'
     form:
         address_description: 'Add billing or shipping addresses'
@@ -765,6 +766,8 @@ create_new: 'Create New'
 create_now: 'Create one now.'
 created: Created
 credit_note:
+    delete:
+        issued: "Credit note %number% has been issued and has to be kept: it cannot be deleted."
     menu:
         main: 'Credit Notes'
     list:
@@ -1725,6 +1728,8 @@ installation:
         locale_placeholder: 'Please select a locale'
 invalid_file: 'Invalid File'
 invoice:
+    delete:
+        issued: "An issued invoice has to be kept and cannot be deleted (%number%). Only drafts can be deleted; to correct an issued invoice, raise a credit note."
     action:
         create: 'Create Invoice'
         create_recurring: 'Create Recurring Invoice'

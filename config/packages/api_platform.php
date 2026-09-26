@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use Augias\CoreBundle\AugiasCoreBundle;
+use Augias\CoreBundle\Exception\DocumentMustBeKept;
 
 $formats = [
     'jsonld' => ['mime_types' => ['application/ld+json']],
@@ -89,6 +90,11 @@ return App::config([
             'cache_headers' => [['Content-Type', 'Authorization', 'Origin']],
         ],
         'use_symfony_listeners' => true,
+        // A refused deletion is the client's request conflicting with a rule,
+        // not the server failing.
+        'exception_to_status' => [
+            DocumentMustBeKept::class => 409,
+        ],
         'graphql' => [
             'enabled' => true,
             'graphiql' => ['enabled' => true],

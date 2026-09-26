@@ -17,6 +17,7 @@ use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
+use Augias\CoreBundle\Exception\DocumentMustBeKept;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\McpBundle\Mcp\Attribute\McpScopeRequired;
 use Augias\McpBundle\Mcp\McpScopeGuard;
@@ -197,8 +198,15 @@ final readonly class ResourceWriteTools
             throw new ToolCallException(sprintf('%s with id %s not found.', $resource, $id));
         }
 
-        $this->entityManager->remove($entity);
-        $this->entityManager->flush();
+        // A client that was sent invoices takes them with it, and issued
+        // invoices are kept: the assistant is told why, rather than handed a
+        // server error.
+        try {
+            $this->entityManager->remove($entity);
+            $this->entityManager->flush();
+        } catch (DocumentMustBeKept $refusal) {
+            throw new ToolCallException($refusal->getMessage(), previous: $refusal);
+        }
 
         return [
             'deleted' => true,
