@@ -168,7 +168,15 @@ final class SubscriptionEndRetentionTest extends KernelTestCase
 
         $this->em()->clear();
         self::assertNull($this->em()->find(Company::class, $companyId));
-        self::assertNull($this->em()->find(Subscription::class, $subscriptionId));
+        $conn = $this->em()->getConnection();
+        self::assertNull($this->em()->find(Subscription::class, $subscriptionId), 'DIAG ' . json_encode([
+            'sqlite' => $conn->fetchOne('select sqlite_version()'),
+            'fk' => $conn->fetchOne('PRAGMA foreign_keys'),
+            'sub' => $conn->fetchAllAssociative('select id, typeof(id) t, subscriber_id, typeof(subscriber_id) st, hex(subscriber_id) h from saas_subscription'),
+            'company' => [(string) $companyId, $companyId->toRfc4122()],
+            'ddl' => $conn->fetchOne("select sql from sqlite_master where name = 'saas_subscription'"),
+            'listeners' => array_map(static fn ($l) => $l::class, iterator_to_array((function () { yield from []; })())),
+        ]));
         $this->mailer()->sentEmails()->last()->assertTo('owner@gone.test')->assertSubject("Ended Shop's data has been deleted");
     }
 
