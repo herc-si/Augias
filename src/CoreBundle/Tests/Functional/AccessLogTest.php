@@ -16,6 +16,7 @@ namespace Augias\CoreBundle\Tests\Functional;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Enum\ClientStatus;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\ClientBundle\Test\Factory\ContactFactory;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\RecordAccess;
 use Augias\CoreBundle\Enum\RecordKind;
@@ -107,6 +108,30 @@ final class AccessLogTest extends WebTestCase
             ->visit('/access-log')
             ->assertSuccessful()
             ->assertNotSee('Acme Ltd');
+    }
+
+    /**
+     * The quote form hangs a draft on each of the client's contacts. The
+     * journal used to flush the whole unit of work to write its line, found
+     * that draft, and turned the page into a 500 — every time the visit was
+     * journalled.
+     */
+    public function testOpeningANewQuoteForAClientWithContactsIsRecorded(): void
+    {
+        $company = CompanyFactory::createOne(['name' => 'Alpha Inc']);
+        $user = UserFactory::createOne(['email' => 'quote@journal.test', 'companies' => [$company]]);
+        $client = $this->client($company, 'Acme Ltd');
+        ContactFactory::createOne(['client' => $client, 'company' => $company]);
+
+        $this->em->clear();
+
+        $this->browser()
+            ->throwExceptions()
+            ->actingAs($user)
+            ->visit('/quotes/create/' . $client->getId())
+            ->assertSuccessful();
+
+        self::assertSame([RecordKind::Client], $this->kindsFor($user));
     }
 
     private function client(Company $company, string $name): Client

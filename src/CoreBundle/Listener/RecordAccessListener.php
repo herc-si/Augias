@@ -18,6 +18,7 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\RecordAccess;
 use Augias\CoreBundle\Journal\Journalled;
 use Augias\UserBundle\Entity\User;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Clock\ClockInterface;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -118,18 +119,41 @@ final readonly class RecordAccessListener
             return;
         }
 
-        $this->entityManager->persist(
-            new RecordAccess(
-                $this->entityManager->getReference(Company::class, $companyId),
-                $user,
-                $record->journalKind(),
-                $recordId,
-                $record->journalLabel(),
-                $this->clock->now(),
-            ),
+        $line = new RecordAccess(
+            $this->entityManager->getReference(Company::class, $companyId),
+            $user,
+            $record->journalKind(),
+            $recordId,
+            $record->journalLabel(),
+            $this->clock->now(),
         );
 
-        $this->entityManager->flush();
+        // One row, written on its own. A flush here would write whatever else
+        // the unit of work was holding at the end of a GET: the invoice and
+        // quote forms attach a draft, never meant to be saved, to the client's
+        // contacts, and opening "new quote for this client" answered with a
+        // 500 every time the visit was journalled.
+        $this->entityManager->getConnection()->insert(
+            RecordAccess::TABLE_NAME,
+            [
+                'id' => new Ulid(),
+                'company_id' => $companyId,
+                'user_id' => $user->getId(),
+                'kind' => $line->getKind()->value,
+                'record_id' => $line->getRecordId(),
+                'label' => $line->getLabel(),
+                'opened_at' => $line->getOpenedAt(),
+            ],
+            [
+                'id' => UlidType::NAME,
+                'company_id' => UlidType::NAME,
+                'user_id' => UlidType::NAME,
+                'kind' => Types::STRING,
+                'record_id' => UlidType::NAME,
+                'label' => Types::STRING,
+                'opened_at' => Types::DATETIME_IMMUTABLE,
+            ],
+        );
     }
 
     private function seenRecently(User $user, Ulid $recordId): bool
