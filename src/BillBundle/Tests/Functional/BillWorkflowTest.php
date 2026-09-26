@@ -103,9 +103,7 @@ final class BillWorkflowTest extends KernelTestCase
      * A bill is not late on the day it falls due — it is late the day after.
      *
      * The query behind this bound its date as a datetime against a DATE column,
-     * which on SQLite made today's bills overdue from midnight. Nothing showed
-     * it, because nothing calls the method: there is a MarkOverdueInvoicesCommand
-     * and no equivalent for bills. This is the spec it never had.
+     * which on SQLite made today's bills overdue from midnight.
      */
     public function testABillIsOverdueOnlyOnceItsDueDateHasPassed(): void
     {

@@ -37,10 +37,7 @@ class BillRepository extends EntityRepository
      * cron, meant to run with the company filter disabled, the same as
      * {@see \Augias\InvoiceBundle\Repository\InvoiceRepository::getPendingOverdueInvoices()}.
      *
-     * Nothing calls this yet: there is a `MarkOverdueInvoicesCommand` and no
-     * equivalent for bills, so no supplier invoice is ever marked overdue. That
-     * is a feature that was never finished rather than one that broke, and it
-     * is noted here rather than in a commit message nobody will read again.
+     * Called by {@see \Augias\BillBundle\Command\MarkOverdueBillsCommand}.
      *
      * Passed, not reached: a bill is not late on the day it falls due. The date
      * is bound as a date for that to hold — `due_date` is a DATE column, and a
