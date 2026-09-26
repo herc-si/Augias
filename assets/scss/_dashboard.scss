@@ -380,6 +380,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--swp-space-2);
+
+    // The rows follow the width of their card, not of the screen: a card is
+    // just as narrow in a three-column dashboard as on a phone.
+    container-type: inline-size;
 }
 
 .attention-item {
@@ -473,6 +477,28 @@
     font-size: var(--swp-text-sm);
     color: var(--swp-text-muted);
     font-variant-numeric: tabular-nums;
+}
+
+// In a narrow card, four things on one line left an invoice number broken
+// over three lines and every client cut to its first word. Each side stacks
+// instead: number over client, amount over date.
+@container (width < 480px) {
+
+    .attention-item-main {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0;
+    }
+
+    .attention-item-client {
+        max-width: 100%;
+    }
+
+    .attention-item-meta {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0;
+    }
 }
 
 // =============================================================================

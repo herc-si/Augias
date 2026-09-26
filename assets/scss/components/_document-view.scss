@@ -14,6 +14,12 @@
     max-width: 1400px;
     margin: 0 auto;
     padding: var(--swp-space-6);
+
+    // The layout already keeps a gutter on a phone; this one on top of it
+    // left the document a column two-thirds of the screen wide.
+    @media (width <= 640px) {
+        padding: 0;
+    }
 }
 
 // ============================================================================
@@ -314,8 +320,18 @@
         }
     }
 
+    &:has(.detail-label) {
+        // A labelled value — an e-invoicing address, a VAT number — is one
+        // long word: it goes under its label, and breaks there if it has to,
+        // rather than running out of the card. Only those rows wrap: an icon
+        // stays beside the address it marks.
+        flex-wrap: wrap;
+    }
+
     .detail-value {
+        min-width: 0;
         color: var(--swp-text-secondary);
+        overflow-wrap: anywhere;
     }
 
     a.detail-value {
@@ -497,6 +513,11 @@
     justify-content: flex-end;
     padding: var(--swp-space-6);
     padding-top: 0;
+
+    // Under the lines, which are cards on a phone: as wide as they are.
+    @media (width <= 640px) {
+        padding: 0 var(--swp-space-4) var(--swp-space-4);
+    }
 }
 
 .doc-totals-grid {
@@ -507,6 +528,11 @@
     padding: var(--swp-space-4);
     background: var(--swp-gray-50);
     border-radius: var(--swp-radius-md);
+
+    @media (width <= 640px) {
+        flex: 1;
+        min-width: 0;
+    }
 }
 
 .totals-row {

@@ -21,6 +21,7 @@ use Symfony\Component\Form\Exception\TransformationFailedException;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File as FileConstraint;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\UX\Dropzone\Form\DropzoneType;
@@ -106,6 +107,18 @@ class ImageUploadType extends AbstractType
                 return $value->guessExtension() . '|' . base64_encode(file_get_contents($value->getPathname()));
             }
         });
+    }
+
+    #[Override]
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        // The dropzone's own placeholder is a sentence in English, not a key:
+        // it showed as such on every French settings page.
+        $resolver->setDefaults([
+            'attr' => [
+                'placeholder' => 'form.image_upload.placeholder',
+            ],
+        ]);
     }
 
     #[Override]

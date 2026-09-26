@@ -379,8 +379,11 @@
     .billing-item-row {
         grid-template-columns: minmax(0, 3.8fr) minmax(100px, 0.9fr) 56px minmax(60px, 0.4fr) 24px;
 
+        // The two columns the phone layout's areas are drawn on. A single
+        // one here left the second to be made up at content width, and the
+        // price got 13px of it.
         @media (width <= 900px) {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 }
@@ -398,7 +401,7 @@
 
     .billing-item-row {
         @media (width <= 900px) {
-            grid-template-columns: 1fr;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
 }
@@ -516,7 +519,10 @@
     // Mobile responsive layout
     @media (width <= 900px) {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+
+        // Halves for real: a bare 1fr keeps a column at least as wide as
+        // what is in it.
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         grid-template-areas:
             'desc desc'
             'price qty'

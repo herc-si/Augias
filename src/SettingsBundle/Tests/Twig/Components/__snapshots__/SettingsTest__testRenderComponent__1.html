@@ -73,9 +73,9 @@
             <label class="control-label form-label" for="settings_company_logo">Logo</label>        <div class="logo-upload-card d-flex align-items-start gap-4 p-3 bg-light rounded-3 border">
                 <div class="flex-grow-1">
             <div class="dropzone-container" data-controller="symfony--ux-dropzone--dropzone">
-        <input type="file" id="settings_company_logo" name="settings[company][logo]" placeholder="Drag and drop or browse" data-controller="" class="dropzone-input" data-symfony--ux-dropzone--dropzone-target="input">
+        <input type="file" id="settings_company_logo" name="settings[company][logo]" placeholder="Drag and drop an image or browse" data-controller="" class="dropzone-input" data-symfony--ux-dropzone--dropzone-target="input">
 
-        <div class="dropzone-placeholder" data-symfony--ux-dropzone--dropzone-target="placeholder">Drag and drop or browse</div>
+        <div class="dropzone-placeholder" data-symfony--ux-dropzone--dropzone-target="placeholder">Drag and drop an image or browse</div>
 
         <div class="dropzone-preview" data-symfony--ux-dropzone--dropzone-target="preview" style="display: none">
             <button class="dropzone-preview-button" type="button" data-symfony--ux-dropzone--dropzone-target="previewClearButton"></button>
@@ -679,7 +679,7 @@
 
     
 
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
         <button type="button" id="company_tax_identifiers_identifiers_add" name="company_tax_identifiers[identifiers][add]" data-action="live#action" data-live-action-param="addCollectionItem" data-live-name-param="company_tax_identifiers[identifiers]" class="btn btn-ghost btn-sm btn">Add an identifier</button>
 
         <button type="submit" class="btn btn-primary btn-sm">

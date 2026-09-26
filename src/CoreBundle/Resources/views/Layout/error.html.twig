@@ -28,18 +28,18 @@
 
                 <div class="d-flex gap-2 justify-content-center flex-wrap">
                     <button type="button" onclick="history.back()" class="btn btn-ghost">
-                        {{ ux_icon('tabler:arrow-left') }}
+                        {{ ux_icon('tabler:arrow-left', {width: 18, height: 18, 'aria-hidden': 'true'}) }}
                         {{ 'exception.action.back'|trans }}
                     </button>
                     {% if app.user is not null %}
                         <a href="{{ path('_dashboard') }}" class="btn btn-primary">
                             {{ 'exception.action.dashboard'|trans }}
-                            {{ ux_icon('tabler:arrow-right') }}
+                            {{ ux_icon('tabler:arrow-right', {width: 18, height: 18, 'aria-hidden': 'true'}) }}
                         </a>
                     {% else %}
                         <a href="{{ path('_login_main') }}" class="btn btn-primary">
                             {{ 'exception.action.sign_in'|trans }}
-                            {{ ux_icon('tabler:arrow-right') }}
+                            {{ ux_icon('tabler:arrow-right', {width: 18, height: 18, 'aria-hidden': 'true'}) }}
                         </a>
                     {% endif %}
                 </div>
