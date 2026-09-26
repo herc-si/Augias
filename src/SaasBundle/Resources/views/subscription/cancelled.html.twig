@@ -66,16 +66,7 @@
                 </a>
             </div>
 
-            {# Reassuring Message #}
-            <twig:Ui:Alert type="info" class="mt-4 text-start">
-                <div class="d-flex align-items-start gap-2">
-                    {{ ux_icon('tabler:info-circle', {width: 20, height: 20}) }}
-                    <div>
-                        <strong>{{ 'saas.cancelled.changed_mind'|trans }}</strong>
-                        {{ 'saas.cancelled.data_safe'|trans }}
-                    </div>
-                </div>
-            </twig:Ui:Alert>
+            {% include '@AugiasSaas/subscription/_data_retention.html.twig' %}
 
             {# Info Alert for Multiple Companies #}
             {% if availableCompanies|length > 0 %}

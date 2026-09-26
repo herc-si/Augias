@@ -16,6 +16,8 @@ namespace Augias\UserBundle\Twig\Extension;
 use Augias\UserBundle\Security\CompanyAccess;
 use Augias\UserBundle\Security\RouteAccess;
 use DateTimeImmutable;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Attribute\AsTwigFunction;
 
 /**
@@ -27,6 +29,7 @@ final readonly class RouteAccessExtension
     public function __construct(
         private RouteAccess $routeAccess,
         private CompanyAccess $companyAccess,
+        private UrlGeneratorInterface $urls,
     ) {
     }
 
@@ -37,12 +40,37 @@ final readonly class RouteAccessExtension
     }
 
     /**
-     * `company_closes_at()`: when the open company goes, if its owner has
-     * asked for it to be closed — for the banner every page then carries.
+     * `company_closes_at()`: when the open company goes, if it is closing —
+     * for the banner every page then carries.
      */
     #[AsTwigFunction('company_closes_at')]
     public function closesAt(): ?DateTimeImmutable
     {
         return $this->companyAccess->membership()?->getCompany()->getClosesAt();
+    }
+
+    /**
+     * `company_closure_reason()`: asked for by the owner, or following the
+     * end of the subscription — the banner offers to cancel the one, to
+     * renew for the other.
+     */
+    #[AsTwigFunction('company_closure_reason')]
+    public function closureReason(): ?string
+    {
+        return $this->companyAccess->membership()?->getCompany()->getClosureReason()?->value;
+    }
+
+    /**
+     * `optional_path('saas_subscription_plans')`: the link, or null where the
+     * route is not loaded — the hosted service's pages exist only there.
+     */
+    #[AsTwigFunction('optional_path')]
+    public function optionalPath(string $route): ?string
+    {
+        try {
+            return $this->urls->generate($route);
+        } catch (RouteNotFoundException) {
+            return null;
+        }
     }
 }

@@ -65,6 +65,16 @@ final readonly class RequestListener implements EventSubscriberInterface
         '_profiler_router',
     ];
 
+    /**
+     * Still open once the subscription has ended: the terms promise the data
+     * can be taken out for ninety days, until it is deleted.
+     */
+    private const array EXPORT_ROUTES = [
+        '_export_list',
+        '_export_request',
+        '_export_download',
+    ];
+
     public function __construct(
         private CompanySelector $companySelector,
         private CompanyRepository $companyRepository,
@@ -121,7 +131,7 @@ final readonly class RequestListener implements EventSubscriberInterface
                 break;
             case SubscriptionStatus::CANCELLED:
             case SubscriptionStatus::EXPIRED:
-                if ($subscription->getEndDate() > $this->clock->now()) {
+                if ($subscription->getEndDate() > $this->clock->now() || $this->isExport($event->getRequest())) {
                     return;
                 }
 
@@ -134,7 +144,7 @@ final readonly class RequestListener implements EventSubscriberInterface
                 );
                 break;
             case SubscriptionStatus::TRIAL:
-                if ($subscription->getEndDate() <= $this->clock->now()) {
+                if ($subscription->getEndDate() <= $this->clock->now() && ! $this->isExport($event->getRequest())) {
                     $event->setResponse(
                         new Response(
                             $this->twig->render('@AugiasSaas/subscription/trial_expired.html.twig', [
@@ -192,6 +202,11 @@ final readonly class RequestListener implements EventSubscriberInterface
         );
 
         $response->setContent($content);
+    }
+
+    private function isExport(Request $request): bool
+    {
+        return in_array($request->attributes->get('_route'), self::EXPORT_ROUTES, true);
     }
 
     private function getSubscription(Request $request): ?Subscription

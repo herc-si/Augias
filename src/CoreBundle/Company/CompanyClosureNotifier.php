@@ -72,14 +72,16 @@ final readonly class CompanyClosureNotifier
         }
 
         $name = (string) $company->getName();
+        $reason = $company->getClosureReason() ?? ClosureReason::Requested;
         $exportUrl = ClosureNotice::Deleted === $notice ? null : $this->urls->generate('_export_list', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $email = new CompanyClosureEmail(
             $notice,
+            $reason,
             $name,
             $company->getClosesAt(),
             $exportUrl,
-            $this->translator->trans('company.closing.email.' . $notice->value . '.subject', [
+            $this->translator->trans($reason->emailKeys() . '.' . $notice->value . '.subject', [
                 '%company%' => $name,
                 '%date%' => $company->getClosesAt()?->format('d/m/Y') ?? '',
             ]),

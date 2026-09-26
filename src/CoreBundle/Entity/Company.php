@@ -18,6 +18,7 @@ use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\ClientBundle\Entity\Credit;
+use Augias\CoreBundle\Company\ClosureReason;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
@@ -107,6 +108,13 @@ class Company implements Stringable, SubscribableInterface
      */
     #[ORM\Column(name: 'closure_reminded_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $closureRemindedAt = null;
+
+    /**
+     * Asked for by the owner, or following the end of the subscription —
+     * what the people are told, and how it is called off, differ.
+     */
+    #[ORM\Column(name: 'closure_reason', type: Types::STRING, length: 32, nullable: true, enumType: ClosureReason::class)]
+    private ?ClosureReason $closureReason = null;
 
     #[ORM\Column(name: 'custom_domain', type: Types::STRING, length: 253, unique: true, nullable: true)]
     #[Assert\Length(max: 253)]
@@ -343,18 +351,25 @@ class Company implements Stringable, SubscribableInterface
         return $this->closesAt instanceof DateTimeImmutable;
     }
 
-    public function scheduleClosure(DateTimeImmutable $closesAt): self
+    public function scheduleClosure(DateTimeImmutable $closesAt, ClosureReason $reason = ClosureReason::Requested): self
     {
         $this->closesAt = $closesAt;
         $this->closureRemindedAt = null;
+        $this->closureReason = $reason;
 
         return $this;
+    }
+
+    public function getClosureReason(): ?ClosureReason
+    {
+        return null === $this->closesAt ? null : $this->closureReason ?? ClosureReason::Requested;
     }
 
     public function cancelClosure(): self
     {
         $this->closesAt = null;
         $this->closureRemindedAt = null;
+        $this->closureReason = null;
 
         return $this;
     }

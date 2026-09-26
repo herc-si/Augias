@@ -1,0 +1,28 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # Once the subscription is over: until when the data stays, and the export
+ # that remains open until then (see SubscriptionEndRetention).
+ #}
+{% set deletesAt = company_closes_at() ?: subscription.endDate|date_modify('+90 days') %}
+<twig:Ui:Alert type="warning" class="mt-4 text-start">
+    <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+        <div class="d-flex align-items-start gap-2 flex-fill">
+            {{ ux_icon('tabler:database-export', {width: 20, height: 20}) }}
+            <div>
+                <strong>{{ 'saas.retention.title'|trans({'%date%': deletesAt|date('d/m/Y')}) }}</strong>
+                {{ 'saas.retention.text'|trans }}
+            </div>
+        </div>
+        {% if route_allowed('_export_list') %}
+            <a class="btn btn-sm btn-primary flex-shrink-0" href="{{ path('_export_list') }}">{{ 'saas.retention.export'|trans }}</a>
+        {% endif %}
+    </div>
+</twig:Ui:Alert>
