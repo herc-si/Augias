@@ -20,6 +20,24 @@ In the sidebar, expand `System`, click `Settings`, and open the `Accounting` tab
 
 The remaining fields have working defaults, so you can save after picking a regime and come back to the rest.
 
+## When a regime is required
+
+If you charge VAT (`Not liable for VAT` is unticked) and you invoice private customers, you have to choose a regime before you can record their payments.
+
+French law treats any software that records payments outside the books as a cash register, and requires cash registers to be certified (article 286 of the French tax code). Augias is not a certified cash register. Once your books are kept in Augias, every payment you record goes into the revenue book straight away, without anyone having to do it by hand, and the obligation no longer applies.
+
+Until a regime is chosen:
+
+- a client saved with no company name, which marks them as a private customer, is refused;
+- recording a payment from an existing private customer is refused, on the payment screen, through the API and through MCP;
+- the `Attention Required` card on the dashboard shows `Books to keep`.
+
+Customers paying online are not turned away.
+
+:::info
+This does not apply if you are not liable for VAT (franchise en base), or if all your customers are businesses.
+:::
+
 ## Fields on the Accounting tab
 
 | Field | What it does |

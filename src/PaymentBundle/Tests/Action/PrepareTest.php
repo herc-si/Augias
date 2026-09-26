@@ -15,6 +15,7 @@ namespace Augias\PaymentBundle\Tests\Action;
 
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Company\CompanySelector;
+use Augias\CoreBundle\Contracts\CashRegisterGateInterface;
 use Augias\CoreBundle\Response\FlashResponse;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
@@ -57,6 +58,7 @@ final class PrepareTest extends KernelTestCase
             $router,
             self::getContainer()->get(CompanySelector::class),
             $invoiceRepository,
+            self::getContainer()->get(CashRegisterGateInterface::class),
         );
 
         $action->setDoctrine(self::getContainer()->get('doctrine'));

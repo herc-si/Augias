@@ -984,6 +984,9 @@ dashboard:
         no_limits: "Aucune limite ne s'applique aux activités dans lesquelles vous avez encaissé cette année."
         no_turnover: 'Rien enregistré au livre des recettes pour %year% pour le moment.'
         turnover_title: "Chiffre d'affaires %year%"
+        books_required_action: 'Choisir votre régime comptable'
+        books_required_line: "{1} Vous avez un client particulier : son paiement ne peut être enregistré que si votre comptabilité est tenue dans Augias (CGI, art. 286).|]1,Inf] Vous avez %count% clients particuliers : leurs paiements ne peuvent être enregistrés que si votre comptabilité est tenue dans Augias (CGI, art. 286)."
+        books_required_title: 'Comptabilité à tenir'
         vat_rhythm_line: 'TVA due de %from% à %to%, au-delà du plafond de %ceiling% qui ouvre le trimestriel'
         vat_rhythm_monthly_due: 'La TVA est désormais à déclarer tous les mois'
         vat_rhythm_title: 'Rythme de déclaration de TVA'
@@ -2470,6 +2473,7 @@ payment:
         credit: 'Crédit :'
         discount: Remise
         exception:
+            books_required: "Votre entreprise est assujettie à la TVA : le paiement d'un particulier ne peut être enregistré que si votre comptabilité est tenue dans Augias (CGI, art. 286). Choisissez d'abord votre régime comptable, dans le menu Comptabilité."
             amount_exceeds_balance: 'Le montant saisi dépasse le solde impayé'
             invoice_cannot_be_paid: 'Cette facture ne peut pas être payée'
             no_payment_methods: 'Aucun moyen de paiement n''est actuellement disponible'

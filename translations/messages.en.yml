@@ -984,6 +984,9 @@ dashboard:
         no_limits: 'No limit applies to the activities you have taken money in this year.'
         no_turnover: 'Nothing recorded in the revenue book for %year% yet.'
         turnover_title: 'Turnover %year%'
+        books_required_action: 'Choose your accounting regime'
+        books_required_line: '{1} You have a private customer: their payment can only be recorded once your books are kept in Augias (French tax code, art. 286).|]1,Inf] You have %count% private customers: their payments can only be recorded once your books are kept in Augias (French tax code, art. 286).'
+        books_required_title: 'Books to keep'
         vat_rhythm_line: 'VAT payable from %from% to %to%, against the %ceiling% limit that quarterly filing depends on'
         vat_rhythm_monthly_due: 'Monthly VAT returns are now owed'
         vat_rhythm_title: 'VAT filing rhythm'
@@ -2470,6 +2473,7 @@ payment:
         credit: 'Credit:'
         discount: Discount
         exception:
+            books_required: 'Your company is VAT-registered: the payment of a private customer can only be recorded once your books are kept in Augias (French tax code, art. 286). Choose your accounting regime first, in the Accounting menu.'
             amount_exceeds_balance: 'Amount captured exceeds outstanding balance'
             invoice_cannot_be_paid: 'This invoice cannot be paid'
             no_payment_methods: 'No payment methods are currently available'

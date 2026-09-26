@@ -25,6 +25,7 @@ use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use Augias\ClientBundle\Enum\ClientStatus;
 use Augias\ClientBundle\Repository\ClientRepository;
+use Augias\ClientBundle\Validator\Constraints\PrivateCustomerNeedsBooks;
 use Augias\ClientBundle\Validator\Constraints\WithinPlanClientLimit;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Enum\RecordKind;
@@ -90,6 +91,7 @@ use function trim;
 #[UniqueEntity('name')]
 #[ORM\AssociationOverrides([new ORM\AssociationOverride(name: 'company', inversedBy: 'clients')])]
 #[WithinPlanClientLimit]
+#[PrivateCustomerNeedsBooks]
 #[RequiredFiscalIdentifierForElectronicInvoicing]
 class Client implements Stringable, Journalled
 {

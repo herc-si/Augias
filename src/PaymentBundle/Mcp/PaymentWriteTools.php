@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\PaymentBundle\Mcp;
 
 use Augias\ClientBundle\Entity\Client;
+use Augias\CoreBundle\Contracts\CashRegisterGateInterface;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Model\Graph as InvoiceGraph;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
@@ -43,6 +44,7 @@ final readonly class PaymentWriteTools
         #[Autowire(service: 'state_machine.invoice')]
         private WorkflowInterface $invoiceWorkflow,
         private McpScopeGuard $scopeGuard,
+        private CashRegisterGateInterface $cashRegister,
     ) {
     }
 
@@ -92,6 +94,10 @@ final readonly class PaymentWriteTools
                 $currency,
                 $invoiceCurrency,
             ));
+        }
+
+        if ($this->cashRegister->refusesPaymentFrom($invoice->getCompany(), $client)) {
+            throw new ToolCallException('The company is VAT-registered and does not keep its books in Augias: the payment of a private customer cannot be recorded until an accounting regime is chosen (French tax code, art. 286, I, 3° bis).');
         }
 
         // Reject overpayment so the MCP tool matches the behaviour of the
