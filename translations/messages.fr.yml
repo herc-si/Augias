@@ -1484,6 +1484,8 @@ forgot_password:
         heading: 'Réinitialiser votre mot de passe'
         title: 'Réinitialiser le mot de passe'
 form:
+    image_upload:
+        placeholder: "Glissez une image ici ou parcourez vos fichiers"
     address: Adresse
     field:
         access_key: "Clé d'accès"

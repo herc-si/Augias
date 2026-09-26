@@ -1484,6 +1484,8 @@ forgot_password:
         heading: 'Reset your password'
         title: 'Reset Password'
 form:
+    image_upload:
+        placeholder: "Drag and drop an image or browse"
     address: Address
     field:
         access_key: "Access key"

@@ -65,7 +65,7 @@
 
     {{ form_errors(form.identifiers) }}
 
-    <div class="d-flex justify-content-between align-items-center">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
         {{ form_widget(form.identifiers.vars.button_add, {
             label: 'tax.company_identifiers.add'|trans,
             attr: {

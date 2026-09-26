@@ -652,6 +652,11 @@
 // ============================================================================
 
 .datagrid-table-wrapper {
+    // The containing block of what the table positions absolutely — the
+    // visually hidden labels in its header among them. Without it they
+    // escaped the scroll, and on a phone every list scrolled sideways, out
+    // to where the widest column's label would have been.
+    position: relative;
     overflow-x: auto;
 }
 
@@ -1358,11 +1363,28 @@ tbody tr:hover .datagrid-more-btn,
         }
     }
 
+    .datagrid-bulk-bar {
+        // Pinned between the two gutters rather than centred on its own
+        // width, which on a phone was wider than the screen.
+        right: var(--swp-space-3);
+        left: var(--swp-space-3);
+        transform: translateY(100px);
+
+        &.visible {
+            transform: translateY(0);
+        }
+    }
+
     .datagrid-bulk-bar-inner {
         flex-wrap: wrap;
         justify-content: center;
         gap: var(--swp-space-3);
         padding: var(--swp-space-4);
+    }
+
+    .datagrid-bulk-actions {
+        flex-wrap: wrap;
+        justify-content: center;
     }
 
     .datagrid-bulk-divider {
