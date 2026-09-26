@@ -58,6 +58,21 @@
                         </div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                        {# The top bar, where companies are switched, is hidden below lg: the switch lives here there. #}
+                        {% if not is_custom_domain() %}
+                            <h6 class="dropdown-header">{{ 'layout.switch_company'|trans }}</h6>
+                            {% for company in app.user.companies|filter(v => not v.id.equals(company_id())) %}
+                                <a href="{{ path('_switch_company', {'id': company.id}) }}" class="dropdown-item d-flex align-items-center gap-2">
+                                    {{ ux_icon('tabler:building', {width: 16, height: 16}) }}
+                                    {{ company }}
+                                </a>
+                            {% endfor %}
+                            <a href="{{ path('_create_company') }}" class="dropdown-item d-flex align-items-center gap-2">
+                                {{ ux_icon('tabler:plus', {width: 16, height: 16}) }}
+                                {{ 'layout.add_company'|trans }}
+                            </a>
+                            <div class="dropdown-divider"></div>
+                        {% endif %}
                         <a href="{{ path('_profile') }}" class="dropdown-item d-flex align-items-center gap-2">
                             {{ ux_icon('tabler:user', {width: 16, height: 16}) }}
                             {{ 'layout.profile'|trans }}
