@@ -169,6 +169,7 @@ final class SubscriptionEndRetentionTest extends KernelTestCase
         $this->em()->clear();
         self::assertNull($this->em()->find(Company::class, $companyId));
         $conn = $this->em()->getConnection();
+        fwrite(STDERR, 'DIAG2 ' . json_encode(['s' => $conn->fetchAllAssociative('select hex(id) id, typeof(id) t, hex(subscriber_id) h from saas_subscription'), 'found' => null !== $this->em()->find(Subscription::class, $subscriptionId), 'listeners' => $this->em()->getClassMetadata(Company::class)->entityListeners, 'subListeners' => $this->em()->getClassMetadata(Subscription::class)->entityListeners, 'kernel' => self::$kernel::class, 'bundles' => array_keys(self::$kernel->getBundles())], JSON_INVALID_UTF8_SUBSTITUTE) . PHP_EOL);
         fwrite(STDERR, 'DIAG ' . json_encode(['c' => $conn->fetchAllAssociative('select hex(id) id, typeof(id) t from companies')], JSON_INVALID_UTF8_SUBSTITUTE) . PHP_EOL);
         self::assertNull($this->em()->find(Subscription::class, $subscriptionId), 'DIAG ' . json_encode([
             'sqlite' => $conn->fetchOne('select sqlite_version()'),
