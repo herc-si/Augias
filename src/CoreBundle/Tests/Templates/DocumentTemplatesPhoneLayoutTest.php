@@ -76,6 +76,10 @@ final class DocumentTemplatesPhoneLayoutTest extends TestCase
         }
 
         self::assertSame(1, $described, 'The description cell is marked, it heads the card on a phone.');
+
+        if (str_contains($table[0], '<thead')) {
+            self::assertMatchesRegularExpression('/<table class="[^"]*\bdoc-lines-stacked\b/', $table[0], 'A table with a header is stacked into cards on a phone.');
+        }
     }
 
     #[DataProvider('publicViews')]

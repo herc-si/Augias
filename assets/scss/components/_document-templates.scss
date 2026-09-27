@@ -56,9 +56,11 @@
     }
 }
 
-// The designs above and the default public views share the line layout.
+// The designs above and the default public views share the line layout. An
+// explicit class rather than :has(thead): browsers without :has() (older
+// Android ones) would have kept the wide table.
 
-table.doc-lines:has(thead) {
+table.doc-lines-stacked {
     @include media-breakpoint-down(sm) {
 
         thead {
