@@ -43,6 +43,10 @@ services:
       AUGIAS_DEBUG: 1
       SERVER_NAME: ":8765"
       APP_PATH: /app
+      # Every e-mail the app sends lands in Mailpit (below), never in a real
+      # inbox. A company that configures its own delivery in Settings > E-mail
+      # still overrides this, as in production.
+      AUGIAS_MAILER_DSN: "smtp://mailpit:1025"
       # AUGIAS_DATABASE_URL: "mysql://root@db:3306/augias?serverVersion=8.0"
     # The frankenphp base image probes Caddy's admin API on :2019, which the
     # Caddyfile turns off (`admin off`), so the inherited check can never pass
@@ -98,6 +102,8 @@ services:
     environment:
       AUGIAS_ENV: dev
       AUGIAS_DEBUG: 1
+      # The worker is what sends queued e-mails: it must reach Mailpit too.
+      AUGIAS_MAILER_DSN: "smtp://mailpit:1025"
       # AUGIAS_DATABASE_URL: "mysql://root@db:3306/augias?serverVersion=8.0"
     volumes:
       - .:/app
@@ -136,6 +142,7 @@ services:
     environment:
       AUGIAS_ENV: dev
       AUGIAS_DEBUG: 1
+      AUGIAS_MAILER_DSN: "smtp://mailpit:1025"
     volumes:
       - .:/app
       - dev_vendor:/app/vendor
@@ -143,6 +150,15 @@ services:
     command: >
       sh -c "until [ -f vendor/autoload.php ]; do sleep 1; done &&
              bin/console messenger:consume --all --exclude-receivers=async --exclude-receivers=failed --time-limit=3600 --memory-limit=128M -vv"
+
+  # Catches every e-mail the dev stack sends and shows it at
+  # http://localhost:8025 — invoices, reminders, password resets — without a
+  # single one reaching a real address. SMTP on mailpit:1025 inside the network.
+  mailpit:
+    image: "axllent/mailpit:v1.27"
+    ports:
+      - "8025:8025"
+    restart: unless-stopped
 
   # db:
   #   image: "mysql:8.0"

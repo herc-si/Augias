@@ -124,7 +124,7 @@ The first-run wizard configures everything you need to get started. The variable
 | `AUGIAS_APP_SECRET` | Long random string used to sign cookies and CSRF tokens. |
 | `AUGIAS_APPLICATION_URL` | Public URL of the installation, e.g. `https://invoice.example.com`. |
 | `AUGIAS_DATABASE_URL` | Database DSN. The first-run wizard can also write this for you. |
-| `AUGIAS_MAILER_DSN` | Outbound mail transport (SMTP, Mailgun, SendGrid, etc.). Overrides the transport configured in the UI. |
+| `AUGIAS_MAILER_DSN` | Default outbound mail transport (SMTP, Mailgun, SendGrid, etc.), used by every company that has not set its own under `Settings` > `E-mail`. See [Sending emails](../sending-emails.md). |
 | `AUGIAS_MAILER_SENDER` | The `From:` address Augias sends mail from. Overrides the address configured in the UI. |
 | `AUGIAS_LOCALE` | Default locale (e.g. `en`). |
 | `AUGIAS_TELEMETRY_URL` | Where anonymous usage figures are sent. Empty by default, and Augias ships no collector of its own: leave it empty and nothing is ever sent anywhere. |
