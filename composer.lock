@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "42cdd9d9ed682cb4939e1293552f3719",
+    "content-hash": "80b2100ddb8c32314c2f04fe898a95ea",
     "packages": [
         {
             "name": "alcohol/iso4217",
@@ -9746,12 +9746,12 @@
             "version": "2.0.0-beta2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/SolidWorx/Toggler.git",
+                "url": "https://github.com/herc-si/Toggler.git",
                 "reference": "1958642983833bcf29524176e550a72220fe537a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SolidWorx/Toggler/zipball/1958642983833bcf29524176e550a72220fe537a",
+                "url": "https://api.github.com/repos/herc-si/Toggler/zipball/1958642983833bcf29524176e550a72220fe537a",
                 "reference": "1958642983833bcf29524176e550a72220fe537a",
                 "shasum": ""
             },
@@ -9795,7 +9795,6 @@
                     "SolidWorx\\Toggler\\Tests\\": "./tests"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -9815,8 +9814,7 @@
                 "toggle"
             ],
             "support": {
-                "issues": "https://github.com/SolidWorx/Toggler/issues",
-                "source": "https://github.com/SolidWorx/Toggler/tree/2.0.0-beta2"
+                "source": "https://github.com/herc-si/Toggler/tree/2.0.0-beta2"
             },
             "time": "2025-06-03T09:25:46+00:00"
         },

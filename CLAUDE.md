@@ -93,6 +93,7 @@ Use these traits on entities as needed:
 - Commands extend `SolidWorx\Platform\PlatformBundle\Console\Command`
 - Use SolidWorx/PlatformUI components for UI
 - Installed from HERC SI's fork, `herc-si/platform`, branch `augias` (`composer.json` → `repositories`), not upstream `dev-main`: an update is a deliberate move of that branch (cherry-pick or fast-forward from `SolidWorx/platform`), then `composer update solidworx/platform`
+- `solidworx/toggler` likewise comes from HERC SI's fork, `herc-si/Toggler`, at the published tag the constraint names
 
 ---
 
