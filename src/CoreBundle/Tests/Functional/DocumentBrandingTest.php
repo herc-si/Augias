@@ -153,6 +153,23 @@ final class DocumentBrandingTest extends WebTestCase
         );
     }
 
+    /**
+     * Self-hosted, "Powered by Augias" is the owner's to leave out: of the
+     * PDFs and of the page a client opens.
+     */
+    public function testASelfHostedOwnerCanHidePoweredBy(): void
+    {
+        $invoice = $this->invoice();
+
+        self::assertStringContainsString('Powered By Augias', $this->twig()->render('@AugiasInvoice/Pdf/invoice.html.twig', ['invoice' => $invoice]));
+        $this->browser()->visit('/view/invoice/' . $invoice->getUuid())->assertSuccessful()->assertSeeElement('.app-branding-header');
+
+        $this->config()->set(DesignConfigProvider::HIDE_POWERED_BY, '1');
+
+        self::assertStringNotContainsString('Powered By', $this->twig()->render('@AugiasInvoice/Pdf/invoice.html.twig', ['invoice' => $invoice]));
+        $this->browser()->visit('/view/invoice/' . $invoice->getUuid())->assertSuccessful()->assertNotSeeElement('.app-branding-header');
+    }
+
     public function testTheDesignTabOffersTheTemplatesAndTheBranding(): void
     {
         $user = UserFactory::createOne(['companies' => [$this->company]]);
@@ -168,6 +185,7 @@ final class DocumentBrandingTest extends WebTestCase
             ->assertSeeElement('input[name="settings[accent_color]"]')
             ->assertSeeElement('textarea[name="settings[footer_text]"]')
             ->assertSeeElement('input[name="settings[iban]"]')
+            ->assertSeeElement('input[type="checkbox"][name="settings[hide_powered_by]"]')
             ->visit('/settings/templates/preview/classic')
             ->assertSuccessful();
     }

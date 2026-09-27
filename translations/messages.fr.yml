@@ -3527,6 +3527,9 @@ settings:
             footer_text:
                 description: "Mentions à répéter en bas de chaque page : forme juridique et capital, RCS, pénalités de retard, escompte… 400 caractères au plus."
                 label: "Pied de page"
+            hide_powered_by:
+                description: "Retire la mention « Propulsé par Augias » de vos PDF, de vos e-mails et des pages que vos clients consultent."
+                label: "Masquer « Propulsé par Augias »"
             iban:
                 description: "Imprimé en pied de page pour que vos clients vous paient par virement. Laissez vide pour ne pas l'afficher."
                 label: IBAN

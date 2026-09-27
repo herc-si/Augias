@@ -19,6 +19,7 @@ use Augias\CoreBundle\Templates\BillingTemplateResolver;
 use Augias\SettingsBundle\Config\ProviderInterface;
 use Augias\SettingsBundle\DTO\Config;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
@@ -45,6 +46,9 @@ final class DesignConfigProvider implements ProviderInterface
     public const string IBAN = 'design/iban';
 
     public const string BIC = 'design/bic';
+
+    /** Self-hosted only: the hosted service keeps its paid switch, see BrandExtension::hidePoweredBy(). */
+    public const string HIDE_POWERED_BY = 'design/hide_powered_by';
 
     /**
      * @return Config[]
@@ -74,6 +78,9 @@ final class DesignConfigProvider implements ProviderInterface
             new Config(self::BIC, null, 'settings.page.design.bic.description', TextType::class, [
                 'label' => 'settings.page.design.bic.label',
                 'attr' => ['maxlength' => 11],
+            ]),
+            new Config(self::HIDE_POWERED_BY, '0', 'settings.page.design.hide_powered_by.description', CheckboxType::class, [
+                'label' => 'settings.page.design.hide_powered_by.label',
             ]),
         ];
     }

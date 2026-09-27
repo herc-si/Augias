@@ -14,11 +14,11 @@
  # rule of the including template names it (footer: html_footer) and reserves
  # its height with pdf_footer_margin().
  #
- # "Powered by" is hidden only where the custom_branding feature is on: a
- # no-op self-hosted, a paid option on the hosted service.
+ # "Powered by" is left out when hide_powered_by() says so: the owner's
+ # choice self-hosted, a paid option on the hosted service.
  #}
 {% set footer = document_footer() %}
-{% set hide_powered_by = setting('system/general/hide_powered_by') is same as ('1') and feature_enabled('custom_branding') %}
+{% set hide_powered_by = hide_powered_by() %}
 <htmlpagefooter name="footer">
     <div style="border-top: 1px solid #e2e8f0; padding-top: 6px; font-size: 7.5pt; color: #64748b;">
         {% if footer.text %}

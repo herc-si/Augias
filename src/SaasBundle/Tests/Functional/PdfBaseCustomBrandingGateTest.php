@@ -16,31 +16,35 @@ namespace Augias\SaasBundle\Tests\Functional;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\ClientBundle\Test\Factory\ContactFactory;
 use Augias\CoreBundle\Company\CompanySelector;
+use Augias\CoreBundle\Config\DesignConfigProvider;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\Discount;
+use Augias\CoreBundle\Twig\Extension\BrandExtension;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Augias\SettingsBundle\Entity\Setting;
+use Augias\SettingsBundle\SystemConfig;
 use Brick\Math\BigInteger;
 use Carbon\CarbonImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\Group;
 use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
+use SolidWorx\Toggler\ToggleInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Twig\Environment;
 
 /**
- * Verifies that the PDF base template (`_pdf_base.html.twig`) gates the
- * `system/general/hide_powered_by` setting on the `custom_branding` feature:
+ * Verifies who decides whether the PDF footer says "Powered By":
  *
- * - When the feature is disabled (Free/Solo plans), the "Powered By" line is
- *   always rendered regardless of the stored DB value.
- * - When the feature is enabled, the setting controls visibility as before.
- * - On self-hosted (NoopFeatureGate), `hide_powered_by=1` suppresses the line.
+ * - On the hosted service, `system/general/hide_powered_by` counts only with
+ *   the `custom_branding` feature: without it (Free/Solo plans) the line is
+ *   always rendered, whatever the stored value.
+ * - Self-hosted, the owner's box on the design tab (`design/hide_powered_by`)
+ *   decides; the hosted switch counts for nothing.
  *
  * The "Powered By" content lives in the `<pagefooter content-left=...>`
  * attribute of the rendered template (see `classic/pdf.html.twig` which
@@ -63,6 +67,7 @@ final class PdfBaseCustomBrandingGateTest extends KernelTestCase
         $featureGate->method('isEnabled')
             ->willReturnCallback(static fn (string $key): bool => $key !== 'custom_branding');
         self::getContainer()->set(FeatureGate::class, $featureGate);
+        $this->hosted($featureGate);
 
         $this->reloadCompany();
         // Persist hide_powered_by=1 in the database (the "I'm hiding it" intent
@@ -84,6 +89,7 @@ final class PdfBaseCustomBrandingGateTest extends KernelTestCase
         $featureGate->method('isEnabled')
             ->willReturn(true);
         self::getContainer()->set(FeatureGate::class, $featureGate);
+        $this->hosted($featureGate);
 
         $this->reloadCompany();
         $this->seedHidePoweredBy('1');
@@ -103,6 +109,7 @@ final class PdfBaseCustomBrandingGateTest extends KernelTestCase
         $featureGate->method('isEnabled')
             ->willReturn(true);
         self::getContainer()->set(FeatureGate::class, $featureGate);
+        $this->hosted($featureGate);
 
         $this->reloadCompany();
         $this->seedHidePoweredBy('0');
@@ -112,20 +119,33 @@ final class PdfBaseCustomBrandingGateTest extends KernelTestCase
         self::assertStringContainsString('Powered By', $output);
     }
 
-    public function testSelfHostedNoopFeatureGateRespectsHidePoweredBySetting(): void
+    public function testSelfHostedTheDesignTabBoxDecides(): void
     {
-        // Self-hosted FeatureGate (NoopFeatureGate) reports every feature as
-        // enabled, so a stored hide_powered_by=1 takes effect.
-        $this->seedHidePoweredBy('1');
-
-        // Do NOT replace the gate — exercise the wired implementation.
         if (($_ENV['AUGIAS_PLATFORM'] ?? $_SERVER['AUGIAS_PLATFORM'] ?? null) === 'saas') {
             self::markTestSkipped('Self-hosted scenario is exercised in non-SaaS test runs only.');
         }
 
-        $output = $this->renderPdfTemplate();
+        $invoice = $this->createFixtureInvoice();
 
-        self::assertStringNotContainsString('Powered By', $output);
+        // The hosted switch alone hides nothing self-hosted...
+        $this->seedHidePoweredBy('1');
+        self::assertStringContainsString('Powered By', $this->renderPdfTemplate($invoice));
+
+        // ...the owner's box does.
+        $this->seedHidePoweredBy('1', DesignConfigProvider::HIDE_POWERED_BY);
+        self::assertStringNotContainsString('Powered By', $this->renderPdfTemplate($invoice));
+    }
+
+    /**
+     * The hosted service, for the one service that asks: the toggle itself is
+     * shared by too many to be swapped.
+     */
+    private function hosted(FeatureGate $featureGate): void
+    {
+        $toggle = $this->createStub(ToggleInterface::class);
+        $toggle->method('isActive')->willReturnCallback(static fn (string $feature): bool => 'saas_enabled' === $feature);
+
+        self::getContainer()->set(BrandExtension::class, new BrandExtension(self::getContainer()->get(SystemConfig::class), $toggle, $featureGate));
     }
 
     private function reloadCompany(): void
@@ -139,7 +159,7 @@ final class PdfBaseCustomBrandingGateTest extends KernelTestCase
         self::getContainer()->get(CompanySelector::class)->switchCompany($this->company->getId());
     }
 
-    private function seedHidePoweredBy(string $value): void
+    private function seedHidePoweredBy(string $value, string $key = self::SETTING_KEY): void
     {
         $em = self::getContainer()->get(EntityManagerInterface::class);
         self::assertInstanceOf(EntityManagerInterface::class, $em);
@@ -148,7 +168,7 @@ final class PdfBaseCustomBrandingGateTest extends KernelTestCase
         // (self-hosted has no SaasBundle ConfigProvider seeding it), persist a
         // new row directly so the template can read a deterministic value.
         $repo = $em->getRepository(Setting::class);
-        $existing = $repo->findOneBy(['key' => self::SETTING_KEY]);
+        $existing = $repo->findOneBy(['key' => $key]);
 
         if ($existing instanceof Setting) {
             $existing->setValue($value);
@@ -158,7 +178,7 @@ final class PdfBaseCustomBrandingGateTest extends KernelTestCase
         }
 
         $setting = new Setting();
-        $setting->setKey(self::SETTING_KEY);
+        $setting->setKey($key);
         $setting->setValue($value);
         $setting->setType(CheckboxType::class);
         $setting->setDefaultValue('0');
@@ -168,9 +188,9 @@ final class PdfBaseCustomBrandingGateTest extends KernelTestCase
         $em->flush();
     }
 
-    private function renderPdfTemplate(): string
+    private function renderPdfTemplate(?Invoice $invoice = null): string
     {
-        $invoice = $this->createFixtureInvoice();
+        $invoice ??= $this->createFixtureInvoice();
 
         $twig = self::getContainer()->get('twig');
         self::assertInstanceOf(Environment::class, $twig);

@@ -483,6 +483,10 @@
                     <p class="text-muted small mb-3">
                         {{ 'settings.page.design.branding.subtitle'|trans }}
                     </p>
+                    {# Self-hosted only: the hosted service has its own, paid, switch. #}
+                    {% if form.hide_powered_by is defined and toggle('saas_enabled') %}
+                        {% do form.hide_powered_by.setRendered %}
+                    {% endif %}
                     {{ form_widget(form) }}
                 </div>
             {% else %}

@@ -66,6 +66,7 @@ final class SystemConfigTest extends KernelTestCase
             'design/accent_color' => null,
             'design/bic' => null,
             'design/footer_text' => null,
+            'design/hide_powered_by' => '0',
             'design/iban' => null,
             'design/template' => 'default',
             'email/from_address' => 'no-reply@augias.example',

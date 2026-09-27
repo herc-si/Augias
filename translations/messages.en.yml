@@ -3527,6 +3527,9 @@ settings:
             footer_text:
                 description: 'Text repeated at the foot of every page: legal form and capital, registration, late payment penalties, discount terms… 400 characters at most.'
                 label: Footer
+            hide_powered_by:
+                description: 'Leaves "Powered by Augias" out of your PDFs, your emails and the pages your clients open.'
+                label: 'Hide "Powered by Augias"'
             iban:
                 description: 'Printed in the footer so your clients can pay you by transfer. Leave empty not to show it.'
                 label: IBAN
