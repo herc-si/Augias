@@ -21,6 +21,7 @@ use Augias\SettingsBundle\SystemConfig;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 
 #[Group('functional')]
@@ -39,8 +40,10 @@ final class TemplatePreviewActionTest extends KernelTestCase
             $response = $action($slug);
 
             self::assertSame(200, $response->getStatusCode(), $slug);
-            self::assertStringContainsString('INV-2025-0042', (string) $response->getContent(), $slug);
+            self::assertStringContainsString('INV-' . date('Y') . '-0042', (string) $response->getContent(), $slug);
             self::assertStringContainsString('Acme Studios', (string) $response->getContent(), $slug);
+            // The sample carries units, as a real invoice's lines do.
+            self::assertStringContainsString('2 d', (string) $response->getContent(), $slug);
         }
     }
 
@@ -51,7 +54,8 @@ final class TemplatePreviewActionTest extends KernelTestCase
         $response = $action(BillingTemplateRegistry::DEFAULT_SLUG);
 
         self::assertSame(200, $response->getStatusCode());
-        self::assertStringContainsString('INV-2025-0042', (string) $response->getContent());
+        self::assertStringContainsString('INV-' . date('Y') . '-0042', (string) $response->getContent());
+        self::assertStringNotContainsString('{PAGENO}', (string) $response->getContent());
         // The default is an mPDF page document; the preview must constrain it
         // to a sheet instead of letting it stretch edge-to-edge.
         self::assertStringContainsString('max-width: 800px', (string) $response->getContent());
@@ -70,7 +74,7 @@ final class TemplatePreviewActionTest extends KernelTestCase
     {
         return new TemplatePreviewAction(
             $registry,
-            new PreviewInvoiceFactory(self::getContainer()->get(SystemConfig::class)),
+            new PreviewInvoiceFactory(self::getContainer()->get(SystemConfig::class), self::getContainer()->get(TranslatorInterface::class)),
             self::getContainer()->get(Environment::class),
         );
     }

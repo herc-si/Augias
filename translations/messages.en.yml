@@ -3267,6 +3267,19 @@ saas:
             description: 'Remove the "Powered by Augias" line from invoices and quotes.'
         template_preview:
             title: 'Template preview'
+            sample:
+                client: 'Acme Studios'
+                contact_first_name: Jane
+                contact_last_name: Doe
+                street: '742 Evergreen Terrace'
+                city: Springfield
+                zip: '49007'
+                country: US
+                invoice_prefix: INV
+                terms: "Payment due within 14 days.\nBank transfer or card accepted."
+                line_identity: 'Brand identity design'
+                line_website: 'Landing page implementation'
+                line_support: 'Consulting & support'
     trial_banner:
         cancelled:
             cta: 'Renew Subscription'

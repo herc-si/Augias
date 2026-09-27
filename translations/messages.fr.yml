@@ -3267,6 +3267,19 @@ saas:
             description: 'Retire la mention « Powered by Augias » des factures et des devis.'
         template_preview:
             title: 'Aperçu du modèle'
+            sample:
+                client: 'Studio Acme'
+                contact_first_name: Jeanne
+                contact_last_name: Martin
+                street: '12 rue de la Paix'
+                city: Paris
+                zip: '75002'
+                country: FR
+                invoice_prefix: FACT
+                terms: "Paiement à 14 jours par virement.\nPas d'escompte pour paiement anticipé."
+                line_identity: 'Création de l''identité visuelle'
+                line_website: 'Intégration de la page d''accueil'
+                line_support: 'Conseil et accompagnement'
     trial_banner:
         cancelled:
             cta: 'Renouveler l''abonnement'
