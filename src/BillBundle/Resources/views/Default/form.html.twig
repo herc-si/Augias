@@ -11,6 +11,23 @@
 
 {% block content %}
 <div class="form-page">
+    {# Outside the bill's own form: a form cannot hold another. #}
+    {% if (bill is not defined or bill.id is empty) and route_allowed('_bills_import') %}
+        <div class="form-page-container form-page-container--narrow mb-3">
+            <twig:Ui:Alert type="info" icon="tabler:upload">
+                <form method="post" action="{{ path('_bills_import') }}" enctype="multipart/form-data" class="d-flex flex-column flex-md-row align-items-md-center gap-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('bill_import') }}">
+                    <div class="flex-fill">
+                        <strong>{{ 'bill.import.title'|trans }}</strong>
+                        <div class="small">{{ 'bill.import.help'|trans }}</div>
+                    </div>
+                    <input type="file" name="invoice" accept=".pdf,.xml" class="form-control form-control-sm w-auto" required>
+                    <button class="btn btn-sm btn-primary">{{ 'bill.import.submit'|trans }}</button>
+                </form>
+            </twig:Ui:Alert>
+        </div>
+    {% endif %}
+
     {{ form_start(form) }}
 
     {{ form_errors(form) }}
@@ -24,6 +41,9 @@
                 <div>
                     {% if bill is defined and bill.id is not empty %}
                         <h1 class="form-page-title">{{ 'bill.form.edit_title'|trans }}</h1>
+                        {% if bill.documentPath %}
+                            <p class="form-page-subtitle"><a href="{{ path('_bills_document', {'id': bill.id}) }}" target="_blank" rel="noopener">{{ ux_icon('tabler:paperclip', {width: 16, height: 16}) }} {{ 'bill.view.document'|trans }}</a></p>
+                        {% endif %}
                     {% else %}
                         <h1 class="form-page-title">{{ 'bill.form.add_title'|trans }}</h1>
                         <p class="form-page-subtitle">{{ 'bill.form.subtitle'|trans }}</p>

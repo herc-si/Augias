@@ -14,7 +14,9 @@ declare(strict_types=1);
 use Augias\BillBundle\Action\Add;
 use Augias\BillBundle\Action\CreateFromReceipt;
 use Augias\BillBundle\Action\Delete;
+use Augias\BillBundle\Action\DownloadDocument;
 use Augias\BillBundle\Action\Edit;
+use Augias\BillBundle\Action\Import;
 use Augias\BillBundle\Action\Index;
 use Augias\BillBundle\Action\RecordPayment;
 use Augias\BillBundle\Action\Transition;
@@ -56,4 +58,15 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_bills_create_from_receipt', '/create-from-receipt/{id}')
         ->controller(CreateFromReceipt::class);
+
+    // A supplier's Factur-X file, read into a draft bill.
+    $routingConfigurator
+        ->add('_bills_import', '/import')
+        ->controller(Import::class)
+        ->methods(['POST']);
+
+    $routingConfigurator
+        ->add('_bills_document', '/document/{id}')
+        ->controller(DownloadDocument::class)
+        ->methods(['GET']);
 };

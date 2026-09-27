@@ -418,6 +418,17 @@ bill:
         status: "Status"
         supplier: "Supplier"
         total: "Total"
+    import:
+        title: 'Import a Factur-X invoice'
+        help: 'Drop your supplier''s Factur-X PDF (or its XML): supplier, number, dates and amounts are taken from the invoice itself, then you check before confirming.'
+        submit: Import
+        success: 'Invoice imported from its Factur-X, as a draft: check it, then save. The file is attached.'
+        no_file: 'Choose a PDF or XML file (10 MB at most).'
+        invalid_token: 'The form expired, try again.'
+        error:
+            not_facturx: 'This file holds no readable Factur-X invoice: type it in below.'
+            credit_note: 'This file is a supplier credit note, which supplier invoices do not handle yet.'
+            currency: 'This invoice is in a currency the application cannot handle.'
     menu:
         add: 'Add Bill'
         list: Bills
@@ -461,6 +472,7 @@ bill:
             pay: 'Bill cannot be paid'
             reopen: 'Bill cannot be re-opened'
     view:
+        document: 'See the supplier''s invoice'
         balance: Balance
         details: 'Bill Details'
         net: 'Net'
