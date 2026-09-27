@@ -135,6 +135,15 @@
                             <p>{{ bill.notes }}</p>
                         </div>
                     {% endif %}
+                    {% if bill.documentPath %}
+                        <a class="btn btn-sm mt-3" href="{{ path('_bills_document', {'id': bill.id}) }}" target="_blank" rel="noopener">
+                            {{ ux_icon('tabler:paperclip', {width: 16, height: 16}) }} {{ 'bill.view.document'|trans }}
+                        </a>
+                    {% elseif bill.electronicInvoiceReceipt and bill.electronicInvoiceReceipt.hasDocument %}
+                        <a class="btn btn-sm mt-3" href="{{ path('_einvoicing_incoming_download', {'id': bill.electronicInvoiceReceipt.id}) }}">
+                            {{ ux_icon('tabler:paperclip', {width: 16, height: 16}) }} {{ 'bill.view.document'|trans }}
+                        </a>
+                    {% endif %}
                 </div>
             </div>
 

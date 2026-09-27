@@ -16,6 +16,7 @@ namespace Augias\BillBundle\Tests\Manager;
 use Augias\BillBundle\Entity\Bill;
 use Augias\BillBundle\Enum\BillStatus;
 use Augias\BillBundle\Manager\BillManager;
+use Augias\BillBundle\Manager\SupplierResolver;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Repository\ClientRepository;
 use Augias\CoreBundle\Entity\Company;
@@ -61,7 +62,7 @@ final class BillManagerTest extends TestCase
         $entityManager->shouldReceive('persist')->twice();
         $entityManager->shouldReceive('flush')->once();
 
-        $manager = new BillManager($entityManager, $clientRepository, $this->systemConfig());
+        $manager = new BillManager($entityManager, new SupplierResolver($entityManager, $clientRepository), $this->systemConfig());
 
         $bill = $manager->createFromReceipt($receipt);
 
@@ -133,7 +134,7 @@ final class BillManagerTest extends TestCase
         $entityManager->shouldReceive('persist')->once();
         $entityManager->shouldReceive('flush')->once();
 
-        $manager = new BillManager($entityManager, $clientRepository, $this->systemConfig());
+        $manager = new BillManager($entityManager, new SupplierResolver($entityManager, $clientRepository), $this->systemConfig());
 
         $bill = $manager->createFromReceipt($receipt);
 
@@ -162,7 +163,7 @@ final class BillManagerTest extends TestCase
         $entityManager->shouldReceive('persist')->once();
         $entityManager->shouldReceive('flush')->once();
 
-        $manager = new BillManager($entityManager, $clientRepository, $this->systemConfig());
+        $manager = new BillManager($entityManager, new SupplierResolver($entityManager, $clientRepository), $this->systemConfig());
 
         $bill = $manager->createFromReceipt($receipt);
 
@@ -186,7 +187,7 @@ final class BillManagerTest extends TestCase
         $entityManager->shouldReceive('persist')->twice();
         $entityManager->shouldReceive('flush')->once();
 
-        $manager = new BillManager($entityManager, $clientRepository, $this->systemConfig());
+        $manager = new BillManager($entityManager, new SupplierResolver($entityManager, $clientRepository), $this->systemConfig());
 
         $bill = $manager->createFromReceipt($receipt);
 
@@ -209,7 +210,7 @@ final class BillManagerTest extends TestCase
         $entityManager->shouldReceive('persist')->twice();
         $entityManager->shouldReceive('flush')->once();
 
-        $manager = new BillManager($entityManager, $clientRepository, $this->systemConfig());
+        $manager = new BillManager($entityManager, new SupplierResolver($entityManager, $clientRepository), $this->systemConfig());
 
         $bill = $manager->createFromReceipt($receipt);
 
@@ -242,7 +243,7 @@ final class BillManagerTest extends TestCase
         $entityManager->shouldReceive('persist');
         $entityManager->shouldReceive('flush');
 
-        return new BillManager($entityManager, $clientRepository, $this->systemConfig($vatExempt))->createFromReceipt($receipt);
+        return new BillManager($entityManager, new SupplierResolver($entityManager, $clientRepository), $this->systemConfig($vatExempt))->createFromReceipt($receipt);
     }
 
     private function systemConfig(bool $vatExempt = false): SystemConfig

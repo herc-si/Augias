@@ -360,6 +360,17 @@ bill:
         status: "Statut"
         supplier: "Fournisseur"
         total: "Total"
+    import:
+        title: 'Importer une facture Factur-X'
+        help: "Déposez le PDF Factur-X (ou le XML) de votre fournisseur : fournisseur, numéro, dates et montants sont repris de la facture elle-même, puis vous vérifiez avant de confirmer."
+        submit: Importer
+        success: "Facture importée depuis son Factur-X, en brouillon : vérifiez-la puis enregistrez. Le fichier est joint."
+        no_file: 'Choisissez un fichier PDF ou XML (10 Mo au plus).'
+        invalid_token: 'Le formulaire a expiré, recommencez.'
+        error:
+            not_facturx: "Ce fichier ne contient pas de facture Factur-X lisible : saisissez-la à la main ci-dessous."
+            credit_note: "Ce fichier est un avoir fournisseur, que les factures fournisseurs ne gèrent pas encore."
+            currency: "Cette facture est dans une devise que l'application ne sait pas traiter."
     menu:
         add: 'Ajouter une facture'
         list: Factures
@@ -403,6 +414,7 @@ bill:
             pay: "La facture ne peut pas être payée"
             reopen: "La facture ne peut pas être réouverte"
     view:
+        document: 'Voir la facture du fournisseur'
         balance: Solde
         details: 'Détails de la facture'
         net: 'HT'

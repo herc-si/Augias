@@ -16,6 +16,7 @@ namespace Augias\BillBundle\Tests\Listener;
 use Augias\BillBundle\Entity\Bill;
 use Augias\BillBundle\Listener\CreateBillFromReceiptListener;
 use Augias\BillBundle\Manager\BillManager;
+use Augias\BillBundle\Manager\SupplierResolver;
 use Augias\BillBundle\Repository\BillRepository;
 use Augias\ClientBundle\Repository\ClientRepository;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
@@ -48,7 +49,7 @@ final class CreateBillFromReceiptListenerTest extends TestCase
         // wrongly tries to create a bill.
         $entityManager = M::mock(EntityManagerInterface::class);
         $entityManager->shouldNotReceive('persist');
-        $billManager = new BillManager($entityManager, M::mock(ClientRepository::class), M::mock(SystemConfig::class, ['isVatExempt' => false]));
+        $billManager = new BillManager($entityManager, new SupplierResolver($entityManager, M::mock(ClientRepository::class)), M::mock(SystemConfig::class, ['isVatExempt' => false]));
 
         new CreateBillFromReceiptListener($billRepository, $billManager, M::mock(LoggerInterface::class))(
             new ElectronicInvoiceReceiptImportedEvent($receipt)
@@ -74,7 +75,7 @@ final class CreateBillFromReceiptListenerTest extends TestCase
         $clientRepository = M::mock(ClientRepository::class);
         $clientRepository->shouldReceive('findOneByName')->andReturnNull();
 
-        $billManager = new BillManager($entityManager, $clientRepository, M::mock(SystemConfig::class, ['isVatExempt' => false]));
+        $billManager = new BillManager($entityManager, new SupplierResolver($entityManager, $clientRepository), M::mock(SystemConfig::class, ['isVatExempt' => false]));
 
         $logger = M::mock(LoggerInterface::class);
         $logger->shouldReceive('error')->once();
