@@ -19,16 +19,6 @@
             "email": "opensource@herc-si.fr"
         }
     ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/herc-si/platform"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/herc-si/Toggler"
-        }
-    ],
     "require": {
         "php": ">=8.4.1",
         "ext-curl": "*",
@@ -260,6 +250,16 @@
     "suggest": {
         "ext-zend-opcache": "For best performance"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/herc-si/platform"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/herc-si/Toggler"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "Augias\\": "src/"
