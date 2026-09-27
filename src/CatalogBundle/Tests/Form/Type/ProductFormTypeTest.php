@@ -15,9 +15,9 @@ namespace Augias\CatalogBundle\Tests\Form\Type;
 
 use Augias\CatalogBundle\Entity\Product;
 use Augias\CatalogBundle\Enum\ProductType;
-use Augias\CatalogBundle\Enum\ProductUnit;
 use Augias\CatalogBundle\Form\Type\ProductFormType;
 use Augias\CoreBundle\Entity\Category;
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Tests\FormTestCase;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\SettingsBundle\SystemConfig;
@@ -121,7 +121,7 @@ final class ProductFormTypeTest extends FormTestCase
         $form->submit([
             'name' => 'Journée de développement',
             'type' => ProductType::Service->value,
-            'unit' => ProductUnit::Day->value,
+            'unit' => QuantityUnit::Day->value,
             'salePrice' => '700',
             'active' => '1',
         ], false);
@@ -163,7 +163,7 @@ final class ProductFormTypeTest extends FormTestCase
             'reference' => 'DEV-JOUR',
             'description' => '',
             'type' => ProductType::Service->value,
-            'unit' => ProductUnit::Day->value,
+            'unit' => QuantityUnit::Day->value,
             'salePrice' => '700',
             'purchasePrice' => '250',
             'active' => '1',

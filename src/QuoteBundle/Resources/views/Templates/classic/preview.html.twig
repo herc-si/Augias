@@ -41,7 +41,7 @@
                         <tr>
                             <td>{{ line.description|nl2br }}</td>
                             <td class="text-end font-monospace">{{ line.price|formatCurrency(currency) }}</td>
-                            <td class="text-end">{{ line.qty }}</td>
+                            <td class="text-end">{{ line|line_quantity }}</td>
                             <td class="text-end font-monospace fw-bold">{{ line.total|formatCurrency(currency) }}</td>
                         </tr>
                     {% endfor %}

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Entity;
 
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\TaxBundle\Entity\LineTax;
 use Brick\Math\BigNumber;
@@ -68,4 +69,9 @@ interface LineInterface
      * falls due. See {@see SupplyType}.
      */
     public function getSupplyType(): SupplyType;
+
+    /**
+     * What the quantity counts. See {@see QuantityUnit}.
+     */
+    public function getUnit(): QuantityUnit;
 }

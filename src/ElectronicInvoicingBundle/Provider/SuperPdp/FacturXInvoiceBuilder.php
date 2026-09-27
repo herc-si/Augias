@@ -39,7 +39,6 @@ use Brick\Math\BigNumber;
 use Brick\Math\RoundingMode;
 use horstoeko\zugferd\codelists\ZugferdInvoiceType;
 use horstoeko\zugferd\codelists\ZugferdSchemeIdentifiers;
-use horstoeko\zugferd\codelists\ZugferdUnitCodes;
 use horstoeko\zugferd\codelists\ZugferdVatCategoryCodes;
 use horstoeko\zugferd\codelists\ZugferdVATExemptionReasonCode;
 use horstoeko\zugferd\codelists\ZugferdVatTypeCodes;
@@ -201,7 +200,8 @@ final readonly class FacturXInvoiceBuilder
             $documentBuilder->addNewPosition((string) $line->getId());
             $documentBuilder->setDocumentPositionProductDetails((string) $line->getDescription());
             $documentBuilder->setDocumentPositionNetPrice($unitPrice);
-            $documentBuilder->setDocumentPositionQuantity($qty, ZugferdUnitCodes::REC20_ONE);
+            // What the quantity counts, as the catalogue or the user set it on the line (BT-130).
+            $documentBuilder->setDocumentPositionQuantity($qty, $line->getUnit()->unCode());
 
             /** @var TaxSummaryRow|null $taxRow */
             $taxRow = $breakdown->taxRows[0] ?? null;

@@ -198,6 +198,9 @@
                                         <span class="mobile-label">{{ 'invoice.item.heading.qty'|trans }}</span>
                                         {{ form_widget(item.qty) }}
                                         {{ form_errors(item.qty) }}
+                                        {%- if item.unit is defined %}
+                                            <div class="item-unit mt-1">{{ form_widget(item.unit, {attr: {'aria-label': 'form.field.unit'|trans}}) }}</div>
+                                        {%- endif %}
                                     </div>
                                     {% if hasTax %}
                                         <div class="column-tax">

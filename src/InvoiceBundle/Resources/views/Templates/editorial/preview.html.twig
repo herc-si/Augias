@@ -36,7 +36,7 @@
                         <tr style="border-bottom: 1px solid #e8dcc4;">
                             <td>
                                 <em>{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</em>
-                                <div class="text-muted small">{{ line.qty }} × {{ line.price|formatCurrency(currency) }}</div>
+                                <div class="text-muted small">{{ line|line_quantity }} × {{ line.price|formatCurrency(currency) }}</div>
                             </td>
                             <td class="text-end fs-5">{{ line.total|formatCurrency(currency) }}</td>
                         </tr>

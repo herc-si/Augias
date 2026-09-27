@@ -559,6 +559,14 @@ catalog:
         metre: "Metre"
         month: "Month"
         unit: "Unit"
+    unit_short:
+        day: 'd'
+        flat_rate: 'flat rate'
+        hour: 'h'
+        kilogram: 'kg'
+        litre: 'L'
+        metre: 'm'
+        month: 'mo'
 category:
     constraint:
         at_least_one_usage: 'Choose at least one place this category can be used.'
@@ -1641,6 +1649,7 @@ form:
         disbursement: "Disbursement"
         disbursement.help: "Money advanced in this client's name, re-billed to the euro"
         supply_type: "Supply"
+        unit: "Unit"
         delivery_date: "Delivery date"
         delivery_date.help: "When the goods are delivered, or the service carried out, on a day other than the invoice date. Leave empty otherwise."
         domain: "Domain"

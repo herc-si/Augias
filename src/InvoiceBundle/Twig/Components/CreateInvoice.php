@@ -238,6 +238,8 @@ final class CreateInvoice extends AbstractController
             'description' => $this->catalogLineDescription($product),
             'price' => $this->catalogLinePrice($product),
             'qty' => '1',
+            // What the product is sold by: hours, days, pieces.
+            'unit' => $product->getUnit()->value,
         ];
 
         // The form only has the field where tax is offered; sending it anyway

@@ -177,7 +177,7 @@
                                     <tr>
                                         <td class="item-description">{{ item.description|nl2br }}{% if item.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
                                         <td class="text-end item-amount">{{ item.price|formatCurrency(currency) }}</td>
-                                        <td class="text-center">{{ item.qty }}</td>
+                                        <td class="text-center">{{ item|line_quantity }}</td>
                                         {% if invoice.tax.positive %}
                                             <td class="text-end item-amount">
                                                 {% for lineTax in item.taxes %}{{ lineTax.nameSnapshot }} ({{ lineTax.rateSnapshot }}%){% if not loop.last %}, {% endif %}{% endfor %}

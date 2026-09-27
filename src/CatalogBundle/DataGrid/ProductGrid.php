@@ -15,8 +15,8 @@ namespace Augias\CatalogBundle\DataGrid;
 
 use Augias\CatalogBundle\Entity\Product;
 use Augias\CatalogBundle\Enum\ProductType;
-use Augias\CatalogBundle\Enum\ProductUnit;
 use Augias\CatalogBundle\Repository\ProductRepository;
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\DataGridBundle\Attributes\AsDataGrid;
 use Augias\DataGridBundle\Grid;
 use Augias\DataGridBundle\GridBuilder\Action\EditAction;
@@ -58,7 +58,7 @@ final class ProductGrid extends Grid
                 ->filter(ChoiceFilter::new('type', array_column(array_map(static fn (ProductType $t) => [$t->value, $t->getLabel()], ProductType::cases()), 1, 0))->multiple()),
             StringColumn::new('unit')
                 ->label('catalog.grid.unit')
-                ->formatValue(static fn (ProductUnit $value): TranslatableMessage => new TranslatableMessage($value->getLabel())),
+                ->formatValue(static fn (QuantityUnit $value): TranslatableMessage => new TranslatableMessage($value->getLabel())),
             MoneyColumn::new('salePrice')
                 ->label('catalog.grid.sale_price')
                 ->searchable(false),

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\McpBundle\Mcp\Tool;
 
 use Augias\CoreBundle\Entity\Discount;
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\InvoiceBundle\Entity\Line as InvoiceLine;
 use Augias\InvoiceBundle\Entity\RecurringInvoiceLine;
@@ -162,6 +163,7 @@ final readonly class LineItemBuilder
             }
 
             $line->setSupplyType($this->supplyType($data['supply_type'] ?? null, $index));
+            $line->setUnit($this->unit($data['unit'] ?? null, $index));
 
             $this->attachTaxes($line, $data, $index);
 
@@ -169,6 +171,29 @@ final readonly class LineItemBuilder
         }
 
         return $built;
+    }
+
+    /**
+     * A plain count unless the caller says otherwise, as on the form.
+     */
+    private function unit(mixed $value, int $index): QuantityUnit
+    {
+        if ($value === null) {
+            return QuantityUnit::Unit;
+        }
+
+        $unit = \is_string($value) ? QuantityUnit::tryFrom($value) : null;
+
+        if (! $unit instanceof QuantityUnit) {
+            throw new ToolCallException(sprintf(
+                'Line item #%d has an invalid "unit": %s. Expected one of: %s.',
+                $index,
+                $this->describe($value),
+                implode(', ', array_map(static fn (QuantityUnit $case): string => '"' . $case->value . '"', QuantityUnit::cases())),
+            ));
+        }
+
+        return $unit;
     }
 
     /**
