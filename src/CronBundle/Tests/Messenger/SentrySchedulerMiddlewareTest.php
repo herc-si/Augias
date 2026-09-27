@@ -64,12 +64,17 @@ final class SentrySchedulerMiddlewareTest extends TestCase
             }
         );
 
+        // Sentry keeps its hubs in process-wide runtime contexts, which other
+        // tests — booting the kernel, handling messages — open and may leave
+        // behind. Starting from a fresh SDK state keeps what the middleware
+        // sees down to what this test set, whatever ran before it.
+        SentrySdk::init();
         SentrySdk::setCurrentHub(new Hub($client));
     }
 
     protected function tearDown(): void
     {
-        SentrySdk::setCurrentHub(new Hub());
+        SentrySdk::init();
     }
 
     public function testPassesThroughWhenNoScheduledStamp(): void
@@ -96,7 +101,9 @@ final class SentrySchedulerMiddlewareTest extends TestCase
 
     public function testPassesThroughWhenSentryClientNotConfigured(): void
     {
-        SentrySdk::setCurrentHub(new Hub());
+        // A fresh SDK: one hub, without a client.
+        SentrySdk::init();
+        self::assertNull(SentrySdk::getCurrentHub()->getClient());
 
         $envelope = $this->makeScheduledEnvelope('app:test');
         $stack = $this->makeStack($envelope);
