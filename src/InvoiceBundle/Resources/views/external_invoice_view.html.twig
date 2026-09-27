@@ -66,7 +66,7 @@
                 <div class="card-body">
                     {# Header with Logo and Invoice Info #}
                     <div class="row">
-                        <div class="col-6">
+                        <div class="col-sm-6">
                             {% if app_logo() is not empty %}
                                 <div class="ext-doc-logo mb-3">
                                     {{ app_logo(80) }}
@@ -77,7 +77,7 @@
                                 <div class="ext-doc-vat-number">{{ identifier.label }}: {{ identifier.value }}</div>
                             {% endfor %}
                         </div>
-                        <div class="col-6 text-end">
+                        <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
                             <div class="ext-doc-number-label text-uppercase small mb-1">{{ 'invoice.title'|trans({'%id%': ''}) }}</div>
                             <h1 class="ext-doc-number mb-3">#{{ invoice.invoiceId }}</h1>
                             {{ invoice_label(invoice.status) }}
@@ -160,7 +160,7 @@
 
                     {# Line Items Table #}
                     <div class="table-responsive">
-                        <table class="table ext-doc-items-table">
+                        <table class="table ext-doc-items-table doc-lines">
                             <thead>
                                 <tr>
                                     <th class="text-uppercase small">{{ 'invoice.item.heading.description'|trans }}</th>
@@ -175,15 +175,15 @@
                             <tbody>
                                 {% for item in invoice.feeLines %}
                                     <tr>
-                                        <td class="item-description">{{ item.description|nl2br }}{% if item.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
-                                        <td class="text-end item-amount">{{ item.price|formatCurrency(currency) }}</td>
-                                        <td class="text-center">{{ item|line_quantity }}</td>
+                                        <td class="doc-lines-description item-description">{{ item.description|nl2br }}{% if item.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
+                                        <td class="text-end item-amount" data-label="{{ 'invoice.item.heading.price'|trans }}">{{ item.price|formatCurrency(currency) }}</td>
+                                        <td class="text-center" data-label="{{ 'invoice.item.heading.qty'|trans }}">{{ item|line_quantity }}</td>
                                         {% if invoice.tax.positive %}
-                                            <td class="text-end item-amount">
+                                            <td class="text-end item-amount" data-label="{{ 'invoice.item.heading.tax'|trans }}">
                                                 {% for lineTax in item.taxes %}{{ lineTax.nameSnapshot }} ({{ lineTax.rateSnapshot }}%){% if not loop.last %}, {% endif %}{% endfor %}
                                             </td>
                                         {% endif %}
-                                        <td class="text-end fw-bold item-amount">{{ item.total|formatCurrency(currency) }}</td>
+                                        <td class="text-end fw-bold item-amount" data-label="{{ 'invoice.item.heading.total'|trans }}">{{ item.total|formatCurrency(currency) }}</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

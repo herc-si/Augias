@@ -5,11 +5,11 @@
     <div class="card border border-2 border-dark shadow-sm">
         <div class="card-body p-4">
             <div class="row border-bottom border-dark pb-3 mb-4">
-                <div class="col-6">
+                <div class="col-sm-6">
                     {% if setting('system/company/logo') is not empty %}<div class="mb-2">{{ app_logo(48) }}</div>{% endif %}
                     <h2 class="mb-0">{{ company_name() }}</h2>
                 </div>
-                <div class="col-6 text-end">
+                <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
                     <div class="text-uppercase small text-muted" style="letter-spacing: 2px;">{{ 'quote.pdf.title'|trans }}</div>
                     <div class="display-6 fw-bold">#{{ quote.quoteId }}</div>
                 </div>
@@ -27,7 +27,7 @@
                 </div>
             </div>
 
-            <table class="table table-bordered">
+            <table class="table doc-lines table-bordered">
                 <thead class="table-light">
                     <tr>
                         <th class="text-uppercase small">{{ 'quote.item.heading.description'|trans }}</th>
@@ -39,10 +39,10 @@
                 <tbody>
                     {% for line in quote.lines %}
                         <tr>
-                            <td>{{ line.description|nl2br }}</td>
-                            <td class="text-end font-monospace">{{ line.price|formatCurrency(currency) }}</td>
-                            <td class="text-end">{{ line|line_quantity }}</td>
-                            <td class="text-end font-monospace fw-bold">{{ line.total|formatCurrency(currency) }}</td>
+                            <td class="doc-lines-description">{{ line.description|nl2br }}</td>
+                            <td class="text-end font-monospace" data-label="{{ 'quote.item.heading.price'|trans }}">{{ line.price|formatCurrency(currency) }}</td>
+                            <td class="text-end" data-label="{{ 'quote.item.heading.qty'|trans }}">{{ line|line_quantity }}</td>
+                            <td class="text-end font-monospace fw-bold" data-label="{{ 'quote.item.heading.total'|trans }}">{{ line.total|formatCurrency(currency) }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

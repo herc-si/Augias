@@ -51,7 +51,7 @@
                 </div>
             </div>
 
-            <table class="table">
+            <table class="table doc-lines">
                 <thead>
                     <tr style="border-bottom: 1px solid #e8d7b8;">
                         <th class="text-uppercase small" style="color: #94704a;">{{ 'invoice.item.heading.description'|trans }}</th>
@@ -62,9 +62,9 @@
                 <tbody>
                     {% for line in invoice.feeLines %}
                         <tr style="border-bottom: 1px solid #f1eada;">
-                            <td>{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
-                            <td class="text-end text-muted">{{ line|line_quantity }}</td>
-                            <td class="text-end fw-bold">{{ line.total|formatCurrency(currency) }}</td>
+                            <td class="doc-lines-description">{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
+                            <td class="text-end text-muted" data-label="{{ 'invoice.item.heading.qty'|trans }}">{{ line|line_quantity }}</td>
+                            <td class="text-end fw-bold" data-label="{{ 'invoice.item.heading.total'|trans }}">{{ line.total|formatCurrency(currency) }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

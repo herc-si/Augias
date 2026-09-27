@@ -34,7 +34,7 @@
                 </div>
             </div>
 
-            <table class="table table-borderless">
+            <table class="table doc-lines table-borderless">
                 <thead>
                     <tr class="border-bottom">
                         <th class="text-muted small text-uppercase" style="letter-spacing: 1px;">{{ 'quote.item.heading.description'|trans }}</th>
@@ -46,10 +46,10 @@
                 <tbody>
                     {% for line in quote.lines %}
                         <tr class="border-bottom">
-                            <td class="py-3">{{ line.description|nl2br }}</td>
-                            <td class="py-3 text-end">{{ line|line_quantity }}</td>
-                            <td class="py-3 text-end">{{ line.price|formatCurrency(currency) }}</td>
-                            <td class="py-3 text-end fw-bold">{{ line.total|formatCurrency(currency) }}</td>
+                            <td class="doc-lines-description py-3">{{ line.description|nl2br }}</td>
+                            <td class="py-3 text-end" data-label="{{ 'quote.item.heading.qty'|trans }}">{{ line|line_quantity }}</td>
+                            <td class="py-3 text-end" data-label="{{ 'quote.item.heading.price'|trans }}">{{ line.price|formatCurrency(currency) }}</td>
+                            <td class="py-3 text-end fw-bold" data-label="{{ 'quote.item.heading.total'|trans }}">{{ line.total|formatCurrency(currency) }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

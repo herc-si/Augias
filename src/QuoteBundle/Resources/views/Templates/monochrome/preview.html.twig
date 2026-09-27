@@ -11,7 +11,7 @@
                     <div>{{ company_name() }}</div>
                 </div>
             </div>
-            <div style="font-family: Georgia, serif; font-size: 64px; line-height: 1.05; letter-spacing: -1px; color: #1a1a1a; margin-bottom: 24px;">
+            <div class="doc-title" style="font-family: Georgia, serif; font-size: 64px; line-height: 1.05; letter-spacing: -1px; color: #1a1a1a; margin-bottom: 24px;">
                 {{ 'invoice.number_prefix'|trans }} {{ quote.quoteId }}
             </div>
             <div class="row pt-3 border-top border-dark">
@@ -39,7 +39,7 @@
 
     <div class="card border-0 mt-2" style="background: #ffffff;">
         <div class="card-body p-5">
-            <table class="table">
+            <table class="table doc-lines">
                 <thead>
                     <tr style="border-bottom: 1px solid #e0d8c8;">
                         <th scope="col" class="text-uppercase small text-muted">{{ 'quote.item.heading.description'|trans }}</th>
@@ -50,9 +50,9 @@
                 <tbody>
                     {% for line in quote.lines %}
                         <tr style="border-bottom: 1px solid #e0d8c8;">
-                            <td>{{ line.description|nl2br }}</td>
-                            <td class="text-muted text-end">{{ line|line_quantity }} × {{ line.price|formatCurrency(currency) }}</td>
-                            <td class="text-end fw-bold">{{ line.total|formatCurrency(currency) }}</td>
+                            <td class="doc-lines-description">{{ line.description|nl2br }}</td>
+                            <td class="text-muted text-end" data-label="{{ 'quote.item.heading.qty'|trans }} × {{ 'quote.item.heading.price'|trans }}">{{ line|line_quantity }} × {{ line.price|formatCurrency(currency) }}</td>
+                            <td class="text-end fw-bold" data-label="{{ 'quote.item.heading.total'|trans }}">{{ line.total|formatCurrency(currency) }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
