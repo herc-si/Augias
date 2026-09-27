@@ -338,3 +338,47 @@
         }
     }
 }
+
+// ============================================================================
+// ELECTRONIC INVOICING PANEL - leads the invoice tab, switch in the header
+// ============================================================================
+
+.einvoicing-panel {
+    border-width: 2px;
+
+    .einvoicing-panel-header {
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+    }
+
+    // A tint only: bg-*-lt would also colour the header's text.
+    @each $tone in (primary, success, warning) {
+        &.einvoicing-panel-#{$tone} .einvoicing-panel-header {
+            background: rgba(var(--swp-#{$tone}-rgb), 0.08);
+        }
+    }
+
+    .einvoicing-panel-switch {
+
+        .form-check {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 0;
+            padding-left: 0;
+        }
+
+        .form-check-input {
+            width: 3.25rem;
+            height: 1.75rem;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        label {
+            color: var(--swp-body-color);
+            font-weight: var(--swp-font-weight-bold);
+            cursor: pointer;
+        }
+    }
+}

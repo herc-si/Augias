@@ -20,6 +20,11 @@
     'accounting': {'title': 'settings.page.tab.accounting'|trans, 'icon': 'tabler:calculator'}
 } %}
 
+{# Electronic invoicing is seen from every tab when it needs the company: off although
+ # receiving is required, or on with something still missing. #}
+{% set einvoicingSetting = appSettings.invoice.electronic_invoicing_enabled ?? null %}
+{% set einvoicingAttention = einvoicingSetting is not null and (einvoicingSetting ? not einvoicing_readiness().ready : 'now'|date('Y-m-d') >= '2026-09-01') %}
+
 <div class="settings-page"{{ attributes }}>
     {# Tabs Navigation #}
     <ul class="nav nav-underline mb-4" role="tablist">
@@ -36,6 +41,10 @@
                         {{ ux_icon(meta.icon, {width: 16, height: 16}) }}
                     </span>
                     <span>{{ meta.title }}</span>
+                    {% if settingsSection is same as('invoice') and einvoicingAttention %}
+                        <span class="status-dot status-dot-animated status-warning ms-2" title="{{ 'settings.page.einvoicing.attention'|trans }}"></span>
+                        <span class="visually-hidden">{{ 'settings.page.einvoicing.attention'|trans }}</span>
+                    {% endif %}
                 </a>
             </li>
         {% endfor %}
@@ -213,73 +222,99 @@
                 {# Invoice/Quote/Credit Note Settings - Custom Layout #}
 
                 {% if form.electronic_invoicing_enabled is defined %}
-                    {# Electronic invoicing: what the reform asks, what switching it on changes,
-                     # where the platform is set up — then the switch itself. #}
+                    {# Electronic invoicing leads the tab, set apart from the display settings under
+                     # it: the switch sits in the header, where it is seen first, and next to it what
+                     # the reform asks and when, and what the company still lacks to switch it on. #}
                     {% set einvoicingOn = form.electronic_invoicing_enabled.vars.data %}
-                    <div class="card mb-4 einvoicing-card">
-                        <div class="card-status-start {{ einvoicingOn ? 'bg-success' : 'bg-primary' }}"></div>
-                        <div class="card-body">
-                            <div class="d-flex flex-column flex-sm-row align-items-start gap-3">
-                                <span class="avatar avatar-md {{ einvoicingOn ? 'bg-success-lt' : 'bg-primary-lt' }} flex-shrink-0">
-                                    {{ ux_icon('tabler:file-certificate', {width: 24, height: 24, 'aria-hidden': 'true'}) }}
-                                </span>
-                                <div class="flex-fill w-100">
-                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
-                                        <h3 class="card-title mb-0">{{ 'settings.page.einvoicing.title'|trans }}</h3>
-                                        {% if einvoicingOn %}
-                                            <span class="badge bg-success-lt">{{ ux_icon('tabler:circle-check', {width: 14, height: 14, 'aria-hidden': 'true'}) }} {{ 'settings.page.einvoicing.on'|trans }}</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary-lt">{{ 'settings.page.einvoicing.off'|trans }}</span>
-                                        {% endif %}
-                                    </div>
-                                    <p class="text-muted mb-3">{{ 'settings.page.einvoicing.intro'|trans }}</p>
-
-                                    <div class="row g-3 mb-3">
-                                        <div class="col-md-4">
-                                            <div class="d-flex gap-2 small">
-                                                <span class="text-primary">{{ ux_icon('tabler:calendar', {width: 18, height: 18, 'aria-hidden': 'true'}) }}</span>
-                                                <div>
-                                                    <strong class="d-block">{{ 'settings.page.einvoicing.calendar.title'|trans }}</strong>
-                                                    <span class="text-muted">{{ 'settings.page.einvoicing.calendar.text'|trans }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="d-flex gap-2 small">
-                                                <span class="text-primary">{{ ux_icon('tabler:id', {width: 18, height: 18, 'aria-hidden': 'true'}) }}</span>
-                                                <div>
-                                                    <strong class="d-block">{{ 'settings.page.einvoicing.identifiers.title'|trans }}</strong>
-                                                    <span class="text-muted">{{ 'settings.page.einvoicing.identifiers.text'|trans }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="d-flex gap-2 small">
-                                                <span class="text-primary">{{ ux_icon('tabler:plug-connected', {width: 18, height: 18, 'aria-hidden': 'true'}) }}</span>
-                                                <div>
-                                                    <strong class="d-block">{{ 'settings.page.einvoicing.platform.title'|trans }}</strong>
-                                                    <span class="text-muted">{{ 'settings.page.einvoicing.platform.text'|trans }}</span>
-                                                    {% if route_allowed('_einvoicing_providers') %}
-                                                        <a class="d-inline-flex align-items-center gap-1 mt-1" href="{{ path('_einvoicing_providers') }}">
-                                                            {{ 'settings.page.einvoicing.platform.link'|trans }} {{ ux_icon('tabler:arrow-right', {width: 14, height: 14, 'aria-hidden': 'true'}) }}
-                                                        </a>
-                                                    {% endif %}
-                                                </div>
-                                            </div>
+                    {% set readiness = einvoicing_readiness() %}
+                    {% set today = 'now'|date('Y-m-d') %}
+                    {% set tone = einvoicingOn ? (readiness.ready ? 'success' : 'warning') : (today >= '2026-09-01' ? 'warning' : 'primary') %}
+                    <section class="einvoicing-panel einvoicing-panel-{{ tone }} card mb-4 border-{{ tone }}" aria-labelledby="einvoicing-title">
+                        <div class="card-header einvoicing-panel-header">
+                            <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 w-100">
+                                <div class="d-flex align-items-center gap-3 flex-fill">
+                                    <span class="avatar avatar-md bg-{{ tone }} text-white flex-shrink-0">
+                                        {{ ux_icon('tabler:file-certificate', {width: 26, height: 26, 'aria-hidden': 'true'}) }}
+                                    </span>
+                                    <div>
+                                        <h3 class="card-title fs-3 mb-1" id="einvoicing-title">{{ 'settings.page.einvoicing.title'|trans }}</h3>
+                                        <div class="text-muted">
+                                            {%- if einvoicingOn and readiness.ready -%}
+                                                {{ 'settings.page.einvoicing.status.running'|trans }}
+                                            {%- elseif einvoicingOn -%}
+                                                {{ 'settings.page.einvoicing.status.incomplete'|trans }}
+                                            {%- elseif today >= '2026-09-01' -%}
+                                                {{ 'settings.page.einvoicing.status.required'|trans }}
+                                            {%- else -%}
+                                                {{ 'settings.page.einvoicing.status.off'|trans }}
+                                            {%- endif -%}
                                         </div>
                                     </div>
-
-                                    <div class="border-top pt-3">
-                                        {{ form_row(form.electronic_invoicing_enabled, {
-                                            label: 'settings.page.einvoicing.switch'|trans,
-                                            help: 'tax.electronic_invoicing.description'|trans,
-                                            label_attr: {class: 'checkbox-switch'},
-                                        }) }}
-                                    </div>
+                                </div>
+                                <div class="einvoicing-panel-switch flex-shrink-0">
+                                    {{ form_widget(form.electronic_invoicing_enabled, {
+                                        label: einvoicingOn ? 'settings.page.einvoicing.on'|trans : 'settings.page.einvoicing.off'|trans,
+                                        label_attr: {class: 'checkbox-switch'},
+                                        attr: {'aria-describedby': 'einvoicing-title'},
+                                    }) }}
                                 </div>
                             </div>
                         </div>
-                    </div>
+                        <div class="card-body">
+                            <p class="mb-4">{{ 'settings.page.einvoicing.intro'|trans }}</p>
+                            <div class="row g-4">
+                                <div class="col-lg-6">
+                                    <h4 class="subheader text-muted mb-3">{{ 'settings.page.einvoicing.calendar.title'|trans }}</h4>
+                                    <ul class="steps steps-vertical steps-{{ tone == 'warning' ? 'orange' : (tone == 'success' ? 'green' : 'blue') }} mb-0">
+                                        {% set steps = [
+                                            {date: '2026-09-01', key: 'receive'},
+                                            {date: '2026-09-01', key: 'issue_large'},
+                                            {date: '2027-09-01', key: 'issue_small'},
+                                        ] %}
+                                        {# Tabler colours every step up to the active one: the last date reached. #}
+                                        {% set reached = steps|filter(step => step.date <= today)|length %}
+                                        {% for step in steps %}
+                                            <li class="step-item{{ loop.index == reached ? ' active' }}">
+                                                <div class="h4 m-0">{{ step.date|format_date('long') }}</div>
+                                                <div class="text-muted">{{ ('settings.page.einvoicing.calendar.' ~ step.key)|trans }}</div>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h4 class="subheader text-muted mb-3">{{ 'settings.page.einvoicing.checklist.title'|trans }}</h4>
+                                    <ul class="list-unstyled einvoicing-checklist mb-0">
+                                        {% set checks = [
+                                            {ok: readiness.siret, key: 'siret', href: path('_settings', {section: 'system'}) ~ '#company-identifiers'},
+                                        ] %}
+                                        {% if readiness.vat is not null %}
+                                            {% set checks = checks|merge([{ok: readiness.vat, key: 'vat', href: path('_settings', {section: 'system'}) ~ '#company-identifiers'}]) %}
+                                        {% endif %}
+                                        {% set checks = checks|merge([{ok: readiness.platform, key: 'platform', href: route_allowed('_einvoicing_providers') ? path('_einvoicing_providers') : null}]) %}
+                                        {% for check in checks %}
+                                            <li class="d-flex align-items-start gap-2 py-2{{ not loop.last ? ' border-bottom' }}">
+                                                {% if check.ok %}
+                                                    <span class="text-success flex-shrink-0">{{ ux_icon('tabler:circle-check-filled', {width: 22, height: 22, 'aria-label': 'settings.page.einvoicing.checklist.done'|trans}) }}</span>
+                                                {% else %}
+                                                    <span class="text-warning flex-shrink-0">{{ ux_icon('tabler:alert-circle', {width: 22, height: 22, 'aria-label': 'settings.page.einvoicing.checklist.missing'|trans}) }}</span>
+                                                {% endif %}
+                                                <div class="flex-fill">
+                                                    <div class="fw-medium">{{ ('settings.page.einvoicing.checklist.' ~ check.key)|trans }}</div>
+                                                    {% if not check.ok %}
+                                                        <div class="text-muted small">{{ ('settings.page.einvoicing.checklist.' ~ check.key ~ '_help')|trans }}</div>
+                                                    {% endif %}
+                                                </div>
+                                                {% if not check.ok and check.href %}
+                                                    <a class="btn btn-sm btn-outline-primary flex-shrink-0" href="{{ check.href }}">{{ ('settings.page.einvoicing.checklist.' ~ check.key ~ '_action')|trans }}</a>
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                    <p class="text-muted small mt-3 mb-0">{{ 'settings.page.einvoicing.identifiers.text'|trans }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
                 {% endif %}
 
                 {% if form.watermark is defined %}
@@ -578,7 +613,7 @@
     {% if section is same as('system') %}
         <div class="card settings-content-card mt-4">
             <div class="card-body">
-                <twig:CompanyTaxIdentifiers />
+                <twig:CompanyTaxIdentifiers id="company-identifiers" />
             </div>
         </div>
     {% endif %}

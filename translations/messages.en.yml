@@ -3554,17 +3554,32 @@ settings:
             on: 'On'
             off: 'Off'
             intro: 'The French reform requires invoices between businesses to go through an approved platform. Augias connects to it to send your invoices and receive your suppliers''.'
+            attention: 'Electronic invoicing: action needed'
+            status:
+                running: 'Your invoices go out and come in through the platform.'
+                incomplete: 'On, but some details are still missing: nothing goes out until they are filled in.'
+                required: 'Receiving has been required since 1 September 2026: turn it on.'
+                off: 'Off for now.'
             calendar:
-                title: Timeline
-                text: 'Receiving: required of every business since 1 September 2026. Issuing: large and mid-sized companies since 1 September 2026, SMEs and micro-businesses from 1 September 2027.'
+                title: 'Reform timeline'
+                receive: 'Receiving required of every business'
+                issue_large: 'Issuing required of large and mid-sized companies'
+                issue_small: 'Issuing required of SMEs and micro-businesses'
+            checklist:
+                title: Requirements
+                done: 'Filled in'
+                missing: 'Missing'
+                siret: 'Your company''s SIRET'
+                siret_help: 'It identifies your company on the platform.'
+                siret_action: 'Fill in'
+                vat: 'Intra-community VAT number'
+                vat_help: 'Required on your electronic invoices, unless under the VAT franchise.'
+                vat_action: 'Fill in'
+                platform: 'Approved platform'
+                platform_help: 'Choose your platform and enter its access.'
+                platform_action: 'Set up'
             identifiers:
-                title: 'What it changes'
-                text: 'Your company''s SIRET, its VAT number (unless under the VAT franchise) and your business clients'' SIRET become required.'
-            platform:
-                title: 'Approved platform'
-                text: 'Enter your platform access so invoices go out and come in on their own.'
-                link: 'Set up the platform'
-            switch: 'Turn on electronic invoicing'
+                text: 'Once on, your business clients'' SIRET becomes required to send them an invoice.'
         email:
             bcc: 'BCC Email Address'
             delivery:
