@@ -1,5 +1,5 @@
 <html><body>
-<div class="settings-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="Settings" data-live-url-value="/_components/Settings" data-live-query-mapping-value='{"section":{"name":"section"}}' data-live-props-value='{"section":"system","formName":"settings","settings":{"company":{"logo":"","company_name":"Augias","contact_details":{"address":{"street1":"","street2":"","city":"","state":"","zip":"","country":""},"email":"","phone_number":""},"currency":"USD","locale":"en","electronic_invoicing_enabled":null},"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="settings-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="Settings" data-live-url-value="/_components/Settings" data-live-query-mapping-value='{"section":{"name":"section"}}' data-live-props-value='{"section":"system","formName":"settings","settings":{"company":{"logo":"","company_name":"Augias","contact_details":{"address":{"street1":"","street2":"","city":"","state":"","zip":"","country":""},"email":"","phone_number":""},"currency":"USD","locale":"en"},"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
         <ul class="nav nav-underline mb-4" role="tablist">
                                 <li class="nav-item">
                 <a href="/settings?section=system" class="nav-link active" aria-current="page">
@@ -7,7 +7,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M9 8h1m-1 4h1m-1 4h1m4-8h1m-1 4h1m-1 4h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path></svg>
                     </span>
                     <span>Company</span>
-                </a>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=invoice" class="nav-link">
@@ -15,7 +15,9 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2M9 7h1m-1 6h6m-2 4h2"></path></g></svg>
                     </span>
                     <span>Invoices</span>
-                </a>
+                                            <span class="status-dot status-dot-animated status-warning ms-2" title="Electronic invoicing: action needed"></span>
+                        <span class="visually-hidden">Electronic invoicing: action needed</span>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=credit_note" class="nav-link">
@@ -23,7 +25,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-3-2l-2 2l-2-2l-2 2l-2-2z"></path><path d="M15 14v-2a2 2 0 0 0-2-2H9l2-2m0 4l-2-2"></path></g></svg>
                     </span>
                     <span>Credit Notes</span>
-                </a>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=email" class="nav-link">
@@ -31,7 +33,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><path d="m3 7l9 6l9-6"></path></g></svg>
                     </span>
                     <span>Email</span>
-                </a>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=quote" class="nav-link">
@@ -39,7 +41,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2M9 9h1m-1 4h6m-6 4h6"></path></g></svg>
                     </span>
                     <span>Quotes</span>
-                </a>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=accounting" class="nav-link">
@@ -47,7 +49,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path d="M8 8a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1zm0 6v.01m4-.01v.01m4-.01v.01M8 17v.01m4-.01v.01m4-.01v.01"></path></g></svg>
                     </span>
                     <span>Accounting</span>
-                </a>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=design" class="nav-link">
@@ -55,7 +57,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 21a9 9 0 0 1 0-18c4.97 0 9 3.582 9 8c0 1.06-.474 2.078-1.318 2.828S17.693 15 16.5 15H14a2 2 0 0 0-1 3.75A1.3 1.3 0 0 1 12 21"></path><path d="M7.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0-2 0m4-3a1 1 0 1 0 2 0a1 1 0 1 0-2 0m4 3a1 1 0 1 0 2 0a1 1 0 1 0-2 0"></path></g></svg>
                     </span>
                     <span>Design</span>
-                </a>
+                                    </a>
             </li>
             </ul>
 
@@ -637,24 +639,13 @@
         </div>
     </div>
 
-                    <fieldset class="mb-3">                
-    <div id="settings_company">                                                <div class="form-switch-field">
-            <div class="form-switch-wrapper"><div class="form-check form-switch">
-<input type="checkbox" id="settings_company_electronic_invoicing_enabled" name="settings[company][electronic_invoicing_enabled]" aria-describedby="settings_company_electronic_invoicing_enabled_help" class="form-check-input" value="1">
-        <label class="form-check-label checkbox-switch" for="settings_company_electronic_invoicing_enabled">Electronic invoicing (France)</label>
-</div></div>
-<div class="form-text text-muted mb-0" id="settings_company_electronic_invoicing_enabled_help">Requires your company's SIRET and intra-community VAT number, and your clients' SIRET, as mandated by French electronic invoicing rules.</div>
-</div>
-    
-    </div>
-</fieldset>
     <input type="hidden" id="settings__token" name="settings[_token]" data-controller="csrf-protection">
 </form>
 
                 <div class="card settings-content-card mt-4">
             <div class="card-body">
                 
-<div class="company-tax-identifiers" data-controller="live" data-live-name-value="CompanyTaxIdentifiers" data-live-url-value="/_components/CompanyTaxIdentifiers" id="live-2152173885-0" data-live-props-value='{"formName":"company_tax_identifiers","company_tax_identifiers":{"siret":"","siren":"","vatNumber":"","identifiers":[],"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"live-2152173885-0"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="company-tax-identifiers" id="company-identifiers" data-controller="live" data-live-name-value="CompanyTaxIdentifiers" data-live-url-value="/_components/CompanyTaxIdentifiers" data-live-props-value='{"formName":"company_tax_identifiers","company_tax_identifiers":{"siret":"","siren":"","vatNumber":"","identifiers":[],"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"company-identifiers"},"@checksum":"REPLACED_CHECKSUM"}'>
     <h3 class="d-flex align-items-center gap-2 mb-2">
         <svg viewbox="0 0 24 24" fill="currentColor" width="22" height="22" class="text-primary" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="m9 14l6-6"></path><path fill="currentColor" d="M9 8.5a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0m5 5a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-3-2l-2 2l-2-2l-2 2l-2-2z"></path></g></svg>
         Company Tax Identifiers

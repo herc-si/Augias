@@ -3549,6 +3549,37 @@ settings:
             dns_value: 'Valeur / Cible'
             subtitle: 'Servez Augias depuis votre propre domaine (ex. factures.votresociete.com) au lieu de l''URL par défaut.'
             title: Domaine
+        einvoicing:
+            title: 'Facture électronique'
+            on: Activée
+            off: Désactivée
+            intro: "La réforme française impose d'échanger les factures entre entreprises par une plateforme agréée. Augias s'y connecte pour envoyer vos factures et recevoir celles de vos fournisseurs."
+            attention: 'Facture électronique : action requise'
+            status:
+                running: 'Vos factures partent et arrivent par la plateforme.'
+                incomplete: 'Activée, mais il manque encore des éléments : rien ne part tant qu''ils ne sont pas renseignés.'
+                required: 'Obligatoire en réception depuis le 1er septembre 2026 : à activer.'
+                off: 'Désactivée pour le moment.'
+            calendar:
+                title: 'Calendrier de la réforme'
+                receive: 'Réception obligatoire pour toutes les entreprises'
+                issue_large: 'Émission obligatoire pour les grandes entreprises et les ETI'
+                issue_small: 'Émission obligatoire pour les PME et les micro-entreprises'
+            checklist:
+                title: Prérequis
+                done: 'Renseigné'
+                missing: 'Manquant'
+                siret: 'SIRET de votre entreprise'
+                siret_help: 'Il identifie votre entreprise sur la plateforme.'
+                siret_action: Renseigner
+                vat: 'Numéro de TVA intracommunautaire'
+                vat_help: 'Obligatoire sur vos factures électroniques, sauf en franchise en base.'
+                vat_action: Renseigner
+                platform: 'Plateforme agréée'
+                platform_help: 'Choisissez votre plateforme et saisissez vos accès.'
+                platform_action: Configurer
+            identifiers:
+                text: "Une fois activée, le SIRET de vos clients professionnels devient obligatoire pour leur envoyer une facture."
         email:
             bcc: 'Adresse e-mail en copie cachée (CCI)'
             delivery:
