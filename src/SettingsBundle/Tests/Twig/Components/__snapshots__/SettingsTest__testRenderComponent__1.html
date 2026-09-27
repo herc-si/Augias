@@ -1,5 +1,5 @@
 <html><body>
-<div class="settings-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="Settings" data-live-url-value="/_components/Settings" data-live-query-mapping-value='{"section":{"name":"section"}}' data-live-props-value='{"section":"system","formName":"settings","settings":{"company":{"logo":"","company_name":"Augias","contact_details":{"address":{"street1":"","street2":"","city":"","state":"","zip":"","country":""},"email":"","phone_number":""},"currency":"USD","locale":"en","electronic_invoicing_enabled":null},"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="settings-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="Settings" data-live-url-value="/_components/Settings" data-live-query-mapping-value='{"section":{"name":"section"}}' data-live-props-value='{"section":"system","formName":"settings","settings":{"company":{"logo":"","company_name":"Augias","contact_details":{"address":{"street1":"","street2":"","city":"","state":"","zip":"","country":""},"email":"","phone_number":""},"currency":"USD","locale":"en"},"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
         <ul class="nav nav-underline mb-4" role="tablist">
                                 <li class="nav-item">
                 <a href="/settings?section=system" class="nav-link active" aria-current="page">
@@ -637,24 +637,13 @@
         </div>
     </div>
 
-                    <fieldset class="mb-3">                
-    <div id="settings_company">                                                <div class="form-switch-field">
-            <div class="form-switch-wrapper"><div class="form-check form-switch">
-<input type="checkbox" id="settings_company_electronic_invoicing_enabled" name="settings[company][electronic_invoicing_enabled]" aria-describedby="settings_company_electronic_invoicing_enabled_help" class="form-check-input" value="1">
-        <label class="form-check-label checkbox-switch" for="settings_company_electronic_invoicing_enabled">Electronic invoicing (France)</label>
-</div></div>
-<div class="form-text text-muted mb-0" id="settings_company_electronic_invoicing_enabled_help">Requires your company's SIRET and intra-community VAT number, and your clients' SIRET, as mandated by French electronic invoicing rules.</div>
-</div>
-    
-    </div>
-</fieldset>
     <input type="hidden" id="settings__token" name="settings[_token]" data-controller="csrf-protection">
 </form>
 
                 <div class="card settings-content-card mt-4">
             <div class="card-body">
                 
-<div class="company-tax-identifiers" data-controller="live" data-live-name-value="CompanyTaxIdentifiers" data-live-url-value="/_components/CompanyTaxIdentifiers" id="live-2152173885-0" data-live-props-value='{"formName":"company_tax_identifiers","company_tax_identifiers":{"siret":"","siren":"","vatNumber":"","identifiers":[],"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"live-2152173885-0"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="company-tax-identifiers" data-controller="live" data-live-name-value="CompanyTaxIdentifiers" data-live-url-value="/_components/CompanyTaxIdentifiers" id="live-1367681652-0" data-live-props-value='{"formName":"company_tax_identifiers","company_tax_identifiers":{"siret":"","siren":"","vatNumber":"","identifiers":[],"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"live-1367681652-0"},"@checksum":"REPLACED_CHECKSUM"}'>
     <h3 class="d-flex align-items-center gap-2 mb-2">
         <svg viewbox="0 0 24 24" fill="currentColor" width="22" height="22" class="text-primary" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="m9 14l6-6"></path><path fill="currentColor" d="M9 8.5a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0m5 5a.5.5 0 1 0 1 0a.5.5 0 1 0-1 0"></path><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-3-2l-2 2l-2-2l-2 2l-2-2z"></path></g></svg>
         Company Tax Identifiers

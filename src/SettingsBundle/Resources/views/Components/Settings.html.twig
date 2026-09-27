@@ -212,6 +212,76 @@
             {% elseif section == 'invoice' or section == 'quote' or section == 'credit_note' %}
                 {# Invoice/Quote/Credit Note Settings - Custom Layout #}
 
+                {% if form.electronic_invoicing_enabled is defined %}
+                    {# Electronic invoicing: what the reform asks, what switching it on changes,
+                     # where the platform is set up — then the switch itself. #}
+                    {% set einvoicingOn = form.electronic_invoicing_enabled.vars.data %}
+                    <div class="card mb-4 einvoicing-card">
+                        <div class="card-status-start {{ einvoicingOn ? 'bg-success' : 'bg-primary' }}"></div>
+                        <div class="card-body">
+                            <div class="d-flex flex-column flex-sm-row align-items-start gap-3">
+                                <span class="avatar avatar-md {{ einvoicingOn ? 'bg-success-lt' : 'bg-primary-lt' }} flex-shrink-0">
+                                    {{ ux_icon('tabler:file-certificate', {width: 24, height: 24, 'aria-hidden': 'true'}) }}
+                                </span>
+                                <div class="flex-fill w-100">
+                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-1">
+                                        <h3 class="card-title mb-0">{{ 'settings.page.einvoicing.title'|trans }}</h3>
+                                        {% if einvoicingOn %}
+                                            <span class="badge bg-success-lt">{{ ux_icon('tabler:circle-check', {width: 14, height: 14, 'aria-hidden': 'true'}) }} {{ 'settings.page.einvoicing.on'|trans }}</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary-lt">{{ 'settings.page.einvoicing.off'|trans }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <p class="text-muted mb-3">{{ 'settings.page.einvoicing.intro'|trans }}</p>
+
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-4">
+                                            <div class="d-flex gap-2 small">
+                                                <span class="text-primary">{{ ux_icon('tabler:calendar', {width: 18, height: 18, 'aria-hidden': 'true'}) }}</span>
+                                                <div>
+                                                    <strong class="d-block">{{ 'settings.page.einvoicing.calendar.title'|trans }}</strong>
+                                                    <span class="text-muted">{{ 'settings.page.einvoicing.calendar.text'|trans }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-flex gap-2 small">
+                                                <span class="text-primary">{{ ux_icon('tabler:id', {width: 18, height: 18, 'aria-hidden': 'true'}) }}</span>
+                                                <div>
+                                                    <strong class="d-block">{{ 'settings.page.einvoicing.identifiers.title'|trans }}</strong>
+                                                    <span class="text-muted">{{ 'settings.page.einvoicing.identifiers.text'|trans }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="d-flex gap-2 small">
+                                                <span class="text-primary">{{ ux_icon('tabler:plug-connected', {width: 18, height: 18, 'aria-hidden': 'true'}) }}</span>
+                                                <div>
+                                                    <strong class="d-block">{{ 'settings.page.einvoicing.platform.title'|trans }}</strong>
+                                                    <span class="text-muted">{{ 'settings.page.einvoicing.platform.text'|trans }}</span>
+                                                    {% if route_allowed('_einvoicing_providers') %}
+                                                        <a class="d-inline-flex align-items-center gap-1 mt-1" href="{{ path('_einvoicing_providers') }}">
+                                                            {{ 'settings.page.einvoicing.platform.link'|trans }} {{ ux_icon('tabler:arrow-right', {width: 14, height: 14, 'aria-hidden': 'true'}) }}
+                                                        </a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="border-top pt-3">
+                                        {{ form_row(form.electronic_invoicing_enabled, {
+                                            label: 'settings.page.einvoicing.switch'|trans,
+                                            help: 'tax.electronic_invoicing.description'|trans,
+                                            label_attr: {class: 'checkbox-switch'},
+                                        }) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
                 {% if form.watermark is defined %}
                     {# Display Settings #}
                     <div class="mb-4 pb-4 border-bottom">

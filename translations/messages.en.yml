@@ -3549,6 +3549,22 @@ settings:
             dns_value: 'Value / Target'
             subtitle: 'Serve Augias from your own domain (e.g. invoices.yourcompany.com) instead of the default URL.'
             title: Domain
+        einvoicing:
+            title: 'Electronic invoicing'
+            on: 'On'
+            off: 'Off'
+            intro: 'The French reform requires invoices between businesses to go through an approved platform. Augias connects to it to send your invoices and receive your suppliers''.'
+            calendar:
+                title: Timeline
+                text: 'Receiving: required of every business since 1 September 2026. Issuing: large and mid-sized companies since 1 September 2026, SMEs and micro-businesses from 1 September 2027.'
+            identifiers:
+                title: 'What it changes'
+                text: 'Your company''s SIRET, its VAT number (unless under the VAT franchise) and your business clients'' SIRET become required.'
+            platform:
+                title: 'Approved platform'
+                text: 'Enter your platform access so invoices go out and come in on their own.'
+                link: 'Set up the platform'
+            switch: 'Turn on electronic invoicing'
         email:
             bcc: 'BCC Email Address'
             delivery:

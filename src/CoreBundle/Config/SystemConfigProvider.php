@@ -19,8 +19,6 @@ use Augias\MoneyBundle\Form\Type\CurrencyType;
 use Augias\SettingsBundle\Config\ProviderInterface;
 use Augias\SettingsBundle\DTO\Config;
 use Augias\SettingsBundle\Form\Type\AddressType;
-use Augias\SettingsBundle\SystemConfig;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 
@@ -39,13 +37,6 @@ final class SystemConfigProvider implements ProviderInterface
             new Config('system/company/contact_details/phone_number', null, null, TextType::class),
             new Config('system/company/currency', $data['currency'] ?? null, null, CurrencyType::class),
             new Config('system/company/locale', $data['locale'] ?? 'en', null, LocaleType::class),
-            new Config(
-                SystemConfig::ELECTRONIC_INVOICING_CONFIG_PATH,
-                '0',
-                'tax.electronic_invoicing.description',
-                CheckboxType::class,
-                ['label' => 'tax.electronic_invoicing.label'],
-            ),
         ];
     }
 }

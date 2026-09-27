@@ -29,7 +29,7 @@ class SystemConfig
 
     final public const string LOCALE_CONFIG_PATH = 'system/company/locale';
 
-    final public const string ELECTRONIC_INVOICING_CONFIG_PATH = 'system/company/electronic_invoicing_enabled';
+    final public const string ELECTRONIC_INVOICING_CONFIG_PATH = 'invoice/electronic_invoicing_enabled';
 
     /**
      * Whether the company is outside the scope of VAT — franchise en base for a
@@ -40,7 +40,7 @@ class SystemConfig
      * lives here rather than there because the billing side asks this question
      * on every document it renders, and a foundational bundle should not have
      * to depend on a feature bundle to find out. Same split as
-     * {@see self::ELECTRONIC_INVOICING_CONFIG_PATH}, which CoreBundle seeds.
+     * {@see self::ELECTRONIC_INVOICING_CONFIG_PATH}, which InvoiceBundle seeds under `invoice/`.
      */
     final public const string VAT_EXEMPT_CONFIG_PATH = 'accounting/vat_exempt';
 

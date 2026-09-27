@@ -3549,6 +3549,22 @@ settings:
             dns_value: 'Valeur / Cible'
             subtitle: 'Servez Augias depuis votre propre domaine (ex. factures.votresociete.com) au lieu de l''URL par défaut.'
             title: Domaine
+        einvoicing:
+            title: 'Facture électronique'
+            on: Activée
+            off: Désactivée
+            intro: "La réforme française impose d'échanger les factures entre entreprises par une plateforme agréée. Augias s'y connecte pour envoyer vos factures et recevoir celles de vos fournisseurs."
+            calendar:
+                title: Calendrier
+                text: "Recevoir : obligatoire pour toutes les entreprises depuis le 1er septembre 2026. Émettre : grandes entreprises et ETI depuis le 1er septembre 2026, PME et micro-entreprises le 1er septembre 2027."
+            identifiers:
+                title: 'Ce que ça change'
+                text: "Le SIRET de votre société, son numéro de TVA (sauf franchise en base) et le SIRET de vos clients professionnels deviennent obligatoires."
+            platform:
+                title: 'Plateforme agréée'
+                text: "Renseignez l'accès à votre plateforme pour que les factures partent et arrivent automatiquement."
+                link: 'Configurer la plateforme'
+            switch: 'Activer la facture électronique'
         email:
             bcc: 'Adresse e-mail en copie cachée (CCI)'
             delivery:
