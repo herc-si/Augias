@@ -3515,7 +3515,23 @@ settings:
                 warning_help: "In 30 days the company will be permanently deleted with all its data: invoices, credit notes, quotes, clients, payments, accounting. Augias will not keep them. The law requires you to keep your invoices for 10 years: download the full export before the closure date. Until then the company is read-only and you can cancel the closure."
             title: 'Danger Zone'
         design:
+            accent_color:
+                description: 'Hexadecimal colour code (#1e4976). It colours the totals, the terms label and the payment button of your documents. Leave empty to keep the template''s colours.'
+                label: 'Brand colour'
+            bic:
+                description: 'Printed next to the IBAN.'
+                label: BIC
+            branding:
+                subtitle: 'Your colour, and what every page of your invoices, quotes and credit notes carries at its foot.'
+                title: 'Colour and footer'
+            footer_text:
+                description: 'Text repeated at the foot of every page: legal form and capital, registration, late payment penalties, discount terms… 400 characters at most.'
+                label: Footer
+            iban:
+                description: 'Printed in the footer so your clients can pay you by transfer. Leave empty not to show it.'
+                label: IBAN
             template:
+                description: 'The design used for your invoices and quotes: PDF, emails and the client portal.'
                 preview: Preview
                 preview_full: 'Open full preview'
                 subtitle: 'Choose the design used for your invoices and quotes everywhere clients see them — PDF downloads, emails and the client portal.'

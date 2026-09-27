@@ -21,6 +21,7 @@ use Augias\CoreBundle\Action\DeleteCompany;
 use Augias\CoreBundle\Action\Search;
 use Augias\CoreBundle\Action\SearchSuggestions;
 use Augias\CoreBundle\Action\SelectCompany;
+use Augias\CoreBundle\Action\TemplatePreviewAction;
 use Augias\CoreBundle\Action\ViewBilling;
 use Augias\CoreBundle\Export\Action\DownloadExport;
 use Augias\CoreBundle\Export\Action\ListExports;
@@ -136,4 +137,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_categories_edit', '/categories/edit/{id}')
         ->controller(CategoryEdit::class);
+
+    // A design template rendered with sample data, for the settings gallery.
+    $routingConfigurator
+        ->add('_template_preview', '/settings/templates/preview/{slug}')
+        ->controller(TemplatePreviewAction::class)
+        ->requirements(['slug' => '[a-z0-9-_]+'])
+        ->methods(['GET']);
 };

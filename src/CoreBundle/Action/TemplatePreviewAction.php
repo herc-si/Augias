@@ -11,13 +11,13 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
-namespace Augias\SaasBundle\Action;
+namespace Augias\CoreBundle\Action;
 
 use Augias\CoreBundle\Templates\BillingDocumentType;
 use Augias\CoreBundle\Templates\BillingTemplateChannel;
 use Augias\CoreBundle\Templates\BillingTemplateRegistry;
 use Augias\CoreBundle\Templates\BillingTemplateResolver;
-use Augias\SaasBundle\Templates\PreviewInvoiceFactory;
+use Augias\CoreBundle\Templates\PreviewInvoiceFactory;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Twig\Environment;
@@ -29,7 +29,7 @@ use function str_replace;
  * can show live previews. Intentionally not feature-gated: users on lower
  * plans can browse the gallery before upgrading.
  *
- * @see \Augias\SaasBundle\Tests\Action\TemplatePreviewActionTest
+ * @see \Augias\CoreBundle\Tests\Functional\TemplatePreviewActionTest
  */
 final readonly class TemplatePreviewAction
 {
@@ -73,7 +73,7 @@ final readonly class TemplatePreviewAction
             throw new NotFoundHttpException(sprintf('Unknown template "%s"', $slug));
         }
 
-        return new Response($this->twig->render('@AugiasSaas/Settings/template_preview.html.twig', [
+        return new Response($this->twig->render('@AugiasCore/Settings/template_preview.html.twig', [
             'invoice' => $invoice,
             'documentTemplate' => $template,
         ]));

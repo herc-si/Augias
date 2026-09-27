@@ -11,7 +11,7 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
-namespace Augias\SaasBundle\Templates;
+namespace Augias\CoreBundle\Templates;
 
 use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Entity\Client;
@@ -32,7 +32,7 @@ use Symfony\Component\Uid\Uuid;
  * details (name, logo, address) still come from the active company via the
  * usual Twig helpers, so the preview looks like the user's own invoice.
  *
- * @see \Augias\SaasBundle\Tests\Templates\PreviewInvoiceFactoryTest
+ * @see \Augias\CoreBundle\Tests\Functional\TemplatePreviewActionTest
  */
 final readonly class PreviewInvoiceFactory
 {

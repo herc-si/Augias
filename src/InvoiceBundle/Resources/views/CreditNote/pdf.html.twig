@@ -7,98 +7,116 @@
  # with this source code in the file LICENSE.
  #}
 
+{#
+ # A credit note, laid out like the invoices it corrects: the company's logo
+ # and details, the client, the lines and the totals — and, on the document
+ # itself, the invoice it credits and why. It shares the invoices' PDF base,
+ # so it carries the same page footer (the company's text and bank details),
+ # and takes the brand colour on its heading and totals.
+ #}
+{% extends '@AugiasInvoice/Templates/_pdf_base.html.twig' %}
+{% import '@AugiasInvoice/Templates/_macros.html.twig' as inv %}
+
 {% set currency = creditNote.client.currency %}
+{% set accent = brand_color() ?: '#1e293b' %}
+{% set accentText = brand_color() ? brand_text_color() : '#ffffff' %}
 
-<html>
-<head>
-    <meta charset="UTF-8" />
-    <style type="text/css">
-        {{ file(asset('static/pdf.css')) }}
-
-        @page {
-            margin-top: 20mm;
-            margin-bottom: 25mm;
-            margin-left: 15mm;
-            margin-right: 15mm;
-        }
-    </style>
-</head>
-<body>
-
-<h1>{{ 'credit_note.pdf.heading'|trans }}</h1>
-
-<table width="100%">
+{% block body %}
+<table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
     <tr>
-        <td>
-            <strong>{{ 'credit_note.field.number'|trans }}</strong><br />
-            {{ creditNote.creditNoteId }}
+        <td style="vertical-align: top; width: 50%;">
+            {% if setting('system/company/logo') is not empty %}
+                <div style="margin-bottom: 8px;">{{ app_logo(50) }}</div>
+            {% endif %}
+            <div style="font-size: 16pt; font-weight: bold; color: #1e293b;">{{ company_name() }}</div>
         </td>
-        <td align="right">
-            <strong>{{ 'credit_note.field.date'|trans }}</strong><br />
-            {{ creditNote.creditNoteDate|format_date('short') }}
+        <td style="vertical-align: top; text-align: right; width: 50%;">
+            <div style="font-size: 9pt; color: #64748b; text-transform: uppercase; letter-spacing: 2px;">
+                {{ 'credit_note.pdf.heading'|trans }}
+            </div>
+            <div style="font-size: 22pt; font-weight: bold; color: {{ accent }};">{{ creditNote.creditNoteId }}</div>
         </td>
     </tr>
 </table>
 
-<p>
-    <strong>{{ creditNote.client.name }}</strong>
-</p>
+<table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
+    <tr>
+        <td style="width: 33%; vertical-align: top; padding-right: 16px;">
+            {{ inv.from_block() }}
+        </td>
+        <td style="width: 33%; vertical-align: top; padding-right: 16px;">
+            <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px;">
+                {{ 'invoice.to'|trans }}
+            </div>
+            <div style="font-size: 14pt; font-weight: 600; color: #1e293b; margin-bottom: 8px;">{{ creditNote.client }}</div>
+            <div style="font-size: 9pt; color: #475569; line-height: 1.6;">
+                {% for identifier in tax_identifiers(creditNote.client) %}
+                    <div><span style="font-weight: 600; color: #1e293b;">{{ identifier.label }}:</span> {{ identifier.value }}</div>
+                {% endfor %}
+                {% for clientAddress in creditNote.client.addresses %}
+                    <div>{{ clientAddress|replace({"\n": ", "}) }}</div>
+                {% endfor %}
+            </div>
+        </td>
+        <td style="width: 34%; vertical-align: top;">
+            {{ inv.meta_pair('credit_note.field.date'|trans, creditNote.creditNoteDate|format_date('long')) }}
+            {#
+             # Mandatory on the document itself, not merely in the interface: a
+             # credit note has to say which invoice it corrects, and why.
+             #}
+            {% if creditNote.creditedInvoice %}
+                {{ inv.meta_pair('credit_note.field.credited_invoice'|trans, creditNote.creditedInvoice.invoiceId) }}
+            {% endif %}
+            {% if creditNote.reason %}
+                {{ inv.meta_pair('credit_note.field.reason'|trans, creditNote.reason.translationKey|trans) }}
+            {% endif %}
+        </td>
+    </tr>
+</table>
 
-{#
- # Mandatory on the document itself, not merely in the interface: a credit note
- # has to say which invoice it corrects, and why.
- #}
 {% if creditNote.creditedInvoice %}
-    <p>{{ 'credit_note.pdf.credits_invoice'|trans({'%invoice%': creditNote.creditedInvoice.invoiceId}) }}</p>
+    <p style="font-size: 9pt; color: #475569; margin-bottom: 16px;">{{ 'credit_note.pdf.credits_invoice'|trans({'%invoice%': creditNote.creditedInvoice.invoiceId}) }}</p>
 {% endif %}
 
-{% if creditNote.reason %}
-    <p>{{ 'credit_note.field.reason'|trans }}: {{ creditNote.reason.translationKey|trans }}</p>
-{% endif %}
-
-<table width="100%" cellpadding="6">
+<table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
     <thead>
         <tr>
-            <th align="left">{{ 'invoice.item.heading.description'|trans }}</th>
-            <th align="right">{{ 'invoice.item.heading.price'|trans }}</th>
-            <th align="right">{{ 'invoice.item.heading.qty'|trans }}</th>
-            <th align="right">{{ 'invoice.item.heading.total'|trans }}</th>
+            <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: left; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.description'|trans }}</th>
+            <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.price'|trans }}</th>
+            <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.qty'|trans }}</th>
+            <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.total'|trans }}</th>
         </tr>
     </thead>
     <tbody>
         {% for line in creditNote.lines %}
             <tr>
-                <td>{{ line.description|nl2br }}</td>
-                <td align="right">{{ line.price|formatCurrency(currency) }}</td>
-                <td align="right">{{ line|line_quantity }}</td>
-                <td align="right">{{ line.total|formatCurrency(currency) }}</td>
+                <td style="padding: 10px 12px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9;">{{ line.description|nl2br }}</td>
+                <td style="padding: 10px 12px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right;">{{ line.price|formatCurrency(currency) }}</td>
+                <td style="padding: 10px 12px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right;">{{ line|line_quantity }}</td>
+                <td style="padding: 10px 12px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right;">{{ line.total|formatCurrency(currency) }}</td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<table width="100%" cellpadding="6">
+<table cellpadding="0" cellspacing="0" style="width: 280px; border-collapse: collapse; margin-left: auto;">
     <tr>
-        <td align="right">{{ 'billing.subtotal'|trans }}</td>
-        <td align="right" width="25%">{{ creditNote.baseTotal|formatCurrency(currency) }}</td>
+        <td style="padding: 8px 12px; font-size: 9pt; text-align: right; color: #475569;">{{ 'billing.subtotal'|trans }}</td>
+        <td style="padding: 8px 12px; font-size: 9pt; text-align: right; color: #1e293b;">{{ creditNote.baseTotal|formatCurrency(currency) }}</td>
     </tr>
     <tr>
-        <td align="right">{{ 'billing.tax'|trans }}</td>
-        <td align="right">{{ creditNote.tax|formatCurrency(currency) }}</td>
+        <td style="padding: 8px 12px; font-size: 9pt; text-align: right; color: #475569;">{{ 'billing.tax'|trans }}</td>
+        <td style="padding: 8px 12px; font-size: 9pt; text-align: right; color: #1e293b;">{{ creditNote.tax|formatCurrency(currency) }}</td>
     </tr>
-    <tr>
-        <td align="right"><strong>{{ 'credit_note.totals.credited'|trans }}</strong></td>
-        <td align="right"><strong>{{ creditNote.total|formatCurrency(currency) }}</strong></td>
+    <tr style="background-color: {{ accent }};">
+        <td style="padding: 12px; font-size: 10pt; font-weight: bold; text-align: right; color: {{ accentText }};">{{ 'credit_note.totals.credited'|trans }}</td>
+        <td style="padding: 12px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ accentText }};">{{ creditNote.total|formatCurrency(currency) }}</td>
     </tr>
 </table>
 
-{% if creditNote.terms %}
-    <p>{{ creditNote.terms|nl2br }}</p>
-{% endif %}
+{{ inv.terms_block(creditNote) }}
 
 {% if creditNote.notes %}
-    <p>{{ creditNote.notes|nl2br }}</p>
+    <p style="margin-top: 16px; font-size: 9pt; color: #475569;">{{ creditNote.notes|nl2br }}</p>
 {% endif %}
-
-</body>
-</html>
+{% endblock %}

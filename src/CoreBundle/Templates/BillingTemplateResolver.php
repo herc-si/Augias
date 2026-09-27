@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\CoreBundle\Templates;
 
 use Augias\CoreBundle\Contracts\PaidSubscriptionGateInterface;
+use Augias\CoreBundle\Entity\Company;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\SaasBundle\Feature\Feature;
@@ -25,9 +26,10 @@ use SolidWorx\Toggler\ToggleInterface;
  * Resolves which Twig template renders an invoice or quote for a given
  * channel (PDF, email body, browser view).
  *
- * The company-selected design template (the `design/template` setting, seeded
- * by the SaaS bundle) only takes effect when every gate passes at render
- * time; otherwise the built-in default template is used. Gating at render
+ * The company-selected design template (the `design/template` setting) is
+ * used as chosen on a self-hosted install. On the hosted service it only
+ * takes effect when every gate passes at render time; otherwise the built-in
+ * default template is used. Gating at render
  * time — the same pattern as `hide_powered_by` + `feature_enabled()` — means
  * a plan downgrade, an ended trial or a paused subscription automatically
  * falls back to the default without any state to clean up.
@@ -58,25 +60,26 @@ final readonly class BillingTemplateResolver
 
     /**
      * The company's custom template for this document/channel, or null when
-     * the default should be used (self-hosted, no selection, feature not on
-     * the plan, subscription not active, or the variant does not exist).
+     * the default should be used (no selection, or — hosted — feature not on
+     * the plan or subscription not active, or the variant does not exist).
      */
     public function customTemplate(Invoice | Quote $document, BillingTemplateChannel $channel): ?string
     {
-        // Custom design templates are a hosted-only capability: self-hosted
-        // installs always render the built-in default.
-        if (! $this->toggle->isActive('saas_enabled')) {
-            return null;
-        }
-
-        $company = $document->getCompany();
+        // A document not yet tied to a company reads the one being worked in.
+        $company = null === $document->getCompanyId() ? null : $document->getCompany();
         $slug = $this->systemConfig->get(self::TEMPLATE_SETTING_KEY, $company);
 
         if (null === $slug || '' === $slug || BillingTemplateRegistry::DEFAULT_SLUG === $slug) {
             return null;
         }
 
-        if (! $this->subscriptionGate->isActive($company)) {
+        // Self-hosted, the templates are on the disk and the choice is the
+        // owner's: no plan, no subscription to ask.
+        if (! $this->toggle->isActive('saas_enabled')) {
+            return $this->registry->templatePath($slug, $this->documentType($document), $channel);
+        }
+
+        if (! $company instanceof Company || ! $this->subscriptionGate->isActive($company)) {
             return null;
         }
 

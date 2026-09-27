@@ -11,31 +11,22 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
-namespace Augias\SaasBundle\Tests\Functional;
+namespace Augias\CoreBundle\Tests\Functional;
 
+use Augias\CoreBundle\Action\TemplatePreviewAction;
 use Augias\CoreBundle\Templates\BillingTemplateRegistry;
+use Augias\CoreBundle\Templates\PreviewInvoiceFactory;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
-use Augias\SaasBundle\Action\TemplatePreviewAction;
-use Augias\SaasBundle\Templates\PreviewInvoiceFactory;
 use Augias\SettingsBundle\SystemConfig;
-use Augias\Test\SaasKernel;
-use Override;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Twig\Environment;
 
 #[Group('functional')]
-#[Group('saas-kernel')]
 final class TemplatePreviewActionTest extends KernelTestCase
 {
     use EnsureApplicationInstalled;
-
-    #[Override]
-    protected static function getKernelClass(): string
-    {
-        return SaasKernel::class;
-    }
 
     public function testRendersEveryDiscoveredTemplateWithSampleData(): void
     {

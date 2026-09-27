@@ -148,7 +148,7 @@
 {% block invoice_template_widget %}
     <div id="{{ id }}" class="row g-3 template-picker{% if disabled %} template-picker-disabled{% endif %}">
         {% for child in form %}
-            {% set previewUrl = path('saas_template_preview', {slug: child.vars.value}) %}
+            {% set previewUrl = path('_template_preview', {slug: child.vars.value}) %}
             <div class="col-sm-6 col-xl-4">
                 <div class="template-picker-card card h-100">
                     <label class="template-picker-option" for="{{ child.vars.id }}">

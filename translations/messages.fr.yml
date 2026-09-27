@@ -3515,7 +3515,23 @@ settings:
                 warning_help: "Dans 30 jours, la société sera supprimée définitivement avec toutes ses données : factures, avoirs, devis, clients, paiements, comptabilité. Augias ne les conservera pas. La loi vous impose de conserver vos factures pendant 10 ans : téléchargez l'export complet avant la date de fermeture. D'ici là, la société est en lecture seule et vous pouvez annuler la fermeture."
             title: 'Zone dangereuse'
         design:
+            accent_color:
+                description: "Code couleur hexadécimal (#1e4976). Il colore les totaux, le libellé des conditions et le bouton de paiement de vos documents. Laissez vide pour garder les couleurs du modèle."
+                label: "Couleur de marque"
+            bic:
+                description: "Imprimé à côté de l'IBAN."
+                label: BIC
+            branding:
+                subtitle: "Votre couleur, et ce que chaque page de vos factures, devis et avoirs porte en pied de page."
+                title: "Couleur et pied de page"
+            footer_text:
+                description: "Mentions à répéter en bas de chaque page : forme juridique et capital, RCS, pénalités de retard, escompte… 400 caractères au plus."
+                label: "Pied de page"
+            iban:
+                description: "Imprimé en pied de page pour que vos clients vous paient par virement. Laissez vide pour ne pas l'afficher."
+                label: IBAN
             template:
+                description: "Le modèle utilisé pour vos factures et devis : PDF, e-mails et portail client."
                 preview: Aperçu
                 preview_full: 'Ouvrir l''aperçu complet'
                 subtitle: 'Choisissez le modèle utilisé pour vos factures et devis partout où les clients les voient — téléchargements PDF, e-mails et portail client.'
