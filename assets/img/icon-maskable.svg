@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="Augias">
+  <title>Augias</title>
+  <!--
+    The monogram of icon.svg for Android's adaptive icons: a full square the
+    launcher crops to its own shape, the mark shrunk into the central safe
+    circle (80% of the side) so that no crop cuts into it.
+  -->
+  <rect x="0" y="0" width="320" height="320" fill="#1e4976"/>
+  <g transform="translate(160 160) scale(0.8) translate(-160 -160)">
+    <path d="M 78 250 L 160 68 L 242 250" fill="none" stroke="#e4edf6" stroke-width="32" stroke-linejoin="miter" stroke-miterlimit="6"/>
+    <path d="M 80 198 L 240 198" fill="none" stroke="#c9713f" stroke-width="24"/>
+  </g>
+</svg>

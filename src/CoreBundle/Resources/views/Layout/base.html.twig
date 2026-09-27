@@ -11,9 +11,18 @@
 
 {% block stylesheets %}
     {{ parent() }}
+    {# In the head, where this block sits: what makes the app installable. #}
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     {{ encore_entry_link_tags('app') }}
 {% endblock stylesheets %}
 
 {% block javascripts %}
     {{ encore_entry_script_tags('app') }}
+    {# Registered only where the browser allows it: HTTPS, or localhost. #}
+    <script>
+        if ('serviceWorker' in navigator && window.isSecureContext) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
 {% endblock javascripts %}

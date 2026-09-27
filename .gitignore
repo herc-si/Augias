@@ -3,7 +3,6 @@ public/bundles
 public/css/*
 public/js/*
 public/fonts/*
-public/manifest.json
 assets/js/translations
 assets/js/js_routes.json
 var/

@@ -1,0 +1,32 @@
+<!doctype html>
+<!--
+  Shown by the service worker (sw.js) when a page cannot load for want of a
+  network. Self-contained: nothing else is cached.
+-->
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#1e4976">
+    <title>Augias — hors ligne</title>
+    <style>
+        :root { color-scheme: light dark; }
+        body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #f6f8fb; color: #1d273b; text-align: center; padding: 16px; box-sizing: border-box; }
+        @media (prefers-color-scheme: dark) { body { background: #151f2c; color: #e4edf6; } }
+        main { max-width: 360px; }
+        img { width: 72px; height: 72px; border-radius: 16px; }
+        h1 { font-size: 1.25rem; margin: 20px 0 8px; }
+        p { margin: 0 0 20px; line-height: 1.5; opacity: .8; }
+        button { font: inherit; padding: 10px 18px; border-radius: 6px; border: 0; background: #1e4976; color: #fff; cursor: pointer; }
+    </style>
+</head>
+<body>
+<main>
+    <img src="/icons/icon-192.png" alt="Augias">
+    <h1>Pas de connexion</h1>
+    <p>Augias a besoin du réseau pour afficher vos données. Vérifiez votre connexion, puis réessayez.</p>
+    <p lang="en"><small>You are offline. Check your connection and try again.</small></p>
+    <button type="button" onclick="location.reload()">Réessayer</button>
+</main>
+</body>
+</html>
