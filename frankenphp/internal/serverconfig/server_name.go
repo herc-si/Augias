@@ -18,7 +18,7 @@ type Params struct {
 
 // BuildServerName returns the Caddy SERVER_NAME string for the given parameters.
 //
-// When a reverse proxy sits in front of SolidInvoice and forwards requests
+// When a reverse proxy sits in front of Augias and forwards requests
 // with a Host header that differs from the machine's IP address, Caddy must
 // be told about that hostname so it can match incoming requests correctly.
 // Use Domain + DisableHttps together to tell Caddy to accept requests for the

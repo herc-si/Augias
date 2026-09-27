@@ -9,7 +9,7 @@
 # baked into named volumes so they survive restarts and don't get written
 # into your working tree. Nothing needs to be pre-installed on the host.
 #
-# By default the app uses SQLite (SolidInvoice's own default — see
+# By default the app uses SQLite (Augias's default, inherited from SolidInvoice — see
 # config/services.php), so no separate database container is required. To use
 # MySQL instead, uncomment the `db` service and the `AUGIAS_DATABASE_URL`
 # line below.

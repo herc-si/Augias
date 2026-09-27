@@ -1,0 +1,35 @@
+# PLACEHOLDER: This manifest requires Windows binary support.
+# See https://github.com/herc-si/Augias/issues for tracking.
+#
+# When Windows binaries are available, submit this manifest as a PR to:
+# https://github.com/microsoft/winget-pkgs
+#
+# Filename convention: manifests/h/HercSi/Augias/<version>/HercSi.Augias.yaml
+
+PackageIdentifier: HercSi.Augias
+PackageVersion: "${AUGIAS_VERSION}"
+PackageName: Augias
+Publisher: HERC SI
+PublisherUrl: https://augias.herc-si.fr
+License: MIT
+LicenseUrl: https://github.com/herc-si/Augias/blob/4.0.x/LICENSE
+ShortDescription: Simple and elegant invoicing solution
+Description: Augias is an open-source invoicing application for small businesses and freelancers.
+Tags:
+  - invoice
+  - invoicing
+  - billing
+  - freelancer
+  - business
+PackageUrl: https://github.com/herc-si/Augias
+Installers:
+  - Architecture: x64
+    InstallerType: portable
+    InstallerUrl: https://github.com/herc-si/Augias/releases/download/${AUGIAS_VERSION}/augias-windows-amd64.exe
+    InstallerSha256: ""
+  - Architecture: arm64
+    InstallerType: portable
+    InstallerUrl: https://github.com/herc-si/Augias/releases/download/${AUGIAS_VERSION}/augias-windows-arm64.exe
+    InstallerSha256: ""
+ManifestType: singleton
+ManifestVersion: 1.6.0

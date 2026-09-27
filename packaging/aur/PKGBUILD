@@ -18,10 +18,10 @@ conflicts=('augias')
 backup=('etc/augias/augias.env')
 install=augias.install
 
-source_x86_64=("augias-${pkgver}-x86_64::https://github.com/SolidInvoice/SolidInvoice/releases/download/${pkgver}/augias-linux-amd64")
-source_aarch64=("augias-${pkgver}-aarch64::https://github.com/SolidInvoice/SolidInvoice/releases/download/${pkgver}/augias-linux-arm64")
-source=("augias.service::https://raw.githubusercontent.com/SolidInvoice/SolidInvoice/${pkgver}/packaging/systemd/augias.service"
-        "augias.env::https://raw.githubusercontent.com/SolidInvoice/SolidInvoice/${pkgver}/packaging/systemd/augias.env")
+source_x86_64=("augias-${pkgver}-x86_64::https://github.com/herc-si/Augias/releases/download/${pkgver}/augias-linux-amd64")
+source_aarch64=("augias-${pkgver}-aarch64::https://github.com/herc-si/Augias/releases/download/${pkgver}/augias-linux-arm64")
+source=("augias.service::https://raw.githubusercontent.com/herc-si/Augias/${pkgver}/packaging/systemd/augias.service"
+        "augias.env::https://raw.githubusercontent.com/herc-si/Augias/${pkgver}/packaging/systemd/augias.env")
 
 # Checksums are updated automatically by CI
 sha256sums=('SKIP'

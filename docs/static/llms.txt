@@ -10,7 +10,7 @@
 
 - [Installation Guide](https://augias.herc-si.fr/docs/installation-guide): Overview of all installation methods with a decision matrix to pick the right one.
 - [Quick install](https://augias.herc-si.fr/docs/installation-guide/quick-install): Recommended install — self-contained executable that bundles PHP, the webserver, and the messenger consumer. SSL via Let's Encrypt or custom certs.
-- [Homebrew](https://augias.herc-si.fr/docs/installation-guide/homebrew): Install via the SolidWorx Homebrew tap on macOS or Linux.
+- [Homebrew](https://augias.herc-si.fr/docs/installation-guide/homebrew): Install via the Homebrew tap on macOS or Linux.
 - [Docker](https://augias.herc-si.fr/docs/installation-guide/docker): Run as a container, with a Docker Compose example covering app + PostgreSQL.
 - [Distribution package](https://augias.herc-si.fr/docs/installation-guide/distribution-package): Install on an existing PHP webserver (Nginx/Apache) — covers webserver config, cron, and the messenger consumer.
 - [Cron job setup](https://augias.herc-si.fr/docs/installation-guide/distribution-package/cron-job-setup): Recurring task cron on Linux, Windows, cPanel, or Plesk. Only needed for distribution-package and Git installs.
@@ -34,5 +34,5 @@
 ## External Resources
 
 - [REST API Documentation](https://augias.app/api/docs): Auto-generated OpenAPI/Swagger reference for the Augias REST API. Authentication via `X-API-TOKEN` header.
-- [GitHub Repository](https://github.com/SolidInvoice/SolidInvoice): Source code, issues, contributions, releases.
-- [Contribution Guide](https://github.com/SolidInvoice/SolidInvoice/blob/3.0.x/CONTRIBUTING.md): How to contribute to Augias.
+- [GitHub Repository](https://github.com/herc-si/Augias): Source code, issues, contributions, releases.
+- [Contribution Guide](https://github.com/herc-si/Augias/blob/4.0.x/CONTRIBUTING.md): How to contribute to Augias.

@@ -28,14 +28,16 @@ This method assumes you already run a PHP webserver and are comfortable maintain
 
 ## 1. Download
 
-Download the latest archive from the SolidWorx download server:
+Download the archive of the latest version from the [releases page](https://github.com/herc-si/Augias/releases/latest), for example:
 
 ```bash
+VERSION=4.0.0
+
 # Zip
-curl -LO https://download.solidworx.co/augias/latest/archive/zip
+curl -LO "https://github.com/herc-si/Augias/releases/download/${VERSION}/Augias-${VERSION}.zip"
 
 # Or tar.gz
-curl -LO https://download.solidworx.co/augias/latest/archive/tar.gz
+curl -LO "https://github.com/herc-si/Augias/releases/download/${VERSION}/Augias-${VERSION}.tar.gz"
 ```
 
 Extract it to a directory served by your webserver, for example `/opt/augias`.

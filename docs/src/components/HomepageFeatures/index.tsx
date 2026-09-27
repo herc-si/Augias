@@ -118,7 +118,7 @@ const FeatureList: FeatureItem[] = [
   },
   {
     title: 'Open Source',
-    href: 'https://github.com/SolidInvoice/SolidInvoice',
+    href: 'https://github.com/herc-si/Augias',
     Icon: ShieldIcon,
     description: (
       <>

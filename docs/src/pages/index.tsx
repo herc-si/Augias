@@ -27,7 +27,7 @@ function HomepageHeader() {
             </Link>
             <Link
               className="button button--secondary button--lg"
-              href="https://github.com/SolidInvoice/SolidInvoice">
+              href="https://github.com/herc-si/Augias">
               View on GitHub
             </Link>
           </div>

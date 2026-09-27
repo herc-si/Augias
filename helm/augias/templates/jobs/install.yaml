@@ -49,7 +49,7 @@ spec:
             - |
               # Idempotent: exit cleanly if already installed
               if /usr/local/bin/augias console augias:is-installed --no-ansi --no-interaction 2>/dev/null; then
-                echo "SolidInvoice is already installed. Skipping."
+                echo "Augias is already installed. Skipping."
                 exit 0
               fi
 

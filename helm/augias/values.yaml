@@ -75,7 +75,7 @@ mailer:
   ## @param mailer.dsn Mailer DSN (e.g., smtp://user:pass@host:465?encryption=ssl)
   dsn: "null://null"
   ## @param mailer.sender Sender address used in outgoing emails
-  sender: "SolidInvoice <no-reply@example.com>"
+  sender: "Augias <no-reply@example.com>"
   ## @param mailer.existingSecret Name of existing Secret containing MAILER_DSN
   existingSecret: ""
   ## @param mailer.existingSecretKey Key in existingSecret for the MAILER_DSN

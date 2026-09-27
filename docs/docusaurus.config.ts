@@ -90,7 +90,7 @@ const config: Config = {
           sidebarPath: './sidebars.ts',
           routeBasePath: '/',
           editUrl:
-            'https://github.com/herc-si/SolidInvoice/edit/3.0.x/docs/',
+            'https://github.com/herc-si/Augias/edit/4.0.x/docs/',
         },
         blog: false,
         theme: {
@@ -134,7 +134,7 @@ const config: Config = {
           label: 'Documentation',
         },
         {
-          href: 'https://github.com/herc-si/SolidInvoice',
+          href: 'https://github.com/herc-si/Augias',
           label: 'GitHub',
           position: 'right',
         },
@@ -169,11 +169,11 @@ const config: Config = {
           items: [
             {
               label: 'GitHub Discussions',
-              href: 'https://github.com/herc-si/SolidInvoice/discussions',
+              href: 'https://github.com/herc-si/Augias/discussions',
             },
             {
               label: 'Report an Issue',
-              href: 'https://github.com/herc-si/SolidInvoice/issues',
+              href: 'https://github.com/herc-si/Augias/issues',
             },
             {
               label: 'X (Twitter)',

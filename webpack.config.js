@@ -16,7 +16,7 @@ export default Encore
     .enableVersioning()
     .addPlugin(codecovWebpackPlugin({
         enableBundleAnalysis: Encore.isProduction() && process.env.CODECOV_TOKEN !== undefined,
-        bundleName: 'solidinvoice-webpack-bundle',
+        bundleName: 'augias-webpack-bundle',
         uploadToken: process.env.CODECOV_TOKEN,
     }))
     .getWebpackConfig();

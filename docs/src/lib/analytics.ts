@@ -1,10 +1,9 @@
 /**
  * Typed wrapper around `window.dataLayer.push` for docs-specific events.
  *
- * GTM is loaded automatically by Cloudflare on the solidinvoice.co domain
- * (including /docs/*), so there's nothing to install or initialise here —
- * the events pushed by `track()` are picked up by GTM triggers configured
- * in the existing container and forwarded to GA4.
+ * Nothing loads GTM here: the events pushed by `track()` only reach GA4 if
+ * the site serving the docs adds a GTM container itself, whose triggers pick
+ * them up. Without one they stay in `window.dataLayer`.
  *
  * GA4 setup that pairs with this:
  * - Custom dimension `Site Section` (event-scoped, parameter `site_section`)

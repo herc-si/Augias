@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# Fake xcaddy script for SolidInvoice build
+# Fake xcaddy script for Augias build
 #
 # This script masquerades as xcaddy but actually builds our custom Go application.
 # When static-php-cli runs "xcaddy build", it calls this script instead,
-# which builds our app.go with only SolidInvoice commands.
+# which builds our app.go with only Augias commands.
 #
 # This allows us to:
 # - Use upstream build-static.sh without modifications
@@ -43,14 +43,14 @@ done
 CURRENT_OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 
 echo "=========================================="
-echo "Building SolidInvoice Custom Binary"
+echo "Building Augias Custom Binary"
 echo "=========================================="
 echo "Output: ${OUTPUT}"
 echo "CGO_ENABLED: ${CGO_ENABLED:-not set}"
 echo "CGO_CFLAGS: ${CGO_CFLAGS:-not set}"
 echo ""
 
-# Get the SolidInvoice source directory from environment variable
+# Get the Augias source directory from environment variable
 # This is set by build-augias.sh
 if [ -z "${AUGIAS_SOURCE_DIR:-}" ]; then
 	echo "Error: AUGIAS_SOURCE_DIR environment variable not set"

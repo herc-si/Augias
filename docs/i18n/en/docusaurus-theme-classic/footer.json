@@ -29,11 +29,11 @@
   },
   "link.item.label.GitHub Discussions": {
     "message": "GitHub Discussions",
-    "description": "The label of footer link with label=GitHub Discussions linking to https://github.com/herc-si/SolidInvoice/discussions"
+    "description": "The label of footer link with label=GitHub Discussions linking to https://github.com/herc-si/Augias/discussions"
   },
   "link.item.label.Report an Issue": {
     "message": "Report an Issue",
-    "description": "The label of footer link with label=Report an Issue linking to https://github.com/herc-si/SolidInvoice/issues"
+    "description": "The label of footer link with label=Report an Issue linking to https://github.com/herc-si/Augias/issues"
   },
   "link.item.label.X (Twitter)": {
     "message": "X (Twitter)",
@@ -41,7 +41,7 @@
   },
   "link.item.label.GitHub": {
     "message": "GitHub",
-    "description": "The label of footer link with label=GitHub linking to https://github.com/herc-si/SolidInvoice"
+    "description": "The label of footer link with label=GitHub linking to https://github.com/herc-si/Augias"
   },
   "copyright": {
     "message": "Copyright © 2026 Augias. Built with Docusaurus.",

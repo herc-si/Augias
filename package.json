@@ -5,15 +5,18 @@
     "version": "4.0.0",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/herc-si/SolidInvoice.git"
+        "url": "git+https://github.com/herc-si/Augias.git"
     },
     "keywords": [
         "billing"
     ],
-    "author": "Pierre du Plessis",
+    "author": "HERC SI <opensource@herc-si.fr>",
+    "contributors": [
+        "Pierre du Plessis (SolidInvoice, upstream)"
+    ],
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/herc-si/SolidInvoice/issues"
+        "url": "https://github.com/herc-si/Augias/issues"
     },
     "scripts": {
         "dev": "encore dev",

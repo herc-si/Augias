@@ -137,7 +137,7 @@ changes. Set the DSN (empty by default — no provider is contacted unless confi
 
 ```dotenv
 # Crowdin example; swap the scheme for any other Symfony translation provider
-SOLIDINVOICE_TRANSLATION_DSN=crowdin://PROJECT_ID:API_TOKEN@ORGANIZATION_DOMAIN.default
+AUGIAS_TRANSLATION_DSN=crowdin://PROJECT_ID:API_TOKEN@ORGANIZATION_DOMAIN.default
 ```
 
 Then:

@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "solidinvoice",
+      "name": "augias",
       "dependencies": {
         "@fortawesome/fontawesome-free": "^7.3.0",
         "@popperjs/core": "^2.11.8",

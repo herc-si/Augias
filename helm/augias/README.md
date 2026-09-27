@@ -1,6 +1,6 @@
 # Augias Helm Chart
 
-[Augias](https://github.com/SolidWorx/Augias) is an open-source invoicing application designed for small businesses and freelancers. It provides client management, quotes, invoices (including recurring), payment processing via Payum, tax and discount handling, a REST API, and notifications.
+[Augias](https://github.com/herc-si/Augias) is an open-source invoicing application designed for small businesses and freelancers. It provides client management, quotes, invoices (including recurring), payment processing via Payum, tax and discount handling, a REST API, and notifications.
 
 This Helm chart deploys Augias on a Kubernetes cluster using the [Helm](https://helm.sh) package manager.
 
@@ -231,7 +231,7 @@ Augias on Kubernetes consists of the following components:
 
 ## Links
 
-- [Augias on GitHub](https://github.com/SolidWorx/Augias)
+- [Augias on GitHub](https://github.com/herc-si/Augias)
 - [Augias Documentation](https://augias.herc-si.fr/docs)
 - [Helm Documentation](https://helm.sh/docs/)
 - [Bitnami Charts](https://github.com/bitnami/charts)

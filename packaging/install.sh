@@ -1,8 +1,8 @@
 #!/bin/sh
-# SolidInvoice Universal Installer
+# Augias Universal Installer
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/SolidInvoice/SolidInvoice/3.0.x/packaging/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/herc-si/Augias/4.0.x/packaging/install.sh | sh
 #
 # Options (via environment variables):
 #   VERSION          - Specific version to install (default: latest)
@@ -17,7 +17,7 @@
 
 set -e
 
-GITHUB_REPO="SolidInvoice/SolidInvoice"
+GITHUB_REPO="herc-si/Augias"
 BINARY_NAME="augias"
 INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 
@@ -58,7 +58,7 @@ detect_os() {
     case "$OS" in
         linux)   OS="linux" ;;
         darwin)  OS="mac" ;;
-        freebsd) error "FreeBSD is not currently supported. See https://github.com/SolidInvoice/SolidInvoice/issues for tracking." ;;
+        freebsd) error "FreeBSD is not currently supported. See https://github.com/herc-si/Augias/issues for tracking." ;;
         *)       error "Unsupported operating system: $OS" ;;
     esac
 }
@@ -118,7 +118,7 @@ get_latest_version() {
 check_existing() {
     if command -v "$BINARY_NAME" >/dev/null 2>&1; then
         existing_version=$("$BINARY_NAME" version 2>/dev/null || echo "unknown")
-        warn "SolidInvoice is already installed (version: ${existing_version})"
+        warn "Augias is already installed (version: ${existing_version})"
         info "Upgrading to version ${VERSION}..."
     fi
 }
@@ -139,7 +139,7 @@ needs_sudo() {
 install_binary() {
     BINARY_URL="https://github.com/${GITHUB_REPO}/releases/download/${VERSION}/${BINARY_NAME}-${OS}-${ARCH}"
 
-    info "Downloading SolidInvoice ${VERSION} for ${OS}/${ARCH}..."
+    info "Downloading Augias ${VERSION} for ${OS}/${ARCH}..."
 
     tmpdir=$(mktemp -d)
     trap 'rm -rf "$tmpdir"' EXIT
@@ -166,7 +166,7 @@ install_binary() {
 
     $SUDO mv "${tmpdir}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
 
-    success "SolidInvoice ${VERSION} installed to ${INSTALL_DIR}/${BINARY_NAME}"
+    success "Augias ${VERSION} installed to ${INSTALL_DIR}/${BINARY_NAME}"
 }
 
 install_systemd_service() {
@@ -224,7 +224,7 @@ install_systemd_service() {
             $SUDO useradd --system --gid augias \
                 --home-dir /var/lib/augias --no-create-home \
                 --shell /usr/sbin/nologin \
-                --comment "SolidInvoice service account" augias
+                --comment "Augias service account" augias
         else
             $SUDO adduser -S -G augias -h /var/lib/augias \
                 -s /usr/sbin/nologin -D augias
@@ -251,7 +251,7 @@ print_next_steps() {
     echo ""
     success "Installation complete!"
     echo ""
-    echo "  Run SolidInvoice:"
+    echo "  Run Augias:"
     echo "    ${BINARY_NAME} run"
     echo ""
     echo "  Then open your browser to the URL shown in the terminal."
@@ -271,7 +271,7 @@ print_next_steps() {
 
 main() {
     echo ""
-    info "SolidInvoice Installer"
+    info "Augias Installer"
     echo ""
 
     detect_os
