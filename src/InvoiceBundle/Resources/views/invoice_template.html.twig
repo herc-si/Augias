@@ -132,7 +132,7 @@
                                         {{ item.price|formatCurrency(invoice.client.currency) }}
                                     </td>
                                     <td class="column-qty">
-                                        {{ item.qty }}
+                                        {{ item|line_quantity }}
                                     </td>
                                     {% if invoice.tax.positive %}
                                         <td class="column-tax">

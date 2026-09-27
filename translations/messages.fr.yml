@@ -559,6 +559,14 @@ catalog:
         metre: "Mètre"
         month: "Mois"
         unit: "Unité"
+    unit_short:
+        day: 'j'
+        flat_rate: 'forfait'
+        hour: 'h'
+        kilogram: 'kg'
+        litre: 'L'
+        metre: 'm'
+        month: 'mois'
 category:
     constraint:
         at_least_one_usage: 'Choisissez au moins un endroit où cette catégorie peut servir.'
@@ -1641,6 +1649,7 @@ form:
         disbursement: "Débours"
         disbursement.help: "Somme avancée au nom de ce client, refacturée à l'euro près"
         supply_type: "Nature"
+        unit: "Unité"
         delivery_date: "Date de livraison"
         delivery_date.help: "Si les biens sont livrés, ou le service rendu, à une autre date que celle de la facture. Laissez vide sinon."
         domain: "Domaine"

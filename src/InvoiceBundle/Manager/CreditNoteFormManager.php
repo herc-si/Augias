@@ -115,6 +115,7 @@ final readonly class CreditNoteFormManager
                     // day the credit note is issued, as it fell due on the day
                     // the invoice was.
                     ->setSupplyType($line->getSupplyType())
+                    ->setUnit($line->getUnit())
                     ->updateTotal(),
             );
         }

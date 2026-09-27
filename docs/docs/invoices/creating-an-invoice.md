@@ -36,13 +36,14 @@ With the client set, fill in the invoice header fields:
 
 Every invoice needs at least one line item. The form starts with one blank row; click `+ Add Item` to add more.
 
-Each line item has four fields:
+Each line item has these fields:
 
 | Field | Description |
 | --- | --- |
 | **Description** | What the service or product is. Supports multiple lines. |
 | **Price** | The unit price. |
 | **Qty** | The quantity. Defaults to `1`. Fractional quantities are supported to six decimal places, so you can bill part-hours, metered usage or weights exactly. |
+| **Unit** | What the quantity counts: `Unit`, `Hour`, `Day`, `Month`, `Kilogram`, `Litre`, `Metre` or `Flat rate`. Filled in from the product when you add one from the catalogue. The PDF shows it after the quantity (`3 h`, `2 d`), and the electronic invoice carries it. |
 | **Tax** | An optional tax rate to apply to this line. Tax rates are managed in `System` → `Taxes`. |
 
 The **Total** column and the **Summary** panel on the right update in real time as you type.

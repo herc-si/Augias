@@ -15,10 +15,10 @@ namespace Augias\InvoiceBundle\Tests\Twig\Components;
 
 use Augias\CatalogBundle\Entity\Product;
 use Augias\CatalogBundle\Enum\ProductType;
-use Augias\CatalogBundle\Enum\ProductUnit;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\ClientBundle\Test\Factory\ContactFactory;
 use Augias\CoreBundle\Entity\Discount;
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Test\LiveComponentTest;
 use Augias\InvoiceBundle\DTO\InvoiceFormDTO;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -77,7 +77,7 @@ final class CreateInvoiceTest extends LiveComponentTest
             ->setName('Journée de développement')
             ->setSalePrice(BigInteger::of(70_000))
             ->setType(ProductType::Service)
-            ->setUnit(ProductUnit::Day);
+            ->setUnit(QuantityUnit::Day);
         $product->setCompany($this->company);
 
         $entityManager = self::getContainer()->get('doctrine')->getManager();
@@ -98,6 +98,8 @@ final class CreateInvoiceTest extends LiveComponentTest
         // formatting, so "700.00" and "700" are both correct answers and only
         // the magnitude is being asserted here.
         self::assertSame(700.0, (float) $formValues['lines'][0]['price']);
+        // Sold by the day in the catalogue, so counted in days on the line.
+        self::assertSame('day', $formValues['lines'][0]['unit']);
     }
 
     /**

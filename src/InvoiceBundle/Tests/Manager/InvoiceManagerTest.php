@@ -16,6 +16,7 @@ namespace Augias\InvoiceBundle\Tests\Manager;
 use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\Discount;
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Generator\BillingIdGenerator;
 use Augias\CoreBundle\Generator\BillingIdGenerator\IdGeneratorInterface;
 use Augias\CoreBundle\Repository\CustomFieldRepository;
@@ -143,6 +144,7 @@ final class InvoiceManagerTest extends KernelTestCase
         $line->setCreated(Carbon::now());
         $line->setPrice(120);
         $line->setQty(10);
+        $line->setUnit(QuantityUnit::Hour);
         $line->setTotal(120 * 10);
 
         $quote = new Quote();
@@ -186,6 +188,8 @@ final class InvoiceManagerTest extends KernelTestCase
         self::assertInstanceOf(DateTimeImmutable::class, $invoiceLine[0]->getCreated());
         self::assertEquals($line->getPrice(), $invoiceLine[0]->getPrice());
         self::assertTrue($line->getQty()->isEqualTo($invoiceLine[0]->getQty()));
+        // Ten hours quoted are ten hours invoiced.
+        self::assertSame(QuantityUnit::Hour, $invoiceLine[0]->getUnit());
     }
 
     public function testQuoteToInvoiceCopiesLineTaxSnapshotsAsNewRows(): void

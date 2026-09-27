@@ -15,9 +15,9 @@ namespace Augias\CatalogBundle\Form\Type;
 
 use Augias\CatalogBundle\Entity\Product;
 use Augias\CatalogBundle\Enum\ProductType;
-use Augias\CatalogBundle\Enum\ProductUnit;
 use Augias\CoreBundle\Entity\Category;
 use Augias\CoreBundle\Enum\CategoryUsage;
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Repository\CategoryRepository;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\Tax;
@@ -63,8 +63,8 @@ final class ProductFormType extends AbstractType
             ])
             ->add('unit', EnumType::class, [
                 'label' => 'catalog.form.unit.label',
-                'class' => ProductUnit::class,
-                'choice_label' => static fn (ProductUnit $unit): string => $unit->getLabel(),
+                'class' => QuantityUnit::class,
+                'choice_label' => static fn (QuantityUnit $unit): string => $unit->getLabel(),
                 'placeholder' => false,
             ])
             ->add('salePrice', MoneyType::class, [

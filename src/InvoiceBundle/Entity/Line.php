@@ -26,6 +26,7 @@ use Augias\ApiBundle\State\Processor\InvoiceLinePersistProcessor;
 use Augias\CoreBundle\Doctrine\Type\BigIntegerType;
 use Augias\CoreBundle\Doctrine\Type\QuantityType;
 use Augias\CoreBundle\Entity\LineInterface;
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
@@ -173,6 +174,15 @@ class Line implements LineInterface, Stringable
     )]
     protected BigNumber $qty;
 
+    /**
+     * What the quantity counts — hours, days, pieces. Copied from the catalogue
+     * when the line comes from a product, and carried by the electronic
+     * invoice as its unit code.
+     */
+    #[ORM\Column(name: 'unit', type: Types::STRING, length: 16, enumType: QuantityUnit::class, options: ['default' => 'unit'])]
+    #[Groups(['invoice_api:read', 'invoice_api:write', 'recurring_invoice_api:read', 'recurring_invoice_api:write'])]
+    protected QuantityUnit $unit = QuantityUnit::Unit;
+
     #[ORM\ManyToOne(targetEntity: Invoice::class, inversedBy: 'lines')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
     #[ApiProperty(
@@ -295,6 +305,18 @@ class Line implements LineInterface, Stringable
     public function getQty(): BigNumber
     {
         return $this->qty;
+    }
+
+    public function getUnit(): QuantityUnit
+    {
+        return $this->unit;
+    }
+
+    public function setUnit(QuantityUnit $unit): static
+    {
+        $this->unit = $unit;
+
+        return $this;
     }
 
     public function setInvoice(?Invoice $invoice): static

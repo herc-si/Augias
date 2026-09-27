@@ -14,10 +14,10 @@ declare(strict_types=1);
 namespace Augias\CatalogBundle\Entity;
 
 use Augias\CatalogBundle\Enum\ProductType;
-use Augias\CatalogBundle\Enum\ProductUnit;
 use Augias\CatalogBundle\Repository\ProductRepository;
 use Augias\CoreBundle\Doctrine\Type\BigIntegerType;
 use Augias\CoreBundle\Entity\Category;
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
 use Augias\TaxBundle\Entity\Tax;
@@ -81,8 +81,8 @@ class Product implements Stringable
     #[ORM\Column(name: 'type', type: Types::STRING, length: 16, enumType: ProductType::class)]
     private ProductType $type = ProductType::Service;
 
-    #[ORM\Column(name: 'unit', type: Types::STRING, length: 16, enumType: ProductUnit::class)]
-    private ProductUnit $unit = ProductUnit::Unit;
+    #[ORM\Column(name: 'unit', type: Types::STRING, length: 16, enumType: QuantityUnit::class)]
+    private QuantityUnit $unit = QuantityUnit::Unit;
 
     /**
      * Minor units, and typed BigNumber rather than BigInteger on purpose: the
@@ -171,12 +171,12 @@ class Product implements Stringable
         return $this;
     }
 
-    public function getUnit(): ProductUnit
+    public function getUnit(): QuantityUnit
     {
         return $this->unit;
     }
 
-    public function setUnit(ProductUnit $unit): self
+    public function setUnit(QuantityUnit $unit): self
     {
         $this->unit = $unit;
 

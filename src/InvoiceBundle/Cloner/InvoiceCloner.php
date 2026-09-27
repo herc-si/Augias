@@ -131,6 +131,7 @@ final readonly class InvoiceCloner
             // easiest way to lose the distinction.
             $invoiceLine->setDisbursement($line->isDisbursement());
             $invoiceLine->setSupplyType($line->getSupplyType());
+            $invoiceLine->setUnit($line->getUnit());
 
             $invoiceLine->getTaxes()->clear();
             foreach ($line->getTaxes() as $sourceLineTax) {

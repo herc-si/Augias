@@ -16,6 +16,7 @@ namespace Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdp;
 use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Entity\Discount;
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\FacturXInvoiceBuilder;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
@@ -81,6 +82,7 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         $line->setDescription('Consulting services');
         $line->setPrice(10000);
         $line->setQty(2);
+        $line->setUnit(QuantityUnit::Hour);
         $line->updateTotal();
 
         $lineTax = new LineTax();
@@ -101,6 +103,9 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         self::assertStringContainsString('Acme Corp', $xml);
         self::assertStringContainsString('Consulting services', $xml);
         self::assertStringContainsString('EUR', $xml);
+        // Two hours, said as hours (BT-130), not as two pieces.
+        self::assertStringContainsString('unitCode="HUR"', $xml);
+        self::assertStringNotContainsString('unitCode="C62"', $xml);
 
         // The SIRET must be a scheme-qualified GlobalID (ISO 6523 ICD "0002", the
         // French SIRENE registry) — not a plain tax-registration number — otherwise

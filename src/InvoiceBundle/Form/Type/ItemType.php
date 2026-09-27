@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\InvoiceBundle\Form\Type;
 
 use Augias\CoreBundle\Form\Transformer\QuantityTransformer;
+use Augias\CoreBundle\Form\Type\QuantityUnitType;
 use Augias\CoreBundle\Form\Type\SupplyTypeType;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\TaxBundle\Form\Type\LineTaxType;
@@ -82,6 +83,8 @@ class ItemType extends AbstractType
         $builder->get('qty')
             ->resetViewTransformers()
             ->addViewTransformer(new QuantityTransformer());
+
+        $builder->add('unit', QuantityUnitType::class);
 
         $builder->add(
             'disbursement',

@@ -48,7 +48,7 @@
                     {% for line in invoice.feeLines %}
                         <tr style="border-bottom: 1px solid #e0d8c8;">
                             <td>{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
-                            <td class="text-muted text-end">{{ line.qty }} × {{ line.price|formatCurrency(currency) }}</td>
+                            <td class="text-muted text-end">{{ line|line_quantity }} × {{ line.price|formatCurrency(currency) }}</td>
                             <td class="text-end fw-bold">{{ line.total|formatCurrency(currency) }}</td>
                         </tr>
                     {% endfor %}

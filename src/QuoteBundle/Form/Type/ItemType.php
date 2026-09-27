@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\QuoteBundle\Form\Type;
 
 use Augias\CoreBundle\Form\Transformer\QuantityTransformer;
+use Augias\CoreBundle\Form\Type\QuantityUnitType;
 use Augias\CoreBundle\Form\Type\SupplyTypeType;
 use Augias\QuoteBundle\Entity\Line;
 use Augias\TaxBundle\Form\Type\LineTaxType;
@@ -81,6 +82,8 @@ class ItemType extends AbstractType
         $builder->get('qty')
             ->resetViewTransformers()
             ->addViewTransformer(new QuantityTransformer());
+
+        $builder->add('unit', QuantityUnitType::class);
 
         if ($this->taxAvailability->isOffered()) {
             // Only where tax is: goods and services differ by when their VAT
