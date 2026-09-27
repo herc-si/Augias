@@ -65,6 +65,9 @@
     <ini name="error_reporting" value="-1"/>
     <env name="PANTHER_NO_HEADLESS" value="0"/>
     <env name="PANTHER_APP_ENV" value="test"/>
+    <!-- Forced: the dev containers point the mailer at Mailpit, and tests run
+         inside them. Tests inspect what would be sent; they send nothing. -->
+    <env name="AUGIAS_MAILER_DSN" value="null://null" force="true"/>
     <env name="AUGIAS_DATABASE_URL" value="sqlite:///%kernel.cache_dir%/augias_%app_mode%_%env(default:app_mode:TEST_TOKEN)%.db"/>
     <server name="AUGIAS_APP_SECRET" value="$ecretf0rt3st"/>
     <server name="AUGIAS_ENV" value="test"/>
