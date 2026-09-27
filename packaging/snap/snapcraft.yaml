@@ -1,14 +1,14 @@
 name: augias
-title: SolidInvoice
+title: Augias
 version: ${AUGIAS_VERSION}
 summary: Simple and elegant invoicing solution
 description: |
-  SolidInvoice is an open-source invoicing application for small businesses
+  Augias is an open-source invoicing application for small businesses
   and freelancers. Features include client management, quotes, invoices
   (including recurring), payments, tax and discount management, a REST API,
   and notifications.
 
-  SolidInvoice ships as a self-contained binary with an embedded web server.
+  Augias ships as a self-contained binary with an embedded web server.
   No PHP, Apache, or Nginx installation required.
 
   After installation, start the application with:

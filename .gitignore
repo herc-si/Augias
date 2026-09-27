@@ -34,7 +34,7 @@ package-lock.json
 /frankenphp/app.tar
 /frankenphp/app.tar.gz
 /frankenphp/app_checksum.txt
-/helm/solidinvoice/charts
+/helm/augias/charts
 /docs/superpowers
 
 ###> symfony/framework-bundle ###
@@ -63,3 +63,6 @@ yarn-error.log
 .context
 .gstack/
 .impeccable
+
+# Personal Claude Code settings, never shared
+/docs/.claude/settings.local.json

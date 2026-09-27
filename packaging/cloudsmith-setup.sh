@@ -1,5 +1,5 @@
 #!/bin/sh
-# Cloudsmith Repository Setup Guide for SolidInvoice
+# Cloudsmith Repository Setup Guide for Augias
 #
 # This script documents the steps needed to set up Cloudsmith repositories
 # for hosting APT, YUM/DNF, and Alpine packages.

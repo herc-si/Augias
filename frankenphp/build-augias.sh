@@ -2,7 +2,7 @@
 
 set -euxo pipefail
 
-# SolidInvoice Binary Builder Wrapper
+# Augias Binary Builder Wrapper
 #
 # This script uses the upstream FrankenPHP build-static.sh without modifications
 # by providing a fake "xcaddy" script that builds our custom Go application.
@@ -16,7 +16,7 @@ set -euxo pipefail
 # Benefits:
 # - build-static.sh stays completely unmodified (easy upstream updates)
 # - All env vars and CGO flags set by static-php-cli are preserved
-# - Final binary has ONLY SolidInvoice commands (no Caddy/FrankenPHP CLI)
+# - Final binary has ONLY Augias commands (no Caddy/FrankenPHP CLI)
 #
 # Environment variables:
 #   AUGIAS_VERSION - Version for the binary (mapped to FRANKENPHP_VERSION)
@@ -80,7 +80,7 @@ else
 fi
 
 echo "========================================"
-echo "Building SolidInvoice Static Binary"
+echo "Building Augias Static Binary"
 echo "========================================"
 echo "Version: ${VERSION}"
 echo "Platform: ${spc_arch}-${spc_os}"
@@ -96,7 +96,7 @@ if [ -z "${PHP_VERSION:-}" ]; then
 	export PHP_VERSION="8.5"
 fi
 
-# SolidInvoice-specific extensions (removed problematic/unnecessary ones)
+# Augias-specific extensions (removed problematic/unnecessary ones)
 
 if [ -z "${PHP_EXTENSIONS:-}" ]; then
     export PHP_EXTENSIONS=$(cat ./build-static.sh | grep 'defaultExtensions="' | head -n 1 | sed 's/.*defaultExtensions="//' | sed 's/".*//' | tr ',' '\n' | grep -v -E 'ssh2|gmp|pdo_sqlsrv|memcache|memcached' | tr '\n' ',' | sed 's/,$//')
@@ -285,7 +285,7 @@ echo "Version: ${VERSION}"
 echo "Size: $(du -h "${AUGIAS_BIN}" | cut -f1)"
 echo ""
 echo "✓ Uses upstream build-static.sh (no modifications)"
-echo "✓ Includes ONLY SolidInvoice commands"
+echo "✓ Includes ONLY Augias commands"
 echo "✓ No Caddy/FrankenPHP CLI commands"
 echo ""
 

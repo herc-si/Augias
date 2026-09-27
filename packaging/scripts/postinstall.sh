@@ -18,7 +18,7 @@ if ! getent passwd augias >/dev/null 2>&1; then
             --home-dir /var/lib/augias \
             --no-create-home \
             --shell /usr/sbin/nologin \
-            --comment "SolidInvoice service account" \
+            --comment "Augias service account" \
             augias
     else
         adduser -S -G augias -h /var/lib/augias \
@@ -40,7 +40,7 @@ fi
 if command -v systemctl >/dev/null 2>&1; then
     systemctl daemon-reload
     echo ""
-    echo "SolidInvoice has been installed successfully."
+    echo "Augias has been installed successfully."
     echo ""
     echo "To start the service:"
     echo "  sudo systemctl start augias"

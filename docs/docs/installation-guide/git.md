@@ -21,7 +21,7 @@ Installing from Git is intended for contributors and developers who want to hack
 ## Clone and install
 
 ```bash
-git clone https://github.com/herc-si/SolidInvoice.git
+git clone https://github.com/herc-si/Augias.git
 cd Augias
 composer install
 bun install
@@ -74,6 +74,6 @@ If you'd rather use Nginx or Apache directly, point the document root at `public
 
 Open the URL Symfony CLI prints (typically `https://127.0.0.1:7005`) and finish setup with the [first-run wizard](./system-installation.md).
 
-For development workflow, code conventions, and how to run the test suite, read [`CONTRIBUTING.md`](https://github.com/herc-si/SolidInvoice/blob/3.0.x/CONTRIBUTING.md) in the repository.
+For development workflow, code conventions, and how to run the test suite, read [`CONTRIBUTING.md`](https://github.com/herc-si/Augias/blob/4.0.x/CONTRIBUTING.md) in the repository.
 
-If you encounter issues, please [open a bug report](https://github.com/herc-si/SolidInvoice/issues).
+If you encounter issues, please [open a bug report](https://github.com/herc-si/Augias/issues).

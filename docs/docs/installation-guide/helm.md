@@ -19,8 +19,8 @@ The official Augias Helm chart deploys the application, a background worker, and
 The chart is not published to a Helm repository; it ships inside this one.
 
 ```bash
-git clone https://github.com/herc-si/SolidInvoice.git
-cd SolidInvoice
+git clone https://github.com/herc-si/Augias.git
+cd Augias
 helm dependency update helm/augias
 ```
 

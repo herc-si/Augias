@@ -54,7 +54,7 @@ export default function NotFoundContent({className}: Props): ReactNode {
           <p className={styles.footnote}>
             If you arrived here from an external link,{' '}
             <a
-              href="https://github.com/SolidInvoice/SolidInvoice/issues/new/choose"
+              href="https://github.com/herc-si/Augias/issues/new/choose"
               target="_blank"
               rel="noopener noreferrer">
               let us know

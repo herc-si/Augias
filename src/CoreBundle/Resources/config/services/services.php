@@ -70,7 +70,7 @@ return static function (ContainerConfigurator $containerConfigurator, ContainerB
         // Export/Serializer/Normalizer is excluded so the normalizers there are NOT
         // registered as global `serializer.normalizer` services. They are loaded
         // inline as fresh instances inside the dedicated export Serializer below
-        // (see solidinvoice.core.export.serializer) so they never pollute the API
+        // (see augias.core.export.serializer) so they never pollute the API
         // Platform normalizer chain.
         ->exclude([
             dirname(__DIR__, 3) . '/{DependencyInjection,Entity,Resources,Tests,Export/Serializer/Normalizer}',
@@ -181,11 +181,11 @@ return static function (ContainerConfigurator $containerConfigurator, ContainerB
     // the global `serializer.normalizer.object` would cause Symfony's Serializer
     // constructor to call setSerializer() on the shared instance and silently
     // replace the API Platform serializer reference — breaking JSON-LD output.
-    $services->set('solidinvoice.core.export.serializer', SymfonySerializer::class)->arg('$normalizers', [])->arg('$encoders', [
+    $services->set('augias.core.export.serializer', SymfonySerializer::class)->arg('$normalizers', [])->arg('$encoders', [
         inline_service(JsonEncoder::class),
         inline_service(CsvEncoder::class),
         inline_service(XmlEncoder::class),
     ]);
 
-    $services->set(ExportSerializer::class)->arg('$inner', service('solidinvoice.core.export.serializer'));
+    $services->set(ExportSerializer::class)->arg('$inner', service('augias.core.export.serializer'));
 };

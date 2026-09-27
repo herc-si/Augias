@@ -292,7 +292,7 @@ trait Money {
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/herc-si/SolidInvoice.git
+   git clone https://github.com/herc-si/Augias.git
    cd Augias
    ```
 

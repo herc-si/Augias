@@ -137,7 +137,7 @@ onboarding:
                 name: 'Votre prochain client apparaîtra ici'
                 sub: 'nom, e-mail et adresse de facturation'
             header: 'Vos clients'
-            url: solidinvoice.app/clients
+            url: augias.herc-si.fr/clients
         needs:
             1: 'Nom du client ou de la société'
             2: 'Une adresse e-mail pour les factures'

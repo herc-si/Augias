@@ -1,11 +1,11 @@
-SolidInvoice has been deployed successfully!
+Augias has been deployed successfully!
 
 {{- if .Values.ingress.enabled }}
 {{- range .Values.ingress.hosts }}
   Application URL: http{{ if $.Values.ingress.tls }}s{{ end }}://{{ .host }}
 {{- end }}
 {{- else }}
-  To access SolidInvoice, run:
+  To access Augias, run:
   kubectl port-forward svc/{{ include "augias.fullname" . }} 8080:{{ .Values.service.port }} -n {{ .Release.Namespace }}
   Then open: http://localhost:8080
 {{- end }}
@@ -31,7 +31,7 @@ SolidInvoice has been deployed successfully!
 
 ==> WARNING - No database configured:
   Neither a database subchart nor an external database is configured.
-  SolidInvoice will use SQLite (stored in /etc/augias), which is NOT recommended for production.
+  Augias will use SQLite (stored in /etc/augias), which is NOT recommended for production.
   Configure a database:
     --set mysql.enabled=true --set mysql.auth.password=<password>
     or

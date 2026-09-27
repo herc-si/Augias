@@ -8,7 +8,7 @@ post_install() {
         useradd --system --gid augias \
             --home-dir /var/lib/augias --no-create-home \
             --shell /usr/sbin/nologin \
-            --comment "SolidInvoice service account" augias
+            --comment "Augias service account" augias
     fi
 
     # Fix ownership
@@ -19,7 +19,7 @@ post_install() {
     systemctl daemon-reload
 
     echo ""
-    echo "SolidInvoice has been installed."
+    echo "Augias has been installed."
     echo ""
     echo "  Start:   sudo systemctl start augias"
     echo "  Enable:  sudo systemctl enable augias"
@@ -31,7 +31,7 @@ post_upgrade() {
     systemctl daemon-reload
 
     if systemctl is-active --quiet augias; then
-        echo "Restarting SolidInvoice..."
+        echo "Restarting Augias..."
         systemctl restart augias
     fi
 }
