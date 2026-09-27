@@ -180,6 +180,7 @@ final class RoutePermissionMap
         '_notification_integration' => CompanyPermission::Settings,
         '_payment_settings_index' => CompanyPermission::Settings,
         '_settings' => CompanyPermission::Settings,
+        '_template_preview' => CompanyPermission::Settings,
         '_settings_custom_fields' => CompanyPermission::Settings,
         '_settings_custom_fields_create' => CompanyPermission::Settings,
         '_settings_custom_fields_delete' => CompanyPermission::Settings,

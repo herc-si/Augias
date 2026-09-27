@@ -454,22 +454,36 @@
                     </div>
                 {% endif %}
 
-            {% elseif section == 'design' and form.template is defined %}
-                {# Design Settings - Invoice/Quote template picker (SaaS only) #}
+            {% elseif section == 'design' %}
+                {# Design Settings - template picker, then the brand colour, the page footer
+                 # and the bank details every document carries. #}
+                {% if form.template is defined %}
+                    <div class="mb-4">
+                        <h3 class="d-flex align-items-center gap-2 mb-3">
+                            {{ ux_icon('tabler:palette', {width: 22, height: 22, class: 'text-primary', 'aria-hidden': 'true'}) }}
+                            {{ 'settings.page.design.template.title'|trans }}
+                        </h3>
+                        <p class="text-muted small mb-3">
+                            {{ 'settings.page.design.template.subtitle'|trans }}
+                        </p>
+
+                        {% if form.template.vars.feature_gated_active|default(false) %}
+                            {{ upgrade_prompt('custom_templates') }}
+                        {% endif %}
+
+                        {{ form_widget(form.template) }}
+                    </div>
+                {% endif %}
+
                 <div>
                     <h3 class="d-flex align-items-center gap-2 mb-3">
-                        {{ ux_icon('tabler:palette', {width: 22, height: 22, class: 'text-primary', 'aria-hidden': 'true'}) }}
-                        {{ 'settings.page.design.template.title'|trans }}
+                        {{ ux_icon('tabler:file-text', {width: 22, height: 22, class: 'text-primary', 'aria-hidden': 'true'}) }}
+                        {{ 'settings.page.design.branding.title'|trans }}
                     </h3>
                     <p class="text-muted small mb-3">
-                        {{ 'settings.page.design.template.subtitle'|trans }}
+                        {{ 'settings.page.design.branding.subtitle'|trans }}
                     </p>
-
-                    {% if form.template.vars.feature_gated_active|default(false) %}
-                        {{ upgrade_prompt(constant('Augias\\SaasBundle\\Feature\\Feature::CustomTemplates').value) }}
-                    {% endif %}
-
-                    {{ form_widget(form.template) }}
+                    {{ form_widget(form) }}
                 </div>
             {% else %}
                 {# Default Rendering for Other Sections #}

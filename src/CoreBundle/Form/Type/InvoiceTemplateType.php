@@ -11,7 +11,7 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
-namespace Augias\SaasBundle\Form\Type;
+namespace Augias\CoreBundle\Form\Type;
 
 use Augias\CoreBundle\Templates\BillingTemplateRegistry;
 use Override;
@@ -28,7 +28,7 @@ use function array_merge;
  * previews by the `invoice_template_widget` block in the settings form theme.
  *
  * @extends AbstractType<mixed>
- * @see \Augias\SaasBundle\Tests\Form\Type\InvoiceTemplateTypeTest
+ * @see \Augias\CoreBundle\Tests\Form\Type\InvoiceTemplateTypeTest
  */
 final class InvoiceTemplateType extends AbstractType
 {

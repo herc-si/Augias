@@ -84,7 +84,7 @@ final class InvoicePdfListenerTest extends TestCase
 
         return new BillingTemplateResolver(
             new BillingTemplateRegistry([]),
-            M::mock(SystemConfig::class),
+            M::mock(SystemConfig::class, ['get' => null]),
             M::mock(FeatureGate::class),
             M::mock(PaidSubscriptionGateInterface::class),
             $toggle,

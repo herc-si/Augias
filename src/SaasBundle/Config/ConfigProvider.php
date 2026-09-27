@@ -13,11 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\Config;
 
-use Augias\CoreBundle\Templates\BillingTemplateRegistry;
-use Augias\CoreBundle\Templates\BillingTemplateResolver;
 use Augias\SaasBundle\Feature\Feature;
 use Augias\SaasBundle\Form\Type\CustomDomainType;
-use Augias\SaasBundle\Form\Type\InvoiceTemplateType;
 use Augias\SettingsBundle\Config\ProviderInterface;
 use Augias\SettingsBundle\DTO\Config;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -49,13 +46,6 @@ final class ConfigProvider implements ProviderInterface
                     'feature_gated' => Feature::CustomDomain->value,
                     'trial_restricted' => true,
                 ],
-            ),
-            new Config(
-                BillingTemplateResolver::TEMPLATE_SETTING_KEY,
-                BillingTemplateRegistry::DEFAULT_SLUG,
-                'saas.settings.billing_template.description',
-                InvoiceTemplateType::class,
-                ['feature_gated' => Feature::CustomTemplates->value],
             ),
         ];
     }

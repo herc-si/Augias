@@ -126,6 +126,11 @@
         totalLabelColor: '#1e293b',
         mono: 'Courier New, monospace'
     }|merge(palette) %}
+    {# The company's brand colour, when it set one, carries the total and balance
+       rows in every design, with a text colour that reads on it. #}
+    {% if brand_color() %}
+        {% set p = p|merge({totalBg: brand_color(), totalColor: brand_text_color(), totalLabelColor: brand_text_color(), balanceBg: brand_color(), balanceColor: brand_text_color(), balanceLabelColor: brand_text_color()}) %}
+    {% endif %}
 
     <table cellpadding="0" cellspacing="0" style="width: 280px; border-collapse: collapse; margin-left: auto;">
         <tr>
@@ -232,6 +237,7 @@
 {% macro terms_block(quote, palette={}) %}
     {% if quote.terms is not empty %}
         {% set p = {labelColor: '#64748b', textColor: '#475569', borderColor: '#e2e8f0'}|merge(palette) %}
+        {% if brand_color() %}{% set p = p|merge({labelColor: brand_color()}) %}{% endif %}
         <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid {{ p.borderColor }};">
             <div style="font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: {{ p.labelColor }}; margin-bottom: 8px;">
                 {{ 'quote.terms'|trans }}

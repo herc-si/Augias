@@ -17,7 +17,6 @@ use Augias\SaasBundle\Action\ChoosePlanAction;
 use Augias\SaasBundle\Action\ConfirmPlanChangeAction;
 use Augias\SaasBundle\Action\SelectPlanAction;
 use Augias\SaasBundle\Action\SubscriptionOverviewAction;
-use Augias\SaasBundle\Action\TemplatePreviewAction;
 use Augias\SaasBundle\Controller\PaymentSuccess;
 use Augias\SaasBundle\Controller\SubscribeController;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
@@ -52,9 +51,4 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator->add('saas_subscription_cancel_downgrade', '/subscription/cancel-downgrade')
         ->controller(CancelDowngradeAction::class)
         ->methods(['POST']);
-
-    $routingConfigurator->add('saas_template_preview', '/templates/preview/{slug}')
-        ->controller(TemplatePreviewAction::class)
-        ->requirements(['slug' => '[a-z0-9-_]+'])
-        ->methods(['GET']);
 };

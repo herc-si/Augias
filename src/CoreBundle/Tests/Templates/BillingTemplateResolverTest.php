@@ -133,11 +133,24 @@ final class BillingTemplateResolverTest extends TestCase
         );
     }
 
-    public function testFallsBackToDefaultWhenSaasIsDisabled(): void
+    /**
+     * Self-hosted, the templates are on the disk and the choice is the
+     * owner's: neither a plan nor a subscription is asked.
+     */
+    public function testSelfHostedUsesTheChosenTemplateWithoutAnyGate(): void
     {
-        $resolver = $this->createResolver(['saasEnabled' => false]);
+        $resolver = $this->createResolver(['saasEnabled' => false, 'subscriptionActive' => false, 'featureEnabled' => false]);
 
-        self::assertNull($resolver->customTemplate($this->createInvoice(), BillingTemplateChannel::Pdf));
+        self::assertSame(
+            '@AugiasInvoice/Templates/sleek/pdf.html.twig',
+            $resolver->resolve($this->createInvoice(), BillingTemplateChannel::Pdf),
+        );
+    }
+
+    public function testSelfHostedStillFallsBackWhenNothingIsChosen(): void
+    {
+        $resolver = $this->createResolver(['saasEnabled' => false, 'slug' => null]);
+
         self::assertSame(
             '@AugiasInvoice/Pdf/invoice.html.twig',
             $resolver->resolve($this->createInvoice(), BillingTemplateChannel::Pdf),

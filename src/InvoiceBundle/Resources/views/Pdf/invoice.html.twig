@@ -20,10 +20,10 @@
 
         @page {
             margin-top: 20mm;
-            margin-bottom: 25mm;
+            margin-bottom: {{ pdf_footer_margin() }};
             margin-left: 15mm;
             margin-right: 15mm;
-            footer: footer;
+            footer: html_footer;
         }
     </style>
 </head>
@@ -39,13 +39,7 @@
 {# ============================================================================
    PAGE FOOTER (mPDF specific)
 ============================================================================ #}
-<pagefooter
-    name="footer"
-    content-left="{{ setting('system/general/hide_powered_by') is not same as ('1') ? 'powered_by'|trans ~ ' ' ~ constant('Augias\\CoreBundle\\AugiasCoreBundle::APP_NAME') }}"
-    content-right="{{ 'pdf.page'|trans }} {PAGENO} {{ 'pdf.of'|trans }} {nb}"
-    line="on"
-    footer-style="border-top: 1px solid #e2e8f0; font-size: 8pt; color: #64748b; padding-top: 8px;"
-/>
+{% include '@AugiasCore/Pdf/_footer.html.twig' %}
 
 {# ============================================================================
    HEADER SECTION - Company Info + Invoice Details
@@ -155,7 +149,7 @@
             {# Total Due Box #}
             <table cellpadding="0" cellspacing="0" style="margin-left: auto;">
                 <tr>
-                    <td style="background-color: #2e963a; color: #ffffff; padding: 14px 20px; border-radius: 6px; text-align: right;">
+                    <td style="background-color: {{ brand_color() ?: '#2e963a' }}; color: {{ brand_color() ? brand_text_color() : '#ffffff' }}; padding: 14px 20px; border-radius: 6px; text-align: right;">
                         <div style="font-size: 8pt; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px;">
                             {% if hasOutstandingBalance %}
                                 {{ 'invoice.balance_due'|trans }}
@@ -184,7 +178,7 @@
 ============================================================================ #}
 <div class="bill-to-section" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
     {# Section Label #}
-    <div class="section-label" style="font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #2e963a; display: inline-block;">
+    <div class="section-label" style="font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid {{ brand_color() ?: '#2e963a' }}; display: inline-block;">
         {{ 'invoice.to'|trans }}
     </div>
 
@@ -374,20 +368,20 @@
 
         {# Total or Balance #}
         {% if hasOutstandingBalance %}
-            <tr class="balance-row" style="background-color: #fef3c7;">
-                <td class="label-cell" style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: #1e293b;">
+            <tr class="balance-row" style="background-color: {{ brand_color() ?: '#fef3c7' }};">
+                <td class="label-cell" style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ brand_color() ? brand_text_color() : '#1e293b' }};">
                     {{ 'invoice.balance'|trans }}
                 </td>
-                <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: #92400e;">
+                <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: {{ brand_color() ? brand_text_color() : '#92400e' }};">
                     {{ invoice.feesBalance|formatCurrency(currency) }}
                 </td>
             </tr>
         {% else %}
-            <tr class="total-row" style="background-color: #f0fdf4;">
-                <td class="label-cell" style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: #1e293b;">
+            <tr class="total-row" style="background-color: {{ brand_color() ?: '#f0fdf4' }};">
+                <td class="label-cell" style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ brand_color() ? brand_text_color() : '#1e293b' }};">
                     {{ 'invoice.total'|trans }}
                 </td>
-                <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: #166534;">
+                <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: {{ brand_color() ? brand_text_color() : '#166534' }};">
                     {{ invoice.feesTotal|formatCurrency(currency) }}
                 </td>
             </tr>
@@ -401,11 +395,11 @@
                     -{{ invoice.withholdingAmount|formatCurrency(currency) }}
                 </td>
             </tr>
-            <tr class="payable-row" style="background-color: #f0fdf4;">
-                <td class="label-cell" style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: #1e293b;">
+            <tr class="payable-row" style="background-color: {{ brand_color() ?: '#f0fdf4' }};">
+                <td class="label-cell" style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ brand_color() ? brand_text_color() : '#1e293b' }};">
                     {{ 'invoice.amount_payable'|trans }}
                 </td>
-                <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: #166534;">
+                <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: {{ brand_color() ? brand_text_color() : '#166534' }};">
                     {{ invoice.feesPayableAmount|formatCurrency(currency) }}
                 </td>
             </tr>
@@ -432,8 +426,8 @@
                 <td style="text-align: right; vertical-align: middle; width: 140px;">
                     <table cellpadding="0" cellspacing="0" style="margin-left: auto;">
                         <tr>
-                            <td style="background-color: #2e963a; padding: 10px 20px; border-radius: 6px; text-align: center;">
-                                <a href="{{ paymentUrl }}" style="color: #ffffff; font-size: 10pt; font-weight: bold; text-decoration: none;">
+                            <td style="background-color: {{ brand_color() ?: '#2e963a' }}; padding: 10px 20px; border-radius: 6px; text-align: center;">
+                                <a href="{{ paymentUrl }}" style="color: {{ brand_color() ? brand_text_color() : '#ffffff' }}; font-size: 10pt; font-weight: bold; text-decoration: none;">
                                     {{ 'invoice.action.pay_now'|trans }}
                                 </a>
                             </td>

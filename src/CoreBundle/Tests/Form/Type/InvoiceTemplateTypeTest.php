@@ -11,11 +11,11 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
-namespace Augias\SaasBundle\Tests\Form\Type;
+namespace Augias\CoreBundle\Tests\Form\Type;
 
+use Augias\CoreBundle\Form\Type\InvoiceTemplateType;
 use Augias\CoreBundle\Templates\BillingDocumentType;
 use Augias\CoreBundle\Templates\BillingTemplateRegistry;
-use Augias\SaasBundle\Form\Type\InvoiceTemplateType;
 use Override;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\CoversClass;
