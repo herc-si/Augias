@@ -8,7 +8,7 @@
             <div class="d-flex">
                 <div style="background: #2e963a; width: 8px;"></div>
                 <div class="flex-grow-1 p-3 text-white" style="background: #0f172a;">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="doc-header d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center">
                             {% if setting('system/company/logo') is not empty %}<div class="me-2">{{ app_logo(36) }}</div>{% endif %}
                             <div>
@@ -36,7 +36,7 @@
                     </div>
                 </div>
 
-                <table class="table table-sm table-striped mb-3">
+                <table class="table doc-lines doc-lines-stacked table-sm table-striped mb-3">
                     <thead style="background: #334155; color: #ffffff;">
                         <tr>
                             <th class="text-uppercase small">#</th>
@@ -49,11 +49,11 @@
                     <tbody>
                         {% for line in invoice.feeLines %}
                             <tr>
-                                <td class="text-muted small">{{ loop.index }}</td>
-                                <td class="small">{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
-                                <td class="text-end font-monospace small">{{ line|line_quantity }}</td>
-                                <td class="text-end font-monospace small">{{ line.price|formatCurrency(currency) }}</td>
-                                <td class="text-end font-monospace small fw-bold">{{ line.total|formatCurrency(currency) }}</td>
+                                <td class="doc-lines-index text-muted small">{{ loop.index }}</td>
+                                <td class="doc-lines-description small">{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
+                                <td class="text-end font-monospace small" data-label="{{ 'invoice.item.heading.qty'|trans }}">{{ line|line_quantity }}</td>
+                                <td class="text-end font-monospace small" data-label="{{ 'invoice.item.heading.price'|trans }}">{{ line.price|formatCurrency(currency) }}</td>
+                                <td class="text-end font-monospace small fw-bold" data-label="{{ 'invoice.item.heading.total'|trans }}">{{ line.total|formatCurrency(currency) }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

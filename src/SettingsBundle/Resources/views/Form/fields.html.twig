@@ -152,7 +152,8 @@
             <div class="col-sm-6 col-xl-4">
                 <div class="template-picker-card card h-100">
                     <label class="template-picker-option" for="{{ child.vars.id }}">
-                        {{ form_widget(child, {attr: {class: 'template-picker-input'}}) }}
+                        {# The name is in the card footer: the radio's own label would show it twice. #}
+                        {{ form_widget(child, {attr: {class: 'template-picker-input'}, label_attr: {class: 'visually-hidden'}}) }}
                         <span class="template-picker-thumb">
                             <iframe src="{{ previewUrl }}" loading="lazy" tabindex="-1" scrolling="no" title="{{ child.vars.label }}" aria-hidden="true"></iframe>
                         </span>

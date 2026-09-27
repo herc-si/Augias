@@ -1,5 +1,5 @@
 <html><body>
-<div class="settings-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="Settings" data-live-url-value="/_components/Settings" data-live-query-mapping-value='{"section":{"name":"section"}}' data-live-props-value='{"section":"invoice","formName":"settings","settings":{"watermark":"1","bcc_address":"","email_subject":"New Invoice - #{id}","id_generation":{"strategy":"auto_increment","id_prefix":"FACT-","id_suffix":"-{year}"},"reminder":{"enabled":"1","pre_due_enabled":"1","pre_due_days":"3"},"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="settings-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="Settings" data-live-url-value="/_components/Settings" data-live-query-mapping-value='{"section":{"name":"section"}}' data-live-props-value='{"section":"invoice","formName":"settings","settings":{"watermark":"1","electronic_invoicing_enabled":null,"bcc_address":"","email_subject":"New Invoice - #{id}","id_generation":{"strategy":"auto_increment","id_prefix":"FACT-","id_suffix":"-{year}"},"reminder":{"enabled":"1","pre_due_enabled":"1","pre_due_days":"3"},"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
         <ul class="nav nav-underline mb-4" role="tablist">
                                 <li class="nav-item">
                 <a href="/settings?section=system" class="nav-link">
@@ -7,7 +7,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M9 8h1m-1 4h1m-1 4h1m4-8h1m-1 4h1m-1 4h1M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"></path></svg>
                     </span>
                     <span>Company</span>
-                </a>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=invoice" class="nav-link active" aria-current="page">
@@ -15,7 +15,9 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2M9 7h1m-1 6h6m-2 4h2"></path></g></svg>
                     </span>
                     <span>Invoices</span>
-                </a>
+                                            <span class="status-dot status-dot-animated status-warning ms-2" title="Electronic invoicing: action needed"></span>
+                        <span class="visually-hidden">Electronic invoicing: action needed</span>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=credit_note" class="nav-link">
@@ -23,7 +25,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16l-3-2l-2 2l-2-2l-2 2l-2-2z"></path><path d="M15 14v-2a2 2 0 0 0-2-2H9l2-2m0 4l-2-2"></path></g></svg>
                     </span>
                     <span>Credit Notes</span>
-                </a>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=email" class="nav-link">
@@ -31,7 +33,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><path d="m3 7l9 6l9-6"></path></g></svg>
                     </span>
                     <span>Email</span>
-                </a>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=quote" class="nav-link">
@@ -39,7 +41,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2M9 9h1m-1 4h6m-6 4h6"></path></g></svg>
                     </span>
                     <span>Quotes</span>
-                </a>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=accounting" class="nav-link">
@@ -47,7 +49,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"></path><path d="M8 8a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1zm0 6v.01m4-.01v.01m4-.01v.01M8 17v.01m4-.01v.01m4-.01v.01"></path></g></svg>
                     </span>
                     <span>Accounting</span>
-                </a>
+                                    </a>
             </li>
                                 <li class="nav-item">
                 <a href="/settings?section=design" class="nav-link">
@@ -55,7 +57,7 @@
                         <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 21a9 9 0 0 1 0-18c4.97 0 9 3.582 9 8c0 1.06-.474 2.078-1.318 2.828S17.693 15 16.5 15H14a2 2 0 0 0-1 3.75A1.3 1.3 0 0 1 12 21"></path><path d="M7.5 10.5a1 1 0 1 0 2 0a1 1 0 1 0-2 0m4-3a1 1 0 1 0 2 0a1 1 0 1 0-2 0m4 3a1 1 0 1 0 2 0a1 1 0 1 0-2 0"></path></g></svg>
                     </span>
                     <span>Design</span>
-                </a>
+                                    </a>
             </li>
             </ul>
 
@@ -64,6 +66,80 @@
         <div class="card settings-content-card">
         <div class="card-body">
                                         
+                                                                                                                                        <section class="einvoicing-panel einvoicing-panel-warning card mb-4 border-warning" aria-labelledby="einvoicing-title">
+                        <div class="card-header einvoicing-panel-header">
+                            <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-3 w-100">
+                                <div class="d-flex align-items-center gap-3 flex-fill">
+                                    <span class="avatar avatar-md bg-warning text-white flex-shrink-0">
+                                        <svg viewbox="0 0 24 24" fill="currentColor" width="26" height="26" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M5 8V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2h-5"></path><path d="M3 14a3 3 0 1 0 6 0a3 3 0 1 0-6 0"></path><path d="M4.5 17L3 22l3-1.5L9 22l-1.5-5"></path></g></svg>
+                                    </span>
+                                    <div>
+                                        <h3 class="card-title fs-3 mb-1" id="einvoicing-title">Electronic invoicing</h3>
+                                        <div class="text-muted">Receiving has been required since 1 September 2026: turn it on.</div>
+                                    </div>
+                                </div>
+                                <div class="einvoicing-panel-switch flex-shrink-0">
+                                    <div class="form-check form-switch">
+<input type="checkbox" id="settings_electronic_invoicing_enabled" name="settings[electronic_invoicing_enabled]" aria-describedby="einvoicing-title" class="form-check-input" value="1">
+        <label class="checkbox-switch form-check-label" for="settings_electronic_invoicing_enabled">Off</label>
+</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-4">The French reform requires invoices between businesses to go through an approved platform. Augias connects to it to send your invoices and receive your suppliers'.</p>
+                            <div class="row g-4">
+                                <div class="col-lg-6">
+                                    <h4 class="subheader text-muted mb-3">Reform timeline</h4>
+                                    <ul class="steps steps-vertical steps-orange mb-0">
+                                                                                                                                                                                                            <li class="step-item">
+                                                <div class="h4 m-0">September 1, 2026</div>
+                                                <div class="text-muted">Receiving required of every business</div>
+                                            </li>
+                                                                                    <li class="step-item active">
+                                                <div class="h4 m-0">September 1, 2026</div>
+                                                <div class="text-muted">Issuing required of large and mid-sized companies</div>
+                                            </li>
+                                                                                    <li class="step-item">
+                                                <div class="h4 m-0">September 1, 2027</div>
+                                                <div class="text-muted">Issuing required of SMEs and micro-businesses</div>
+                                            </li>
+                                                                            </ul>
+                                </div>
+                                <div class="col-lg-6">
+                                    <h4 class="subheader text-muted mb-3">Requirements</h4>
+                                    <ul class="list-unstyled einvoicing-checklist mb-0">
+                                                                                                                                                                                                                                                                                                <li class="d-flex align-items-start gap-2 py-2 border-bottom">
+                                                                                                    <span class="text-warning flex-shrink-0"><svg viewbox="0 0 24 24" fill="currentColor" width="22" height="22" aria-label="Missing"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0-18 0m9-4v4m0 4h.01"></path></svg></span>
+                                                                                                <div class="flex-fill">
+                                                    <div class="fw-medium">Your company's SIRET</div>
+                                                                                                            <div class="text-muted small">It identifies your company on the platform.</div>
+                                                                                                    </div>
+                                                                                                    <a class="btn btn-sm btn-outline-primary flex-shrink-0" href="/settings?section=system#company-identifiers">Fill in</a>
+                                                                                            </li>
+                                                                                    <li class="d-flex align-items-start gap-2 py-2 border-bottom">
+                                                                                                    <span class="text-warning flex-shrink-0"><svg viewbox="0 0 24 24" fill="currentColor" width="22" height="22" aria-label="Missing"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0-18 0m9-4v4m0 4h.01"></path></svg></span>
+                                                                                                <div class="flex-fill">
+                                                    <div class="fw-medium">Intra-community VAT number</div>
+                                                                                                            <div class="text-muted small">Required on your electronic invoices, unless under the VAT franchise.</div>
+                                                                                                    </div>
+                                                                                                    <a class="btn btn-sm btn-outline-primary flex-shrink-0" href="/settings?section=system#company-identifiers">Fill in</a>
+                                                                                            </li>
+                                                                                    <li class="d-flex align-items-start gap-2 py-2">
+                                                                                                    <span class="text-warning flex-shrink-0"><svg viewbox="0 0 24 24" fill="currentColor" width="22" height="22" aria-label="Missing"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0-18 0m9-4v4m0 4h.01"></path></svg></span>
+                                                                                                <div class="flex-fill">
+                                                    <div class="fw-medium">Approved platform</div>
+                                                                                                            <div class="text-muted small">Choose your platform and enter its access.</div>
+                                                                                                    </div>
+                                                                                                    <a class="btn btn-sm btn-outline-primary flex-shrink-0" href="/electronic-invoicing/providers">Set up</a>
+                                                                                            </li>
+                                                                            </ul>
+                                    <p class="text-muted small mt-3 mb-0">Once on, your business clients' SIRET becomes required to send them an invoice.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                
                                                         <div class="mb-4 pb-4 border-bottom">
                         <h3 class="d-flex align-items-center gap-2 mb-3">
                             <svg viewbox="0 0 24 24" fill="currentColor" width="22" height="22" class="text-primary" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0-4 0"></path><path d="M21 12q-3.6 6-9 6t-9-6q3.6-6 9-6t9 6"></path></g></svg>

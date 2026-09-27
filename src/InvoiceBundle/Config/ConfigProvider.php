@@ -17,6 +17,7 @@ use Augias\CoreBundle\Form\Type\BillingIdConfigurationType;
 use Augias\SaasBundle\Feature\Feature;
 use Augias\SettingsBundle\Config\ProviderInterface;
 use Augias\SettingsBundle\DTO\Config;
+use Augias\SettingsBundle\SystemConfig;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -31,6 +32,15 @@ final class ConfigProvider implements ProviderInterface
     {
         return [
             new Config('invoice/watermark', '1', 'invoice.settings.watermark.description', CheckboxType::class),
+            // Invoice settings rather than company ones: it is about what an
+            // invoice has to carry and where it goes.
+            new Config(
+                SystemConfig::ELECTRONIC_INVOICING_CONFIG_PATH,
+                '0',
+                'tax.electronic_invoicing.description',
+                CheckboxType::class,
+                ['label' => 'tax.electronic_invoicing.label'],
+            ),
             new Config('invoice/bcc_address', null, 'invoice.settings.bcc_address.description', EmailType::class),
             new Config('invoice/email_subject', 'New Invoice - #{id}', 'invoice.settings.email_subject.description', TextType::class),
             new Config('invoice/id_generation/strategy', 'auto_increment', '', BillingIdConfigurationType::class),

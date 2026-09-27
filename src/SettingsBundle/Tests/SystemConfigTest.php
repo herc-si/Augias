@@ -73,6 +73,7 @@ final class SystemConfigTest extends KernelTestCase
             'email/from_name' => 'Augias',
             'email/sending_options/provider' => null,
             'invoice/bcc_address' => null,
+            'invoice/electronic_invoicing_enabled' => '0',
             'invoice/email_subject' => 'New Invoice - #{id}',
             'invoice/id_generation/id_prefix' => 'FACT-',
             'invoice/id_generation/id_suffix' => '-{year}',
@@ -92,7 +93,6 @@ final class SystemConfigTest extends KernelTestCase
             'system/company/contact_details/email' => null,
             'system/company/contact_details/phone_number' => null,
             'system/company/currency' => 'USD',
-            'system/company/electronic_invoicing_enabled' => '0',
             'system/company/locale' => 'en',
             'system/company/logo' => null,
         ], $config->getAll());

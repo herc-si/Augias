@@ -6,11 +6,11 @@
 <div class="quote-template quote-template-editorial" style="font-family: 'Cormorant Garamond', Georgia, serif; color: #2a2a2a;">
     <div class="card border-0 shadow-sm" style="background: #faf6ee;">
         <div class="card-body p-5">
-            <div class="d-flex justify-content-between align-items-end pb-3 mb-4 border-bottom border-dark">
+            <div class="doc-header d-flex justify-content-between align-items-end pb-3 mb-4 border-bottom border-dark">
                 <div>
                     {% if setting('system/company/logo') is not empty %}<div class="mb-2">{{ app_logo(48) }}</div>{% endif %}
                     <div class="text-uppercase mb-1" style="color: #94704a; letter-spacing: 4px; font-size: 12px;">{{ 'quote.pdf.title'|trans }}</div>
-                    <div style="font-size: 56px; font-style: italic; line-height: 1;">{{ 'invoice.number_prefix'|trans }} {{ quote.quoteId }}</div>
+                    <div class="doc-title" style="font-size: 56px; font-style: italic; line-height: 1;">{{ 'invoice.number_prefix'|trans }} {{ quote.quoteId }}</div>
                 </div>
                 <div class="text-end">
                     <div class="fst-italic fs-4">{{ company_name() }}</div>
@@ -33,11 +33,11 @@
             </div>
 
             <div style="color: #94704a; font-style: italic;" class="mb-2">III. {{ 'quote.item.heading.description'|trans }}</div>
-            <table class="table" style="background: transparent;">
+            <table class="table doc-lines" style="background: transparent;">
                 <tbody>
                     {% for line in quote.lines %}
                         <tr style="border-bottom: 1px solid #e8dcc4;">
-                            <td>
+                            <td class="doc-lines-description">
                                 <em>{{ line.description|nl2br }}</em>
                                 <div class="text-muted small">{{ line|line_quantity }} × {{ line.price|formatCurrency(currency) }}</div>
                             </td>

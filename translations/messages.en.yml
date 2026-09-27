@@ -3267,6 +3267,19 @@ saas:
             description: 'Remove the "Powered by Augias" line from invoices and quotes.'
         template_preview:
             title: 'Template preview'
+            sample:
+                client: 'Acme Studios'
+                contact_first_name: Jane
+                contact_last_name: Doe
+                street: '742 Evergreen Terrace'
+                city: Springfield
+                zip: '49007'
+                country: US
+                invoice_prefix: INV
+                terms: "Payment due within 14 days.\nBank transfer or card accepted."
+                line_identity: 'Brand identity design'
+                line_website: 'Landing page implementation'
+                line_support: 'Consulting & support'
     trial_banner:
         cancelled:
             cta: 'Renew Subscription'
@@ -3552,6 +3565,37 @@ settings:
             dns_value: 'Value / Target'
             subtitle: 'Serve Augias from your own domain (e.g. invoices.yourcompany.com) instead of the default URL.'
             title: Domain
+        einvoicing:
+            title: 'Electronic invoicing'
+            on: 'On'
+            off: 'Off'
+            intro: 'The French reform requires invoices between businesses to go through an approved platform. Augias connects to it to send your invoices and receive your suppliers''.'
+            attention: 'Electronic invoicing: action needed'
+            status:
+                running: 'Your invoices go out and come in through the platform.'
+                incomplete: 'On, but some details are still missing: nothing goes out until they are filled in.'
+                required: 'Receiving has been required since 1 September 2026: turn it on.'
+                off: 'Off for now.'
+            calendar:
+                title: 'Reform timeline'
+                receive: 'Receiving required of every business'
+                issue_large: 'Issuing required of large and mid-sized companies'
+                issue_small: 'Issuing required of SMEs and micro-businesses'
+            checklist:
+                title: Requirements
+                done: 'Filled in'
+                missing: 'Missing'
+                siret: 'Your company''s SIRET'
+                siret_help: 'It identifies your company on the platform.'
+                siret_action: 'Fill in'
+                vat: 'Intra-community VAT number'
+                vat_help: 'Required on your electronic invoices, unless under the VAT franchise.'
+                vat_action: 'Fill in'
+                platform: 'Approved platform'
+                platform_help: 'Choose your platform and enter its access.'
+                platform_action: 'Set up'
+            identifiers:
+                text: 'Once on, your business clients'' SIRET becomes required to send them an invoice.'
         email:
             bcc: 'BCC Email Address'
             delivery:
