@@ -272,6 +272,15 @@
     // Visually hidden, but still form-submittable and focusable; clicks on
     // the label (thumbnail) toggle it natively.
 
+    // The theme wraps the radio in a .form-check that would take a line of its own.
+
+    .template-picker-option > .form-check {
+        position: absolute;
+        min-height: 0;
+        margin: 0;
+        padding: 0;
+    }
+
     .template-picker-input {
         position: absolute;
         width: 1px;

@@ -17,6 +17,7 @@ use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\CoreBundle\Entity\Discount;
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
@@ -25,6 +26,8 @@ use Carbon\CarbonImmutable;
 use ReflectionProperty;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use function sprintf;
 
 /**
  * Builds a purely in-memory invoice with plausible sample data so template
@@ -32,55 +35,61 @@ use Symfony\Component\Uid\Uuid;
  * details (name, logo, address) still come from the active company via the
  * usual Twig helpers, so the preview looks like the user's own invoice.
  *
+ * The sample itself speaks the user's language and carries units — a flat
+ * rate, days, hours — so the quantity column shows what it will on a real
+ * invoice instead of bare counts.
+ *
  * @see \Augias\CoreBundle\Tests\Functional\TemplatePreviewActionTest
  */
 final readonly class PreviewInvoiceFactory
 {
     public function __construct(
         private SystemConfig $systemConfig,
+        private TranslatorInterface $translator,
     ) {
     }
 
     public function create(): Invoice
     {
         $client = new Client();
-        $client->setName('Acme Studios');
+        $client->setName($this->sample('client'));
         $client->setCurrencyCode($this->systemConfig->getCurrency()->getCode());
 
         $contact = new Contact();
-        $contact->setFirstName('Jane');
-        $contact->setLastName('Doe');
-        $contact->setEmail('jane.doe@example.com');
+        $contact->setFirstName($this->sample('contact_first_name'));
+        $contact->setLastName($this->sample('contact_last_name'));
+        $contact->setEmail('contact@example.com');
 
         $client->addContact($contact);
 
         $address = new Address();
-        $address->setStreet1('742 Evergreen Terrace');
-        $address->setCity('Springfield');
-        $address->setZip('49007');
-        $address->setCountry('US');
+        $address->setStreet1($this->sample('street'));
+        $address->setCity($this->sample('city'));
+        $address->setZip($this->sample('zip'));
+        $address->setCountry($this->sample('country'));
 
         $client->addAddress($address);
 
         $invoice = new Invoice();
-        $invoice->setInvoiceId('INV-2025-0042');
+        $invoice->setInvoiceId(sprintf('%s-%s-0042', $this->sample('invoice_prefix'), CarbonImmutable::now()->format('Y')));
         $invoice->setUuid(Uuid::v4());
         $invoice->setStatus(InvoiceStatus::Pending);
         $invoice->setClient($client);
         $invoice->setInvoiceDate(CarbonImmutable::parse('first day of this month'));
         $invoice->setDue(CarbonImmutable::now()->addDays(14));
-        $invoice->setTerms("Payment due within 14 days.\nBank transfer or card accepted.");
+        $invoice->setTerms($this->sample('terms'));
         $invoice->setDiscount(new Discount()->setType(null));
 
         foreach ([
-            ['Brand identity design', 120000, 1],
-            ['Landing page implementation', 85000, 1],
-            ['Consulting & support', 15000, 3],
-        ] as [$description, $price, $qty]) {
+            ['line_identity', 120000, 1, QuantityUnit::FlatRate],
+            ['line_website', 42500, 2, QuantityUnit::Day],
+            ['line_support', 15000, 3, QuantityUnit::Hour],
+        ] as [$description, $price, $qty, $unit]) {
             $line = new Line();
-            $line->setDescription($description);
+            $line->setDescription($this->sample($description));
             $line->setPrice($price);
             $line->setQty($qty);
+            $line->setUnit($unit);
             $line->setTotal((int) ($price * $qty));
 
             $invoice->addLine($line);
@@ -96,5 +105,10 @@ final readonly class PreviewInvoiceFactory
         new ReflectionProperty(Invoice::class, 'id')->setValue($invoice, new Ulid());
 
         return $invoice;
+    }
+
+    private function sample(string $key): string
+    {
+        return $this->translator->trans('saas.settings.template_preview.sample.' . $key);
     }
 }

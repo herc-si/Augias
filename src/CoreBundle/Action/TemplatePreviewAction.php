@@ -36,13 +36,19 @@ final readonly class TemplatePreviewAction
     /**
      * The default design's PDF document is laid out for mPDF's fixed page, so
      * in a browser it stretches edge-to-edge. Constrain it to a page-like
-     * sheet matching the framing the other previews get from their wrapper.
+     * sheet matching the framing the other previews get from their wrapper,
+     * and let its line table scroll on a phone rather than push the page wider.
      */
     private const string DEFAULT_PREVIEW_STYLES = <<<'HTML'
         <style>
             html { background: #f1f5f9; }
             body { max-width: 800px; margin: 1.5rem auto; padding: 2.5rem; background: #ffffff; border-radius: 4px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1); }
-        </style></head>
+            @media (max-width: 600px) {
+                body { margin: 0; padding: 1rem; border-radius: 0; }
+                table { display: block; max-width: 100%; overflow-x: auto; }
+            }
+        </style>
+        <meta name="viewport" content="width=device-width, initial-scale=1"></head>
         HTML;
 
     public function __construct(
@@ -63,6 +69,9 @@ final readonly class TemplatePreviewAction
                 BillingTemplateResolver::defaultTemplate(BillingDocumentType::Invoice, BillingTemplateChannel::Pdf),
                 ['invoice' => $invoice],
             );
+
+            // mPDF fills the page numbers in; a browser would show the placeholders.
+            $html = str_replace(['{PAGENO}', '{nb}'], '1', $html);
 
             return new Response(str_replace('</head>', self::DEFAULT_PREVIEW_STYLES, $html));
         }
