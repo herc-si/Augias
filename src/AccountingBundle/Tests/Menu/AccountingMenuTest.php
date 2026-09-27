@@ -62,6 +62,8 @@ final class AccountingMenuTest extends KernelTestCase
                 // Not a statutory book, and offered to everyone: somewhere to
                 // file a receipt is useful even where nothing is deductible.
                 'accounting.book.expense',
+                // Statements imported by hand, matched to the payments.
+                'accounting.menu.bank',
                 'accounting.menu.declarations',
             ],
             array_keys($this->accounting()->getChildren()),

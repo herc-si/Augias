@@ -92,6 +92,14 @@ final readonly class AccountingMenu
         }
 
         $section->addChild(
+            'accounting.menu.bank',
+            [
+                'route' => '_accounting_bank',
+                'extras' => ['icon' => 'building-bank'],
+            ],
+        );
+
+        $section->addChild(
             'accounting.menu.declarations',
             [
                 'route' => '_accounting_declarations',

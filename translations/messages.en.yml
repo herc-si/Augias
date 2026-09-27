@@ -43,6 +43,63 @@ accounting:
     alerts:
         line: 'Threshold reached at %percent%% (limit: %amount%)'
         title: '%year% threshold alerts'
+    bank:
+        title: Bank
+        intro: 'Download your statements from your bank''s website (CAMT.053, OFX or CSV) and import them here: each operation is matched to the payment it proves. No access to your bank is asked for.'
+        empty: 'No operations here.'
+        no_suggestion: 'Nothing matches: record the payment from the invoice, or set the line aside.'
+        ignore: 'Set aside'
+        reopen: Undo
+        status:
+            unmatched: 'To reconcile'
+            matched: Reconciled
+            ignored: 'Set aside'
+            all: All
+        column:
+            date: Date
+            label: Label
+            amount: Amount
+            match: Reconciliation
+        suggestion:
+            payment: 'Payment already recorded — %number% %counterparty%'
+            invoice: 'Collect invoice %number% — %counterparty%'
+            bill_payment: 'Payment already recorded — %number% %counterparty%'
+            bill: 'Pay supplier invoice %number% — %counterparty%'
+        import:
+            title: 'Import a statement'
+            help: 'CAMT.053 (XML), OFX or CSV. Importing a statement again adds nothing twice.'
+            submit: Import
+        account:
+            title: 'Add a bank account'
+            name: 'Account name'
+            currency: Currency
+            submit: 'Add the account'
+        flash:
+            account_added: 'The bank account was added.'
+            imported: '%format% statement imported: %imported% operation(s) added, %duplicates% already known.'
+            no_file: 'Choose a statement file (5 MB at most).'
+            match: 'Operation reconciled.'
+            ignore: 'Operation set aside.'
+            reopen: 'Operation back to reconcile.'
+        error:
+            empty: 'The file is empty.'
+            format: 'This file is not a recognised statement (CAMT.053, OFX or CSV).'
+            invalid_xml: 'The XML file cannot be read.'
+            missing_field: 'An operation in the statement is incomplete (date or amount missing).'
+            invalid_amount: 'Unreadable amount in the statement: "%value%".'
+            invalid_date: 'Unreadable date in the statement: "%value%".'
+            csv_columns: 'Columns not found in the CSV: it needs a date, a label, and an amount or debit and credit columns.'
+            currency: 'This statement is in %statement%, the account in %account%.'
+        refused:
+            unknown_kind: 'Unknown reconciliation.'
+            not_found: 'The proposed document has gone in the meantime.'
+            amount_mismatch: 'The amounts do not match.'
+            already_matched: 'This payment is already reconciled with another operation.'
+            not_payable: 'This document cannot be settled by this operation.'
+            exceeds_balance: 'The operation is more than what is still owed.'
+            currency_mismatch: 'The document is not in the account''s currency.'
+            books_required: 'Your company is VAT-registered: the payment of a private customer can only be recorded once your books are kept in Augias (French tax code, art. 286). Choose your accounting regime first.'
+            no_offline_method: 'No offline payment method is configured.'
     book:
         bills: 'Purchase journal'
         bills_notice: 'VAT on a purchase is deductible once it falls due at the supplier: on the date of their bill for goods, or for services when they opted for debits. Those bills file themselves here on their date; paying them, in the purchase register, does not deduct it again.'
@@ -185,6 +242,7 @@ accounting:
         cancel_blocked: 'This invoice has been issued and can no longer be cancelled. Raise a credit note against it instead.'
         edit_blocked: 'This invoice has been issued and can no longer be edited. Raise a credit note against it instead.'
     menu:
+        bank: Bank
         declarations: Declarations
         main: Accounting
         overview: Overview

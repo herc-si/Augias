@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+  <BkToCstmrStmt>
+    <GrpHdr><MsgId>STMT-1</MsgId><CreDtTm>2026-09-26T08:00:00</CreDtTm></GrpHdr>
+    <Stmt>
+      <Id>1</Id>
+      <Acct><Id><IBAN>FR7630006000011234567890189</IBAN></Id><Ccy>EUR</Ccy></Acct>
+      <Ntry>
+        <Amt Ccy="EUR">1200.00</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Sts>BOOK</Sts>
+        <BookgDt><Dt>2026-09-24</Dt></BookgDt>
+        <ValDt><Dt>2026-09-24</Dt></ValDt>
+        <AcctSvcrRef>BQ-0001</AcctSvcrRef>
+        <NtryDtls><TxDtls>
+          <RltdPties><Dbtr><Nm>ACME SARL</Nm></Dbtr></RltdPties>
+          <RmtInf><Ustrd>VIR FACT-2026-0042</Ustrd></RmtInf>
+        </TxDtls></NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">49.90</Amt>
+        <CdtDbtInd>DBIT</CdtDbtInd>
+        <Sts>BOOK</Sts>
+        <BookgDt><DtTm>2026-09-25T10:12:00</DtTm></BookgDt>
+        <AcctSvcrRef>BQ-0002</AcctSvcrRef>
+        <NtryDtls><TxDtls>
+          <RltdPties><Cdtr><Nm>Hébergeur SA</Nm></Cdtr></RltdPties>
+        </TxDtls></NtryDtls>
+        <AddtlNtryInf>PRLV SEPA HEBERGEMENT</AddtlNtryInf>
+      </Ntry>
+    </Stmt>
+  </BkToCstmrStmt>
+</Document>
