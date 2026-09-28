@@ -23,4 +23,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('env(AUGIAS_SAAS_ONBOARDING_COUPON_PERCENT)', '30');
     $parameters->set('env(AUGIAS_SAAS_TRIAL_BANNER_DAYS)', '7');
     $parameters->set('env(AUGIAS_SAAS_TRIAL_COUPON_DAYS)', '2');
+    // The address the hosted service sends from, on a domain it can sign for.
+    // A company's own address goes in Reply-To (see PlatformSenderListener).
+    $parameters->set('env(AUGIAS_SAAS_MAIL_FROM)', 'augias@herc-si.fr');
 };
