@@ -81,6 +81,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     // upstream project's would send an operator's installation figures to a
     // third party they never chose. Empty means telemetry is off whatever else
     // is configured; an operator who wants it names their own collector.
+    // The currency a new company starts in, and the ones offered (comma-
+    // separated; empty offers every supported currency). See CurrencyPolicy.
+    $parameters->set('env(AUGIAS_DEFAULT_CURRENCY)', 'EUR');
+    $parameters->set('env(AUGIAS_CURRENCIES)', '');
     $parameters->set('env(AUGIAS_TELEMETRY_URL)', '');
     $parameters->set('env(AUGIAS_ENABLE_TELEMETRY)', '0'); // default OFF; '1' enables
     $parameters->set('env(AUGIAS_INSTALL_TYPE)', '');       // '' → auto-detect (docker vs manual)

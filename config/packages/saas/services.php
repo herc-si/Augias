@@ -16,6 +16,9 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters = $containerConfigurator->parameters();
 
+    // The hosted service sells in Europe: the euro, and the currencies of the
+    // other EU and EEA countries, Switzerland and the United Kingdom.
+    $parameters->set('env(AUGIAS_CURRENCIES)', 'EUR,CHF,GBP,DKK,SEK,NOK,ISK,PLN,CZK,HUF,RON');
     $parameters->set('env(AUGIAS_LEMON_SQUEEZY_API_KEY)', '');
     $parameters->set('env(AUGIAS_LEMON_SQUEEZY_STORE_ID)', '');
     $parameters->set('env(AUGIAS_LEMON_SQUEEZY_WEBHOOK_SECRET)', '');
