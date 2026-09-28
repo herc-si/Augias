@@ -49,6 +49,13 @@ final readonly class CreateDatabaseStep implements InstallationStepInterface
         if ($params['driver'] !== 'pdo_sqlite') {
             $dbName = $params['dbname'];
             unset($params['dbname']);
+
+            // Without a database name PostgreSQL opens the one named after
+            // the user — for a dedicated user, the very database to create.
+            // Its maintenance database is always there.
+            if ($params['driver'] === 'pdo_pgsql') {
+                $params['dbname'] = 'postgres';
+            }
         } else {
             $dbName = str_replace($this->projectDir . '/', './', $params['path']);
         }
