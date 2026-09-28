@@ -13,7 +13,7 @@
     <div class="container-xl py-4">
         <div class="row justify-content-center">
             <div class="col-lg-10 col-xl-9">
-                {% if setting('system/general/hide_powered_by') is not same as('1') %}
+                {% if not hide_powered_by() %}
                     {# App Branding Header #}
                     <div class="app-branding-header mb-4 no-print">
                         <div class="d-flex align-items-center justify-content-between">
@@ -263,7 +263,7 @@
                 </div>
                 {% endif %}
 
-                {% if setting('system/general/hide_powered_by') is not same as('1') %}
+                {% if not hide_powered_by() %}
                     {# Footer #}
                     <div class="ext-doc-footer mt-5 no-print">
                         <div class="card">

@@ -75,6 +75,35 @@ final class PdfBaseCustomBrandingGateTest extends KernelTestCase
         self::assertStringContainsString('Powered By', $output);
     }
 
+    /**
+     * The public page and the emails read the same switch: until they went
+     * through hide_powered_by(), a company that left the paid option kept
+     * them unbranded while its PDFs got the mention back.
+     */
+    public function testGatedPlanShowsPoweredByOnThePublicPageAndInEmails(): void
+    {
+        self::ensureKernelShutdown();
+        self::bootKernel();
+
+        $featureGate = $this->createStub(FeatureGate::class);
+        $featureGate->method('isEnabled')
+            ->willReturnCallback(static fn (string $key): bool => $key !== 'custom_branding');
+        self::getContainer()->set(FeatureGate::class, $featureGate);
+
+        $this->reloadCompany();
+        $this->seedHidePoweredBy('1');
+
+        $twig = self::getContainer()->get('twig');
+        self::assertInstanceOf(Environment::class, $twig);
+
+        $page = $twig->render('@AugiasInvoice/external_invoice_view.html.twig', ['invoice' => $this->createFixtureInvoice()]);
+        self::assertStringContainsString('app-branding-header', $page);
+        self::assertStringContainsString('ext-doc-footer', $page);
+
+        $email = $twig->createTemplate("{% import '@AugiasCore/Layout/Email/components.html.twig' as email %}{{ email.footer(true, false) }}")->render();
+        self::assertStringContainsString('Powered by', $email);
+    }
+
     public function testUngatedPlanRespectsHidePoweredBySetting(): void
     {
         self::ensureKernelShutdown();

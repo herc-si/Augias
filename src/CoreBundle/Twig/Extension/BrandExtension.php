@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Augias\CoreBundle\Twig\Extension;
 
 use Augias\CoreBundle\Config\DesignConfigProvider;
+use Augias\SaasBundle\Feature\Feature;
 use Augias\SettingsBundle\SystemConfig;
+use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
 use Twig\Attribute\AsTwigFunction;
 use function hexdec;
 use function implode;
@@ -45,9 +47,27 @@ final readonly class BrandExtension
 
     private const int MM_PER_LINE = 4;
 
+    /** The switch that hides "Powered by Augias", a paid option on the hosted service. */
+    public const string HIDE_POWERED_BY = 'system/general/hide_powered_by';
+
     public function __construct(
         private SystemConfig $systemConfig,
+        private FeatureGate $featureGate,
     ) {
+    }
+
+    /**
+     * `hide_powered_by()`: whether PDFs, public pages and emails leave out
+     * "Powered by Augias". The stored switch only counts while the plan
+     * includes custom_branding: a company that leaves the paid option gets the
+     * mention back everywhere at once. Self-hosted the gate lets everything
+     * through, and the switch is never created there.
+     */
+    #[AsTwigFunction('hide_powered_by')]
+    public function hidePoweredBy(): bool
+    {
+        return '1' === $this->systemConfig->get(self::HIDE_POWERED_BY)
+            && $this->featureGate->isEnabled(Feature::CustomBranding->value);
     }
 
     /**
