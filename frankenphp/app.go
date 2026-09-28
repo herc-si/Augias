@@ -31,6 +31,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"augias/internal/datadir"
 	"augias/internal/serverconfig"
 
 	// plug in Caddy modules here.
@@ -41,7 +42,7 @@ import (
 	// _ "github.com/dunglas/vulcain/caddy"
 )
 
-const appName = "SolidInvoice"
+const appName = "Augias"
 const appDescription = "Simple and elegant invoicing solution"
 const defaultPort = "8765"
 
@@ -90,7 +91,7 @@ func main() {
 		os.Exit(1)
 	}
 
-    setupCommands()
+	setupCommands()
 
 	// Run CLI
 	if err := rootCmd.Execute(); err != nil {
@@ -126,28 +127,68 @@ func initializeApp() error {
 		return fmt.Errorf("cannot access application directory: %w", err)
 	}
 
-	upperAppName := strings.ToUpper(appName)
 	defaultServerIp = getOutboundIP().String()
+
+	// The data lives outside the extracted app, whose directory changes with
+	// every build. "env" keeps the vault's file names those of the app's own
+	// config/env, so a configuration copied from there reads as it is.
+	dataDir := filepath.Join(configDir, appName)
+	defaultConfigDir := filepath.Join(dataDir, "env")
+	defaultAttachmentsDir := filepath.Join(dataDir, "attachments")
 
 	// Set environment variables
 	envVars := map[string]string{
-		upperAppName + "_CONFIG_DIR": filepath.Join(configDir, appName),
-		upperAppName + "_ENV":        "prod",
-		upperAppName + "_DEBUG":      "0",
-		"APP_PATH":                   appPath,
-		"AUGIAS_RUNTIME":       "frankenphp",
+		"AUGIAS_CONFIG_DIR":      defaultConfigDir,
+		"AUGIAS_ATTACHMENTS_DIR": defaultAttachmentsDir,
+		"AUGIAS_ENV":             "prod",
+		"AUGIAS_DEBUG":           "0",
+		"APP_PATH":               appPath,
+		"AUGIAS_RUNTIME":         "frankenphp",
 	}
 
 	// Only set if not already set
-    for key, value := range envVars {
-        if os.Getenv(key) == "" {
-            if err := os.Setenv(key, value); err != nil {
-                return fmt.Errorf("cannot set environment: %w", err)
-            }
-        }
-    }
+	for key, value := range envVars {
+		if os.Getenv(key) == "" {
+			if err := os.Setenv(key, value); err != nil {
+				return fmt.Errorf("cannot set environment: %w", err)
+			}
+		}
+	}
+
+	migrateLegacyData(appDir, defaultConfigDir, defaultAttachmentsDir)
 
 	return nil
+}
+
+// migrateLegacyData recovers what the 4.0.0 binary kept inside its extracted
+// app (see package datadir). A directory the operator chose is theirs: only
+// the defaults are filled.
+func migrateLegacyData(home, defaultConfigDir, defaultAttachmentsDir string) {
+	configDir, attachmentsDir := os.Getenv("AUGIAS_CONFIG_DIR"), os.Getenv("AUGIAS_ATTACHMENTS_DIR")
+	if configDir != defaultConfigDir {
+		configDir = ""
+	}
+	if attachmentsDir != defaultAttachmentsDir {
+		attachmentsDir = ""
+	}
+
+	migrated, err := datadir.Migrate(home, configDir, attachmentsDir)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Could not recover the data of a previous version: %v\n", err)
+	}
+
+	// The vault still holds the database URL with the old absolute path.
+	// Left as is, the app would keep using the old copy: it still works, but
+	// the data would stay where the next clean-up deletes it.
+	if migrated.ConfigFrom != "" {
+		if err := runConsoleCommand("augias:relocate-config", migrated.ConfigFrom); err != nil {
+			fmt.Fprintf(os.Stderr, "Could not point the configuration at %s: %v\n", configDir, err)
+		}
+	}
+
+	if message := migrated.Describe(configDir, attachmentsDir); message != "" {
+		fmt.Fprintln(os.Stderr, message)
+	}
 }
 
 func setupCommands() {

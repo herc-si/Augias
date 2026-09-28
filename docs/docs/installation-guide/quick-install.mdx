@@ -154,7 +154,19 @@ Returns `OK` (HTTP 200) when the application is running.
 
 ## Updating
 
-Replace the binary with the latest release and restart it. Application data lives in `~/.Augias/`, separately from the binary, so updates don't touch your invoices, clients, or settings.
+Replace the binary with the latest release and restart it. Your data lives apart from the binary, so updates don't touch your invoices, clients, or settings:
+
+| System  | Configuration and SQLite database             | Supporting documents                                  |
+|---------|-----------------------------------------------|-------------------------------------------------------|
+| Linux   | `~/.config/Augias/env`                        | `~/.config/Augias/attachments`                        |
+| macOS   | `~/Library/Application Support/Augias/env`    | `~/Library/Application Support/Augias/attachments`    |
+| Windows | `%AppData%\Augias\env`                        | `%AppData%\Augias\attachments`                        |
+
+These are the directories to back up. Set `AUGIAS_CONFIG_DIR` and `AUGIAS_ATTACHMENTS_DIR` to keep them elsewhere. `~/.Augias/` only holds the application the binary unpacks, one copy per version.
+
+:::info Coming from 4.0.0
+The 4.0.0 binary kept your data inside the unpacked application, under `~/.SolidInvoice/`, in a directory that changes with every version. The first start of a newer binary copies it to the directories above and says so. The old copy is left in place; delete `~/.SolidInvoice/` once you have checked that everything is there.
+:::
 
 ## Worker mode (high-traffic deployments)
 

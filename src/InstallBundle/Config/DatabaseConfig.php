@@ -83,7 +83,7 @@ final class DatabaseConfig
      * so that Doctrine's DsnParser (which round-trips path segments through
      * rawurldecode) can parse the resulting DSN unambiguously.
      */
-    private static function encodeDsnPath(string $path): string
+    public static function encodeDsnPath(string $path): string
     {
         return str_replace('%2F', '/', rawurlencode($path));
     }
