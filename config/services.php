@@ -81,6 +81,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     // upstream project's would send an operator's installation figures to a
     // third party they never chose. Empty means telemetry is off whatever else
     // is configured; an operator who wants it names their own collector.
+    // Shown on every page of an instance that is not the one clients use, e.g.
+    // "TEST". Empty: nothing shows.
+    $parameters->set('env(AUGIAS_INSTANCE_LABEL)', '');
     $parameters->set('env(AUGIAS_TELEMETRY_URL)', '');
     $parameters->set('env(AUGIAS_ENABLE_TELEMETRY)', '0'); // default OFF; '1' enables
     $parameters->set('env(AUGIAS_INSTALL_TYPE)', '');       // '' → auto-detect (docker vs manual)
