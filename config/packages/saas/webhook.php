@@ -16,7 +16,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 use Augias\SaasBundle\Payment\Stripe\StripeRequestParser;
 
 // POST /webhook/stripe: the endpoint to declare in the Stripe dashboard, with
-// the customer.subscription.* events. Its signing secret goes in
+// the customer.subscription.* and invoice.paid events. Its signing secret goes in
 // AUGIAS_STRIPE_WEBHOOK_SECRET.
 return App::config([
     'framework' => [

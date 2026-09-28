@@ -20,6 +20,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('env(AUGIAS_SAAS_PAYMENT_PROVIDER)', 'stripe');
     $parameters->set('env(AUGIAS_STRIPE_SECRET_KEY)', '');
     $parameters->set('env(AUGIAS_STRIPE_WEBHOOK_SECRET)', '');
+    // The company, on this instance, that sells the subscriptions and issues
+    // their invoices (HERC SI's): its ULID. Empty, no invoice is issued.
+    $parameters->set('env(AUGIAS_SAAS_BILLING_COMPANY)', '');
     $parameters->set('env(AUGIAS_LEMON_SQUEEZY_API_KEY)', '');
     $parameters->set('env(AUGIAS_LEMON_SQUEEZY_STORE_ID)', '');
     $parameters->set('env(AUGIAS_LEMON_SQUEEZY_WEBHOOK_SECRET)', '');

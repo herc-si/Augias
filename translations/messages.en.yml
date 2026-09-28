@@ -3139,6 +3139,10 @@ saas:
         contact_support: 'Contact Support'
         contact_support_short: 'Contact support'
         switch_company: 'Switch company'
+    billing:
+        invoice_line:
+            subscription: 'Augias %plan% subscription from %from% to %to%'
+            plan_change: 'Change to Augias %plan%, prorated from %from% to %to%'
     cancelled:
         feature_clients: 'Client and contact management'
         feature_history: 'Access to payment history and reports'
