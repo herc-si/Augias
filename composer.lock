@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c35a86257b3fa34d80ac379204622384",
+    "content-hash": "80b2100ddb8c32314c2f04fe898a95ea",
     "packages": [
         {
             "name": "alcohol/iso4217",
@@ -9651,15 +9651,15 @@
         },
         {
             "name": "solidworx/platform",
-            "version": "dev-main",
+            "version": "dev-augias",
             "source": {
                 "type": "git",
-                "url": "https://github.com/SolidWorx/platform.git",
+                "url": "https://github.com/herc-si/platform.git",
                 "reference": "8902ed6abb28c3476ebd6045f6f965c58aa1196b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SolidWorx/platform/zipball/8902ed6abb28c3476ebd6045f6f965c58aa1196b",
+                "url": "https://api.github.com/repos/herc-si/platform/zipball/8902ed6abb28c3476ebd6045f6f965c58aa1196b",
                 "reference": "8902ed6abb28c3476ebd6045f6f965c58aa1196b",
                 "shasum": ""
             },
@@ -9714,19 +9714,22 @@
                 "spatie/phpunit-snapshot-assertions": "^5.4",
                 "symplify/easy-coding-standard": "^13.2"
             },
-            "default-branch": true,
             "type": "symfony-bundle",
             "autoload": {
                 "psr-4": {
-                    "SolidWorx\\Platform\\Test\\": "src/Test",
-                    "SolidWorx\\Platform\\Tools\\": "src/Tools/",
-                    "SolidWorx\\Platform\\UiBundle\\": "src/Bundle/Ui",
                     "SolidWorx\\Platform\\Component\\": "src/Component",
+                    "SolidWorx\\Platform\\UiBundle\\": "src/Bundle/Ui",
+                    "SolidWorx\\Platform\\PlatformBundle\\": "src/Bundle/Platform",
                     "SolidWorx\\Platform\\SaasBundle\\": "src/Bundle/Saas",
-                    "SolidWorx\\Platform\\PlatformBundle\\": "src/Bundle/Platform"
+                    "SolidWorx\\Platform\\Test\\": "src/Test",
+                    "SolidWorx\\Platform\\Tools\\": "src/Tools/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "SolidWorx\\Platform\\Tests\\": "tests/"
+                }
+            },
             "license": [
                 "MIT"
             ],
@@ -9734,8 +9737,7 @@
                 "symfony-ux"
             ],
             "support": {
-                "issues": "https://github.com/SolidWorx/platform/issues",
-                "source": "https://github.com/SolidWorx/platform/tree/main"
+                "source": "https://github.com/herc-si/platform/tree/augias"
             },
             "time": "2026-08-17T09:21:04+00:00"
         },
@@ -9744,12 +9746,12 @@
             "version": "2.0.0-beta2",
             "source": {
                 "type": "git",
-                "url": "https://github.com/SolidWorx/Toggler.git",
+                "url": "https://github.com/herc-si/Toggler.git",
                 "reference": "1958642983833bcf29524176e550a72220fe537a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/SolidWorx/Toggler/zipball/1958642983833bcf29524176e550a72220fe537a",
+                "url": "https://api.github.com/repos/herc-si/Toggler/zipball/1958642983833bcf29524176e550a72220fe537a",
                 "reference": "1958642983833bcf29524176e550a72220fe537a",
                 "shasum": ""
             },
@@ -9793,7 +9795,6 @@
                     "SolidWorx\\Toggler\\Tests\\": "./tests"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -9813,8 +9814,7 @@
                 "toggle"
             ],
             "support": {
-                "issues": "https://github.com/SolidWorx/Toggler/issues",
-                "source": "https://github.com/SolidWorx/Toggler/tree/2.0.0-beta2"
+                "source": "https://github.com/herc-si/Toggler/tree/2.0.0-beta2"
             },
             "time": "2025-06-03T09:25:46+00:00"
         },

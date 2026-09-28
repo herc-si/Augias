@@ -80,7 +80,7 @@
         "php-http/message-factory": "^1.1",
         "psr/http-factory": "^1.1",
         "sentry/sentry-symfony": "^5.10",
-        "solidworx/platform": "dev-main",
+        "solidworx/platform": "dev-augias",
         "solidworx/toggler": "2.0.0-beta2",
         "stof/doctrine-extensions-bundle": "^1.15",
         "symfony/all-my-sms-notifier": "^8.1",
@@ -250,6 +250,16 @@
     "suggest": {
         "ext-zend-opcache": "For best performance"
     },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/herc-si/platform"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/herc-si/Toggler"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "Augias\\": "src/"
