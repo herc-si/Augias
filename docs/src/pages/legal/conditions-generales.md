@@ -5,7 +5,7 @@ description: Conditions générales d'utilisation et de vente du service héberg
 
 # Conditions générales d'utilisation et de vente
 
-Dernière mise à jour : 26 septembre 2026
+Dernière mise à jour : 28 septembre 2026
 
 :::warning À compléter avant publication
 Ce document est un projet rédigé à partir du fonctionnement réel de l'application. Les mentions **[À COMPLÉTER]** attendent des informations ou des décisions de HERC SI, et l'ensemble doit être relu par un juriste avant d'engager la société.
@@ -21,7 +21,7 @@ Elles ne régissent pas le logiciel Augias lui-même lorsqu'il est **installé p
 
 ## 2. Clientèle visée
 
-Le service est **réservé aux professionnels** : personnes physiques ou morales agissant dans le cadre de leur activité commerciale, industrielle, artisanale, libérale ou agricole.
+Le service est **réservé aux professionnels** : personnes physiques ou morales agissant dans le cadre de leur activité commerciale, industrielle, artisanale, libérale ou agricole, **établies en France**.
 
 En souscrivant, le Client déclare agir à titre professionnel. Les dispositions du code de la consommation relatives aux contrats conclus avec des consommateurs, notamment le droit de rétractation de quatorze jours, ne s'appliquent pas.
 
@@ -57,9 +57,15 @@ La suspension ne supprime pas les données : elle bloque l'accès à l'applicati
 
 ## 7. Prix, facturation et paiement
 
-Les prix sont exprimés en euros et hors taxes ; la TVA applicable s'y ajoute au taux en vigueur.
+Les prix sont exprimés en euros. Le Prestataire bénéficie de la franchise en base de TVA : **TVA non applicable, article 293 B du code général des impôts**. Le prix affiché est donc le prix payé. Si le Prestataire devient redevable de la TVA, celle-ci s'ajoutera aux prix au taux en vigueur, dans les conditions de l'article 5 pour toute évolution défavorable.
 
-**[À COMPLÉTER : périodicité de facturation (mensuelle, annuelle), date de prélèvement, et prestataire de paiement utilisé — celui-ci doit également figurer parmi les sous-traitants de la politique de confidentialité.]**
+L'abonnement est payable d'avance, pour la période du plan choisi, **par carte bancaire ou par prélèvement SEPA**. Le premier paiement intervient à la souscription ou, si celle-ci a lieu pendant la période d'essai, au terme de cette période ; les suivants, à chaque échéance de la période. **[À COMPLÉTER : périodicités proposées — mensuelle seule, ou aussi annuelle.]**
+
+Les paiements sont traités par **Stripe**, prestataire de services de paiement. Le Prestataire ne reçoit ni ne conserve les numéros de carte ni les coordonnées bancaires, que le Client saisit directement auprès de Stripe et peut modifier depuis l'espace de facturation de son compte.
+
+Chaque paiement donne lieu à une **facture émise par le Prestataire**, adressée par courriel au Client et, lorsque la réglementation l'exige, transmise sous forme de facture électronique.
+
+Le passage à un plan supérieur en cours de période prend effet immédiatement et donne lieu à la facturation, au prorata du temps restant, de la différence de prix. Le passage à un plan inférieur prend effet au terme de la période en cours.
 
 Conformément à l'article L441-10 du code de commerce, tout retard de paiement entraîne de plein droit des pénalités calculées au taux d'intérêt de la Banque centrale européenne majoré de dix points, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de quarante euros, sans qu'un rappel soit nécessaire.
 
@@ -115,7 +121,7 @@ Aucune de ces limitations ne joue à l'égard des obligations que la loi rend im
 
 ## 13. Sous-traitance et évolution du service
 
-Le Prestataire peut recourir à des sous-traitants pour l'hébergement, l'envoi des courriers électroniques, le suivi des erreurs et la protection contre les inscriptions automatisées. Leur liste à jour figure dans la [politique de confidentialité](./politique-de-confidentialite.md).
+Le Prestataire peut recourir à des sous-traitants pour l'hébergement, l'envoi des courriers électroniques, l'encaissement des paiements, le suivi des erreurs et la protection contre les inscriptions automatisées. Leur liste à jour figure dans la [politique de confidentialité](./politique-de-confidentialite.md).
 
 Le Prestataire peut faire évoluer le service. Aucune évolution ne peut supprimer une fonctionnalité substantielle du plan souscrit sans que le Client en soit informé dans les conditions de l'article 5.
 
