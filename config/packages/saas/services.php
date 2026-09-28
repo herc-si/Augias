@@ -16,6 +16,10 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters = $containerConfigurator->parameters();
 
+    // Who collects the subscriptions: 'stripe', or 'lemon_squeezy' as inherited.
+    $parameters->set('env(AUGIAS_SAAS_PAYMENT_PROVIDER)', 'stripe');
+    $parameters->set('env(AUGIAS_STRIPE_SECRET_KEY)', '');
+    $parameters->set('env(AUGIAS_STRIPE_WEBHOOK_SECRET)', '');
     $parameters->set('env(AUGIAS_LEMON_SQUEEZY_API_KEY)', '');
     $parameters->set('env(AUGIAS_LEMON_SQUEEZY_STORE_ID)', '');
     $parameters->set('env(AUGIAS_LEMON_SQUEEZY_WEBHOOK_SECRET)', '');

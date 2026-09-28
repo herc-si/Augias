@@ -18,7 +18,9 @@ use Augias\DashboardBundle\Checklist\ChecklistItemInterface;
 use Augias\SaasBundle\AugiasSaasBundle;
 use Augias\SaasBundle\Email\SaasEmailVerificationGate;
 use Augias\SaasBundle\Feature\UpgradePromptRenderer;
+use Augias\SaasBundle\Payment\PaymentIntegrationSelector;
 use Augias\SaasBundle\Service\SubscriptionEligibility;
+use SolidWorx\Platform\SaasBundle\Integration\PaymentIntegrationInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
@@ -56,6 +58,12 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $services->alias(
         UpgradePromptProvider::class,
         UpgradePromptRenderer::class,
+    );
+
+    // Two providers implement it; the selector picks one at runtime.
+    $services->alias(
+        PaymentIntegrationInterface::class,
+        PaymentIntegrationSelector::class,
     );
 
     $services->alias(

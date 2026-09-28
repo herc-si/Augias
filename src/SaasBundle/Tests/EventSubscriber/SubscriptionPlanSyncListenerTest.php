@@ -17,6 +17,7 @@ use Augias\CoreBundle\ConfigWriter;
 use Augias\CoreBundle\Telemetry\Telemetry;
 use Augias\CoreBundle\Tests\Telemetry\CollectingMessageBus;
 use Augias\SaasBundle\EventSubscriber\SubscriptionPlanSyncListener;
+use Augias\SaasBundle\Payment\RemotePlanSync;
 use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -34,6 +35,7 @@ use Symfony\Bundle\FrameworkBundle\Secrets\AbstractVault;
 use Symfony\Component\Uid\Ulid;
 
 #[CoversClass(SubscriptionPlanSyncListener::class)]
+#[CoversClass(RemotePlanSync::class)]
 final class SubscriptionPlanSyncListenerTest extends TestCase
 {
     private CollectingMessageBus $bus;
@@ -198,9 +200,7 @@ final class SubscriptionPlanSyncListenerTest extends TestCase
     ): SubscriptionPlanSyncListener {
         return new SubscriptionPlanSyncListener(
             $subscriptionRepository,
-            $planRepository,
-            new NullLogger(),
-            $this->makeTelemetry(),
+            new RemotePlanSync($subscriptionRepository, $planRepository, new NullLogger(), $this->makeTelemetry()),
         );
     }
 

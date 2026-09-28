@@ -13,29 +13,22 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\EventSubscriber;
 
-use Augias\CoreBundle\Telemetry\Telemetry;
-use Augias\CoreBundle\Telemetry\TelemetryEvent;
-use Psr\Log\LoggerInterface;
+use Augias\SaasBundle\Payment\RemotePlanSync;
 use SolidWorx\Platform\SaasBundle\Dto\LemonSqueezy\Subscription as LemonSqueezySubscription;
-use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Event\SubscriptionCreatedEvent;
 use SolidWorx\Platform\SaasBundle\Event\SubscriptionEvent;
 use SolidWorx\Platform\SaasBundle\Event\SubscriptionUpdatedEvent;
-use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
 use SolidWorx\Platform\SaasBundle\Repository\SubscriptionRepositoryInterface;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
-use function strtolower;
 
 /**
  * Listens to Lemon Squeezy `subscription_created` / `subscription_updated`
  * webhook events and synchronises the local subscription's plan with the
  * variant id reported by Lemon Squeezy.
  *
- * This is the *only* place a paid-plan switch commits to the database. The
- * choose-plan and confirm-plan-change actions defer the local mutation
- * entirely so that an LS error (e.g. checkout failure, mis-configured
- * variant) cannot leave the app on a plan the user never actually paid for.
+ * The switch itself is recorded by RemotePlanSync, shared with the Stripe
+ * webhooks.
  *
  * Webhooks arrive as separate HTTP requests with no user session attached,
  * so the listener is intentionally stateless — it relies purely on the LS
@@ -51,9 +44,7 @@ final readonly class SubscriptionPlanSyncListener
 {
     public function __construct(
         private SubscriptionRepositoryInterface $subscriptionRepository,
-        private PlanRepositoryInterface $planRepository,
-        private LoggerInterface $logger,
-        private Telemetry $telemetry,
+        private RemotePlanSync $planSync,
     ) {
     }
 
@@ -74,8 +65,8 @@ final readonly class SubscriptionPlanSyncListener
         $remote = $event->subscription;
 
         if (! $remote instanceof LemonSqueezySubscription) {
-            // Non-LS DTO: nothing to compare against. Other payment providers
-            // can add their own listeners following this same shape.
+            // Not a Lemon Squeezy payload. Stripe's webhooks never come this
+            // way: StripeSubscriptionSync records their plan directly.
             return;
         }
 
@@ -85,44 +76,6 @@ final readonly class SubscriptionPlanSyncListener
             return;
         }
 
-        $remoteVariantId = (string) $remote->attributes->variantId;
-        $currentPlanId = $subscription->getPlan()->getPlanId();
-
-        if ($remoteVariantId === $currentPlanId) {
-            // Plan unchanged — nothing to sync.
-            return;
-        }
-
-        $targetPlan = $this->planRepository->find($remoteVariantId);
-
-        if (! $targetPlan instanceof Plan) {
-            $this->logger->warning(
-                'Received subscription webhook with unknown variant id; local plan unchanged.',
-                [
-                    'subscription_id' => $event->subscriptionId->toBase58(),
-                    'variant_id' => $remoteVariantId,
-                ],
-            );
-
-            return;
-        }
-
-        // Capture whether this is a first conversion (free → paid) before the
-        // plan is overwritten, so the telemetry below counts genuine
-        // activations and not paid → paid upgrades (e.g. solo → business).
-        $isFirstConversion = $subscription->getPlan()->isFree() && ! $targetPlan->isFree();
-
-        // Skip SubscriptionManager::changePlan() here: it guards against
-        // mutating ACTIVE externally-billed subscriptions, which is *exactly*
-        // the state this listener fires for. Lemon Squeezy is the authority
-        // for the switch — we just record it.
-        $subscription->setPlan($targetPlan);
-        $this->subscriptionRepository->save($subscription);
-
-        if ($isFirstConversion) {
-            $this->telemetry->event(TelemetryEvent::SaasSubscriptionActivated, [
-                'plan' => strtolower($targetPlan->getName()),
-            ]);
-        }
+        $this->planSync->apply($subscription, (string) $remote->attributes->variantId);
     }
 }
