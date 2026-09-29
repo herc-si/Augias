@@ -3485,6 +3485,7 @@ security:
     verify_email:
         flash:
             invalid: 'The email verification link is invalid.'
+            no_account: 'This verification link is for an account that no longer exists. Use the email from your latest sign-up.'
             success: 'Your email address has been verified.'
 settings:
     address:

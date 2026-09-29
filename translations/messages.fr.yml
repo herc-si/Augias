@@ -3485,6 +3485,7 @@ security:
     verify_email:
         flash:
             invalid: 'Le lien de vérification d''e-mail est invalide.'
+            no_account: 'Ce lien de vérification concerne un compte qui n''existe plus. Utilisez le courriel reçu pour votre inscription la plus récente.'
             success: 'Votre adresse e-mail a été vérifiée.'
 settings:
     address:

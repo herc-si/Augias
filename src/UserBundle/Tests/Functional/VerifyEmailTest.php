@@ -124,6 +124,31 @@ final class VerifyEmailTest extends WebTestCase
         self::assertTrue($user->isVerified());
     }
 
+    public function testALinkToADeletedAccountSaysSo(): void
+    {
+        $gone = UserFactory::createOne(['companies' => [CompanyFactory::createOne()], 'verified' => false]);
+        $email = new TemplatedEmail()->to((string) $gone->getEmail())->htmlTemplate('@AugiasUser/Email/confirm_email.html.twig');
+        self::getContainer()->get(EmailVerifier::class)->sendEmailConfirmation('_verify_email', $gone, $email);
+        $link = $email->getContext()['signedUrl'] ?? null;
+        self::assertIsString($link);
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        // Deleted since the mail went out, as from the operator console.
+        $entityManager->remove($entityManager->find(User::class, $gone->getId()));
+        $entityManager->flush();
+        $entityManager->clear();
+
+        $request = Request::create($link);
+        $session = new Session(new MockArraySessionStorage());
+        $request->setSession($session);
+        self::getContainer()->get('request_stack')->push($request);
+
+        self::getContainer()->get(VerifyEmail::class)($request);
+
+        self::assertSame(['security.verify_email.flash.no_account'], $session->getFlashBag()->get('error'));
+    }
+
     #[After]
     public function allowRegistrationOnlyHere(): void
     {

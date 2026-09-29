@@ -52,9 +52,14 @@ final class VerifyEmail extends AbstractController
             return $this->invalid();
         }
 
-        // Ensure the user exists in persistence
+        // A link that names an account no longer here: one deleted since the
+        // mail went out. Said as such — "invalid link" had someone retry old
+        // mails of accounts they had deleted (test instance, 29/09/2026).
         if (! $user instanceof User) {
-            return $this->invalid();
+            $this->logger->notice('Email verification link names an account that no longer exists');
+            $this->addFlash('error', 'security.verify_email.flash.no_account');
+
+            return $this->redirectToRoute('_login_main');
         }
 
         // validate the email confirmation link, sets User::isVerified=true and persists
@@ -112,7 +117,7 @@ final class VerifyEmail extends AbstractController
 
     private function invalid(): Response
     {
-        $this->logger->error('Email verification link names no account');
+        $this->logger->error('Email verification link has no readable account id');
 
         $this->addFlash('error', 'security.verify_email.flash.invalid');
         return $this->redirectToRoute('_login_main');
