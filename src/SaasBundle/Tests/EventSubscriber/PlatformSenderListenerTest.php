@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\Tests\EventSubscriber;
 
+use Augias\CoreBundle\Company\CompanySelectorInterface;
 use Augias\CoreBundle\Listener\EmailFromListener;
 use Augias\MailerBundle\Factory\MailerConfigFactory;
 use Augias\SaasBundle\EventSubscriber\PlatformSenderListener;
@@ -23,18 +24,21 @@ use Symfony\Component\Mailer\Envelope;
 use Symfony\Component\Mailer\Event\MessageEvent;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\Uid\Ulid;
 
 #[CoversClass(PlatformSenderListener::class)]
 final class PlatformSenderListenerTest extends TestCase
 {
     private const string PLATFORM = 'augias@herc-si.fr';
 
+    private const string PLATFORM_NAME = 'Augias by HERC SI';
+
     public function testTheCompanyAddressMovesToReplyTo(): void
     {
         $message = new Email()->from(new Address('contact@acme.fr', 'Acme SARL'))->to('client@example.org');
         $envelope = $this->send($message);
 
-        self::assertEquals([new Address(self::PLATFORM, 'Acme SARL')], $message->getFrom());
+        self::assertEquals([new Address(self::PLATFORM, 'Acme SARL via Augias')], $message->getFrom());
         self::assertEquals([new Address('contact@acme.fr', 'Acme SARL')], $message->getReplyTo());
         self::assertSame(self::PLATFORM, $envelope->getSender()->getAddress());
     }
@@ -65,7 +69,7 @@ final class PlatformSenderListenerTest extends TestCase
         $envelope = new Envelope(new Address('no-reply@localhost'), [new Address('client@example.org')]);
         $this->listener(null)(new MessageEvent($message, $envelope, 'smtp'));
 
-        self::assertEquals([new Address(self::PLATFORM)], $message->getFrom());
+        self::assertEquals([new Address(self::PLATFORM, self::PLATFORM_NAME)], $message->getFrom());
         self::assertSame([], $message->getReplyTo());
     }
 
@@ -79,6 +83,35 @@ final class PlatformSenderListenerTest extends TestCase
         self::assertSame('contact@acme.fr', $envelope->getSender()->getAddress());
     }
 
+    public function testACompanyWithoutANameSendsUnderTheServiceName(): void
+    {
+        $message = new Email()->from('contact@acme.fr')->to('client@example.org');
+        $this->send($message);
+
+        self::assertEquals([new Address(self::PLATFORM, self::PLATFORM_NAME)], $message->getFrom());
+        self::assertEquals([new Address('contact@acme.fr')], $message->getReplyTo());
+    }
+
+    public function testOutsideACompanyTheMessageIsTheServiceItself(): void
+    {
+        // Without a company selected, EmailFromListener read the settings of whichever
+        // company came first: neither its name nor its address belongs on this message.
+        $message = new Email()->from(new Address('contact@acme.fr', 'Acme SARL'))->to('someone@example.org');
+        $envelope = $this->send($message, null, false);
+
+        self::assertEquals([new Address(self::PLATFORM, self::PLATFORM_NAME)], $message->getFrom());
+        self::assertSame([], $message->getReplyTo());
+        self::assertSame(self::PLATFORM, $envelope->getSender()->getAddress());
+    }
+
+    public function testOutsideACompanyNoCompanysSendingServiceIsHonoured(): void
+    {
+        $message = new Email()->from('contact@acme.fr')->to('someone@example.org');
+        $this->send($message, '{"provider": "Amazon SES", "config": {}}', false);
+
+        self::assertSame(self::PLATFORM, $message->getFrom()[0]->getAddress());
+    }
+
     public function testItRunsAfterTheListenerThatSetsTheCompanyAddress(): void
     {
         self::assertLessThan(
@@ -87,21 +120,24 @@ final class PlatformSenderListenerTest extends TestCase
         );
     }
 
-    private function send(Email $message, ?string $provider = null): Envelope
+    private function send(Email $message, ?string $provider = null, bool $inCompany = true): Envelope
     {
         $envelope = Envelope::create($message);
-        $this->listener($provider)(new MessageEvent($message, $envelope, 'smtp'));
+        $this->listener($provider, $inCompany)(new MessageEvent($message, $envelope, 'smtp'));
 
         return $envelope;
     }
 
-    private function listener(?string $provider): PlatformSenderListener
+    private function listener(?string $provider, bool $inCompany = true): PlatformSenderListener
     {
         $config = $this->createStub(SystemConfig::class);
         $config->method('get')->willReturnCallback(
             static fn (string $key): ?string => $key === MailerConfigFactory::CONFIG_KEY ? $provider : null,
         );
 
-        return new PlatformSenderListener($config, self::PLATFORM);
+        $companySelector = $this->createStub(CompanySelectorInterface::class);
+        $companySelector->method('getCompany')->willReturn($inCompany ? new Ulid() : null);
+
+        return new PlatformSenderListener($config, $companySelector, self::PLATFORM, self::PLATFORM_NAME);
     }
 }
