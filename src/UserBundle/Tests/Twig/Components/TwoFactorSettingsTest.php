@@ -16,6 +16,8 @@ namespace Augias\UserBundle\Tests\Twig\Components;
 use Augias\CoreBundle\Test\LiveComponentTest;
 use Augias\UserBundle\Twig\Components\TwoFactorSettings;
 use Doctrine\Persistence\ObjectManager;
+use OTPHP\TOTP;
+use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Totp\TotpAuthenticatorInterface;
 use Symfony\UX\LiveComponent\Test\TestLiveComponent;
 use function preg_replace;
 
@@ -330,6 +332,28 @@ final class TwoFactorSettingsTest extends LiveComponentTest
         self::assertStringContainsString('download:file', $html);
 
         $this->assertMatchesHtmlSnapshot($this->replaceBackupCodes($this->replaceDateTimeStamp($this->replaceQrCodeDataUri($this->replaceChecksum($this->replaceUuid($html))))));
+    }
+
+    public function testEnableTOTPAuthAcceptsTheCodeAnAuthenticatorAppShows(): void
+    {
+        $this->component->render();
+        $secret = $this->component->component()->totpSecret;
+
+        // What Google Authenticator computes from the scanned secret: 30 seconds, whatever
+        // period the QR code asks for
+        $code = TOTP::create($secret)->now();
+
+        $this->component->submitForm([
+            'two_factor_verify' => [
+                'code' => $code,
+                'secret' => $secret,
+            ],
+        ], 'enableTOTPAuth');
+
+        $this->em->clear();
+        $user = $this->getUser();
+        self::assertTrue($user->isTotpAuthenticationEnabled());
+        self::assertTrue(self::getContainer()->get(TotpAuthenticatorInterface::class)->checkCode($user, TOTP::create($secret)->now()));
     }
 
     public function testShowQrModalRendersSetupModal(): void
