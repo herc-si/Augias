@@ -1993,6 +1993,7 @@ invoice:
             description: Description
             price: Prix
             qty: Qté
+            qty_unit: 'Qté · unité'
             tax: Taxe
             total: Total
         number: 'Article %number%'
@@ -2379,6 +2380,13 @@ notification:
         save: 'Enregistrer l''intégration'
         save_button: 'Enregistrer l''intégration'
     marketplace:
+        channels_hint: 'Un canal ne reçoit rien tant que vous ne lui attribuez pas de notifications (facture en retard, paiement reçu, client créé…).'
+        channels_link: 'Choisir les notifications de chaque canal'
+        test:
+            button: 'Tester'
+            message: 'Augias : message de test. Ce canal est prêt ; choisissez les notifications qu''il reçoit dans Profil › Notifications.'
+            sent: 'Message de test envoyé sur « %name% ». S''il n''arrive pas, vérifiez l''identifiant de la conversation.'
+            failed: 'Le message de test n''est pas parti sur « %name% ». Réponse du service :'
         all_providers: 'Tous les fournisseurs'
         browse: 'Parcourir les intégrations'
         clear_search: 'Effacer la recherche'
