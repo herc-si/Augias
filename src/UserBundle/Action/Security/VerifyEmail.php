@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Augias\UserBundle\Action\Security;
 
+use Augias\CoreBundle\Company\CompanySelector;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Repository\UserRepository;
 use Augias\UserBundle\Security\EmailVerifier;
+use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -35,6 +37,8 @@ final class VerifyEmail extends AbstractController
         private readonly UserRepository $userRepository,
         private readonly Security $security,
         private readonly LoggerInterface $logger,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly CompanySelector $companySelector,
     ) {
     }
 
@@ -43,7 +47,7 @@ final class VerifyEmail extends AbstractController
         $id = $request->query->getString('id');
 
         try {
-            $user = $this->userRepository->find(Ulid::fromString($id));
+            $user = $this->findAcrossCompanies(Ulid::fromString($id));
         } catch (InvalidArgumentException) {
             return $this->invalid();
         }
@@ -74,6 +78,36 @@ final class VerifyEmail extends AbstractController
         $this->addFlash('success', 'security.verify_email.flash.success');
 
         return $this->security->login($user, 'security.authenticator.form_login.main', 'main');
+    }
+
+    /**
+     * The link names its account by itself — id, signature and token — so the
+     * company the browser has open does not come into it. Looked up under the
+     * company filter, a link opened in a browser signed in to another account
+     * found no one: the new account is not in that account's company (test
+     * instance, 29/09/2026).
+     */
+    private function findAcrossCompanies(Ulid $id): ?User
+    {
+        $filters = $this->entityManager->getFilters();
+        $wasEnabled = $filters->isEnabled('company');
+
+        if ($wasEnabled) {
+            $filters->disable('company');
+        }
+
+        $company = $this->companySelector->getCompany();
+
+        try {
+            return $this->userRepository->find($id);
+        } finally {
+            // Through the selector, not $filters->enable(): Doctrine re-enables
+            // a filter without its parameters, and the company filter without
+            // its company filters nothing for the rest of the request.
+            if ($wasEnabled && $company instanceof Ulid) {
+                $this->companySelector->switchCompany($company);
+            }
+        }
     }
 
     private function invalid(): Response

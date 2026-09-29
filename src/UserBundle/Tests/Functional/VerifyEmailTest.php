@@ -13,14 +13,22 @@ declare(strict_types=1);
 
 namespace Augias\UserBundle\Tests\Functional;
 
+use Augias\CoreBundle\Company\CompanySelector;
+use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use Augias\UserBundle\Action\Security\VerifyEmail;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Security\EmailVerifier;
+use Augias\UserBundle\Test\Factory\UserFactory;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use function html_entity_decode;
 use function preg_match;
 
@@ -72,6 +80,45 @@ final class VerifyEmailTest extends WebTestCase
         /** @var ManagerRegistry $registry */
         $registry = self::getContainer()->get('doctrine');
         $user = $registry->getRepository(User::class)->findOneBy(['email' => self::EMAIL]);
+
+        self::assertInstanceOf(User::class, $user);
+        self::assertTrue($user->isVerified());
+    }
+
+    /**
+     * What failed on the test instance (29/09/2026, logged as "names no
+     * account"): the link opened in a browser already signed in to another
+     * account, whose company was selected. The company filter then scoped the
+     * lookup of the account to that company, where the new one is not.
+     */
+    public function testTheLinkWorksWhileAnotherCompanyIsSelected(): void
+    {
+        $newcomer = UserFactory::createOne(['companies' => [CompanyFactory::createOne()], 'verified' => false]);
+        $email = new TemplatedEmail()->to((string) $newcomer->getEmail())->htmlTemplate('@AugiasUser/Email/confirm_email.html.twig');
+        self::getContainer()->get(EmailVerifier::class)->sendEmailConfirmation('_verify_email', $newcomer, $email);
+        $link = $email->getContext()['signedUrl'] ?? null;
+        self::assertIsString($link);
+
+        // The session of the other account: its company selected, the filter on.
+        self::getContainer()->get(CompanySelector::class)->switchCompany($this->company->getId());
+
+        /** @var EntityManagerInterface $entityManager */
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        // A fresh request: nothing in memory, the lookup reaches the database.
+        $entityManager->clear();
+
+        $request = Request::create($link);
+        $request->setSession(new Session(new MockArraySessionStorage()));
+        self::getContainer()->get('request_stack')->push($request);
+
+        self::getContainer()->get(VerifyEmail::class)($request);
+
+        // The browser's company is still the one filtered on afterwards.
+        self::assertSame(0, $entityManager->getRepository(User::class)->count(['id' => $newcomer->getId()]));
+
+        $entityManager->getFilters()->disable('company');
+        $entityManager->clear();
+        $user = $entityManager->getRepository(User::class)->find($newcomer->getId());
 
         self::assertInstanceOf(User::class, $user);
         self::assertTrue($user->isVerified());
