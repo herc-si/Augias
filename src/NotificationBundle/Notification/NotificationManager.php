@@ -23,6 +23,7 @@ use ReflectionObject;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Notifier\Exception\TransportExceptionInterface;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
@@ -89,7 +90,17 @@ class NotificationManager
 
             try {
                 $this->notifier->send($message, new Recipient($userNotification->getUser()->getEmail(), (string) $userNotification->getUser()->getMobile()));
-            } catch (TransportExceptionInterface $e) {
+            } catch (TransportExceptionInterface | HandlerFailedException $e) {
+                // HandlerFailedException: Messenger's wrapping of the same failure,
+                // since chat and SMS messages are handled in the request. Caught
+                // bare, a chat service's refusal ("chat not found") made creating
+                // a client a 500 (test instance, 29/09/2026). A notification must
+                // not fail the action that sent it.
+                //
+                // Not moved to the worker instead: the message carries the
+                // notification, entities included, which NotificationOptionConfigurator
+                // renders at send time — serialized, they would reach the worker
+                // detached.
                 $this->logger->error('Failed to send notification: ' . $e->getMessage(), [
                     'exception' => $e,
                     'event' => $event,

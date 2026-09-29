@@ -38,7 +38,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Notifier\Exception\TransportExceptionInterface;
+use Symfony\Component\Notifier\Message\ChatMessage;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\Notifier\Transport\Dsn;
@@ -458,6 +461,77 @@ final class NotificationManagerTest extends KernelTestCase
             ->once()
             ->with(
                 'Failed to send notification: Boom',
+                IsEqual::equalTo(['exception' => $transportException, 'event' => 'test_event']),
+            );
+
+        $session = new Session(new MockArraySessionStorage());
+        $request = Request::create('/');
+        $request->setSession($session);
+
+        $requestStack = new RequestStack([$request]);
+
+        $notificationManager = new NotificationManager(
+            $this->notifier,
+            self::getContainer()->get('doctrine')->getRepository(UserNotification::class),
+            new ServiceLocator([]),
+            $logger,
+            $requestStack,
+        );
+
+        $notificationManager->sendNotification($class);
+
+        self::assertSame(['notification.send_failed'], $session->getFlashBag()->get('error'));
+    }
+
+    public function testAChatRefusalWrappedByMessengerIsCaughtToo(): void
+    {
+        $class = new #[AsNotification(name: 'test_event')] class extends NotificationMessage {
+            public function getTextContent(Environment $twig): string
+            {
+                return '';
+            }
+        };
+
+        $email = $this->getFaker()->email();
+
+        $user = UserFactory::createOne([
+            'email' => $email,
+            'password' => 'password',
+            'companies' => [$this->company],
+        ]);
+
+        $userNotification = UserNotificationFactory::createOne([
+            'event' => 'test_event',
+            'email' => true,
+            'user' => $user,
+            'company' => $this->company,
+        ]);
+
+        // What the test instance raised on creating a client (29/09/2026):
+        // Telegram's "chat not found", wrapped by Messenger since the chat
+        // message is handled in the request.
+        $transportException = new HandlerFailedException(
+            new Envelope(new ChatMessage('x')),
+            [new class('Bad Request: chat not found') extends RuntimeException implements TransportExceptionInterface {
+                public function getDebug(): string
+                {
+                    return '';
+                }
+            }],
+        );
+
+        $this->notifier
+            ->expects('send')
+            ->with($class, IsEqual::equalTo(new Recipient($email, '')))
+            ->once()
+            ->andThrow($transportException);
+
+        $logger = M::mock(LoggerInterface::class);
+        $logger
+            ->expects('error')
+            ->once()
+            ->with(
+                'Failed to send notification: ' . $transportException->getMessage(),
                 IsEqual::equalTo(['exception' => $transportException, 'event' => 'test_event']),
             );
 
