@@ -24,10 +24,11 @@ final class ResetPasswordEmail extends TemplatedEmail
         User $user,
         #[SensitiveParameter]
         ResetPasswordToken $resetToken,
+        string $subject,
     ) {
         parent::__construct();
         $this->to($user->getEmail());
-        $this->subject('Your password reset request');
+        $this->subject($subject);
         $this->htmlTemplate('@AugiasUser/Email/reset_password.html.twig');
         $this->textTemplate('@AugiasUser/Email/reset_password.txt.twig');
         $this->context([

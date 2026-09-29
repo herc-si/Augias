@@ -21,6 +21,7 @@ use Carbon\Carbon;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Translation\IdentityTranslator;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\ErrorHandler\BufferingLogger;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
@@ -50,7 +51,7 @@ final class UserEntitySubscriberTest extends TestCase
 
         $logger = new BufferingLogger();
 
-        $subscriber = new UserEntitySubscriber($emailVerifier, $logger);
+        $subscriber = new UserEntitySubscriber($emailVerifier, $logger, new IdentityTranslator());
 
         $user = new User();
         $user->setEmail('test@example.com');
@@ -84,7 +85,7 @@ final class UserEntitySubscriberTest extends TestCase
 
         $logger = new BufferingLogger();
 
-        $subscriber = new UserEntitySubscriber($emailVerifier, $logger);
+        $subscriber = new UserEntitySubscriber($emailVerifier, $logger, new IdentityTranslator());
 
         $user = new User();
         $user->setEmail('test@example.com');
@@ -103,7 +104,7 @@ final class UserEntitySubscriberTest extends TestCase
             ->method('send')
             ->willReturnCallback(function (TemplatedEmail $email) use ($user): void {
                 self::assertSame($user->getEmail(), $email->getTo()[0]->getAddress());
-                self::assertSame('Please Confirm your Email', $email->getSubject());
+                self::assertSame('email.confirmation.subject', $email->getSubject());
                 self::assertSame('@AugiasUser/Email/confirm_email.html.twig', $email->getHtmlTemplate());
             });
 
@@ -126,7 +127,7 @@ final class UserEntitySubscriberTest extends TestCase
 
         $logger = new BufferingLogger();
 
-        $subscriber = new UserEntitySubscriber($emailVerifier, $logger);
+        $subscriber = new UserEntitySubscriber($emailVerifier, $logger, new IdentityTranslator());
 
         $user = new User();
         $user->setEmail('test@example.com');

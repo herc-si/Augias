@@ -32,7 +32,8 @@ final class ChangePassword
     #[Length(min: 8, max: 4096, minMessage: 'user.password.min_length_long')]
     #[PasswordStrength(
         minScore: PasswordStrength::STRENGTH_MEDIUM,
-        message: 'user.password.weak'
+        // Its own message: the advice has to match the stricter bar
+        message: 'user.password.weak_stronger'
     )]
     #[NotCompromisedPassword(
         message: 'user.password.compromised'
