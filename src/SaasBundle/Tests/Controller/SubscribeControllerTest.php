@@ -41,6 +41,7 @@ use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionManager;
 use Stringable;
 use Symfony\Bundle\FrameworkBundle\Secrets\AbstractVault;
 use Symfony\Component\DependencyInjection\Container;
+use SolidWorx\Platform\SaasBundle\Exception\PaymentIntegrationException;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -79,6 +80,19 @@ final class SubscribeControllerTest extends TestCase
         self::assertCount(1, $this->bus->messages);
         self::assertSame('saas_checkout_failed', $this->bus->messages[0]->payload['event']);
         self::assertSame('pro', $this->bus->messages[0]->payload['properties']['plan']);
+    }
+
+    public function testAStripeFailureRedirectsToOverviewWithErrorFlash(): void
+    {
+        // What the test instance hit with no Stripe key set: a 500 page.
+        $exception = new PaymentIntegrationException('Stripe POST checkout/sessions failed (HTTP 401): You did not provide an API key.');
+
+        $response = $this->invokeController($exception);
+
+        self::assertInstanceOf(RedirectResponse::class, $response[0]);
+        self::assertSame('/billing/', $response[0]->getTargetUrl());
+        self::assertNotEmpty($response[1]['error'] ?? []);
+        self::assertSame('saas_checkout_failed', $this->bus->messages[0]->payload['event']);
     }
 
     public function testHttpClientExceptionRedirectsToOverviewWithErrorFlash(): void

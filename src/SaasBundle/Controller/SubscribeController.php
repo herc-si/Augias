@@ -24,6 +24,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Clock\ClockInterface;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
+use SolidWorx\Platform\SaasBundle\Exception\PaymentIntegrationException;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
 use SolidWorx\Platform\SaasBundle\Integration\Options;
 use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
@@ -104,7 +105,12 @@ class SubscribeController extends AbstractController
         try {
             $checkoutUrl = $this->subscriptionManager
                 ->getCheckoutUrl($subscription, $options);
-        } catch (HttpExceptionInterface | TransportExceptionInterface $e) {
+        } catch (PaymentIntegrationException | HttpExceptionInterface | TransportExceptionInterface $e) {
+            // PaymentIntegrationException is what the Stripe integration
+            // throws, an unset key included: without it here, a checkout that
+            // cannot start was a 500 page instead of this message (test
+            // instance, 29/09/2026). The HTTP client exceptions are Lemon
+            // Squeezy's.
             captureException($e);
             $this->telemetry->event(TelemetryEvent::SaasCheckoutFailed, ['plan' => $planName]);
             $this->addFlash('error', 'saas.flash.checkout_failed');
