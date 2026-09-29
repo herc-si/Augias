@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\NotificationBundle\Factory;
 
 use Augias\NotificationBundle\Configurator\ConfiguratorInterface;
+use Augias\NotificationBundle\Entity\TransportSetting;
 use Augias\NotificationBundle\Notification\Transports;
 use Augias\NotificationBundle\Repository\TransportSettingRepository;
 use Psr\Container\ContainerExceptionInterface;
@@ -75,6 +76,18 @@ final readonly class NotificationTransportFactory
         }
 
         return new Transports($transports);
+    }
+
+    /**
+     * The transport of one saved integration, on its own: what "send a test
+     * message" goes through, so a wrong token or chat id is told at once.
+     */
+    public function forSetting(TransportSetting $setting): TransportInterface
+    {
+        $configurator = $this->transportConfigurations->get($setting->getTransport());
+        assert($configurator instanceof ConfiguratorInterface);
+
+        return $this->transport->fromDsnObject($configurator->configure($setting->getSettings()));
     }
 
     public function fromString(#[SensitiveParameter] string $dsn): TransportInterface

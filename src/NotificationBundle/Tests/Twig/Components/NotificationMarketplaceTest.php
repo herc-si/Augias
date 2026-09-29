@@ -35,6 +35,40 @@ final class NotificationMarketplaceTest extends LiveComponentTest
         self::assertStringContainsString('marketplace', $rendered);
     }
 
+    /**
+     * Saving an integration proves nothing; the test button sends through it
+     * at once and says what came back (test instance, 29/09/2026: a Telegram
+     * integration sat there and nothing told whether it worked).
+     */
+    public function testATestMessageGoesThroughTheIntegrationAndSaysSo(): void
+    {
+        $user = $this->getUser();
+
+        $setting = new TransportSetting();
+        $setting->setName('Chat de test');
+        $setting->setTransport('FakeChat');
+        $setting->setSettings(['to' => 'chat@example.org', 'from' => 'augias@example.org']);
+        $setting->setUser($user);
+        $setting->setCompany($user->getCompanies()->first());
+
+        $em = self::getContainer()->get('doctrine')->getManager();
+        $em->persist($setting);
+        $em->flush();
+
+        $component = $this->createLiveComponent(
+            name: NotificationMarketplace::class,
+            data: ['view' => 'configured'],
+            client: $this->client,
+        )->actingAs($user);
+
+        $component->call('sendTest', ['id' => $setting->getId()->toString()]);
+
+        $result = $component->component()->testResult;
+        self::assertIsArray($result);
+        self::assertTrue($result['ok'], $result['detail']);
+        self::assertStringContainsString('Test message sent to &quot;Chat de test&quot;', $component->render()->toString());
+    }
+
     public function testRenderWithSmsTab(): void
     {
         $component = $this->createLiveComponent(
