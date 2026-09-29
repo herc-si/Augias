@@ -14,42 +14,28 @@ declare(strict_types=1);
 namespace Augias\PaymentBundle\Menu;
 
 use Augias\CoreBundle\Enum\Menu\MenuPriority;
-use Augias\CoreBundle\Feature\UpgradePromptProvider;
 use Augias\CoreBundle\Icon;
-use Augias\SaasBundle\Feature\Feature;
 use Knp\Menu\ItemInterface;
 use SolidWorx\Platform\PlatformBundle\Attributes\Menu\MenuBuilder;
-use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
 
 final readonly class PaymentMenu
 {
-    public function __construct(
-        private FeatureGate $featureGate,
-        private UpgradePromptProvider $upgradePromptProvider,
-    ) {
-    }
-
     #[MenuBuilder(name: 'sidebar', priority: MenuPriority::PRIORITY_PAYMENT->value)]
     public function sidebar(ItemInterface $menu): void
     {
         // "Payment methods" is configuration, not a daily task, so it moved to
         // the System section (see CoreBundle\Menu\MainMenu::paymentMethods).
         // That leaves a single destination here, so no dropdown is needed.
-        $extras = ['icon' => Icon::PAYMENT];
-
-        if (! $this->featureGate->isEnabled(Feature::OnlinePayments->value)) {
-            $planLabel = $this->upgradePromptProvider->menuLabel(Feature::OnlinePayments->value);
-
-            if ($planLabel !== null) {
-                $extras['plan_label'] = $planLabel;
-            }
-        }
-
+        //
+        // No "Upgrade to …" under it: the payments page is open on every plan
+        // — recording a payment is not a paid feature. Only taking payments
+        // online is, and its page (payment methods) carries the prompt itself.
+        // Here the badge read as if the whole section were locked.
         $menu->addChild(
             'payment.menu.main',
             [
                 'route' => '_payments_index',
-                'extras' => $extras,
+                'extras' => ['icon' => Icon::PAYMENT],
             ],
         );
     }
