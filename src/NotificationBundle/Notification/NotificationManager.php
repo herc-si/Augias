@@ -16,6 +16,7 @@ namespace Augias\NotificationBundle\Notification;
 use Augias\CoreBundle\Traits\FlashErrorTrait;
 use Augias\NotificationBundle\Attribute\AsNotification;
 use Augias\NotificationBundle\Configurator\ConfiguratorInterface;
+use Augias\NotificationBundle\Entity\TransportSetting;
 use Augias\NotificationBundle\Exception\InvalidNotificationMessageException;
 use Augias\NotificationBundle\Repository\UserNotificationRepository;
 use Psr\Log\LoggerInterface;
@@ -25,8 +26,11 @@ use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Notifier\Exception\TransportExceptionInterface;
+use Symfony\Component\Notifier\Message\ChatMessage;
+use Symfony\Component\Notifier\Message\SmsMessage;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class NotificationManager
 {
@@ -42,6 +46,7 @@ class NotificationManager
         private readonly ServiceLocator $transportConfigurations,
         private readonly LoggerInterface $logger,
         private readonly RequestStack $requestStack,
+        private readonly ?TranslatorInterface $translator = null,
     ) {
     }
 
@@ -61,7 +66,8 @@ class NotificationManager
         $event = $attributes[0]->getArguments()['name'] ?? null;
 
         $userNotifications = $this->userNotificationRepository->findBy(['event' => $event]);
-        $hasTransportFailure = false;
+        /** @var array<string, true> $failures what to tell the user, once each */
+        $failures = [];
 
         foreach ($userNotifications as $userNotification) {
             $channels = [];
@@ -106,12 +112,51 @@ class NotificationManager
                     'event' => $event,
                 ]);
 
-                $hasTransportFailure = true;
+                $failures[$this->describeFailure($e, $userNotification->getTransports())] = true;
             }
         }
 
-        if ($hasTransportFailure) {
-            $this->addFlashError('notification.send_failed');
+        foreach (array_keys($failures) as $failure) {
+            $this->addFlashError($failure);
         }
+    }
+
+    /**
+     * What failed, said in terms of what the user set up. The message used to
+     * be "check your email settings" whatever failed — on the test instance it
+     * was a Telegram integration whose chat could not be found (29/09/2026).
+     *
+     * @param iterable<TransportSetting> $settings the integrations this notification went to
+     */
+    private function describeFailure(TransportExceptionInterface | HandlerFailedException $e, iterable $settings): string
+    {
+        $message = $e instanceof HandlerFailedException ? $e->getEnvelope()->getMessage() : null;
+
+        if (! $message instanceof ChatMessage && ! $message instanceof SmsMessage) {
+            return $this->trans('notification.send_failed');
+        }
+
+        // The provider's own words, e.g. "Bad Request: chat not found".
+        $reason = ($e->getWrappedExceptions()[0] ?? $e)->getMessage();
+
+        foreach ($settings as $setting) {
+            if ($setting->getId()?->toString() === $message->getTransport()) {
+                return $this->trans('notification.send_failed_integration', [
+                    '%name%' => $setting->getName(),
+                    '%transport%' => $setting->getTransport(),
+                    '%reason%' => $reason,
+                ]);
+            }
+        }
+
+        return $this->trans('notification.send_failed_channel', ['%reason%' => $reason]);
+    }
+
+    /**
+     * @param array<string, string> $parameters
+     */
+    private function trans(string $key, array $parameters = []): string
+    {
+        return $this->translator?->trans($key, $parameters) ?? $key;
     }
 }

@@ -2423,6 +2423,8 @@ notification:
         type_chat: chat
         vonage: 'Reliable SMS messaging via Vonage (formerly Nexmo)'
     send_failed: 'Failed to send notification. Please verify your email configuration in Settings.'
+    send_failed_channel: 'The notification was not sent: %reason% Check your integrations in Notifications › Integrations (Test button).'
+    send_failed_integration: 'The notification was not sent on %transport% "%name%": %reason% Check the integration in Notifications › Integrations (Test button).'
     type:
         chat: Chat
         sms: SMS

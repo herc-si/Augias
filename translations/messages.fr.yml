@@ -2423,6 +2423,8 @@ notification:
         type_chat: chat
         vonage: 'Messagerie SMS fiable via Vonage (anciennement Nexmo)'
     send_failed: 'Échec de l''envoi de la notification. Veuillez vérifier votre configuration e-mail dans les Paramètres.'
+    send_failed_channel: 'La notification n''est pas partie : %reason% Vérifiez vos intégrations dans Notifications › Intégrations (bouton Tester).'
+    send_failed_integration: 'La notification n''est pas partie sur %transport% « %name% » : %reason% Vérifiez l''intégration dans Notifications › Intégrations (bouton Tester).'
     type:
         chat: Chat
         sms: SMS

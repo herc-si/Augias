@@ -17,6 +17,7 @@ use Augias\CoreBundle\Test\Traits\FakerTestTrait;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\NotificationBundle\Attribute\AsNotification;
 use Augias\NotificationBundle\Configurator\ConfiguratorInterface;
+use Augias\NotificationBundle\Configurator\TelegramConfigurator;
 use Augias\NotificationBundle\Entity\TransportSetting;
 use Augias\NotificationBundle\Entity\UserNotification;
 use Augias\NotificationBundle\Exception\InvalidNotificationMessageException;
@@ -500,18 +501,29 @@ final class NotificationManagerTest extends KernelTestCase
             'companies' => [$this->company],
         ]);
 
-        $userNotification = UserNotificationFactory::createOne([
+        $telegram = new TransportSetting();
+        $telegram->setName('Perso');
+        $telegram->setTransport('Telegram');
+        $telegram->setSettings(['token' => '1:a', 'chat_id' => '42']);
+        $telegram->setUser($user);
+        $telegram->setCompany($this->company);
+        $em = self::getContainer()->get('doctrine')->getManager();
+        $em->persist($telegram);
+        $em->flush();
+
+        UserNotificationFactory::createOne([
             'event' => 'test_event',
-            'email' => true,
+            'email' => false,
             'user' => $user,
             'company' => $this->company,
+            'transports' => [$telegram],
         ]);
 
         // What the test instance raised on creating a client (29/09/2026):
         // Telegram's "chat not found", wrapped by Messenger since the chat
         // message is handled in the request.
         $transportException = new HandlerFailedException(
-            new Envelope(new ChatMessage('x')),
+            new Envelope(new ChatMessage('x')->transport($telegram->getId()->toString())),
             [new class('Bad Request: chat not found') extends RuntimeException implements TransportExceptionInterface {
                 public function getDebug(): string
                 {
@@ -544,13 +556,18 @@ final class NotificationManagerTest extends KernelTestCase
         $notificationManager = new NotificationManager(
             $this->notifier,
             self::getContainer()->get('doctrine')->getRepository(UserNotification::class),
-            new ServiceLocator([]),
+            new ServiceLocator(['Telegram' => static fn (): TelegramConfigurator => new TelegramConfigurator()]),
             $logger,
             $requestStack,
+            self::getContainer()->get('translator'),
         );
 
         $notificationManager->sendNotification($class);
 
-        self::assertSame(['notification.send_failed'], $session->getFlashBag()->get('error'));
+        // Which integration, and Telegram's own words — not "check your email settings".
+        $flash = $session->getFlashBag()->get('error');
+        self::assertCount(1, $flash);
+        self::assertStringContainsString('Telegram "Perso"', $flash[0]);
+        self::assertStringContainsString('chat not found', $flash[0]);
     }
 }
