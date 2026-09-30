@@ -177,7 +177,14 @@
 {% endmacro %}
 
 {% macro feature_label(feature, isBool, isEnabled) %}
-    {% set label = feature.description ?: feature.featureKey %}
+    {# The catalogue's description (platform.yaml) is written for developers
+       and in English. What a customer reads comes from the translations; the
+       description is only a fallback for a right added without one. #}
+    {% set key = 'saas.plan.feature.' ~ feature.featureKey %}
+    {% set label = key|trans %}
+    {% if label == key %}
+        {% set label = feature.description ?: feature.featureKey %}
+    {% endif %}
     {% set value = feature.value %}
     {% if isBool %}
         {% if isEnabled %}
@@ -186,10 +193,10 @@
             <span class="text-subtle">{{ label }}</span>
         {% endif %}
     {% elseif value is iterable %}
-        <strong>{{ label }}:</strong> {{ value|join(', ') }}
+        <strong>{{ label }}{{ 'saas.plan.value_separator'|trans }}</strong> {{ value|join(', ') }}
     {% elseif value == -1 %}
-        <strong>{{ 'saas.plan.unlimited'|trans }} {{ label }}</strong>
+        <strong>{{ label }}{{ 'saas.plan.value_separator'|trans }}</strong> {{ 'saas.plan.unlimited'|trans|lower }}
     {% else %}
-        <strong>{{ label }}:</strong> {{ value }}
+        <strong>{{ label }}{{ 'saas.plan.value_separator'|trans }}</strong> {{ value }}
     {% endif %}
 {% endmacro %}

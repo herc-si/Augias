@@ -89,6 +89,7 @@ ENV APP_PATH=/app
 
 COPY --from=vendor /app /app
 COPY --from=assets /app/public/static /app/public/static
+COPY docker/php/production.ini $PHP_INI_DIR/conf.d/zz-augias-production.ini
 
 # The cache is warmed on first boot rather than here. Warming needs an
 # application secret, and the only secret available at build time is one baked

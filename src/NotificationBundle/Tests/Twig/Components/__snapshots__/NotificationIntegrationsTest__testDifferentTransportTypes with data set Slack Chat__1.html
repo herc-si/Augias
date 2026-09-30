@@ -1,5 +1,5 @@
 <html><body>
-<div class="notification-marketplace" data-controller="live" data-live-name-value="NotificationMarketplace" data-live-url-value="/_components/NotificationMarketplace" id="live-2733983123-0" data-live-query-mapping-value='{"view":{"name":"view"},"selectedIntegration":{"name":"selectedIntegration"},"transport":{"name":"transport"},"type":{"name":"type"},"activeTab":{"name":"activeTab"}}' data-live-props-value='{"view":"marketplace","selectedIntegration":"","transport":"","type":"","activeTab":"sms","searchQuery":"","@attributes":{"id":"live-2733983123-0"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="notification-marketplace" data-controller="live" data-live-name-value="NotificationMarketplace" data-live-url-value="/_components/NotificationMarketplace" id="live-2733983123-0" data-live-query-mapping-value='{"view":{"name":"view"},"selectedIntegration":{"name":"selectedIntegration"},"transport":{"name":"transport"},"type":{"name":"type"},"activeTab":{"name":"activeTab"}}' data-live-props-value='{"view":"marketplace","selectedIntegration":"","transport":"","type":"","activeTab":"sms","searchQuery":"","testResult":null,"@attributes":{"id":"live-2733983123-0"},"@checksum":"REPLACED_CHECKSUM"}'>
     
 
         <ul class="nav nav-tabs d-md-none mb-4" role="tablist">
@@ -535,7 +535,11 @@
                     <span class="badge bg-secondary-lt">1</span>
                 </div>
 
-                                    <div class="configured-integrations-list">
+                                                        <div class="alert alert-info" role="note">
+                        A channel receives nothing until you assign notifications to it (invoice overdue, payment received, client created&acirc;&#128;&brvbar;).
+                        <a href="/profile/notifications" class="alert-link">Choose the notifications of each channel</a>
+                    </div>
+                    <div class="configured-integrations-list">
                                                     <div class="card configured-integration-card">
                                 <div class="card-body">
                                     <div class="d-flex align-items-start justify-content-between gap-3">
@@ -556,12 +560,16 @@
                                             </div>
                                         </div>
                                         <div class="d-flex gap-2 flex-shrink-0">
-                                            <a href="/notifications/integrations?selectedIntegration=01JBYEQCR7DJ2YW4EXP6FYJZCR&amp;type=chatter&amp;activeTab=sms" class="btn btn-outline-secondary btn-sm" aria-label="Edit Slack Test">
+                                                                                            <button type="button" class="btn btn-outline-primary btn-sm" data-action="live#action" data-live-action-param="sendTest" data-live-id-param="01JBYEQCR7DJ2YW4EXP6FYJZCR">
+                                                    <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14L21 3m0 0l-6.5 18a.55.55 0 0 1-1 0L10 14l-7-3.5a.55.55 0 0 1 0-1z"></path></svg>
+                                                    Test
+                                                </button>
+                                                                                        <a href="/notifications/integrations?selectedIntegration=01JBYEQCR7DJ2YW4EXP6FYJZCR&amp;type=chatter&amp;activeTab=sms" class="btn btn-outline-secondary btn-sm" aria-label="Edit Slack Test">
                                                 <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M7 7H6a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2v-1"></path><path d="M20.385 6.585a2.1 2.1 0 0 0-2.97-2.97L9 12v3h3zM16 5l3 3"></path></g></svg>
                                             </a>
                                         </div>
                                     </div>
-                                </div>
+                                                                    </div>
                             </div>
                                             </div>
                             </div>

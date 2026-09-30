@@ -91,7 +91,7 @@ final class BillType extends AbstractType
                 'input' => 'datetime_immutable',
                 'required' => false,
             ])
-            ->add('currencyCode', CurrencyType::class, ['label' => 'bill.form.currency.label'])
+            ->add('currencyCode', CurrencyType::class, ['label' => 'bill.form.currency.label', 'restricted' => false])
             ->add('totalAmount', MoneyType::class, [
                 'label' => 'bill.form.total_amount.label',
                 'currency' => $options['currency'],

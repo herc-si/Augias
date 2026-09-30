@@ -36,7 +36,7 @@ final class Registration
             // max length allowed by Symfony for security reasons
             minMessage: 'user.password.min_length',
         ),
-        Assert\PasswordStrength(minScore: Assert\PasswordStrength::STRENGTH_WEAK)]
+        Assert\PasswordStrength(minScore: Assert\PasswordStrength::STRENGTH_WEAK, message: 'user.password.weak')]
     public ?string $plainPassword = null;
 
     #[Assert\IsTrue(message: 'user.register.accept_terms')]

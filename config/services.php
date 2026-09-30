@@ -77,6 +77,15 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('env(AUGIAS_MCP_REFRESH_TOKEN_TTL)', 'P90D');
     $parameters->set('env(AUGIAS_MCP_AUTH_CODE_TTL)', 'PT10M');
 
+    // The currency a new company starts in, and the ones offered (comma-
+    // separated; empty offers every supported currency). See CurrencyPolicy.
+    $parameters->set('env(AUGIAS_DEFAULT_CURRENCY)', 'EUR');
+    $parameters->set('env(AUGIAS_CURRENCIES)', '');
+
+    // Shown on every page of an instance that is not the one clients use, e.g.
+    // "TEST". Empty: nothing shows.
+    $parameters->set('env(AUGIAS_INSTANCE_LABEL)', '');
+
     // No default collector. Augias has none of its own, and inheriting the
     // upstream project's would send an operator's installation figures to a
     // third party they never chose. Empty means telemetry is off whatever else

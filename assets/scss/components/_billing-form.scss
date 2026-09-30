@@ -282,11 +282,10 @@
     gap: var(--swp-space-6);
     align-items: start;
 
-    @media (width <= 1100px) {
-        grid-template-columns: 1fr 280px;
-    }
-
-    @media (width <= 900px) {
+    // The summary goes under the lines below 1200px rather than 900px: beside
+    // them, on a laptop with the sidebar open, it left the lines about 400px
+    // and the description a few characters wide.
+    @media (width <= 1200px) {
         grid-template-columns: 1fr;
     }
 }
@@ -341,7 +340,7 @@
 
 .billing-items-header-row {
     display: grid;
-    grid-template-columns: minmax(0, 2.6fr) minmax(130px, 1.1fr) 56px minmax(140px, 0.9fr) minmax(60px, 0.4fr) 24px;
+    grid-template-columns: minmax(0, 2.6fr) minmax(130px, 1.1fr) minmax(120px, 0.7fr) minmax(140px, 0.9fr) minmax(60px, 0.4fr) 24px;
     gap: var(--swp-space-2);
     padding: var(--swp-space-3);
     border-bottom: 1px solid var(--swp-border);
@@ -373,11 +372,11 @@
 .billing-items-list:not(:has(.column-tax)) {
 
     .billing-items-header-row {
-        grid-template-columns: minmax(0, 3.8fr) minmax(100px, 0.9fr) 56px minmax(60px, 0.4fr) 24px;
+        grid-template-columns: minmax(0, 3.8fr) minmax(100px, 0.9fr) minmax(120px, 0.7fr) minmax(60px, 0.4fr) 24px;
     }
 
     .billing-item-row {
-        grid-template-columns: minmax(0, 3.8fr) minmax(100px, 0.9fr) 56px minmax(60px, 0.4fr) 24px;
+        grid-template-columns: minmax(0, 3.8fr) minmax(100px, 0.9fr) minmax(120px, 0.7fr) minmax(60px, 0.4fr) 24px;
 
         // The two columns the phone layout's areas are drawn on. A single
         // one here left the second to be made up at content width, and the
@@ -396,7 +395,7 @@
 
     .billing-items-header-row,
     .billing-item-row {
-        grid-template-columns: minmax(0, 3.2fr) minmax(130px, 1.1fr) 56px minmax(80px, 0.5fr) minmax(60px, 0.4fr) 24px;
+        grid-template-columns: minmax(0, 3.2fr) minmax(130px, 1.1fr) minmax(120px, 0.7fr) minmax(80px, 0.5fr) minmax(60px, 0.4fr) 24px;
     }
 
     .billing-item-row {
@@ -406,9 +405,13 @@
     }
 }
 
+// The quantity column holds the unit select under the quantity. At 56px the
+// select read "Uni" with no room for its arrow (test instance, 29/09/2026):
+// 120px fits the longest unit, "Kilogramme", and the arrow.
+
 .billing-item-row {
     display: grid;
-    grid-template-columns: minmax(0, 2.6fr) minmax(130px, 1.1fr) 56px minmax(140px, 0.9fr) minmax(60px, 0.4fr) 24px;
+    grid-template-columns: minmax(0, 2.6fr) minmax(130px, 1.1fr) minmax(120px, 0.7fr) minmax(140px, 0.9fr) minmax(60px, 0.4fr) 24px;
     gap: var(--swp-space-2);
     padding: var(--swp-space-3);
     border-bottom: 1px solid var(--swp-border-light);

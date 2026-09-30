@@ -15,6 +15,8 @@ namespace Augias\InstallBundle\Tests\Step;
 
 use Augias\InstallBundle\Step\CreateDatabaseStep;
 use Augias\InstallBundle\Step\InstallationStepInterface;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -29,6 +31,18 @@ final class CreateDatabaseStepTest extends TestCase
     public function testGetLabel(): void
     {
         self::assertSame('Creating database', CreateDatabaseStep::getLabel());
+    }
+
+    public function testADatabaseThatExistsIsFound(): void
+    {
+        $schemaManager = $this->createStub(AbstractSchemaManager::class);
+        $schemaManager->method('introspectDatabaseNames')->willReturn([
+            UnqualifiedName::unquoted('postgres'),
+            UnqualifiedName::unquoted('augias'),
+        ]);
+
+        self::assertTrue(CreateDatabaseStep::databaseExists($schemaManager, 'augias'));
+        self::assertFalse(CreateDatabaseStep::databaseExists($schemaManager, 'augias_test'));
     }
 
     public function testStepImplementsInstallationStepInterface(): void
