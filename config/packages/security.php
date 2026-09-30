@@ -113,7 +113,7 @@ $config = LoginExtension::defaultFormLoginConfig([
         [
             'path' => '^(?:' .
                 '/_components/SystemInstallation|' .
-                '/webhook/lemon_squeezy|' .
+                '/webhook/(?:lemon_squeezy|stripe)|' .
                 '/view/(?:quote|invoice)/[A-Za-z0-9-]{36}(?:\.pdf)?|' .
                 '/(?:login|register)$|' .
                 '/forgot-password|' .
