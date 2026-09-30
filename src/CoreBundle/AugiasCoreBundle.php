@@ -20,7 +20,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 final class AugiasCoreBundle extends Bundle
 {
-    public const string VERSION = '4.0.0';
+    public const string VERSION = '4.1.0';
 
     public const string APP_NAME = 'Augias';
 
