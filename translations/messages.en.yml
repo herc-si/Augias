@@ -1993,6 +1993,7 @@ invoice:
             description: Description
             price: Price
             qty: Qty
+            qty_unit: 'Qty · unit'
             tax: Tax
             total: Total
         number: 'Item %number%'
@@ -2379,6 +2380,13 @@ notification:
         save: 'Save integration'
         save_button: 'Save Integration'
     marketplace:
+        channels_hint: 'A channel receives nothing until you assign notifications to it (invoice overdue, payment received, client created…).'
+        channels_link: 'Choose the notifications of each channel'
+        test:
+            button: 'Test'
+            message: 'Augias: test message. This channel is ready; choose the notifications it receives in Profile › Notifications.'
+            sent: 'Test message sent to "%name%". If it does not arrive, check the chat id.'
+            failed: 'The test message to "%name%" was not sent. The service answered:'
         all_providers: 'All Providers'
         browse: 'Browse Integrations'
         clear_search: 'Clear search'
@@ -2415,6 +2423,8 @@ notification:
         type_chat: chat
         vonage: 'Reliable SMS messaging via Vonage (formerly Nexmo)'
     send_failed: 'Failed to send notification. Please verify your email configuration in Settings.'
+    send_failed_channel: 'The notification was not sent: %reason% Check your integrations in Notifications › Integrations (Test button).'
+    send_failed_integration: 'The notification was not sent on %transport% "%name%": %reason% Check the integration in Notifications › Integrations (Test button).'
     type:
         chat: Chat
         sms: SMS

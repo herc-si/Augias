@@ -17,6 +17,7 @@ use Augias\CoreBundle\Test\Traits\FakerTestTrait;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\NotificationBundle\Attribute\AsNotification;
 use Augias\NotificationBundle\Configurator\ConfiguratorInterface;
+use Augias\NotificationBundle\Configurator\TelegramConfigurator;
 use Augias\NotificationBundle\Entity\TransportSetting;
 use Augias\NotificationBundle\Entity\UserNotification;
 use Augias\NotificationBundle\Exception\InvalidNotificationMessageException;
@@ -38,7 +39,10 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
+use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Notifier\Exception\TransportExceptionInterface;
+use Symfony\Component\Notifier\Message\ChatMessage;
 use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\Notifier\Transport\Dsn;
@@ -478,5 +482,92 @@ final class NotificationManagerTest extends KernelTestCase
         $notificationManager->sendNotification($class);
 
         self::assertSame(['notification.send_failed'], $session->getFlashBag()->get('error'));
+    }
+
+    public function testAChatRefusalWrappedByMessengerIsCaughtToo(): void
+    {
+        $class = new #[AsNotification(name: 'test_event')] class extends NotificationMessage {
+            public function getTextContent(Environment $twig): string
+            {
+                return '';
+            }
+        };
+
+        $email = $this->getFaker()->email();
+
+        $user = UserFactory::createOne([
+            'email' => $email,
+            'password' => 'password',
+            'companies' => [$this->company],
+        ]);
+
+        $telegram = new TransportSetting();
+        $telegram->setName('Perso');
+        $telegram->setTransport('Telegram');
+        $telegram->setSettings(['token' => '1:a', 'chat_id' => '42']);
+        $telegram->setUser($user);
+        $telegram->setCompany($this->company);
+        $em = self::getContainer()->get('doctrine')->getManager();
+        $em->persist($telegram);
+        $em->flush();
+
+        UserNotificationFactory::createOne([
+            'event' => 'test_event',
+            'email' => false,
+            'user' => $user,
+            'company' => $this->company,
+            'transports' => [$telegram],
+        ]);
+
+        // What the test instance raised on creating a client (29/09/2026):
+        // Telegram's "chat not found", wrapped by Messenger since the chat
+        // message is handled in the request.
+        $transportException = new HandlerFailedException(
+            new Envelope(new ChatMessage('x')->transport($telegram->getId()->toString())),
+            [new class('Bad Request: chat not found') extends RuntimeException implements TransportExceptionInterface {
+                public function getDebug(): string
+                {
+                    return '';
+                }
+            }],
+        );
+
+        $this->notifier
+            ->expects('send')
+            ->with($class, IsEqual::equalTo(new Recipient($email, '')))
+            ->once()
+            ->andThrow($transportException);
+
+        $logger = M::mock(LoggerInterface::class);
+        $logger
+            ->expects('error')
+            ->once()
+            ->with(
+                'Failed to send notification: ' . $transportException->getMessage(),
+                IsEqual::equalTo(['exception' => $transportException, 'event' => 'test_event']),
+            );
+
+        $session = new Session(new MockArraySessionStorage());
+        $request = Request::create('/');
+        $request->setSession($session);
+
+        $requestStack = new RequestStack([$request]);
+
+        $notificationManager = new NotificationManager(
+            $this->notifier,
+            self::getContainer()->get('doctrine')->getRepository(UserNotification::class),
+            new ServiceLocator(['Telegram' => static fn (): TelegramConfigurator => new TelegramConfigurator()]),
+            $logger,
+            $requestStack,
+            self::getContainer()->get('translator'),
+        );
+
+        $notificationManager->sendNotification($class);
+
+        // Which integration, and Telegram's own words — not "check your email settings".
+        $flash = $session->getFlashBag()->get('error');
+        self::assertCount(1, $flash);
+        self::assertStringContainsString('Telegram "Perso"', $flash[0]);
+        self::assertStringContainsString('chat not found', $flash[0]);
     }
 }

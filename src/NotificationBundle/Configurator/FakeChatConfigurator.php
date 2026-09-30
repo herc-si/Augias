@@ -47,6 +47,6 @@ final class FakeChatConfigurator implements ConfiguratorInterface
      */
     public function configure(array $config): Dsn
     {
-        return new Dsn(sprintf('fakechat+email://default?to=%s&amp;from=%s', urlencode($config['to']), urlencode($config['from'])));
+        return new Dsn(sprintf('fakechat+email://default?to=%s&from=%s', urlencode($config['to']), urlencode($config['from'])));
     }
 }

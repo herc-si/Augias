@@ -18,7 +18,10 @@ namespace Augias\NotificationBundle\Configurator;
 use Augias\NotificationBundle\Form\Type\Transport\TelegramType;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\Notifier\Transport\Dsn;
+use function explode;
+use function rawurlencode;
 use function sprintf;
+use function trim;
 use function urlencode;
 
 /**
@@ -47,6 +50,12 @@ final class TelegramConfigurator implements ConfiguratorInterface
      */
     public function configure(array $config): Dsn
     {
-        return new Dsn(sprintf('telegram://%s@default?channel=%s', urlencode($config['token']), urlencode($config['chat_id'])));
+        // A bot token is "<bot id>:<secret>", and Symfony reads it as the
+        // user and password of the DSN: the colon has to stay one. Encoded
+        // whole, it became %3A, and every real token was "Malformed token"
+        // (test instance, 29/09/2026). Each half is encoded on its own.
+        [$botId, $secret] = explode(':', trim($config['token']), 2) + [1 => ''];
+
+        return new Dsn(sprintf('telegram://%s:%s@default?channel=%s', rawurlencode($botId), rawurlencode($secret), urlencode(trim($config['chat_id']))));
     }
 }
