@@ -197,6 +197,12 @@
                 </div>
 
                 {% if configuredIntegrations|length > 0 %}
+                    {# Saving a channel sends nothing: which notifications go to it
+                       is chosen on another page, and nothing here said so. #}
+                    <div class="alert alert-info" role="note">
+                        {{ 'notification.marketplace.channels_hint'|trans }}
+                        <a href="{{ path('_profile_notifications') }}" class="alert-link">{{ 'notification.marketplace.channels_link'|trans }}</a>
+                    </div>
                     <div class="configured-integrations-list">
                         {% for setting in configuredIntegrations %}
                             <div class="card configured-integration-card">
@@ -219,6 +225,15 @@
                                             </div>
                                         </div>
                                         <div class="d-flex gap-2 flex-shrink-0">
+                                            {% if this.getIntegrationType(setting.transport) == 'chatter' %}
+                                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                                        data-action="live#action"
+                                                        data-live-action-param="sendTest"
+                                                        data-live-id-param="{{ setting.id.toString() }}">
+                                                    {{ ux_icon('tabler:send', {width: 16, height: 16}) }}
+                                                    {{ 'notification.marketplace.test.button'|trans }}
+                                                </button>
+                                            {% endif %}
                                             <a href="{{ path('_notification_integration', {selectedIntegration: setting.id.toString(), type: this.getIntegrationType(setting.transport), activeTab: activeTab}) }}"
                                                class="btn btn-outline-secondary btn-sm"
                                                aria-label="{{ 'notification.marketplace.edit'|trans({'%name%': setting.name}) }}">
@@ -226,6 +241,16 @@
                                             </a>
                                         </div>
                                     </div>
+                                    {% if testResult and testResult.id == setting.id.toString() %}
+                                        <div class="alert {{ testResult.ok ? 'alert-success' : 'alert-danger' }} mt-3 mb-0" role="status">
+                                            {% if testResult.ok %}
+                                                {{ 'notification.marketplace.test.sent'|trans({'%name%': setting.name}) }}
+                                            {% else %}
+                                                {{ 'notification.marketplace.test.failed'|trans({'%name%': setting.name}) }}
+                                                <div class="small mt-1 font-monospace">{{ testResult.detail }}</div>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
                                 </div>
                             </div>
                         {% endfor %}

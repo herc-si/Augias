@@ -24,6 +24,7 @@ use Symfony\Component\HttpFoundation\Request as SfRequest;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use SymfonyCasts\Bundle\ResetPassword\Controller\ResetPasswordControllerTrait;
 use SymfonyCasts\Bundle\ResetPassword\Exception\ResetPasswordExceptionInterface;
 use SymfonyCasts\Bundle\ResetPassword\ResetPasswordHelperInterface;
@@ -37,6 +38,7 @@ final class Request extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly MailerInterface $mailer,
         private readonly LoggerInterface $logger,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -88,7 +90,7 @@ final class Request extends AbstractController
         }
 
         try {
-            $this->mailer->send(new ResetPasswordEmail($user, $resetToken));
+            $this->mailer->send(new ResetPasswordEmail($user, $resetToken, $this->translator->trans('reset_password.subject', ['%username%' => $user->getEmail()], 'email')));
         } catch (TransportExceptionInterface $e) {
             $this->logger->error('Failed to send password reset email: ' . $e->getMessage(), [
                 'exception' => $e,

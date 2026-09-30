@@ -67,6 +67,17 @@ final class CompanyEventSubscriber
 
             $plan = $this->subscription->getPlan();
 
+            // A free plan needs no payment and no choice: it is active at once.
+            // Sent to the plan page instead, a company on the free default was
+            // put through a checkout for nothing (29/09/2026, test instance:
+            // "could not create the payment session" right after sign-up).
+            if ($plan->isFree()) {
+                $this->subscriptionManager->activate($this->subscription);
+                $this->subscription = null;
+
+                return;
+            }
+
             if (! $this->trialManager->userHasTrial($user) && $plan->getTrialDuration() instanceof DateInterval) {
                 try {
                     // User is new and plan has a trial configured, start the trial atomically

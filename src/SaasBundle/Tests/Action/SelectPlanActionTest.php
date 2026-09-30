@@ -78,6 +78,29 @@ final class SelectPlanActionTest extends TestCase
         self::assertSame('saas_pricing_page_viewed', $bus->messages[0]->payload['event']);
     }
 
+    public function testALoneFreePlanIsShownNotCheckedOut(): void
+    {
+        $planRepository = $this->createStub(PlanRepositoryInterface::class);
+        $planRepository->method('findAllOrdered')->willReturn([new Plan()->setName('Free')->setPlanId('0')->setPrice(0)]);
+
+        $action = new SelectPlanAction(
+            $planRepository,
+            $this->createStub(SubscriptionProviderInterface::class),
+            $this->createStub(CompanyRepository::class),
+            new CompanySelector($this->createStub(ManagerRegistry::class)),
+            $this->makeTelemetry(new CollectingMessageBus()),
+        );
+
+        $twig = $this->createMock(Environment::class);
+        $twig->expects(self::once())->method('render')->willReturn('<html></html>');
+
+        $container = new Container();
+        $container->set('twig', $twig);
+        $action->setContainer($container);
+
+        self::assertSame(200, $action()->getStatusCode());
+    }
+
     private function makePlan(string $name): Plan
     {
         return new Plan()->setName($name);

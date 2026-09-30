@@ -101,7 +101,8 @@ user:
         min_length_long: 'Your password must be at least {{ limit }} characters long'
         mismatch: 'Passwords do not match.'
         not_blank: 'Please enter a password'
-        weak: 'Your password is too weak. Please use a stronger password with a mix of letters, numbers, and symbols.'
+        weak: 'This password is too easy to guess. Make it longer: 12 characters or more mixing upper case, lower case, digits or symbols, or a phrase of a few words.'
+        weak_stronger: 'This password is too easy to guess. Make it longer: 16 characters or more mixing upper case, lower case, digits or symbols, or a phrase of a few words.'
     register:
         accept_terms: 'You must accept the terms and conditions to register'
     turnstile:

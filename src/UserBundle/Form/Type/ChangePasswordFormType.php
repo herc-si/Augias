@@ -41,7 +41,7 @@ final class ChangePasswordFormType extends AbstractType
                     'constraints' => [
                         new NotBlank(message: 'user.password.not_blank'),
                         new Length(min: 8, max: 4096, minMessage: 'user.password.min_length'),
-                        new PasswordStrength(minScore: PasswordStrength::STRENGTH_MEDIUM),
+                        new PasswordStrength(minScore: PasswordStrength::STRENGTH_MEDIUM, message: 'user.password.weak_stronger'),
                     ],
                     'label' => 'change_password.form.new_password',
                 ],

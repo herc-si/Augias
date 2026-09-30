@@ -1,0 +1,31 @@
+/**
+ * Instance label — the "TEST" an instance clients do not use wears on every
+ * page (AUGIAS_INSTANCE_LABEL): a coloured edge along the top of the window
+ * with a tab hanging from its middle. It never takes a click.
+ */
+
+.instance-label {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 2000;
+    display: flex;
+    justify-content: center;
+    height: 4px;
+    background: #c2410c; // orange-700: white text on it passes AA
+    pointer-events: none;
+
+    > span {
+        align-self: flex-start;
+        height: fit-content;
+        padding: 0.125rem 0.75rem;
+        border-radius: 0 0 var(--swp-border-radius, 4px) var(--swp-border-radius, 4px);
+        background: inherit;
+        color: #ffffff;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+}

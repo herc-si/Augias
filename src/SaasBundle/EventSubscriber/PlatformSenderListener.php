@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\EventSubscriber;
 
+use Augias\CoreBundle\Company\CompanySelectorInterface;
 use Augias\MailerBundle\Factory\MailerConfigFactory;
 use Augias\SettingsBundle\SystemConfig;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -22,6 +23,7 @@ use Symfony\Component\Mime\Address;
 use Symfony\Component\Mime\Email;
 use function array_filter;
 use function array_values;
+use function sprintf;
 use function str_ends_with;
 use function strcasecmp;
 use function strtolower;
@@ -35,6 +37,13 @@ use function strtolower;
  * spam, or is rejected. The recipient still sees the company's name, and a
  * reply still reaches the company.
  *
+ * The name reads "<company> via Augias", so the recipient knows both who
+ * wrote and what sent it. A message sent outside any company — a sign-in
+ * code, a password reset, a command run by cron — reads as the service
+ * itself. Without a company selected, the address EmailFromListener set is
+ * no company's in particular (the settings query is not filtered and returns
+ * the first row), so it is dropped rather than put in Reply-To.
+ *
  * A company that set up its own sending service keeps its address: that
  * service is the one entitled to sign for its domain.
  *
@@ -44,8 +53,11 @@ final readonly class PlatformSenderListener implements EventSubscriberInterface
 {
     public function __construct(
         private SystemConfig $config,
+        private CompanySelectorInterface $companySelector,
         #[Autowire(env: 'AUGIAS_SAAS_MAIL_FROM')]
         private string $platformAddress,
+        #[Autowire(env: 'AUGIAS_SAAS_MAIL_NAME')]
+        private string $platformName,
     ) {
     }
 
@@ -57,11 +69,13 @@ final readonly class PlatformSenderListener implements EventSubscriberInterface
             return;
         }
 
-        if (null !== $this->config->get(MailerConfigFactory::CONFIG_KEY)) {
+        $inCompany = null !== $this->companySelector->getCompany();
+
+        if ($inCompany && null !== $this->config->get(MailerConfigFactory::CONFIG_KEY)) {
             return;
         }
 
-        $from = $message->getFrom();
+        $from = $inCompany ? $message->getFrom() : [];
 
         // Nobody reads replies sent to the platform itself, nor to the
         // placeholder a company gets until it sets its own (RFC 2606 domain).
@@ -75,7 +89,10 @@ final readonly class PlatformSenderListener implements EventSubscriberInterface
             $message->replyTo(...$replyTo);
         }
 
-        $message->from(new Address($this->platformAddress, ($from[0] ?? null)?->getName() ?? ''));
+        $companyName = ($from[0] ?? null)?->getName() ?? '';
+        $name = '' === $companyName ? $this->platformName : sprintf('%s via Augias', $companyName);
+
+        $message->from(new Address($this->platformAddress, $name));
         $event->getEnvelope()->setSender(new Address($this->platformAddress));
     }
 

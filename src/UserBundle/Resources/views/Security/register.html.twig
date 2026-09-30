@@ -83,6 +83,9 @@
                                     </span>
                                     {{ form_errors(form.plainPassword) }}
                                 </div>
+                                {# Said before the first try: the strength rule is an entropy
+                                   estimate, and no one can guess it from "too weak". #}
+                                <div class="form-hint">{{ 'security.register.password_hint'|trans }}</div>
                             </div>
 
                             {# Terms & Conditions Checkbox #}

@@ -20,6 +20,7 @@ use Doctrine\ORM\Events;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @see \Augias\UserBundle\Tests\EventSubscriber\UserEntitySubscriberTest
@@ -30,6 +31,7 @@ final readonly class UserEntitySubscriber
     public function __construct(
         private EmailVerifier $emailVerifier,
         private LoggerInterface $logger,
+        private TranslatorInterface $translator,
     ) {
     }
 
@@ -45,7 +47,7 @@ final readonly class UserEntitySubscriber
                 $user,
                 new TemplatedEmail()
                     ->to($user->getEmail())
-                    ->subject('Please Confirm your Email')
+                    ->subject($this->translator->trans('email.confirmation.subject', [], 'email'))
                     ->htmlTemplate('@AugiasUser/Email/confirm_email.html.twig')
             );
         } catch (TransportExceptionInterface $e) {

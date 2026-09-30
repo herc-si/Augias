@@ -70,7 +70,7 @@ final class ResetPasswordTest extends WebTestCase
                     ->assertSentEmailCount(1)
                     ->assertEmailSentTo('me@example.com', function (TestEmail $email) use (&$emailLink): void {
                         $email
-                            ->assertSubject('Your password reset request')
+                            ->assertSubject('Reset your password for me@example.com')
                             ->assertTextContains('A password reset was requested for user me@example.com.')
                             ->assertTextContains('If you did not request your password to be reset, you can safely ignore this message.')
                             ->assertTextContains('To reset your password, please copy and paste the below link in your browser')

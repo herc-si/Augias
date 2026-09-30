@@ -18,6 +18,12 @@
 {% endblock stylesheets %}
 
 {% block javascripts %}
+    {# Every page, the sign-in one included: this is the only block no page overrides. #}
+    {% set instance_label = instance_label() %}
+    {% if instance_label is not empty %}
+        <div class="instance-label" role="status"><span>{{ instance_label }}</span></div>
+        <script>document.title = {{ ('[' ~ instance_label ~ '] ')|json_encode|raw }} + document.title;</script>
+    {% endif %}
     {{ encore_entry_script_tags('app') }}
     {# Registered only where the browser allows it: HTTPS, or localhost. #}
     <script>

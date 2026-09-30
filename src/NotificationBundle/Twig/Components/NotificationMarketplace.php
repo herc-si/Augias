@@ -15,18 +15,24 @@ namespace Augias\NotificationBundle\Twig\Components;
 
 use Augias\NotificationBundle\Configurator\ConfiguratorInterface;
 use Augias\NotificationBundle\Entity\TransportSetting;
+use Augias\NotificationBundle\Factory\NotificationTransportFactory;
 use Augias\NotificationBundle\Repository\TransportSettingRepository;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
+use Symfony\Component\Notifier\Message\ChatMessage;
+use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
+use Symfony\UX\LiveComponent\Attribute\LiveArg;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
+use Throwable;
 use function array_filter;
 use function array_values;
 use function in_array;
@@ -70,6 +76,10 @@ final class NotificationMarketplace extends AbstractController
         private readonly ServiceLocator $transportConfigurations,
         private readonly TransportSettingRepository $repository,
         private readonly TranslatorInterface $translator,
+        // The chat factory as NotificationTransportConfigCompilerPass decorates
+        // it: the class alone is not a service of its own.
+        #[Autowire(service: 'chatter.transport_factory')]
+        private readonly NotificationTransportFactory $transportFactory,
     ) {
     }
 
@@ -308,6 +318,40 @@ final class NotificationMarketplace extends AbstractController
     public function clearSearch(): void
     {
         $this->searchQuery = '';
+    }
+
+    /**
+     * The outcome of the last test message, shown on its integration's card.
+     *
+     * @var array{id: string, ok: bool, detail: string}|null
+     */
+    #[LiveProp]
+    public ?array $testResult = null;
+
+    /**
+     * Sends a message through one saved chat integration, now and not through
+     * the queue, so the answer — delivered, or the provider's own refusal —
+     * is on the page. Saving an integration proved nothing: on the test
+     * instance a Telegram integration sat unused, and nothing said whether it
+     * would work (29/09/2026).
+     */
+    #[LiveAction]
+    public function sendTest(#[LiveArg] string $id): void
+    {
+        $setting = Ulid::isValid($id) ? $this->repository->findOneBy(['id' => Ulid::fromString($id), 'user' => $this->getUser()]) : null;
+
+        if (! $setting instanceof TransportSetting || $this->getIntegrationType($setting->getTransport()) !== 'chatter') {
+            return;
+        }
+
+        try {
+            $this->transportFactory->forSetting($setting)->send(new ChatMessage($this->translator->trans('notification.marketplace.test.message')));
+            $this->testResult = ['id' => $id, 'ok' => true, 'detail' => ''];
+        } catch (Throwable $e) {
+            // The provider's words: "chat not found", "Unauthorized" — they
+            // say what to fix.
+            $this->testResult = ['id' => $id, 'ok' => false, 'detail' => $e->getMessage()];
+        }
     }
 
     #[LiveAction]
