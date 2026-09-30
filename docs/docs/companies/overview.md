@@ -24,4 +24,4 @@ Each company has its own currency. It's set when you create the company and is u
 
 - [Create a company](./creating-a-company.md)
 - [Switch between companies](./switching-between-companies.md)
-- [Delete a company](./deleting-a-company.md)
+- [Close a company](./deleting-a-company.md)
