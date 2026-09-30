@@ -52,7 +52,7 @@ final class InvoiceSetupStep extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'currency' => 'USD',
+            'currency' => 'EUR',
         ]);
 
         $resolver->setAllowedTypes('currency', 'string');

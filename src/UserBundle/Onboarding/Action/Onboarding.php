@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\UserBundle\Onboarding\Action;
 
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\MoneyBundle\Currency\CurrencyPolicy;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Onboarding\DTO\OnboardingData;
 use Augias\UserBundle\Onboarding\Form\Type\OnboardingType;
@@ -30,6 +31,7 @@ final class Onboarding extends AbstractController
 {
     public function __construct(
         private readonly OnboardingManager $onboardingManager,
+        private readonly CurrencyPolicy $currencies,
     ) {
     }
 
@@ -57,7 +59,10 @@ final class Onboarding extends AbstractController
         }
 
         // Create and handle form
-        $form = $this->createForm(OnboardingType::class, new OnboardingData())
+        $data = new OnboardingData();
+        $data->companyCurrency = $this->currencies->defaultCode();
+
+        $form = $this->createForm(OnboardingType::class, $data)
             ->handleRequest($request);
 
         assert($form instanceof FormFlowInterface);

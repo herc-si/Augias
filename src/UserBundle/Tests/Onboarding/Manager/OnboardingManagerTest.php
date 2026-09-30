@@ -19,6 +19,8 @@ use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
+use Augias\MoneyBundle\Currency\CurrencyPolicy;
+use Augias\MoneyBundle\Currency\SupportedCurrencies;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\UserSettingType;
 use Augias\UserBundle\Onboarding\DTO\OnboardingData;
@@ -56,7 +58,8 @@ final class OnboardingManagerTest extends KernelTestCase
             $companyRepository,
             $this->clientRepository,
             $this->invoiceRepository,
-            $this->userSettingRepository
+            $this->userSettingRepository,
+            new CurrencyPolicy(new SupportedCurrencies()),
         );
     }
 

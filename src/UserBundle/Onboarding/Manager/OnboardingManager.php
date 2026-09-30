@@ -22,6 +22,7 @@ use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
+use Augias\MoneyBundle\Currency\CurrencyPolicy;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Entity\UserSetting;
 use Augias\UserBundle\Enum\CompanyRole;
@@ -46,6 +47,7 @@ final readonly class OnboardingManager
         private ClientRepository $clientRepository,
         private InvoiceRepository $invoiceRepository,
         private UserSettingRepository $userSettingRepository,
+        private CurrencyPolicy $currencies,
     ) {
     }
 
@@ -175,7 +177,7 @@ final readonly class OnboardingManager
     {
         $company = new Company();
         $company->setName($data->companyName);
-        $company->currency = $data->companyCurrency ?? 'USD';
+        $company->currency = $data->companyCurrency ?? $this->currencies->defaultCode();
 
         $this->companyRepository->save($company);
 

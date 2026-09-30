@@ -129,6 +129,8 @@ The first-run wizard configures everything you need to get started. The variable
 | `AUGIAS_MAILER_DSN` | Default outbound mail transport (SMTP, Mailgun, SendGrid, etc.), used by every company that has not set its own under `Settings` > `E-mail`. See [Sending emails](../sending-emails.md). |
 | `AUGIAS_MAILER_SENDER` | The `From:` address Augias sends mail from. Overrides the address configured in the UI. |
 | `AUGIAS_LOCALE` | Default locale (e.g. `en`). |
+| `AUGIAS_DEFAULT_CURRENCY` | The currency a new company starts in. `EUR` by default. |
+| `AUGIAS_CURRENCIES` | The currencies offered for companies and clients, comma-separated (e.g. `EUR,CHF,GBP`). Empty by default: every currency is offered. Supplier bills may always be in any currency. |
 | `AUGIAS_TELEMETRY_URL` | Where anonymous usage figures are sent. Empty by default, and Augias ships no collector of its own: leave it empty and nothing is ever sent anywhere. |
 | `AUGIAS_ENABLE_TELEMETRY` | Set to `1` to send those figures to the collector above. Off by default, and it does nothing on its own — both variables have to be set. |
 
