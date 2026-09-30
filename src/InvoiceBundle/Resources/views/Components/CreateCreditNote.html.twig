@@ -147,6 +147,10 @@
                                             label_html: true,
                                             attr: {class: 'btn btn-sm remove-item-btn', title: 'invoice.item.remove'|trans, 'aria-label': 'invoice.item.remove'|trans}
                                         }) }}
+                                    {% else %}
+                                        {# Not shown for a lone line, so form_end would render it
+                                           below the form, out of place: it is marked as rendered. #}
+                                        {% do item.vars.button_delete.setRendered() %}
                                     {% endif %}
                                 </div>
                             </div>
