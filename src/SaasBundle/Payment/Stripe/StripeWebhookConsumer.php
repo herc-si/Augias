@@ -28,8 +28,9 @@ use function str_starts_with;
  * Acts on the Stripe events the webhook endpoint subscribes to.
  *
  * Every `customer.subscription.*` event re-reads its subscription from
- * Stripe (StripeSubscriptionSync). Any other event is acknowledged and left
- * alone: refusing it would only make Stripe send it again.
+ * Stripe (StripeSubscriptionSync); `invoice.paid` has HERC SI's invoice
+ * issued (SubscriptionInvoiceIssuer). Any other event is acknowledged and
+ * left alone: refusing it would only make Stripe send it again.
  *
  * @see \Augias\SaasBundle\Tests\Payment\Stripe\StripeWebhookConsumerTest
  */
@@ -38,6 +39,7 @@ final readonly class StripeWebhookConsumer implements ConsumerInterface
 {
     public function __construct(
         private StripeSubscriptionSync $sync,
+        private SubscriptionInvoiceIssuer $invoiceIssuer,
         private RequestStack $requestStack,
     ) {
     }
@@ -45,19 +47,25 @@ final readonly class StripeWebhookConsumer implements ConsumerInterface
     #[Override]
     public function consume(RemoteEvent $event): void
     {
+        $payload = $event->getPayload();
+        $object = is_array($payload['data'] ?? null) ? ($payload['data']['object'] ?? null) : null;
+        $objectId = is_array($object) ? ($object['id'] ?? null) : null;
+
+        if (! is_string($objectId)) {
+            return;
+        }
+
+        if ($event->getName() === 'invoice.paid') {
+            $this->invoiceIssuer->issue($objectId);
+
+            return;
+        }
+
         if (! str_starts_with($event->getName(), 'customer.subscription.')) {
             return;
         }
 
-        $payload = $event->getPayload();
-        $object = is_array($payload['data'] ?? null) ? ($payload['data']['object'] ?? null) : null;
-        $stripeSubscriptionId = is_array($object) ? ($object['id'] ?? null) : null;
-
-        if (! is_string($stripeSubscriptionId)) {
-            return;
-        }
-
-        $subscription = $this->sync->sync($stripeSubscriptionId);
+        $subscription = $this->sync->sync($objectId);
 
         $log = $this->requestStack->getCurrentRequest()?->attributes->get('_webhook_event_log');
 

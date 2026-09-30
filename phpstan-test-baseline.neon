@@ -35,3 +35,9 @@ parameters:
 			identifier: symfonyContainer.serviceNotFound
 			count: 2
 			path: src/SaasBundle/Tests/Email/OnboardingEmailSnapshotTest.php
+		-
+			message: '#^Service "Augias\\SaasBundle\\Payment\\Stripe\\SubscriptionInvoiceIssuer" is not registered in the container\.$#'
+			identifier: symfonyContainer.serviceNotFound
+			count: 1
+			path: src/SaasBundle/Tests/Payment/Stripe/SubscriptionInvoiceIssuerTest.php
+
