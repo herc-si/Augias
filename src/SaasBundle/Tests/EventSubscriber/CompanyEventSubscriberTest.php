@@ -17,10 +17,13 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Event\CompanyCreatedEvent;
 use Augias\SaasBundle\EventSubscriber\CompanyEventSubscriber;
 use Augias\SaasBundle\Plan\DefaultPlanProvider;
+use Augias\SaasBundle\Plan\FreePlanAllowance;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Enum\CompanyRole;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use ReflectionProperty;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
@@ -35,6 +38,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Uid\Ulid;
 
 #[CoversClass(CompanyEventSubscriber::class)]
 final class CompanyEventSubscriberTest extends TestCase
@@ -63,6 +67,35 @@ final class CompanyEventSubscriberTest extends TestCase
         self::assertSame(SubscriptionStatus::ACTIVE, $subscription->getStatus());
     }
 
+    /**
+     * Test instance, 30/09/2026: an account already on Free created another
+     * company, and it was on Free too. One free company per account: the
+     * second one stays pending and is sent to choose a paid plan.
+     */
+    public function testASecondFreeCompanyOfTheSameOwnerGoesToThePlanPageInstead(): void
+    {
+        $free = new Plan()->setName('Free')->setPlanId('0')->setPrice(0);
+        $saved = [];
+
+        $owner = new User();
+        $first = $this->company($owner);
+        $firstSubscription = new Subscription();
+        $firstSubscription->setSubscriber($first);
+        $firstSubscription->setPlan($free);
+        $firstSubscription->setStatus(SubscriptionStatus::ACTIVE);
+
+        $subscriber = $this->subscriber($free, $saved, [$firstSubscription]);
+        $subscriber->onCompanyCreated(new CompanyCreatedEvent($this->company($owner)));
+
+        $event = new ResponseEvent($this->createStub(HttpKernelInterface::class), new Request(), HttpKernelInterface::MAIN_REQUEST, new Response());
+        $subscriber->onResponse($event);
+
+        self::assertSame('/billing/subscription/plans', $event->getResponse()->headers->get('Location'));
+        $subscription = end($saved);
+        self::assertInstanceOf(Subscription::class, $subscription);
+        self::assertNotSame(SubscriptionStatus::ACTIVE, $subscription->getStatus());
+    }
+
     public function testAPaidDefaultWithoutTrialStillGoesToThePlanPage(): void
     {
         $solo = new Plan()->setName('Solo')->setPlanId('price_solo')->setPrice(900);
@@ -77,16 +110,35 @@ final class CompanyEventSubscriberTest extends TestCase
         self::assertSame('/billing/subscription/plans', $event->getResponse()->headers->get('Location'));
     }
 
+    private function company(User $owner): Company
+    {
+        $company = new Company();
+        new ReflectionProperty(Company::class, 'id')->setValue($company, new Ulid());
+        $company->addUser($owner, CompanyRole::Owner);
+
+        return $company;
+    }
+
     /**
      * @param list<Subscription> $saved
+     * @param list<Subscription> $existing
      */
-    private function subscriber(Plan $default, array &$saved): CompanyEventSubscriber
+    private function subscriber(Plan $default, array &$saved, array $existing = []): CompanyEventSubscriber
     {
         $plans = $this->createStub(PlanRepositoryInterface::class);
         $plans->method('findDefault')->willReturn($default);
         $plans->method('find')->willReturn($default);
 
         $subscriptions = $this->createStub(SubscriptionRepositoryInterface::class);
+        $subscriptions->method('findOneBy')->willReturnCallback(static function (array $criteria) use ($existing): ?Subscription {
+            foreach ($existing as $subscription) {
+                if ($subscription->getSubscriber() === $criteria['subscriber']) {
+                    return $subscription;
+                }
+            }
+
+            return null;
+        });
         $subscriptions->method('save')->willReturnCallback(static function (object $subscription) use (&$saved): void {
             $saved[] = $subscription;
         });
@@ -100,13 +152,16 @@ final class CompanyEventSubscriberTest extends TestCase
         $router = $this->createStub(UrlGeneratorInterface::class);
         $router->method('generate')->willReturn('/billing/subscription/plans');
 
+        $manager = new SubscriptionManager($subscriptions, $plans, $this->createStub(PaymentIntegrationInterface::class));
+
         return new CompanyEventSubscriber(
             new DefaultPlanProvider($plans),
-            new SubscriptionManager($subscriptions, $plans, $this->createStub(PaymentIntegrationInterface::class)),
+            $manager,
             $security,
             $trials,
             $this->createStub(EntityManagerInterface::class),
             $router,
+            new FreePlanAllowance($manager),
         );
     }
 }

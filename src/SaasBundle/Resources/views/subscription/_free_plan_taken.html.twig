@@ -1,0 +1,27 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #
+ # Says why Free is missing from the plans: one free company per account.
+ # Expects:
+ #   - plans: list<Plan>  (already without Free)
+ #}
+
+<twig:Ui:Alert type="info" class="mt-4 text-start">
+    <div class="d-flex align-items-start gap-2">
+        {{ ux_icon('tabler:building', {width: 20, height: 20}) }}
+        <div>
+            {{ 'saas.plan.free_plan_taken'|trans }}
+            {% if plans|length == 0 %}
+                <br>{{ 'saas.plan.free_plan_taken_none_on_sale'|trans }}
+                <a href="https://herc-si.fr/contact" target="_blank" rel="external noreferrer noopener" class="alert-link">
+                    {{ 'saas.action.contact_support_short'|trans }}
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</twig:Ui:Alert>

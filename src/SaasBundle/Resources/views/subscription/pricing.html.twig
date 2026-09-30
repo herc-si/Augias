@@ -21,9 +21,15 @@
                 {{ 'saas.pricing.subtitle'|trans }}
             </p>
 
-            <div class="mt-4">
-                {% include '@AugiasSaas/subscription/_plans_grid.html.twig' with { plans: plans } only %}
-            </div>
+            {% if freePlanTaken|default(false) %}
+                {% include '@AugiasSaas/subscription/_free_plan_taken.html.twig' with { plans: plans } only %}
+            {% endif %}
+
+            {% if plans|length > 0 %}
+                <div class="mt-4">
+                    {% include '@AugiasSaas/subscription/_plans_grid.html.twig' with { plans: plans } only %}
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endblock content %}

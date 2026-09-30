@@ -32,6 +32,10 @@
                 </a>
             </div>
 
+            {% if freePlanTaken|default(false) %}
+                {% include '@AugiasSaas/subscription/_free_plan_taken.html.twig' with { plans: plans } only %}
+            {% endif %}
+
             {% include '@AugiasSaas/subscription/_plans_grid.html.twig' with {
                 plans: plans,
                 currentPlanId: currentPlanId,

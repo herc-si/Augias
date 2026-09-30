@@ -18,6 +18,7 @@ use Augias\CoreBundle\Intl\LocalisedDate;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\SaasBundle\EventSubscriber\RequestListener;
+use Augias\SaasBundle\Plan\FreePlanAllowance;
 use Augias\SaasBundle\Service\TrialBannerResolver;
 use Augias\Test\SaasKernel;
 use Augias\UserBundle\Entity\User;
@@ -536,6 +537,7 @@ final class RequestListenerTest extends KernelTestCase
             $urlGenerator,
             $clock,
             $trialBannerResolver,
+            new FreePlanAllowance($subscriptionManager),
             $translator,
             $couponCode,
             $couponPercent,

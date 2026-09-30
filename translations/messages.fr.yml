@@ -840,6 +840,8 @@ company:
         checkout_after_create: "Après avoir créé cette société, vous choisirez un plan puis procéderez au paiement."
         create_button: 'Créer la société'
         currency_help: 'Toutes les factures et paiements utiliseront cette devise'
+        free_plan: 'Cette société démarre sur le plan gratuit. Vous pourrez changer de plan à tout moment.'
+        free_plan_taken: 'Le plan gratuit est limité à une société par compte, et vous en avez déjà une. Après avoir créé celle-ci, vous choisirez un plan payant.'
         month: mois
         name_help: 'Ceci apparaîtra sur vos factures et devis'
         name_placeholder: 'ex. Acme Corporation'
@@ -3189,6 +3191,7 @@ saas:
         downgrade_cancelled: 'Changement de plan programmé annulé.'
         downgrade_scheduled: 'Votre plan sera rétrogradé à la fin de la période de facturation en cours.'
         free_plan_active: 'Votre plan gratuit est maintenant actif.'
+        free_plan_taken: 'Vous avez déjà une entreprise sur le plan gratuit : celle-ci doit choisir un plan payant.'
         invalid_plan: 'Le plan sélectionné n''est pas valide.'
         invalid_token: 'Jeton de sécurité invalide, veuillez réessayer.'
         no_plans_available: 'Aucun plan d''abonnement n''est disponible.'
@@ -3273,6 +3276,8 @@ saas:
             rest_api_access: 'API REST'
             team_seats: 'Utilisateurs'
             total_clients: 'Clients'
+        free_plan_taken: 'Le plan gratuit est limité à une entreprise par compte, et vous en avez déjà une. Pour cette entreprise, choisissez un plan payant.'
+        free_plan_taken_none_on_sale: 'Aucun plan payant n''est encore en vente. Écrivez-nous si vous avez besoin d''une deuxième entreprise.'
         included: Inclus
         just_getting_started: 'Vous débutez ?'
         no_credit_card: 'Aucune carte bancaire requise'
