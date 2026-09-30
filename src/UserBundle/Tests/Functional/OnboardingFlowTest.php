@@ -18,6 +18,7 @@ use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
+use Augias\UserBundle\Entity\Membership;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\UserSettingType;
 use Augias\UserBundle\Onboarding\Manager\OnboardingManager;
@@ -117,6 +118,12 @@ final class OnboardingFlowTest extends WebTestCase
             // Should go to complete step (invoice auto-skipped)
             ->assertSuccessful()
             ->assertSee("You're all set!")
+            // Already true on this page: its links lead into the company, not
+            // to creating one (test instance, 29/09/2026).
+            ->use(function () use ($user): void {
+                $memberships = self::getContainer()->get('doctrine')->getRepository(Membership::class)->findBy(['user' => $user->getId()]);
+                self::assertCount(1, $memberships);
+            })
             ->interceptRedirects()
             ->click('Go to Dashboard')
             ->assertRedirectedTo('/dashboard')
@@ -133,6 +140,30 @@ final class OnboardingFlowTest extends WebTestCase
         $skipped = json_decode((string) $setting->getValue(), true);
         self::assertContains('client', $skipped);
         self::assertContains('invoice', $skipped);
+    }
+
+    /**
+     * The test instance, 29/09/2026: Skip, then "set up payments" from the
+     * last page, and the account had no company yet — it was sent to create
+     * one instead.
+     */
+    public function testALinkFromTheLastPageLeadsIntoTheNewCompany(): void
+    {
+        $user = $this->createUser('links@example.com', 'password');
+
+        $this->browser()
+            ->actingAs($user)
+            ->visit('/onboarding')
+            ->fillField('onboarding[company][companyName]', 'Linked Company')
+            ->selectFieldOption('onboarding[company][companyCurrency]', 'USD')
+            ->click('Continue')
+            ->click('#onboarding_navigator_skip')
+            ->assertSee("You're all set!")
+            ->interceptRedirects()
+            ->visit('/payments/methods')
+            ->assertSuccessful()
+            ->assertOn('/payments/methods')
+        ;
     }
 
     public function testSkipInvoiceStepOnly(): void
