@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Augias\SaasBundle\Action;
 
 use Augias\CoreBundle\Company\CompanySelector;
+use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
+use Augias\SaasBundle\Plan\FreePlanAllowance;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
@@ -36,6 +38,7 @@ final class ConfirmPlanChangeAction extends AbstractController
         private readonly SubscriptionProviderInterface $subscriptionProvider,
         private readonly CompanyRepository $companyRepository,
         private readonly CompanySelector $companySelector,
+        private readonly FreePlanAllowance $freePlanAllowance,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -48,7 +51,8 @@ final class ConfirmPlanChangeAction extends AbstractController
             return $this->redirectToRoute('saas_subscription_change');
         }
 
-        $subscription = $this->getSubscription();
+        $company = $this->currentCompany();
+        $subscription = $this->getSubscription($company);
 
         if (! $subscription instanceof Subscription) {
             $this->addFlash('error', 'saas.flash.no_subscription');
@@ -67,6 +71,12 @@ final class ConfirmPlanChangeAction extends AbstractController
 
         if ($plan->getPlanId() === $subscription->getPlan()->getPlanId()) {
             return $this->redirectToRoute('billing_index');
+        }
+
+        if ($plan->isFree() && $company instanceof Company && ! $this->freePlanAllowance->allows($company)) {
+            $this->addFlash('error', 'saas.flash.free_plan_taken');
+
+            return $this->redirectToRoute('saas_subscription_change');
         }
 
         $isDowngrade = $plan->getPrice() < $subscription->getPlan()->getPrice();
@@ -124,20 +134,15 @@ final class ConfirmPlanChangeAction extends AbstractController
         return $this->redirectToRoute('billing_index');
     }
 
-    private function getSubscription(): ?Subscription
+    private function getSubscription(?Company $company): ?Subscription
+    {
+        return $company instanceof Company ? $this->subscriptionProvider->getSubscriptionFor($company) : null;
+    }
+
+    private function currentCompany(): ?Company
     {
         $companyId = $this->companySelector->getCompany();
 
-        if (! $companyId instanceof Ulid) {
-            return null;
-        }
-
-        $company = $this->companyRepository->find($companyId);
-
-        if ($company === null) {
-            return null;
-        }
-
-        return $this->subscriptionProvider->getSubscriptionFor($company);
+        return $companyId instanceof Ulid ? $this->companyRepository->find($companyId) : null;
     }
 }

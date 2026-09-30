@@ -21,8 +21,10 @@ use Augias\PaymentBundle\Form\Type\PaymentMethodType;
 use Augias\PaymentBundle\Gateway\GatewayInfo;
 use Augias\PaymentBundle\Gateway\GatewayMetadataProvider;
 use Augias\PaymentBundle\Repository\PaymentMethodRepository;
+use Augias\SaasBundle\Feature\Feature;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -52,7 +54,8 @@ final class PaymentSettings extends AbstractController
         private readonly PaymentMethodRepository $repository,
         private readonly EntityManagerInterface $entityManager,
         private readonly RequestStack $requestStack,
-        private readonly GatewayMetadataProvider $metadata
+        private readonly GatewayMetadataProvider $metadata,
+        private readonly FeatureGate $featureGate,
     ) {
     }
 
@@ -125,6 +128,12 @@ final class PaymentSettings extends AbstractController
     #[LiveAction]
     public function save(): Response
     {
+        // The settings page is gated, but a live action can be posted to
+        // without it: the gate belongs here too.
+        if (! $this->featureGate->isEnabled(Feature::OnlinePayments->value)) {
+            throw $this->createAccessDeniedException('Online payments are not available on the current plan.');
+        }
+
         $this->submitForm();
         $form = $this->getForm();
         // If form is not valid, redirect back to show validation errors

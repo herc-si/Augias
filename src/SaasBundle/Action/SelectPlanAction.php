@@ -14,9 +14,11 @@ declare(strict_types=1);
 namespace Augias\SaasBundle\Action;
 
 use Augias\CoreBundle\Company\CompanySelector;
+use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\CoreBundle\Telemetry\Telemetry;
 use Augias\CoreBundle\Telemetry\TelemetryEvent;
+use Augias\SaasBundle\Plan\FreePlanAllowance;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
 use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
@@ -35,21 +37,28 @@ final class SelectPlanAction extends AbstractController
         private readonly SubscriptionProviderInterface $subscriptionProvider,
         private readonly CompanyRepository $companyRepository,
         private readonly CompanySelector $companySelector,
+        private readonly FreePlanAllowance $freePlanAllowance,
         private readonly Telemetry $telemetry,
     ) {
     }
 
     public function __invoke(): Response
     {
-        $subscription = $this->getSubscription();
+        $company = $this->currentCompany();
+        $subscription = $this->getSubscription($company);
 
         if ($subscription instanceof Subscription && $subscription->getStatus() === SubscriptionStatus::ACTIVE) {
             return $this->redirectToRoute('billing_index');
         }
 
         $plans = $this->planRepository->findAllOrdered();
+        $freePlanTaken = $company instanceof Company && ! $this->freePlanAllowance->allows($company);
 
-        if ($plans === []) {
+        if ($freePlanTaken) {
+            $plans = $this->freePlanAllowance->plansFor($company, $plans);
+        }
+
+        if ($plans === [] && ! $freePlanTaken) {
             $this->addFlash('error', 'saas.flash.no_plans_available');
 
             return $this->redirectToRoute('_dashboard');
@@ -57,7 +66,9 @@ final class SelectPlanAction extends AbstractController
 
         // Straight to checkout when there is nothing to choose — but only for a
         // plan that is paid for. A lone free plan is shown, not checked out.
-        if (count($plans) === 1 && ! $plans[0]->isFree()) {
+        // Nor when Free was taken out: the subscription is still on it, so a
+        // checkout without a plan chosen here would be for Free.
+        if (count($plans) === 1 && ! $plans[0]->isFree() && ! $freePlanTaken) {
             return $this->redirectToRoute('saas_subscription_checkout');
         }
 
@@ -66,23 +77,19 @@ final class SelectPlanAction extends AbstractController
         return $this->render('@AugiasSaas/subscription/pricing.html.twig', [
             'plans' => $plans,
             'subscription' => $subscription,
+            'freePlanTaken' => $freePlanTaken,
         ]);
     }
 
-    private function getSubscription(): ?Subscription
+    private function getSubscription(?Company $company): ?Subscription
+    {
+        return $company instanceof Company ? $this->subscriptionProvider->getSubscriptionFor($company) : null;
+    }
+
+    private function currentCompany(): ?Company
     {
         $companyId = $this->companySelector->getCompany();
 
-        if (! $companyId instanceof Ulid) {
-            return null;
-        }
-
-        $company = $this->companyRepository->find($companyId);
-
-        if ($company === null) {
-            return null;
-        }
-
-        return $this->subscriptionProvider->getSubscriptionFor($company);
+        return $companyId instanceof Ulid ? $this->companyRepository->find($companyId) : null;
     }
 }

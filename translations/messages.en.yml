@@ -840,6 +840,8 @@ company:
         checkout_after_create: "After creating this company, you'll choose a plan and proceed to checkout."
         create_button: 'Create Company'
         currency_help: 'All invoices and payments will use this currency'
+        free_plan: 'This company starts on the free plan. You can change plans at any time.'
+        free_plan_taken: 'The free plan is limited to one company per account, and you already have one. Once this company is created, you will choose a paid plan for it.'
         month: month
         name_help: 'This will be displayed on your invoices and quotes'
         name_placeholder: 'e.g., Acme Corporation'
@@ -3189,6 +3191,7 @@ saas:
         downgrade_cancelled: 'Scheduled plan change cancelled.'
         downgrade_scheduled: 'Your plan will be downgraded at the end of the current billing period.'
         free_plan_active: 'Your free plan is now active.'
+        free_plan_taken: 'You already have a company on the free plan: this one needs a paid plan.'
         invalid_plan: 'The selected plan is invalid.'
         invalid_token: 'Invalid security token, please try again.'
         no_plans_available: 'No subscription plans are available.'
@@ -3273,6 +3276,8 @@ saas:
             rest_api_access: 'REST API'
             team_seats: 'Users'
             total_clients: 'Clients'
+        free_plan_taken: 'The free plan is limited to one company per account, and you already have one. Choose a paid plan for this company.'
+        free_plan_taken_none_on_sale: 'No paid plan is on sale yet. Write to us if you need a second company.'
         included: Included
         just_getting_started: 'Just getting started?'
         no_credit_card: 'No credit card required'

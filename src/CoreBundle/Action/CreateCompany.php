@@ -17,6 +17,7 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Form\Type\CompanyType;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\SaasBundle\Plan\DefaultPlanProvider;
+use Augias\SaasBundle\Plan\FreePlanAllowance;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\CompanyRole;
 use DateInterval;
@@ -44,6 +45,7 @@ final class CreateCompany extends AbstractController
         private readonly ToggleInterface $toggler,
         private readonly ?TrialManagerInterface $trialManager = null,
         private readonly ?DefaultPlanProvider $defaultPlanProvider = null,
+        private readonly ?FreePlanAllowance $freePlanAllowance = null,
     ) {
     }
 
@@ -72,9 +74,15 @@ final class CreateCompany extends AbstractController
         $userHasTrial = false;
         $planHasTrial = false;
         $trialDuration = null;
+        $planIsFree = false;
+        $freePlanTaken = false;
 
         if ($this->toggler->isActive('saas_enabled')) {
             $userHasTrial = $this->trialManager?->userHasTrial($user) ?? false;
+            $planIsFree = $this->defaultPlanProvider?->get()?->isFree() ?? false;
+            // One free company per account: a second one will have to pick a
+            // paid plan once created.
+            $freePlanTaken = $planIsFree && ($this->freePlanAllowance?->ownsFreeCompany($user) ?? false);
 
             // Only surface the default plan's price/trial when this is the
             // user's first company — additional companies route through the
@@ -103,6 +111,8 @@ final class CreateCompany extends AbstractController
                 'userHasTrial' => $userHasTrial,
                 'planHasTrial' => $planHasTrial,
                 'trialDuration' => $trialDuration,
+                'planIsFree' => $planIsFree,
+                'freePlanTaken' => $freePlanTaken,
             ]
         );
     }

@@ -16,6 +16,7 @@ namespace Augias\SaasBundle\EventSubscriber;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
+use Augias\SaasBundle\Plan\FreePlanAllowance;
 use Augias\SaasBundle\Service\TrialBanner;
 use Augias\SaasBundle\Service\TrialBannerResolver;
 use Psr\Clock\ClockInterface;
@@ -35,6 +36,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
+use function assert;
 use function in_array;
 
 /**
@@ -85,6 +87,7 @@ final readonly class RequestListener implements EventSubscriberInterface
         private UrlGeneratorInterface $urlGenerator,
         private ClockInterface $clock,
         private TrialBannerResolver $trialBannerResolver,
+        private FreePlanAllowance $freePlanAllowance,
         private TranslatorInterface $translator,
         #[Autowire(env: 'AUGIAS_SAAS_ONBOARDING_COUPON_CODE')]
         private string $onboardingCouponCode = '',
@@ -111,11 +114,15 @@ final readonly class RequestListener implements EventSubscriberInterface
 
         switch ($subscription->getStatus()) {
             case SubscriptionStatus::PENDING:
+                $company = $subscription->getSubscriber();
+                assert($company instanceof Company);
+
                 $event->setResponse(
                     new Response(
                         $this->twig->render('@AugiasSaas/subscription/pending.html.twig', [
                             'subscription' => $subscription,
-                            'plans' => $this->planRepository->findAllOrdered(),
+                            'plans' => $this->freePlanAllowance->plansFor($company, $this->planRepository->findAllOrdered()),
+                            'freePlanTaken' => ! $this->freePlanAllowance->allows($company),
                         ]),
                     )
                 );

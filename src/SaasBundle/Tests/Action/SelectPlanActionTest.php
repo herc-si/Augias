@@ -20,6 +20,7 @@ use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\CoreBundle\Telemetry\Telemetry;
 use Augias\CoreBundle\Tests\Telemetry\CollectingMessageBus;
 use Augias\SaasBundle\Action\SelectPlanAction;
+use Augias\SaasBundle\Plan\FreePlanAllowance;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -60,6 +61,7 @@ final class SelectPlanActionTest extends TestCase
             $subscriptionProvider,
             $companyRepository,
             $companySelector,
+            new FreePlanAllowance($subscriptionProvider),
             $this->makeTelemetry($bus),
         );
 
@@ -88,6 +90,7 @@ final class SelectPlanActionTest extends TestCase
             $this->createStub(SubscriptionProviderInterface::class),
             $this->createStub(CompanyRepository::class),
             new CompanySelector($this->createStub(ManagerRegistry::class)),
+            new FreePlanAllowance($this->createStub(SubscriptionProviderInterface::class)),
             $this->makeTelemetry(new CollectingMessageBus()),
         );
 

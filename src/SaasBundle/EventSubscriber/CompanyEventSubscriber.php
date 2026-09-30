@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\EventSubscriber;
 
+use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Event\CompanyCreatedEvent;
 use Augias\SaasBundle\Plan\DefaultPlanProvider;
+use Augias\SaasBundle\Plan\FreePlanAllowance;
 use Augias\UserBundle\Entity\User;
 use DateInterval;
 use Doctrine\ORM\EntityManagerInterface;
@@ -37,6 +39,8 @@ final class CompanyEventSubscriber
 {
     private ?Subscription $subscription = null;
 
+    private ?Company $company = null;
+
     public function __construct(
         private readonly DefaultPlanProvider $defaultPlanProvider,
         private readonly SubscriptionManager $subscriptionManager,
@@ -44,6 +48,7 @@ final class CompanyEventSubscriber
         private readonly TrialManagerInterface $trialManager,
         private readonly EntityManagerInterface $entityManager,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly FreePlanAllowance $freePlanAllowance,
     ) {
     }
 
@@ -56,6 +61,7 @@ final class CompanyEventSubscriber
                 $event->company,
                 $plan,
             );
+            $this->company = $event->company;
         }
     }
 
@@ -72,7 +78,14 @@ final class CompanyEventSubscriber
             // put through a checkout for nothing (29/09/2026, test instance:
             // "could not create the payment session" right after sign-up).
             if ($plan->isFree()) {
-                $this->subscriptionManager->activate($this->subscription);
+                // One free company per account: a second one stays pending
+                // and goes to the plan picker, where Free is not offered.
+                if ($this->company instanceof Company && $this->freePlanAllowance->allows($this->company)) {
+                    $this->subscriptionManager->activate($this->subscription);
+                } else {
+                    $event->setResponse($this->createPlanSelectionRedirect());
+                }
+
                 $this->subscription = null;
 
                 return;

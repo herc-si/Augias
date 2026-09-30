@@ -87,7 +87,26 @@
 
                                 {# Pricing Information #}
                                 {% toggle 'saas_enabled' %}
-                                    {% if not userHasTrial and planHasTrial %}
+                                    {% if freePlanTaken|default(false) %}
+                                        <div class="alert alert-warning d-flex align-items-start" role="alert">
+                                            <div class="me-3">
+                                                {{ ux_icon('tabler:credit-card', {width: 24, height: 24}) }}
+                                            </div>
+                                            <div class="flex-fill">
+                                                <div class="alert-title fw-semibold">{{ 'company.create.payment_required_title'|trans }}</div>
+                                                <div class="text-secondary">{{ 'company.create.free_plan_taken'|trans }}</div>
+                                            </div>
+                                        </div>
+                                    {% elseif planIsFree|default(false) %}
+                                        <div class="alert alert-info d-flex align-items-start" role="alert">
+                                            <div class="me-3">
+                                                {{ ux_icon('tabler:gift', {width: 24, height: 24}) }}
+                                            </div>
+                                            <div class="flex-fill">
+                                                <div class="text-secondary">{{ 'company.create.free_plan'|trans }}</div>
+                                            </div>
+                                        </div>
+                                    {% elseif not userHasTrial and planHasTrial %}
                                         <div class="alert alert-info d-flex align-items-start" role="alert">
                                             <div class="me-3">
                                                 {{ ux_icon('tabler:gift', {width: 24, height: 24}) }}
