@@ -70,7 +70,7 @@ final class ChangePasswordTest extends KernelTestCase
             $passwordViolations[] = $violation->getMessage();
         }
 
-        self::assertContains('Your password is too weak. Please use a stronger password with a mix of letters, numbers, and symbols.', $passwordViolations);
+        self::assertContains('This password is too easy to guess. Make it longer: 16 characters or more mixing upper case, lower case, digits or symbols, or a phrase of a few words.', $passwordViolations);
     }
 
     public function testPasswordCannotBeBlank(): void
@@ -134,7 +134,7 @@ final class ChangePasswordTest extends KernelTestCase
         $hasCompromisedOrWeakError = false;
         foreach ($violations as $violation) {
             $message = (string) $violation->getMessage();
-            if (str_contains($message, 'leaked in a data breach') || str_contains($message, 'too weak')) {
+            if (str_contains($message, 'leaked in a data breach') || str_contains($message, 'too easy to guess')) {
                 $hasCompromisedOrWeakError = true;
                 break;
             }

@@ -3254,6 +3254,21 @@ saas:
         choose: 'Choose plan'
         continue_free: 'Continue with Free'
         current: 'Current plan'
+        feature:
+            automated_reminders: 'Automated reminders'
+            custom_branding: 'Your branding on documents'
+            custom_domain: 'Custom domain'
+            custom_fields: 'Custom fields'
+            custom_templates: 'Document templates'
+            invoices_per_month: 'Invoices per month'
+            mcp_access: 'Access for AI agents (MCP)'
+            multi_currency: 'Multiple currencies'
+            online_payments: 'Online payments'
+            quotes: 'Quotes'
+            recurring_invoices: 'Recurring invoices'
+            rest_api_access: 'REST API'
+            team_seats: 'Users'
+            total_clients: 'Clients'
         included: Included
         just_getting_started: 'Just getting started?'
         no_credit_card: 'No credit card required'
@@ -3261,6 +3276,7 @@ saas:
         per_month: /month
         recommended: Recommended
         unlimited: Unlimited
+        value_separator: ':'
         your_current_plan: 'Your current plan'
     pricing:
         subtitle: 'Pick the plan that fits your needs. You can change it later.'
@@ -3388,6 +3404,7 @@ security:
             google: 'Sign up with Google'
             login: 'Already have an account?'
             signin: 'Sign in'
+        password_hint: 'At least 12 characters mixing upper case, lower case and digits, or a phrase of a few words.'
         password: Password
         password_confirm: 'Confirm Password'
         placeholders:
@@ -3478,6 +3495,7 @@ security:
     verify_email:
         flash:
             invalid: 'The email verification link is invalid.'
+            no_account: 'This verification link is for an account that no longer exists. Use the email from your latest sign-up.'
             success: 'Your email address has been verified.'
 settings:
     address:

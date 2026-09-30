@@ -47,6 +47,7 @@ email:
         button: 'Confirmer l''adresse e-mail'
         message: 'Veuillez confirmer votre adresse e-mail en cliquant sur le bouton ci-dessous. Cela nous permet de garantir la sécurité de votre compte.'
         security: "Si vous n'avez pas créé de compte, vous pouvez ignorer cet e-mail en toute sécurité."
+        subject: 'Confirmez votre adresse e-mail'
         title: 'Veuillez confirmer votre adresse e-mail'
 invitation:
     accept: 'Accepter l''invitation'
@@ -62,7 +63,9 @@ invitation:
         instructions: 'Cliquez sur le bouton ci-dessous pour accepter votre invitation avant qu''elle n''expire.'
         message: 'Votre invitation à rejoindre %company% sur Augias expirera dans 2 jours.'
         title: 'Votre invitation à rejoindre %company% est sur le point d''expirer'
+        subject: 'Votre invitation à rejoindre %company% va expirer'
     title: 'Invitation à rejoindre %company%'
+    subject: 'Invitation à rejoindre %company%'
 invoice:
     amount_payable: 'Montant à payer'
     balance: 'Solde dû'
