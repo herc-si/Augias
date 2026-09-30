@@ -21,11 +21,11 @@ use Carbon\Carbon;
 use Exception;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\Translation\IdentityTranslator;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\ErrorHandler\BufferingLogger;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Translation\IdentityTranslator;
 use SymfonyCasts\Bundle\VerifyEmail\Model\VerifyEmailSignatureComponents;
 use SymfonyCasts\Bundle\VerifyEmail\VerifyEmailHelperInterface;
 
