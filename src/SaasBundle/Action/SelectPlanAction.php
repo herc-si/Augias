@@ -19,6 +19,7 @@ use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\CoreBundle\Telemetry\Telemetry;
 use Augias\CoreBundle\Telemetry\TelemetryEvent;
 use Augias\SaasBundle\Plan\FreePlanAllowance;
+use Augias\UserBundle\Entity\User;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
 use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
@@ -78,6 +79,7 @@ final class SelectPlanAction extends AbstractController
             'plans' => $plans,
             'subscription' => $subscription,
             'freePlanTaken' => $freePlanTaken,
+            'canAbandon' => $this->canAbandon($company, $subscription),
         ]);
     }
 
@@ -91,5 +93,16 @@ final class SelectPlanAction extends AbstractController
         $companyId = $this->companySelector->getCompany();
 
         return $companyId instanceof Ulid ? $this->companyRepository->find($companyId) : null;
+    }
+
+    private function canAbandon(?Company $company, ?Subscription $subscription): bool
+    {
+        if (! $company instanceof Company || SubscriptionStatus::PENDING !== $subscription?->getStatus()) {
+            return false;
+        }
+
+        $user = $this->getUser();
+
+        return $user instanceof User && AbandonCompanyAction::canBeAbandoned($company, $user, $subscription);
     }
 }

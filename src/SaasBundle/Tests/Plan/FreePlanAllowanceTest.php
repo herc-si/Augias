@@ -31,6 +31,8 @@ use Symfony\Component\Uid\Ulid;
 #[CoversClass(FreePlanAllowance::class)]
 final class FreePlanAllowanceTest extends TestCase
 {
+    use BuildsFreePlanAllowance;
+
     private Plan $free;
 
     private Plan $solo;
@@ -110,7 +112,7 @@ final class FreePlanAllowanceTest extends TestCase
                 : null,
         );
 
-        return new FreePlanAllowance($provider);
+        return $this->freePlanAllowance($provider);
     }
 
     private function company(User $owner): Company

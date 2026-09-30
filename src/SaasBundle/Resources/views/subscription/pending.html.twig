@@ -77,6 +77,10 @@
                 </twig:Ui:Alert>
             {% endif %}
 
+            {% if canAbandon|default(false) %}
+                {% include '@AugiasSaas/subscription/_abandon_company.html.twig' %}
+            {% endif %}
+
             {# Help #}
             <p class="text-subtle small mt-4 mb-0">
                 {{ 'saas.pending.need_help'|trans }}

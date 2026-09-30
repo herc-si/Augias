@@ -69,4 +69,42 @@ class MembershipRepository extends EntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * The owners of a company. Read under the company filter, this only
+     * answers for the selected company: see FreePlanAllowance.
+     *
+     * @return list<Membership>
+     */
+    public function ownersOf(Company $company): array
+    {
+        return $this->createQueryBuilder('m')
+            ->addSelect('u')
+            ->innerJoin('m.user', 'u')
+            ->andWhere('m.company = :company')
+            ->andWhere('m.role = :owner')
+            ->setParameter('company', $company->getId(), UlidType::NAME)
+            ->setParameter('owner', CompanyRole::Owner->value)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * The companies a user owns. Read under the company filter, this only
+     * answers with the selected company: see FreePlanAllowance.
+     *
+     * @return list<Membership>
+     */
+    public function ownedBy(User $user): array
+    {
+        return $this->createQueryBuilder('m')
+            ->addSelect('c')
+            ->innerJoin('m.company', 'c')
+            ->andWhere('m.user = :user')
+            ->andWhere('m.role = :owner')
+            ->setParameter('user', $user->getId(), UlidType::NAME)
+            ->setParameter('owner', CompanyRole::Owner->value)
+            ->getQuery()
+            ->getResult();
+    }
 }

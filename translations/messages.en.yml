@@ -842,6 +842,7 @@ company:
         currency_help: 'All invoices and payments will use this currency'
         free_plan: 'This company starts on the free plan. You can change plans at any time.'
         free_plan_taken: 'The free plan is limited to one company per account, and you already have one. Once this company is created, you will choose a paid plan for it.'
+        free_plan_taken_none_on_sale: 'The free plan is limited to one company per account, and you already have one. No paid plan is on sale yet: write to us if you need a second company.'
         month: month
         name_help: 'This will be displayed on your invoices and quotes'
         name_placeholder: 'e.g., Acme Corporation'
@@ -3146,6 +3147,10 @@ quotes: Quotes
 rate: Rate
 required: Required
 saas:
+    abandon:
+        action: 'Abandon this company'
+        confirm: 'Delete this company? It was never activated; nothing else is touched.'
+        help: 'Decided not to create this company after all? It was never activated and can be deleted.'
     action:
         back: Back
         contact_support: 'Contact Support'
@@ -3186,10 +3191,12 @@ saas:
         upgrade_required: 'Upgrade required'
         upgrade_to: 'Upgrade to %plan%'
     flash:
+        abandon_refused: 'This company cannot be abandoned: only its owner can, and only before it is activated.'
         checkout_failed: 'Unable to create checkout session. Please try again later.'
         downgrade_cancel_failed: 'Could not cancel the scheduled change: %error%'
         downgrade_cancelled: 'Scheduled plan change cancelled.'
         downgrade_scheduled: 'Your plan will be downgraded at the end of the current billing period.'
+        company_abandoned: 'The company "%name%" was deleted.'
         free_plan_active: 'Your free plan is now active.'
         free_plan_taken: 'You already have a company on the free plan: this one needs a paid plan.'
         invalid_plan: 'The selected plan is invalid.'

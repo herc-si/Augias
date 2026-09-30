@@ -13,13 +13,17 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\Plan;
 
+use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
+use Augias\UserBundle\Entity\Membership;
 use Augias\UserBundle\Entity\User;
-use Augias\UserBundle\Enum\CompanyRole;
+use Augias\UserBundle\Repository\MembershipRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
 use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionProviderInterface;
+use Symfony\Component\Uid\Ulid;
 use function array_filter;
 use function array_values;
 
@@ -29,19 +33,27 @@ use function array_values;
  * as it liked (test instance, 30/09/2026). A company may go on a free plan
  * only if none of its owners already owns another company active on one.
  *
+ * Memberships are read by query, with the company filter off. They carry a
+ * company, so a collection loaded under the filter holds the selected company
+ * only: the answer would depend on when Doctrine happened to load it — for
+ * the signed-in user, before the filter; for another owner, after.
+ *
  * @see \Augias\SaasBundle\Tests\Plan\FreePlanAllowanceTest
  */
 final readonly class FreePlanAllowance
 {
     public function __construct(
         private SubscriptionProviderInterface $subscriptionProvider,
+        private MembershipRepository $memberships,
+        private EntityManagerInterface $entityManager,
+        private CompanySelector $companySelector,
     ) {
     }
 
     public function allows(Company $company): bool
     {
-        foreach ($company->getMemberships() as $membership) {
-            if (CompanyRole::Owner === $membership->getRole() && $this->ownsFreeCompany($membership->getUser(), $company)) {
+        foreach ($this->acrossCompanies(fn (): array => $this->memberships->ownersOf($company)) as $membership) {
+            if ($this->ownsFreeCompany($membership->getUser(), $company)) {
                 return false;
             }
         }
@@ -56,12 +68,14 @@ final readonly class FreePlanAllowance
      */
     public function ownsFreeCompany(User $user, ?Company $except = null): bool
     {
-        foreach ($user->getMemberships() as $membership) {
-            if (CompanyRole::Owner !== $membership->getRole() || $membership->getCompany() === $except) {
+        foreach ($this->acrossCompanies(fn (): array => $this->memberships->ownedBy($user)) as $membership) {
+            $owned = $membership->getCompany();
+
+            if ($except instanceof Company && $owned->getId()->equals($except->getId())) {
                 continue;
             }
 
-            if ($this->isActiveOnFreePlan($membership->getCompany())) {
+            if ($this->isActiveOnFreePlan($owned)) {
                 return true;
             }
         }
@@ -93,5 +107,36 @@ final readonly class FreePlanAllowance
         return $subscription instanceof Subscription
             && SubscriptionStatus::ACTIVE === $subscription->getStatus()
             && $subscription->getPlan()->isFree();
+    }
+
+    /**
+     * @param callable(): list<Membership> $read
+     *
+     * @return list<Membership>
+     */
+    private function acrossCompanies(callable $read): array
+    {
+        $filters = $this->entityManager->getFilters();
+        $wasEnabled = $filters->isEnabled('company');
+
+        if (! $wasEnabled) {
+            return $read();
+        }
+
+        $selected = $this->companySelector->getCompany();
+        $filters->disable('company');
+
+        try {
+            return $read();
+        } finally {
+            // Through the selector, not $filters->enable(): Doctrine re-enables
+            // a filter without its parameters, and the company filter without
+            // its company filters nothing for the rest of the request.
+            if ($selected instanceof Ulid) {
+                $this->companySelector->switchCompany($selected);
+            } else {
+                $filters->enable('company');
+            }
+        }
     }
 }
