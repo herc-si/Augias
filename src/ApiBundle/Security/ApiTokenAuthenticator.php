@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\ApiBundle\Security;
 
+use Augias\ApiBundle\Event\Listener\RecordApiResponseStatusListener;
 use Augias\ApiBundle\Security\Provider\ApiTokenUserProvider;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Company\ResolvedHost;
@@ -74,6 +75,7 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
         $repository = $this->registry->getRepository(ApiTokenHistory::class);
 
         $repository->addHistory($history, $apiToken);
+        $request->attributes->set(RecordApiResponseStatusListener::REQUEST_ATTRIBUTE, $history);
 
         $apiTokenEntity = $this->apiTokenRepository->findOneByPlaintext($apiToken);
 
