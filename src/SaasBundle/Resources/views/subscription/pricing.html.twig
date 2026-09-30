@@ -30,6 +30,10 @@
                     {% include '@AugiasSaas/subscription/_plans_grid.html.twig' with { plans: plans } only %}
                 </div>
             {% endif %}
+
+            {% if canAbandon|default(false) %}
+                {% include '@AugiasSaas/subscription/_abandon_company.html.twig' %}
+            {% endif %}
         </div>
     </div>
 {% endblock content %}

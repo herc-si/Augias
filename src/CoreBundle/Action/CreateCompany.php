@@ -26,6 +26,7 @@ use Money\Formatter\IntlMoneyFormatter;
 use Money\Money;
 use NumberFormatter;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
+use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
 use SolidWorx\Platform\SaasBundle\Trial\TrialManagerInterface;
 use SolidWorx\Toggler\ToggleInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -46,6 +47,7 @@ final class CreateCompany extends AbstractController
         private readonly ?TrialManagerInterface $trialManager = null,
         private readonly ?DefaultPlanProvider $defaultPlanProvider = null,
         private readonly ?FreePlanAllowance $freePlanAllowance = null,
+        private readonly ?PlanRepositoryInterface $planRepository = null,
     ) {
     }
 
@@ -54,10 +56,14 @@ final class CreateCompany extends AbstractController
         $user = $this->security->getUser();
         assert($user instanceof User);
 
+        // A second company that could neither be free nor paid for would only
+        // be left pending in the company list: it is not created at all.
+        $creationBlocked = $this->toggler->isActive('saas_enabled') && $this->hasNoPlanToOffer($user);
+
         $form = $this->createForm(CompanyType::class);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
+        if (! $creationBlocked && $form->isSubmitted() && $form->isValid()) {
             $company = $form->getData();
             assert($company instanceof Company);
 
@@ -113,7 +119,23 @@ final class CreateCompany extends AbstractController
                 'trialDuration' => $trialDuration,
                 'planIsFree' => $planIsFree,
                 'freePlanTaken' => $freePlanTaken,
+                'creationBlocked' => $creationBlocked,
             ]
         );
+    }
+
+    private function hasNoPlanToOffer(User $user): bool
+    {
+        if (! ($this->defaultPlanProvider?->get()?->isFree() ?? false) || ! ($this->freePlanAllowance?->ownsFreeCompany($user) ?? false)) {
+            return false;
+        }
+
+        foreach ($this->planRepository?->findAllOrdered() ?? [] as $plan) {
+            if (! $plan->isFree()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

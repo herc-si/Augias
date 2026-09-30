@@ -16,9 +16,11 @@ namespace Augias\SaasBundle\EventSubscriber;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
+use Augias\SaasBundle\Action\AbandonCompanyAction;
 use Augias\SaasBundle\Plan\FreePlanAllowance;
 use Augias\SaasBundle\Service\TrialBanner;
 use Augias\SaasBundle\Service\TrialBannerResolver;
+use Augias\UserBundle\Entity\User;
 use Psr\Clock\ClockInterface;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
@@ -55,6 +57,7 @@ final readonly class RequestListener implements EventSubscriberInterface
         'saas_subscription_change',
         'saas_subscription_change_confirm',
         'saas_subscription_cancel_downgrade',
+        'saas_company_abandon',
         'saas_payment_success',
 
         // Debug routes
@@ -123,6 +126,7 @@ final readonly class RequestListener implements EventSubscriberInterface
                             'subscription' => $subscription,
                             'plans' => $this->freePlanAllowance->plansFor($company, $this->planRepository->findAllOrdered()),
                             'freePlanTaken' => ! $this->freePlanAllowance->allows($company),
+                            'canAbandon' => $this->canAbandon($company, $subscription),
                         ]),
                     )
                 );
@@ -214,6 +218,13 @@ final readonly class RequestListener implements EventSubscriberInterface
     private function isExport(Request $request): bool
     {
         return in_array($request->attributes->get('_route'), self::EXPORT_ROUTES, true);
+    }
+
+    private function canAbandon(Company $company, Subscription $subscription): bool
+    {
+        $user = $this->security->getUser();
+
+        return $user instanceof User && AbandonCompanyAction::canBeAbandoned($company, $user, $subscription);
     }
 
     private function getSubscription(Request $request): ?Subscription

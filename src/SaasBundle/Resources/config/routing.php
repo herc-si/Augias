@@ -11,6 +11,7 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
+use Augias\SaasBundle\Action\AbandonCompanyAction;
 use Augias\SaasBundle\Action\CancelDowngradeAction;
 use Augias\SaasBundle\Action\ChangePlanAction;
 use Augias\SaasBundle\Action\ChoosePlanAction;
@@ -46,6 +47,10 @@ return static function (RoutingConfigurator $routingConfigurator): void {
 
     $routingConfigurator->add('saas_subscription_change_confirm', '/subscription/change/confirm')
         ->controller(ConfirmPlanChangeAction::class)
+        ->methods(['POST']);
+
+    $routingConfigurator->add('saas_company_abandon', '/subscription/abandon')
+        ->controller(AbandonCompanyAction::class)
         ->methods(['POST']);
 
     $routingConfigurator->add('saas_subscription_cancel_downgrade', '/subscription/cancel-downgrade')

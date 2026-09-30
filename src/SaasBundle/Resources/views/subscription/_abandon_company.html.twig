@@ -1,0 +1,22 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #
+ # Lets the owner take back a company whose subscription never started, so it
+ # does not linger in the company list. Shown only when AbandonCompanyAction
+ # would accept it.
+ #}
+
+<form method="post" action="{{ path('saas_company_abandon') }}" class="mt-4"
+      onsubmit="return confirm('{{ 'saas.abandon.confirm'|trans|e('js') }}');">
+    <input type="hidden" name="_token" value="{{ csrf_token('abandon_company') }}">
+    <p class="text-secondary small mb-2">{{ 'saas.abandon.help'|trans }}</p>
+    <button type="submit" class="btn btn-outline-danger">
+        {{ ux_icon('tabler:trash', {width: 18, height: 18}) }}
+        {{ 'saas.abandon.action'|trans }}
+    </button>
+</form>

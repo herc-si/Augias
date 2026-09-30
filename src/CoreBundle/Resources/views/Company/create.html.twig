@@ -87,7 +87,19 @@
 
                                 {# Pricing Information #}
                                 {% toggle 'saas_enabled' %}
-                                    {% if freePlanTaken|default(false) %}
+                                    {% if creationBlocked|default(false) %}
+                                        <div class="alert alert-warning d-flex align-items-start" role="alert">
+                                            <div class="me-3">
+                                                {{ ux_icon('tabler:building', {width: 24, height: 24}) }}
+                                            </div>
+                                            <div class="flex-fill">
+                                                <div class="text-secondary">
+                                                    {{ 'company.create.free_plan_taken_none_on_sale'|trans }}
+                                                    <a href="https://herc-si.fr/contact" target="_blank" rel="external noreferrer noopener" class="alert-link">{{ 'saas.action.contact_support_short'|trans }}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% elseif freePlanTaken|default(false) %}
                                         <div class="alert alert-warning d-flex align-items-start" role="alert">
                                             <div class="me-3">
                                                 {{ ux_icon('tabler:credit-card', {width: 24, height: 24}) }}
@@ -165,7 +177,7 @@
                             <twig:block name="footer">
                                 <div class="card-footer bg-transparent p-4">
                                     <div class="d-flex justify-content-end">
-                                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                                        <button type="submit" class="btn btn-primary btn-lg px-5"{% if creationBlocked|default(false) %} disabled{% endif %}>
                                             {{ ux_icon('tabler:rocket', {width: 18, height: 18, 'aria-hidden': 'true'}) }} {{ 'company.create.create_button'|trans }}
                                         </button>
                                     </div>

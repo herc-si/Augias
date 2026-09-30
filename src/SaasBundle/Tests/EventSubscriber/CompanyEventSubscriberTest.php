@@ -17,7 +17,7 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Event\CompanyCreatedEvent;
 use Augias\SaasBundle\EventSubscriber\CompanyEventSubscriber;
 use Augias\SaasBundle\Plan\DefaultPlanProvider;
-use Augias\SaasBundle\Plan\FreePlanAllowance;
+use Augias\SaasBundle\Tests\Plan\BuildsFreePlanAllowance;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\CompanyRole;
 use Doctrine\ORM\EntityManagerInterface;
@@ -43,6 +43,8 @@ use Symfony\Component\Uid\Ulid;
 #[CoversClass(CompanyEventSubscriber::class)]
 final class CompanyEventSubscriberTest extends TestCase
 {
+    use BuildsFreePlanAllowance;
+
     /**
      * Sign-up on the test instance (29/09/2026): Free as the default plan, no
      * trial, so the new company was sent to the plan page, which checked it
@@ -161,7 +163,7 @@ final class CompanyEventSubscriberTest extends TestCase
             $trials,
             $this->createStub(EntityManagerInterface::class),
             $router,
-            new FreePlanAllowance($manager),
+            $this->freePlanAllowance($manager),
         );
     }
 }

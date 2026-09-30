@@ -18,8 +18,8 @@ use Augias\CoreBundle\Intl\LocalisedDate;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\SaasBundle\EventSubscriber\RequestListener;
-use Augias\SaasBundle\Plan\FreePlanAllowance;
 use Augias\SaasBundle\Service\TrialBannerResolver;
+use Augias\SaasBundle\Tests\Plan\BuildsFreePlanAllowance;
 use Augias\Test\SaasKernel;
 use Augias\UserBundle\Entity\User;
 use Carbon\CarbonImmutable;
@@ -53,6 +53,8 @@ use Twig\Environment;
 #[Group('saas-kernel')]
 final class RequestListenerTest extends KernelTestCase
 {
+    use BuildsFreePlanAllowance;
+
     use M\Adapter\Phpunit\MockeryPHPUnitIntegration;
     use EnsureApplicationInstalled;
 
@@ -537,7 +539,7 @@ final class RequestListenerTest extends KernelTestCase
             $urlGenerator,
             $clock,
             $trialBannerResolver,
-            new FreePlanAllowance($subscriptionManager),
+            $this->freePlanAllowance($subscriptionManager),
             $translator,
             $couponCode,
             $couponPercent,

@@ -842,6 +842,7 @@ company:
         currency_help: 'Toutes les factures et paiements utiliseront cette devise'
         free_plan: 'Cette société démarre sur le plan gratuit. Vous pourrez changer de plan à tout moment.'
         free_plan_taken: 'Le plan gratuit est limité à une société par compte, et vous en avez déjà une. Après avoir créé celle-ci, vous choisirez un plan payant.'
+        free_plan_taken_none_on_sale: 'Le plan gratuit est limité à une société par compte, et vous en avez déjà une. Aucun plan payant n''est encore en vente : écrivez-nous si vous avez besoin d''une deuxième société.'
         month: mois
         name_help: 'Ceci apparaîtra sur vos factures et devis'
         name_placeholder: 'ex. Acme Corporation'
@@ -3146,6 +3147,10 @@ quotes: Devis
 rate: Taux
 required: Obligatoire
 saas:
+    abandon:
+        action: 'Abandonner cette société'
+        confirm: 'Supprimer cette société ? Elle n''a jamais été activée ; rien d''autre n''est touché.'
+        help: 'Vous ne souhaitez finalement pas créer cette société ? Elle n''a jamais été activée et peut être supprimée.'
     action:
         back: Retour
         contact_support: 'Contacter le support'
@@ -3186,10 +3191,12 @@ saas:
         upgrade_required: 'Mise à niveau requise'
         upgrade_to: 'Passer au plan %plan%'
     flash:
+        abandon_refused: 'Cette société ne peut pas être abandonnée : seul son propriétaire le peut, et seulement avant son activation.'
         checkout_failed: 'Impossible de créer la session de paiement. Veuillez réessayer plus tard.'
         downgrade_cancel_failed: 'Impossible d''annuler le changement programmé : %error%'
         downgrade_cancelled: 'Changement de plan programmé annulé.'
         downgrade_scheduled: 'Votre plan sera rétrogradé à la fin de la période de facturation en cours.'
+        company_abandoned: 'La société « %name% » a été supprimée.'
         free_plan_active: 'Votre plan gratuit est maintenant actif.'
         free_plan_taken: 'Vous avez déjà une entreprise sur le plan gratuit : celle-ci doit choisir un plan payant.'
         invalid_plan: 'Le plan sélectionné n''est pas valide.'
