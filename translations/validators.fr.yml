@@ -101,7 +101,8 @@ user:
         min_length_long: 'Votre mot de passe doit contenir au moins {{ limit }} caractères'
         mismatch: 'Les mots de passe ne correspondent pas.'
         not_blank: 'Veuillez saisir un mot de passe'
-        weak: 'Votre mot de passe est trop faible. Veuillez utiliser un mot de passe plus robuste combinant lettres, chiffres et symboles.'
+        weak: 'Mot de passe trop facile à deviner. Allongez-le : 12 caractères ou plus en mêlant majuscules, minuscules, chiffres ou symboles, ou une phrase de quelques mots.'
+        weak_stronger: 'Mot de passe trop facile à deviner. Allongez-le : 16 caractères ou plus en mêlant majuscules, minuscules, chiffres ou symboles, ou une phrase de quelques mots.'
     register:
         accept_terms: 'Vous devez accepter les conditions générales pour vous inscrire'
     turnstile:

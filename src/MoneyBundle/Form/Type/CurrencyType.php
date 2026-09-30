@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace Augias\MoneyBundle\Form\Type;
 
+use Augias\MoneyBundle\Currency\CurrencyPolicy;
 use Augias\MoneyBundle\Currency\SupportedCurrencies;
 use Generator;
 use Override;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Intl\Currencies;
+use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
@@ -33,19 +35,25 @@ class CurrencyType extends AbstractType
         // would otherwise have to know about it. Autowiring still injects the
         // service.
         private readonly SupportedCurrencies $supportedCurrencies = new SupportedCurrencies(),
+        private readonly ?CurrencyPolicy $policy = null,
     ) {
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'choices' => iterator_to_array($this->getCurrencyChoices()),
+            // Narrowed to the currencies this deployment sells in (CurrencyPolicy).
+            // A form that records what someone else bills in — a supplier's
+            // bill — passes false and offers them all.
+            'restricted' => true,
+            'choices' => fn (Options $options): array => iterator_to_array($this->getCurrencyChoices($options['restricted'])),
             // Choice labels are currency names from Symfony's Intl component,
             // already localized via Currencies::getNames($this->locale) below —
             // routing them through the app's own translator too would just
             // look up the (already-translated) name as an id nothing defines.
             'choice_translation_domain' => false,
         ]);
+        $resolver->setAllowedTypes('restricted', 'bool');
     }
 
     #[Override]
@@ -57,11 +65,12 @@ class CurrencyType extends AbstractType
     /**
      * @return Generator<string, string>
      */
-    private function getCurrencyChoices(): Generator
+    private function getCurrencyChoices(bool $restricted): Generator
     {
         $currencyNames = Currencies::getNames($this->locale);
+        $codes = $restricted && $this->policy instanceof CurrencyPolicy ? $this->policy->offeredCodes() : $this->supportedCurrencies->codes();
 
-        foreach ($this->supportedCurrencies->codes() as $code) {
+        foreach ($codes as $code) {
             yield $currencyNames[$code] => $code;
         }
     }

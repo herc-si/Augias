@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\UserBundle\Onboarding\Action;
 
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\MoneyBundle\Currency\CurrencyPolicy;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Onboarding\DTO\OnboardingData;
 use Augias\UserBundle\Onboarding\Form\Type\OnboardingType;
@@ -30,6 +31,7 @@ final class Onboarding extends AbstractController
 {
     public function __construct(
         private readonly OnboardingManager $onboardingManager,
+        private readonly CurrencyPolicy $currencies,
     ) {
     }
 
@@ -38,8 +40,14 @@ final class Onboarding extends AbstractController
         /** @var User $user */
         $user = $this->getUser();
 
-        // If already completed, redirect to dashboard
+        // If already completed, redirect to dashboard — which is where "Go to
+        // Dashboard" on the last page leads, the company having been created
+        // on arrival there.
         if ($this->onboardingManager->isOnboardingComplete($user)) {
+            if ($request->isMethod('POST')) {
+                $this->addFlash('success', 'onboarding.flash.onboarding_complete');
+            }
+
             return $this->redirectToRoute('_dashboard');
         }
 
@@ -51,7 +59,10 @@ final class Onboarding extends AbstractController
         }
 
         // Create and handle form
-        $form = $this->createForm(OnboardingType::class, new OnboardingData())
+        $data = new OnboardingData();
+        $data->companyCurrency = $this->currencies->defaultCode();
+
+        $form = $this->createForm(OnboardingType::class, $data)
             ->handleRequest($request);
 
         assert($form instanceof FormFlowInterface);
@@ -97,16 +108,42 @@ final class Onboarding extends AbstractController
             }
         }
 
+        // Built before the check below: a Skip only moves the cursor when the
+        // step form is built.
+        $stepForm = $form->getStepForm();
+        $cursor = $form->getCursor();
+
+        // The last page offers links out — add a client, set up payments — so
+        // it must be true when it says "all set". The company used to be
+        // created only by its Finish button: a link followed first left an
+        // account with no company, sent to create one (test instance,
+        // 29/09/2026).
+        $completedOnArrival = $form->isSubmitted() && $cursor->isLastStep();
+
+        if ($completedOnArrival) {
+            $arrived = $form->getData();
+            assert($arrived instanceof OnboardingData);
+
+            $this->onboardingManager->completeOnboarding($user, $arrived);
+        }
+
         $formData = $form->getData();
         assert($formData instanceof OnboardingData);
 
         // Render current step
-        return $this->render('@AugiasUser/Onboarding/onboarding.html.twig', [
-            'form' => $form->getStepForm(),
-            'currentStep' => $form->getCursor()->getCurrentStep(),
+        $response = $this->render('@AugiasUser/Onboarding/onboarding.html.twig', [
+            'form' => $stepForm,
+            'currentStep' => $cursor->getCurrentStep(),
             'progress' => $this->calculateProgress($form),
             'hasClient' => $formData->clientName !== null && $formData->clientName !== '',
         ]);
+
+        // Rendered first: the page still reads the flow's cursor.
+        if ($completedOnArrival) {
+            $form->reset();
+        }
+
+        return $response;
     }
 
     /**
