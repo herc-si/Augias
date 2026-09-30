@@ -15,11 +15,12 @@ namespace Augias\InstallBundle\Step;
 
 use Augias\InstallBundle\DTO\Installation;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
+use Doctrine\DBAL\Schema\AbstractSchemaManager;
 use Doctrine\Persistence\ManagerRegistry;
 use Generator;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use function in_array;
 use function str_replace;
 
 /**
@@ -48,6 +49,13 @@ final readonly class CreateDatabaseStep implements InstallationStepInterface
         if ($params['driver'] !== 'pdo_sqlite') {
             $dbName = $params['dbname'];
             unset($params['dbname']);
+
+            // Without a database name PostgreSQL opens the one named after
+            // the user — for a dedicated user, the very database to create.
+            // Its maintenance database is always there.
+            if ($params['driver'] === 'pdo_pgsql') {
+                $params['dbname'] = 'postgres';
+            }
         } else {
             $dbName = str_replace($this->projectDir . '/', './', $params['path']);
         }
@@ -64,7 +72,7 @@ final readonly class CreateDatabaseStep implements InstallationStepInterface
             $tmpConnection->close();
         } else {
             $schemaManager = $tmpConnection->createSchemaManager();
-            if (! in_array($dbName, $schemaManager->introspectDatabaseNames(), true)) {
+            if (! self::databaseExists($schemaManager, $dbName)) {
                 $schemaManager->createDatabase($dbName);
             }
         }
@@ -72,6 +80,26 @@ final readonly class CreateDatabaseStep implements InstallationStepInterface
         if ($callback !== null) {
             yield from $callback(sprintf('Database "%s" created', $dbName));
         }
+    }
+
+    /**
+     * Since DBAL 4.3 the schema manager lists databases as UnqualifiedName
+     * objects, not strings: compared with the name as a string, a database
+     * that exists was never found, and the step tried to create it again —
+     * which fails on any server where the database is created beforehand,
+     * as the official PostgreSQL and MySQL images do.
+     *
+     * @param AbstractSchemaManager<AbstractPlatform> $schemaManager
+     */
+    public static function databaseExists(AbstractSchemaManager $schemaManager, string $dbName): bool
+    {
+        foreach ($schemaManager->introspectDatabaseNames() as $name) {
+            if ($name->getIdentifier()->getValue() === $dbName) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function getLabel(): string
