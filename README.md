@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://github.com/user-attachments/assets/6f45c11d-d73e-423e-be4a-30cdf2fe819d" alt="Augias" width="100%" />
+<img src="docs/static/img/augias-banner.png" alt="Augias — facturation open source pour les indépendants et les petites entreprises" width="100%" />
 
 # Augias
 
@@ -12,7 +12,7 @@ Send beautiful quotes and invoices, accept online payments, automate recurring b
   <a href="https://github.com/herc-si/Augias/blob/HEAD/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" /></a>
   <a href="https://github.com/herc-si/Augias/releases"><img alt="Latest Release" src="https://img.shields.io/github/v/release/herc-si/Augias?include_prereleases&style=flat-square" /></a>
   <a href="https://www.php.net/"><img alt="PHP 8.4+" src="https://img.shields.io/badge/php-8.4%2B-777BB4?style=flat-square&logo=php&logoColor=white" /></a>
-  <a href="https://symfony.com/"><img alt="Symfony 7" src="https://img.shields.io/badge/symfony-7.1-000000?style=flat-square&logo=symfony" /></a>
+  <a href="https://symfony.com/"><img alt="Symfony 8" src="https://img.shields.io/badge/symfony-8.1-000000?style=flat-square&logo=symfony" /></a>
   <a href="https://github.com/herc-si/Augias/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/herc-si/Augias?style=flat-square" /></a>
 </p>
 
