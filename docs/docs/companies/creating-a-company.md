@@ -10,9 +10,9 @@ There are three places to start the create-company form. The form itself is the 
 
 ## On your first login
 
-The first time you log in (or any time you log in without belonging to any company yet), Augias takes you straight to the create-company page. You can't reach the rest of the app until at least one company exists.
+The first time you log in (or any time you log in without belonging to any company yet), Augias opens its welcome wizard. Its first step, `Your Business`, asks for the company name and currency. The next two, `First Client` and `First Invoice`, are optional: skip them to add clients and invoices from the dashboard later. The company exists as soon as you reach the last step, `Ready!`.
 
-![The create-company page on first login](/img/companies/create-company-first-run.png)
+![The first step of the welcome wizard, asking for the company name and currency](/img/companies/create-company-first-run.png)
 
 ## From the topbar
 
