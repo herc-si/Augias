@@ -55,7 +55,9 @@ final class SelectPlanAction extends AbstractController
             return $this->redirectToRoute('_dashboard');
         }
 
-        if (count($plans) === 1) {
+        // Straight to checkout when there is nothing to choose — but only for a
+        // plan that is paid for. A lone free plan is shown, not checked out.
+        if (count($plans) === 1 && ! $plans[0]->isFree()) {
             return $this->redirectToRoute('saas_subscription_checkout');
         }
 
