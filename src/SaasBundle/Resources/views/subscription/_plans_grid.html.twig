@@ -12,6 +12,11 @@
  #   - currentPlanId: string|null  (planId of the user's current plan; that card is disabled)
  #   - actionRoute: string         (form action route name; defaults to saas_subscription_choose)
  #   - csrfToken: string           (CSRF intent; defaults to choose_plan)
+ #   - period: 'month'|'year'      (which price a card shows; defaults to the
+ #                                  `period` query parameter, else monthly)
+ #
+ # A plan's yearly twin is not a card of its own: it is the same offer, shown
+ # on its monthly plan's card when the yearly period is picked.
  #}
 
 {% import _self as macros %}
@@ -19,11 +24,17 @@
 {% set currentPlanId = currentPlanId|default(null) %}
 {% set actionRoute = actionRoute|default('saas_subscription_choose') %}
 {% set csrfToken = csrfToken|default('choose_plan') %}
+{% set period = period|default(app.request.query.get('period') == 'year' ? 'year' : 'month') %}
+{% set currency = plan_currency() %}
 
 {# Free plan rendered separately below the main grid. #}
 {% set freePlan = null %}
 {% set paidPlans = [] %}
-{% for plan in plans %}
+{% set hasAnnual = false %}
+{% for plan in plans|filter(plan => not plan_is_annual(plan)) %}
+    {% if plan_annual(plan) %}
+        {% set hasAnnual = true %}
+    {% endif %}
     {% if plan.isFree() %}
         {% set freePlan = plan %}
     {% else %}
@@ -34,8 +45,26 @@
 {# Highlight the second-to-last paid plan as recommended (e.g. middle of 3, third of 4). #}
 {% set recommendedIndex = paidPlans|length >= 2 ? paidPlans|length - 2 : -1 %}
 
+{% if hasAnnual %}
+    {% set route = app.request.attributes.get('_route') %}
+    {% set query = app.request.query.all %}
+    <div class="d-flex justify-content-center mb-4">
+        <div class="btn-group" role="group" aria-label="{{ 'saas.plan.period.label'|trans }}">
+            <a href="{{ path(route, query|merge({period: 'month'})) }}" class="btn {{ period == 'month' ? 'btn-primary' : 'btn-outline-primary' }}" {{ period == 'month' ? 'aria-current="true"' }}>
+                {{ 'saas.plan.period.month'|trans }}
+            </a>
+            <a href="{{ path(route, query|merge({period: 'year'})) }}" class="btn {{ period == 'year' ? 'btn-primary' : 'btn-outline-primary' }}" {{ period == 'year' ? 'aria-current="true"' }}>
+                {{ 'saas.plan.period.year'|trans }}
+            </a>
+        </div>
+    </div>
+{% endif %}
+
 <div class="row row-cards row-deck g-4 justify-content-center">
-    {% for plan in paidPlans %}
+    {% for offer in paidPlans %}
+        {% set annual = plan_annual(offer) %}
+        {# The card shows the period picked, when the offer has it. #}
+        {% set plan = period == 'year' and annual ? annual : offer %}
         {% set isRecommended = loop.index0 == recommendedIndex %}
         {% set isCurrent = currentPlanId is not null and plan.planId == currentPlanId %}
         <div class="col-md-6 col-lg-4 d-flex">
@@ -52,21 +81,30 @@
                     </div>
                 {% endif %}
                 <div class="card-body d-flex flex-column text-start">
-                    <h2 class="card-title mb-3">{{ plan.name }}</h2>
+                    <h2 class="card-title mb-3">{{ offer.name }}</h2>
 
                     <div class="plan-card-price mb-3">
                         <span class="money money--total">
-                            <span class="money-currency">USD</span>
-                            <strong class="money-amount">{{ plan.price|formatCurrencyAmount('USD') }}</strong>
+                            <span class="money-currency">{{ currency }}</span>
+                            <strong class="money-amount">{{ plan.price|formatCurrencyAmount(currency) }}</strong>
                         </span>
-                        <span class="plan-card-interval text-subtle">{{ 'saas.plan.per_month'|trans }}</span>
+                        <span class="plan-card-interval text-subtle">{{ (plan is same as(annual) ? 'saas.plan.per_year' : 'saas.plan.per_month')|trans }}</span>
+                        {% if plan is same as(annual) %}
+                            {% set saving = plan_yearly_saving(offer, annual) %}
+                            <div class="small text-subtle mt-1">
+                                {{ 'saas.plan.yearly_equivalent'|trans({'%monthly%': plan_monthly_equivalent(annual)|formatCurrency(currency)}) }}
+                                {% if saving > 0 %}
+                                    — <span class="text-success">{{ 'saas.plan.yearly_saving'|trans({'%saving%': saving|formatCurrency(currency)}) }}</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                     </div>
 
-                    {% if plan.description is not empty %}
-                        <p class="text-subtle">{{ plan.description }}</p>
+                    {% if offer.description is not empty %}
+                        <p class="text-subtle">{{ offer.description }}</p>
                     {% endif %}
 
-                    {{ macros.feature_list(plan.features) }}
+                    {{ macros.feature_list(offer.features) }}
 
                     {% if isCurrent %}
                         <button type="button" class="btn btn-outline-success w-100 mt-auto" disabled>

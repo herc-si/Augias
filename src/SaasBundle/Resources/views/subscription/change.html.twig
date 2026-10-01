@@ -36,9 +36,12 @@
                 {% include '@AugiasSaas/subscription/_free_plan_taken.html.twig' with { plans: plans } only %}
             {% endif %}
 
+            {# Opens on the period the company is billed on. #}
+            {% set period = app.request.query.get('period') ?: (plan_is_annual(subscription.plan) ? 'year' : 'month') %}
             {% include '@AugiasSaas/subscription/_plans_grid.html.twig' with {
                 plans: plans,
                 currentPlanId: currentPlanId,
+                period: period,
                 actionRoute: 'saas_subscription_change_confirm',
                 csrfToken: 'change_plan',
             } only %}
