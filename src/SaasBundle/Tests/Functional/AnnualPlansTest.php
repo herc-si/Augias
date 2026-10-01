@@ -86,7 +86,7 @@ final class AnnualPlansTest extends WebTestCase
     public function testAChangeBetweenPeriodsIsWeighedAsOne(): void
     {
         $this->plans();
-        $periods = self::getContainer()->get(PlanPeriods::class);
+        $periods = $this->periods();
 
         self::assertTrue($periods->isAnnual($this->soloYearly));
         self::assertFalse($periods->isAnnual($this->soloMonthly));
@@ -124,6 +124,13 @@ final class AnnualPlansTest extends WebTestCase
         return (string) $card->filter('input[name=plan]')->attr('value');
     }
 
+    private function periods(): PlanPeriods
+    {
+        // Only the SaaS kernel has it; PHPStan reads the self-hosted container.
+        // @phpstan-ignore symfonyContainer.serviceNotFound
+        return self::getContainer()->get(PlanPeriods::class);
+    }
+
     private function plans(): void
     {
         $free = new Plan()->setName('Free')->setPlanId('0')->setPrice(0);
@@ -136,7 +143,7 @@ final class AnnualPlansTest extends WebTestCase
         }
 
         $this->em->flush();
-        self::getContainer()->get(PlanPeriods::class)->link($this->soloMonthly, $this->soloYearly);
+        $this->periods()->link($this->soloMonthly, $this->soloYearly);
     }
 
     private function ownerOnPending(): User
