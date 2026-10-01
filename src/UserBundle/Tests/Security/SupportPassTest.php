@@ -51,11 +51,27 @@ final class SupportPassTest extends TestCase
         self::assertFalse($pass->allowsRoute('_clients_edit', CompanyPermission::BillingWrite));
     }
 
-    public function testOnlyTheDataGridAmongLiveComponents(): void
+    public function testSettingsAreReadNeverSavedAndCredentialsStayClosed(): void
+    {
+        $pass = $this->pass();
+
+        self::assertTrue($pass->allowsRoute('_settings', CompanyPermission::Settings));
+        self::assertTrue($pass->allowsRoute('_tax_rates', CompanyPermission::Settings));
+        self::assertFalse($pass->allowsRoute('_settings', CompanyPermission::Settings, false, false), 'Not a POST.');
+        self::assertFalse($pass->allowsRoute('_payment_settings_index', CompanyPermission::Settings));
+        self::assertFalse($pass->allowsRoute('_einvoicing_providers', CompanyPermission::Settings));
+        self::assertFalse($pass->allowsRoute('_notification_integration', CompanyPermission::Settings));
+        self::assertFalse($pass->can(CompanyPermission::Settings), 'No save button is offered.');
+    }
+
+    public function testOnlyTheDataGridAmongLiveComponentsAndSettingsRenderedNotSaved(): void
     {
         $pass = $this->pass();
 
         self::assertTrue($pass->allowsComponent('DataGrid'));
+        self::assertTrue($pass->allowsComponent('Settings', 'get'));
+        self::assertFalse($pass->allowsComponent('Settings', 'save'));
+        self::assertFalse($pass->allowsComponent('Settings', '_batch'));
         self::assertFalse($pass->allowsComponent('CreateApiToken'));
         self::assertFalse($pass->allowsComponent('CreateInvoice'));
     }

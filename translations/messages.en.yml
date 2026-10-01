@@ -3790,6 +3790,7 @@ support:
         logged: "Every page they open is recorded in your company's access log."
         read_only: 'Read-only: nothing can be changed, sent or exported.'
         report: 'The request closes with an account of what was done, shown here.'
+        settings: 'Your settings are visible, except your credentials with other services (mail sending, payment methods, e-invoicing, notifications).'
         time: 'Access closes by itself when the time is up, and you can end it at any time.'
         title: 'What you allow'
     title: Support

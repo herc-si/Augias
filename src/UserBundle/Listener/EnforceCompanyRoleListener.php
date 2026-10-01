@@ -104,11 +104,17 @@ final readonly class EnforceCompanyRoleListener
 
         if (RoutePermissionMap::LIVE_COMPONENT_ROUTE === $route) {
             $component = $request->attributes->get('_live_component');
+            $action = $request->attributes->get('_live_action', 'get');
 
-            return is_string($component) && $pass->allowsComponent($component);
+            return is_string($component) && $pass->allowsComponent($component, is_string($action) ? $action : '');
         }
 
-        return $pass->allowsRoute($route, $permission, true === $request->attributes->get(SupportPass::OPEN_ROUTE_ATTRIBUTE));
+        return $pass->allowsRoute(
+            $route,
+            $permission,
+            true === $request->attributes->get(SupportPass::OPEN_ROUTE_ATTRIBUTE),
+            $request->isMethodSafe(),
+        );
     }
 
     private function required(Request $request): ?CompanyPermission
