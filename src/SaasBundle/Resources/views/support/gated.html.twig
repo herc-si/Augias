@@ -1,0 +1,16 @@
+{#
+ # The Support page on a plan that does not include help from inside the
+ # company: what it would give, and the plan that has it.
+ #}
+{% extends "@AugiasCore/Layout/default.html.twig" %}
+
+{% block title %}
+    {{ ux_icon('tabler:lifebuoy', {width: 24, height: 24, class: 'me-2'}) }}
+    {{ 'support.title'|trans }}
+{% endblock title %}
+
+{% block content %}
+    {% include '@AugiasCore/Feature/_gated_page.html.twig' with {
+        feature: 'support_access',
+    } only %}
+{% endblock content %}

@@ -25,17 +25,26 @@ use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Augias\QuoteBundle\Test\Factory\QuoteFactory;
+use Augias\SaasBundle\Feature\Feature;
 use Augias\SaasBundle\Support\SupportDesk;
 use Augias\Test\SaasKernel;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Test\Factory\UserFactory;
+use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
+use InvalidArgumentException;
 use Override;
 use PHPUnit\Framework\Attributes\Group;
+use SolidWorx\Platform\SaasBundle\Entity\Plan;
+use SolidWorx\Platform\SaasBundle\Entity\Subscription;
+use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
+use SolidWorx\Platform\SaasBundle\Feature\PlanFeatureManager;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Uid\Ulid;
 use Zenstruck\Browser\KernelBrowser;
 use Zenstruck\Browser\Test\HasBrowser;
 
@@ -105,6 +114,42 @@ final class SupportAccessTest extends WebTestCase
         self::assertSame('support@example.test', $email->getTo()[0]->getAddress());
         self::assertSame('Request for help — Shop', $email->getSubject());
         self::assertStringContainsString('The VAT return will not close.', (string) $email->getTextBody());
+    }
+
+    public function testAPlanWithoutItOffersTheUpgradeAndTakesNoRequest(): void
+    {
+        $this->settings();
+        $owner = $this->member(CompanyRole::Owner);
+        $this->onPlan($this->shop, false);
+
+        $this->as($owner)
+            ->visit('/support/')
+            ->assertSuccessful()
+            ->assertSee('Get help from inside your books')
+            ->assertSee('Available on the Solo plan and higher')
+            ->assertNotSee('Send the request');
+
+        $shop = $this->em->find(Company::class, $this->shop->getId());
+        self::assertInstanceOf(Company::class, $shop);
+        $this->expectException(InvalidArgumentException::class);
+        $this->desk()->open($shop, (string) $owner->getEmail(), 'Help', 24);
+    }
+
+    public function testMovingToAPlanWithoutItClosesTheDoor(): void
+    {
+        $this->settings();
+        $owner = $this->member(CompanyRole::Owner);
+        $operator = $this->outsider();
+        $request = $this->request($owner);
+        $this->desk()->accept($request, (string) $operator->getEmail());
+
+        $visitor = $this->as($operator)
+            ->visit('/support/' . $request->getId() . '/enter')
+            ->assertOn('/dashboard');
+
+        $this->onPlan($this->shop, false);
+
+        $visitor->visit('/clients/')->assertOn('/support/ended');
     }
 
     public function testABillingMemberCannotLetAnyoneIn(): void
@@ -231,6 +276,7 @@ final class SupportAccessTest extends WebTestCase
         $theirs = ClientFactory::createOne(['company' => $own, 'name' => 'Operator Customer']);
         InvoiceFactory::createOne(['company' => $own, 'client' => $theirs]);
         QuoteFactory::createOne(['company' => $own, 'client' => $theirs]);
+        $this->onPlan($own, false);
         $own = $this->em->find(Company::class, $own->getId());
         self::assertInstanceOf(Company::class, $own);
         $operator->addCompany($own, CompanyRole::Owner);
@@ -486,12 +532,46 @@ final class SupportAccessTest extends WebTestCase
         return $user;
     }
 
+    /**
+     * Puts the company on a plan, with or without help from inside it.
+     */
+    private function onPlan(Company $company, bool $supportAccess): void
+    {
+        // The container's own manager: the browser reboots the kernel between
+        // requests, and the plan feature manager writes through this one.
+        $em = self::getContainer()->get(EntityManagerInterface::class);
+        $company = $em->find(Company::class, $company->getId());
+        self::assertInstanceOf(Company::class, $company);
+
+        $plan = new Plan()
+            ->setName($supportAccess ? 'Solo' : 'Free')
+            ->setPlanId(($supportAccess ? 'solo-' : 'free-') . new Ulid()->toBase32())
+            ->setPrice($supportAccess ? 900 : 0);
+        $em->persist($plan);
+        $em->flush();
+        // Only the SaaS kernel has it; PHPStan reads the self-hosted container.
+        // @phpstan-ignore symfonyContainer.serviceNotFound
+        self::getContainer()->get(PlanFeatureManager::class)->setFeature($plan, Feature::SupportAccess->value, $supportAccess);
+
+        // Creating the company already gave it a subscription when a default
+        // plan existed: that one is set, rather than a second added beside it.
+        $subscription = $em->getRepository(Subscription::class)->findOneBy(['subscriber' => $company]) ?? new Subscription()->setSubscriber($company);
+        $subscription
+            ->setPlan($plan)
+            ->setStatus(SubscriptionStatus::ACTIVE)
+            ->setStartDate(new DateTimeImmutable('-1 day'))
+            ->setEndDate(new DateTimeImmutable('+1 month'));
+        $em->persist($subscription);
+        $em->flush();
+    }
+
     private function member(CompanyRole $role): User
     {
         if (! isset($this->shop)) {
             $shop = CompanyFactory::createOne(['name' => 'Shop']);
             self::assertInstanceOf(Company::class, $shop);
             $this->shop = $shop;
+            $this->onPlan($shop, true);
             $client = ClientFactory::createOne(['company' => $this->shop, 'name' => 'Acme']);
             self::assertInstanceOf(Client::class, $client);
             $this->client = $client;

@@ -18,9 +18,11 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\SupportRequest;
 use Augias\CoreBundle\Entity\SupportSettings;
 use Augias\CoreBundle\Enum\SupportRequestStatus;
+use Augias\SaasBundle\Feature\Feature;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
 use Psr\Clock\ClockInterface;
+use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
 use Symfony\Component\Uid\Ulid;
 use function in_array;
 
@@ -40,6 +42,7 @@ final readonly class SupportDesk
         private ClockInterface $clock,
         private SupportMailer $mailer,
         private CompanySelector $companySelector,
+        private FeatureGate $featureGate,
     ) {
     }
 
@@ -69,6 +72,10 @@ final readonly class SupportDesk
 
         if (! $settings->isEnabled()) {
             throw new InvalidArgumentException('Requests for help are not taken on this deployment.');
+        }
+
+        if (! $this->featureGate->isEnabled(Feature::SupportAccess->value, $company)) {
+            throw new InvalidArgumentException('This company\'s plan does not include help from inside it.');
         }
 
         if (! in_array($hours, $settings->getDurations(), true)) {

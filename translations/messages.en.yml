@@ -3281,6 +3281,7 @@ saas:
             quotes: 'Quotes'
             recurring_invoices: 'Recurring invoices'
             rest_api_access: 'REST API'
+            support_access: 'Help inside your company'
             team_seats: 'Users'
             total_clients: 'Clients'
         free_plan_taken: 'The free plan is limited to one company per account, and you already have one. Choose a paid plan for this company.'

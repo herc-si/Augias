@@ -137,6 +137,16 @@ final readonly class FeatureCopyRegistry
                     'Integrations: Zapier, n8n, your own code',
                 ],
             ),
+            Feature::SupportAccess => new FeatureCopy(
+                icon: 'tabler:lifebuoy',
+                headline: 'Get help from inside your books',
+                description: 'Stuck on a return, a payment or a setting? Ask for help and let the team running the service look at your company, read-only, for as long as you choose.',
+                bullets: [
+                    'Read-only: nothing is changed, sent or exported',
+                    'Access closes by itself when the time is up',
+                    'Every page opened is in your access log',
+                ],
+            ),
             Feature::McpAccess => new FeatureCopy(
                 icon: 'tabler:robot',
                 headline: 'Let AI agents work for you',
