@@ -58,9 +58,11 @@ final class SupportPassTest extends TestCase
         self::assertTrue($pass->allowsRoute('_settings', CompanyPermission::Settings));
         self::assertTrue($pass->allowsRoute('_tax_rates', CompanyPermission::Settings));
         self::assertFalse($pass->allowsRoute('_settings', CompanyPermission::Settings, false, false), 'Not a POST.');
-        self::assertFalse($pass->allowsRoute('_payment_settings_index', CompanyPermission::Settings));
-        self::assertFalse($pass->allowsRoute('_einvoicing_providers', CompanyPermission::Settings));
-        self::assertFalse($pass->allowsRoute('_notification_integration', CompanyPermission::Settings));
+        self::assertTrue($pass->allowsRoute('_payment_settings_index', CompanyPermission::Settings));
+        self::assertTrue($pass->allowsRoute('_einvoicing_providers', CompanyPermission::Settings));
+        self::assertTrue($pass->allowsRoute('_notification_integration', CompanyPermission::Settings));
+        self::assertFalse($pass->allowsRoute('_notification_integration', CompanyPermission::Settings, false, false), 'Not a POST.');
+        self::assertFalse($pass->allowsRoute('_api_keys_index', null), 'API tokens belong to a person.');
         self::assertFalse($pass->can(CompanyPermission::Settings), 'No save button is offered.');
     }
 
@@ -72,6 +74,9 @@ final class SupportPassTest extends TestCase
         self::assertTrue($pass->allowsComponent('Settings', 'get'));
         self::assertFalse($pass->allowsComponent('Settings', 'save'));
         self::assertFalse($pass->allowsComponent('Settings', '_batch'));
+        self::assertTrue($pass->allowsComponent('PaymentMarketplace', 'get'));
+        self::assertFalse($pass->allowsComponent('PaymentSettings', 'get'), 'The credentials window is never live for a visitor.');
+        self::assertFalse($pass->allowsComponent('PaymentMarketplace', 'closeModal'));
         self::assertFalse($pass->allowsComponent('CreateApiToken'));
         self::assertFalse($pass->allowsComponent('CreateInvoice'));
     }

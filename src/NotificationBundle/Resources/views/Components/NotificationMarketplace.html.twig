@@ -302,10 +302,14 @@
                     </a>
                 </div>
                 <div class="notification-modal-body">
-                    <twig:NotificationTransportConfiguration
-                        setting="{{ selectedIntegration|default('') }}"
-                        transport="{{ transport }}"
-                        type="{{ type }}" />
+                    {% if support_visit() %}
+                        <div class="alert alert-info mb-0">{{ 'support.visit.credentials_hidden'|trans }}</div>
+                    {% else %}
+                        <twig:NotificationTransportConfiguration
+                            setting="{{ selectedIntegration|default('') }}"
+                            transport="{{ transport }}"
+                            type="{{ type }}" />
+                    {% endif %}
                 </div>
             </div>
         </div>

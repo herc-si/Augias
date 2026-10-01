@@ -275,7 +275,11 @@
                     </a>
                 </div>
                 <div class="payment-modal-body">
-                    <twig:PaymentSettings method="{{ selectedGateway }}" />
+                    {% if support_visit() %}
+                        <div class="alert alert-info mb-0">{{ 'support.visit.credentials_hidden'|trans }}</div>
+                    {% else %}
+                        <twig:PaymentSettings method="{{ selectedGateway }}" />
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -15,6 +15,7 @@ namespace Augias\UserBundle\Twig\Extension;
 
 use Augias\UserBundle\Security\CompanyAccess;
 use Augias\UserBundle\Security\RouteAccess;
+use Augias\UserBundle\Security\SupportPass;
 use DateTimeImmutable;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -58,6 +59,17 @@ final readonly class RouteAccessExtension
     public function closureReason(): ?string
     {
         return $this->companyAccess->membership()?->getCompany()->getClosureReason()?->value;
+    }
+
+    /**
+     * `support_visit()`: whether the page is seen by someone let in to help,
+     * not by a member — for the parts a visitor reads around but never sees,
+     * the company's credentials with other services.
+     */
+    #[AsTwigFunction('support_visit')]
+    public function supportVisit(): bool
+    {
+        return $this->companyAccess->pass() instanceof SupportPass;
     }
 
     /**

@@ -151,10 +151,12 @@ final class SupportAccessTest extends WebTestCase
             ->visit('/tax/rates')
             ->assertSuccessful()
             ->visit('/payments/methods')
-            ->assertStatus(403)
+            ->assertSuccessful()
             ->visit('/electronic-invoicing/providers')
-            ->assertStatus(403)
+            ->assertSuccessful()
             ->visit('/notifications/integrations')
+            ->assertSuccessful()
+            ->visit('/profile/api')
             ->assertStatus(403)
             ->visit('/profile/exports')
             ->assertStatus(403)
@@ -169,7 +171,7 @@ final class SupportAccessTest extends WebTestCase
 
         $details = array_map(static fn (OperatorAccess $row): ?string => $row->getDetail(), $log);
         self::assertContains('GET /clients/view/' . $this->client->getId(), $details);
-        self::assertContains('GET /payments/methods', $details, 'A refused attempt is on the record too.');
+        self::assertContains('GET /profile/api', $details, 'A refused attempt is on the record too.');
 
         foreach ($log as $row) {
             self::assertSame(AccessReason::SupportSession, $row->getReasonKind());
@@ -277,6 +279,31 @@ final class SupportAccessTest extends WebTestCase
             ->assertSuccessful()
             ->assertNotSeeElement('[name*="[sending_options]"]')
             ->assertSeeElement('[name*="[from_address]"]');
+    }
+
+    /**
+     * The visitor sees which services the company connected, never the window
+     * holding its credentials with them — even asked for by address.
+     */
+    public function testTheVisitorSeesTheConnectedServicesButNotTheirCredentials(): void
+    {
+        $this->settings();
+        $owner = $this->member(CompanyRole::Owner);
+        $operator = $this->outsider();
+        $request = $this->request($owner);
+        $this->desk()->accept($request, (string) $operator->getEmail());
+
+        $this->as($owner)
+            ->visit('/payments/methods?selectedGateway=stripe_checkout')
+            ->assertSuccessful()
+            ->assertSeeElement('.payment-modal-body form');
+
+        $this->as($operator)
+            ->visit('/support/' . $request->getId() . '/enter')
+            ->visit('/payments/methods?selectedGateway=stripe_checkout')
+            ->assertSuccessful()
+            ->assertNotSeeElement('.payment-modal-body form')
+            ->assertSee('are not shown during a support session');
     }
 
     public function testOnlyWhoeverTookTheRequestComesIn(): void
