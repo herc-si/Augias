@@ -1519,6 +1519,7 @@ einvoicing:
             client_id: 'Identifiant client (Client ID)'
             client_secret: 'Clé secrète (Client secret)'
             client_secret_help: "Laissez vide pour conserver la clé déjà enregistrée. Elle n'est jamais réaffichée."
+            disconnected: "SUPER PDP ne reconnaît plus l'accès donné à Augias : l'accord a été retiré, ou le compte est resté inutilisé un an. Reconnectez le compte pour reprendre l'envoi."
             display_name: 'SUPER PDP'
             needs_review: "SUPER PDP n'a pas encore vérifié l'identité de l'entreprise : son support examine le compte. Aucune facture ne peut partir d'ici là."
             verification_failed: "SUPER PDP a refusé de lier ces identifiants à l'entreprise : aucune facture ne peut partir. Contactez son support."
@@ -1531,6 +1532,22 @@ einvoicing:
             simulate_failure: 'Simuler un échec de soumission'
             simulated_failure: 'Échec simulé (fournisseur de test)'
             tagline: "Simule l'envoi de factures électroniques sans appel externe réel, pour les tests."
+    super_pdp:
+        connect:
+            connected: 'Compte SUPER PDP connecté.'
+            denied: "La connexion à SUPER PDP a été annulée : rien n'a changé."
+            expired: 'Cette connexion à SUPER PDP a expiré ou a déjà servi. Recommencez depuis la page des fournisseurs.'
+            failed: "SUPER PDP n'a pas confirmé la connexion. Réessayez dans un moment ; si cela persiste, contactez le support."
+        connection:
+            connect: 'Connecter le compte'
+            connected: 'Connecté'
+            continue: 'Continuer vers SUPER PDP'
+            help_connected: "Augias agit pour l'entreprise sur son compte SUPER PDP. Reconnectez-le pour changer de compte."
+            help_disconnected: "Augias n'a pas, ou plus, accès au compte SUPER PDP de l'entreprise : aucune facture ne part."
+            help_new: "Vous serez dirigé vers SUPER PDP pour créer le compte de l'entreprise, ou vous connecter au vôtre, puis donner l'accès à Augias. La vérification de l'entreprise se fait chez eux."
+            not_connected: 'Non connecté'
+            reconnect: 'Reconnecter'
+            title: 'Compte SUPER PDP'
     send:
         failed: "Échec de l'envoi de la facture électronique. Veuillez vérifier la configuration du fournisseur."
         only_disbursements: "Facture électronique non envoyée : elle ne porte que des débours. Ils figurent sur la note de débours, qui n'est pas une facture et ne passe pas par la plateforme."

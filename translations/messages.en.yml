@@ -1519,6 +1519,7 @@ einvoicing:
             client_id: 'Client ID'
             client_secret: 'Client secret'
             client_secret_help: 'Leave empty to keep the secret already saved. It is never shown again.'
+            disconnected: 'SUPER PDP no longer recognises the access given to Augias: consent was withdrawn, or the account went unused for a year. Connect the account again to resume sending.'
             display_name: 'SUPER PDP'
             needs_review: 'SUPER PDP has not verified the company''s identity yet: its support is reviewing the account. No invoice can be sent until then.'
             verification_failed: 'SUPER PDP refused to link these credentials to the company: no invoice can be sent. Contact their support.'
@@ -1531,6 +1532,22 @@ einvoicing:
             simulate_failure: 'Simulate a failed submission'
             simulated_failure: 'Simulated failure (test provider)'
             tagline: 'Simulate electronic-invoice submissions without any external call, for testing.'
+    super_pdp:
+        connect:
+            connected: 'SUPER PDP account connected.'
+            denied: 'Connecting to SUPER PDP was cancelled: nothing changed.'
+            expired: 'This SUPER PDP connection has expired or was already used. Start again from the providers page.'
+            failed: 'SUPER PDP did not confirm the connection. Try again in a moment; if it keeps happening, contact support.'
+        connection:
+            connect: 'Connect the account'
+            connected: 'Connected'
+            continue: 'Continue to SUPER PDP'
+            help_connected: 'Augias acts for the company on its SUPER PDP account. Connect again to switch accounts.'
+            help_disconnected: 'Augias has no access, or no longer has access, to the company''s SUPER PDP account: no invoice goes out.'
+            help_new: 'You will be taken to SUPER PDP to create the company''s account, or sign in to yours, then give Augias access. The company is verified on their side.'
+            not_connected: 'Not connected'
+            reconnect: 'Connect again'
+            title: 'SUPER PDP account'
     send:
         failed: 'Failed to send the electronic invoice. Please check the provider configuration.'
         only_disbursements: "Electronic invoice not sent: it carries nothing but disbursements. They are on the disbursement note, which is not an invoice and does not go through the platform."

@@ -44,6 +44,43 @@
             </twig:Ui:Alert>
         {% endif %}
 
+        {% if connection is not null %}
+            {# The deployment has its own SUPER PDP application: the company
+             # connects its account there — signing up and having its identity
+             # verified on the way — instead of pasting credentials. #}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between gap-3">
+                        <div>
+                            <h5 class="card-title mb-1 d-flex align-items-center gap-2">
+                                {{ 'einvoicing.super_pdp.connection.title'|trans }}
+                                {% if connection.connected %}
+                                    <span class="badge bg-green-lt">{{ 'einvoicing.super_pdp.connection.connected'|trans }}</span>
+                                {% elseif connection.url %}
+                                    <span class="badge bg-red-lt">{{ 'einvoicing.super_pdp.connection.not_connected'|trans }}</span>
+                                {% endif %}
+                            </h5>
+                            <p class="text-secondary small mb-0">
+                                {% if connection.connected %}
+                                    {{ 'einvoicing.super_pdp.connection.help_connected'|trans }}
+                                {% elseif connection.url %}
+                                    {{ 'einvoicing.super_pdp.connection.help_disconnected'|trans }}
+                                {% else %}
+                                    {{ 'einvoicing.super_pdp.connection.help_new'|trans }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        {% if connection.url %}
+                            <a href="{{ connection.url }}" class="btn {{ connection.connected ? 'btn-outline-secondary' : 'btn-primary' }} flex-shrink-0">
+                                {{ ux_icon('tabler:plug-connected', {width: 18, height: 18}) }}
+                                {{ (connection.connected ? 'einvoicing.super_pdp.connection.reconnect' : 'einvoicing.super_pdp.connection.connect')|trans }}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
         {% if canCheckAccount %}
             {# The platform refuses everything until it has verified the
              # company's identity, so this is the first thing to know about an
@@ -115,8 +152,13 @@
                 </a>
             {% endif %}
             <button type="submit" class="btn btn-primary" data-action="live#action" data-live-action-param="save" data-loading="addAttribute(disabled)">
-                {{ ux_icon('tabler:device-floppy', {width: 18, height: 18}) }}
-                {{ 'action.save'|trans }}
+                {% if connection is not null and isNewSetting %}
+                    {{ ux_icon('tabler:external-link', {width: 18, height: 18}) }}
+                    {{ 'einvoicing.super_pdp.connection.continue'|trans }}
+                {% else %}
+                    {{ ux_icon('tabler:device-floppy', {width: 18, height: 18}) }}
+                    {{ 'action.save'|trans }}
+                {% endif %}
             </button>
         </div>
     {% endif %}

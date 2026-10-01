@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Form\Type\Provider;
 
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpConnector;
 use Override;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -31,12 +32,20 @@ use function trim;
  * OAuth2 client_credentials for the SUPER PDP API (https://www.superpdp.tech)
  * — the company itself is enrolled on the platform outside Augias.
  *
+ * Nothing to fill in when the deployment has its own SUPER PDP application:
+ * the company connects its account instead, see
+ * {@see \Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpConnector}.
+ *
  * @extends AbstractType<array{client_id: string, client_secret: string}>
  */
 final class SuperPdpConfigType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        if ($this->connector->isAvailable()) {
+            return;
+        }
+
         // In the default group: a `super_pdp` group was named here that no
         // form ever validated, so an empty secret went through unnoticed.
         $builder->add('client_id', TextType::class, [
@@ -87,6 +96,7 @@ final class SuperPdpConfigType extends AbstractType
 
     public function __construct(
         private readonly TranslatorInterface $translator,
+        private readonly SuperPdpConnector $connector,
     ) {
     }
 

@@ -13,11 +13,13 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Provider\SuperPdp;
 
+use DateTimeImmutable;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Contracts\HttpClient\Exception\ExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
+use function http_build_query;
 use function is_array;
 use function is_int;
 use function is_string;
@@ -27,9 +29,13 @@ use function sprintf;
  * Thin wrapper around SUPER PDP's REST API (https://api.superpdp.tech,
  * documented at https://www.superpdp.tech/openapi/#superpdp).
  *
- * Auth is OAuth2 client_credentials: a fresh token is requested for every
- * call rather than cached, since electronic-invoice submissions/status
- * checks are low-frequency operations for a self-hosted invoicing app.
+ * Auth is OAuth 2.1, one of two ways. With client_credentials — a company's
+ * own application — a fresh token is requested for every call rather than
+ * cached, since electronic-invoice submissions/status checks are
+ * low-frequency operations for a self-hosted invoicing app. With the
+ * authorization code flow — the deployment's application, which a company
+ * connects its account to — tokens are kept and refreshed, see
+ * {@see SuperPdpAccessTokens}.
  *
  * @see \Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdp\SuperPdpClientTest
  */
@@ -62,6 +68,101 @@ final readonly class SuperPdpClient
         }
 
         return $token;
+    }
+
+    /**
+     * Where to send the user to connect their SUPER PDP account to the
+     * deployment's application: they sign in or sign up there, have their
+     * company verified, and agree; SUPER PDP then sends them back to
+     * $redirectUri with a code.
+     *
+     * The e-mail and SIREN, when given, are filled in for them.
+     *
+     * @param string $codeChallenge PKCE, S256 — OAuth 2.1 requires it
+     */
+    public function authorizationUrl(string $clientId, string $redirectUri, string $state, string $codeChallenge, ?string $email = null, ?string $siren = null): string
+    {
+        $query = [
+            'response_type' => 'code',
+            'client_id' => $clientId,
+            'redirect_uri' => $redirectUri,
+            'state' => $state,
+            'code_challenge' => $codeChallenge,
+            'code_challenge_method' => 'S256',
+        ];
+
+        if (null !== $email && '' !== $email) {
+            $query['login_hint'] = $email;
+        }
+
+        // The two go together, or not at all.
+        if (null !== $siren && '' !== $siren) {
+            $query['superpdp_company_number'] = $siren;
+            $query['superpdp_company_number_scheme'] = 'fr_siren';
+        }
+
+        return self::BASE_URL . '/oauth2/authorize?' . http_build_query($query);
+    }
+
+    /**
+     * Trades the code SUPER PDP sent the user back with for the company's
+     * tokens. The code works once, and only with the same redirect URI and
+     * the PKCE verifier behind the challenge.
+     *
+     * @throws SuperPdpApiException
+     */
+    public function exchangeAuthorizationCode(string $clientId, string $clientSecret, string $code, string $redirectUri, string $codeVerifier, DateTimeImmutable $now): SuperPdpTokens
+    {
+        return SuperPdpTokens::fromResponse($this->request('POST', '/oauth2/token', [
+            'body' => [
+                'grant_type' => 'authorization_code',
+                'code' => $code,
+                'redirect_uri' => $redirectUri,
+                'code_verifier' => $codeVerifier,
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+            ],
+        ]), $now);
+    }
+
+    /**
+     * A new access token, and a new refresh token in place of $refreshToken,
+     * which stops working: OAuth 2.1 rotates it on every use.
+     *
+     * @throws SuperPdpApiException
+     */
+    public function refreshTokens(string $clientId, string $clientSecret, string $refreshToken, DateTimeImmutable $now): SuperPdpTokens
+    {
+        return SuperPdpTokens::fromResponse($this->request('POST', '/oauth2/token', [
+            'body' => [
+                'grant_type' => 'refresh_token',
+                'refresh_token' => $refreshToken,
+                'client_id' => $clientId,
+                'client_secret' => $clientSecret,
+            ],
+        ]), $now);
+    }
+
+    /**
+     * Withdraws a refresh token (RFC 7009), and with it every access token
+     * it gave.
+     *
+     * @throws SuperPdpApiException
+     */
+    public function revokeToken(string $clientId, string $clientSecret, string $refreshToken): void
+    {
+        try {
+            $this->httpClient->request('POST', self::BASE_URL . '/oauth2/revoke', [
+                'body' => [
+                    'token' => $refreshToken,
+                    'token_type_hint' => 'refresh_token',
+                    'client_id' => $clientId,
+                    'client_secret' => $clientSecret,
+                ],
+            ])->getContent();
+        } catch (ExceptionInterface $e) {
+            throw new SuperPdpApiException('Could not revoke the SUPER PDP token: ' . $e->getMessage(), previous: $e);
+        }
     }
 
     /**
@@ -326,9 +427,9 @@ final readonly class SuperPdpClient
         } catch (TransportException $e) {
             throw new SuperPdpApiException('Could not reach the SUPER PDP API: ' . $e->getMessage(), previous: $e);
         } catch (ExceptionInterface $e) {
-            [$message, $code] = $this->extractError($e);
+            [$message, $code, $oauthError] = $this->extractError($e);
 
-            throw new SuperPdpApiException($message, $code, $e, $e instanceof HttpExceptionInterface ? $e->getResponse()->getStatusCode() : null);
+            throw new SuperPdpApiException($message, $code, $e, $e instanceof HttpExceptionInterface ? $e->getResponse()->getStatusCode() : null, $oauthError);
         }
     }
 
@@ -354,30 +455,39 @@ final readonly class SuperPdpClient
         } catch (TransportException $e) {
             throw new SuperPdpApiException('Could not reach the SUPER PDP API: ' . $e->getMessage(), previous: $e);
         } catch (ExceptionInterface $e) {
-            [$message, $code] = $this->extractError($e);
+            [$message, $code, $oauthError] = $this->extractError($e);
 
-            throw new SuperPdpApiException($message, $code, $e, $e instanceof HttpExceptionInterface ? $e->getResponse()->getStatusCode() : null);
+            throw new SuperPdpApiException($message, $code, $e, $e instanceof HttpExceptionInterface ? $e->getResponse()->getStatusCode() : null, $oauthError);
         }
     }
 
     /**
-     * @return array{0: string, 1: ?int}
+     * The API's own `http_ko` shape, or the token endpoint's OAuth one
+     * (`error`, `error_description`).
+     *
+     * @return array{0: string, 1: ?int, 2: ?string}
      */
     private function extractError(ExceptionInterface $e): array
     {
         if (! $e instanceof HttpExceptionInterface) {
-            return [$e->getMessage(), null];
+            return [$e->getMessage(), null, null];
         }
 
         try {
             $content = $e->getResponse()->toArray(false);
         } catch (Throwable) {
-            return [$e->getMessage(), null];
+            return [$e->getMessage(), null, null];
         }
 
-        $message = is_string($content['message'] ?? null) ? $content['message'] : $e->getMessage();
+        $oauthError = is_string($content['error'] ?? null) ? $content['error'] : null;
+        $message = match (true) {
+            is_string($content['message'] ?? null) => $content['message'],
+            is_string($content['error_description'] ?? null) => $content['error_description'],
+            null !== $oauthError => $oauthError,
+            default => $e->getMessage(),
+        };
         $code = is_int($content['code'] ?? null) ? $content['code'] : null;
 
-        return [$code !== null ? sprintf('%s [%d]', $message, $code) : $message, $code];
+        return [$code !== null ? sprintf('%s [%d]', $message, $code) : $message, $code, $oauthError];
     }
 }

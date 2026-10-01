@@ -20,6 +20,7 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceDisputedNotification;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceRejectedNotification;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpAccessTokens;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceSubmissionRepository;
@@ -149,6 +150,7 @@ final class PollSuperPdpInvoiceStatusCommandTest extends KernelTestCase
             self::getContainer()->get(ElectronicInvoiceSubmissionRepository::class),
             self::getContainer()->get(ElectronicInvoiceProviderSettingRepository::class),
             self::getContainer()->get(SuperPdpClient::class),
+            self::getContainer()->get(SuperPdpAccessTokens::class),
             $notificationManager,
             new NullLogger(),
         );
@@ -224,6 +226,7 @@ final class PollSuperPdpInvoiceStatusCommandTest extends KernelTestCase
             self::getContainer()->get(ElectronicInvoiceSubmissionRepository::class),
             self::getContainer()->get(ElectronicInvoiceProviderSettingRepository::class),
             self::getContainer()->get(SuperPdpClient::class),
+            self::getContainer()->get(SuperPdpAccessTokens::class),
             $notificationManager,
             new NullLogger(),
         );
