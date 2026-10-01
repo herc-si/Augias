@@ -2,6 +2,15 @@
 
 declare(strict_types=1);
 
+/*
+ * This file is part of Augias project.
+ *
+ * (c) Pierre du Plessis <open-source@solidworx.co>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
 namespace Augias\SaasBundle\Tests\Functional;
 
 use Augias\ClientBundle\Entity\Client;
@@ -19,11 +28,11 @@ use Augias\Test\SaasKernel;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Test\Factory\UserFactory;
-use DateTimeImmutable;
 use Override;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Zenstruck\Browser\KernelBrowser;
 use Zenstruck\Browser\Test\HasBrowser;
 
@@ -157,6 +166,34 @@ final class SupportAccessTest extends WebTestCase
         $this->as($owner)
             ->visit('/dashboard')
             ->assertSee((string) $operator->getEmail() . ' (Acme Hosting) may look at the company, read-only');
+    }
+
+    /**
+     * Arriving from the operator's tooling, not yet signed in to the
+     * application: the sign-in leads on to the company, not to setting one up
+     * — the visitor belongs to none.
+     */
+    public function testSigningInOnTheWayLeadsIntoTheCompany(): void
+    {
+        $this->settings();
+        $owner = $this->member(CompanyRole::Owner);
+        $operator = $this->outsider();
+        $request = $this->request($owner);
+        $this->desk()->accept($request, (string) $operator->getEmail());
+
+        $hasher = self::getContainer()->get(UserPasswordHasherInterface::class);
+        self::assertInstanceOf(UserPasswordHasherInterface::class, $hasher);
+        $operator->setPassword($hasher->hashPassword($operator, 'password'));
+        $this->em->flush();
+
+        $this->browser()
+            ->visit('/support/' . $request->getId() . '/enter')
+            ->assertOn('/login')
+            ->fillField('_username', (string) $operator->getEmail())
+            ->fillField('_password', 'password')
+            ->click('Sign in')
+            ->assertOn('/dashboard')
+            ->assertSee('Support session at Shop');
     }
 
     public function testOnlyWhoeverTookTheRequestComesIn(): void

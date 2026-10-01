@@ -15,6 +15,7 @@ namespace Augias\CoreBundle\Action;
 
 use Augias\CoreBundle\Entity\Company;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Security\SupportAccess;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -24,12 +25,14 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Uid\Ulid;
+use function is_string;
 
 final readonly class SelectCompany
 {
     public function __construct(
         private Security $security,
-        private RouterInterface $router
+        private RouterInterface $router,
+        private SupportAccess $supportAccess,
     ) {
     }
 
@@ -46,6 +49,13 @@ final readonly class SelectCompany
         $companies = $user->getCompanies();
 
         if ($companies->count() === 0) {
+            // Someone let into a company to help it, signing in on the way
+            // there: the page they were going to is the company, not setting
+            // one up.
+            if ($this->supportAccess->hasAnyPass($user) && is_string($request->getSession()->get('_security.main.target_path'))) {
+                return new RedirectResponse($this->resolvePostLoginTarget($request));
+            }
+
             return new RedirectResponse($this->router->generate('_create_company'));
         }
 
