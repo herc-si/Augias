@@ -549,6 +549,8 @@ final class SupportAccessTest extends WebTestCase
             ->setPrice($supportAccess ? 900 : 0);
         $em->persist($plan);
         $em->flush();
+        // Only the SaaS kernel has it; PHPStan reads the self-hosted container.
+        // @phpstan-ignore symfonyContainer.serviceNotFound
         self::getContainer()->get(PlanFeatureManager::class)->setFeature($plan, Feature::SupportAccess->value, $supportAccess);
 
         // Creating the company already gave it a subscription when a default
