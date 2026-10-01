@@ -6,7 +6,7 @@
 
 **The open-source invoicing platform for freelancers and small businesses.**
 
-Send beautiful quotes and invoices, accept online payments, automate recurring billing — and own every byte of your data.
+Send quotes and invoices, issue and receive French electronic invoices (Factur-X), keep your books — and own every byte of your data.
 
 <p>
   <a href="https://github.com/herc-si/Augias/blob/HEAD/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" /></a>
@@ -28,7 +28,31 @@ Send beautiful quotes and invoices, accept online payments, automate recurring b
 
 ## Why Augias?
 
-Most invoicing tools force a trade-off: easy to use *or* respectful of your data. Augias gives you both. It's a mature, production-ready billing platform you can run on your own server for free, or let us host for a flat **$8/month** — no per-client limits, no surprise tiers, no lock-in. Built on Symfony 7 and PHP 8.4, it's designed to be extended, integrated, and trusted.
+Most invoicing tools force a trade-off: easy to use *or* respectful of your data. Augias gives you both. It's a billing and bookkeeping platform for French freelancers and small businesses that you can run on your own server for free, or have hosted by [HERC SI](https://www.herc-si.fr) — no lock-in, full export at any time. Built on Symfony 8.1 and PHP 8.4, it's designed to be extended, integrated, and trusted.
+
+---
+
+## 🇫🇷 French e-invoicing and bookkeeping
+
+Since 1 September 2026 every French business must be able to **receive** electronic invoices; small and micro businesses must **issue** them and send their e-reporting data from 1 September 2027 ([impots.gouv.fr](https://www.impots.gouv.fr/professionnel/je-decouvre-la-facturation-electronique)). Augias is built for it:
+
+- **Factur-X** invoices and credit notes (EN 16931), generated with every invoice
+- **Sending and receiving through a dematerialisation platform** — a connector for [SUPER PDP](https://www.superpdp.tech) ships today, behind a provider interface open to others
+- Status tracking of every invoice sent, and accept / dispute / refuse answers to the ones you receive
+- **E-reporting** of B2C transactions and payments
+- Supplier invoices imported straight from their Factur-X, no retyping
+- French tax rules where they matter: VAT on goods vs services, VAT on debits, deposits, discounts before tax, *débours* kept out of turnover, VAT-exempt mention (art. 293 B CGI)
+
+And the books that follow from it:
+
+- Revenue book and purchase register (micro-entreprise), sales and purchase journals (réel), written automatically from your documents
+- Accounting regimes (micro-entreprise, réel), fiscal year, period closing and a lock date
+- Turnover and **VAT returns (CA3)** prepared from the books
+- **FEC** export (fichier des écritures comptables) for a tax audit
+- Bank statement import (CAMT, OFX, CSV) and reconciliation
+
+> [!NOTE]
+> Augias is a tool, not an accountant: check what it prepares with your adviser.
 
 ---
 
@@ -78,7 +102,7 @@ Most invoicing tools force a trade-off: easy to use *or* respectful of your data
 - MIT licensed — fork it, modify it, ship it
 
 ### 🚀 Modern Stack
-- Symfony 7.1, PHP 8.4, Doctrine ORM, API Platform 4
+- Symfony 8.1, PHP 8.4, Doctrine ORM, API Platform 4
 - Tabler UI on Bootstrap 5.3 — fully responsive, mobile-friendly
 - Stimulus, Webpack Encore, Bun, Sass
 - Helm charts for Kubernetes, opt-in Prometheus metrics
@@ -91,16 +115,14 @@ Most invoicing tools force a trade-off: easy to use *or* respectful of your data
 
 Both versions ship the same codebase and feature set. Pick whichever fits your workflow.
 
-|                              | 🏠 **Self-Hosted** (Free, MIT) | ☁️ **Hosted** ($8/month)         |
-| ---------------------------- | ------------------------------ | --------------------------------- |
-| Price                        | Free forever                   | Flat $8/mo — no per-client fees   |
-| Setup                        | You install & maintain         | Zero setup — sign up and send     |
-| Updates                      | Manual                         | Automatic                         |
-| Backups                      | You manage                     | Daily, managed for you            |
-| Branding                     | Yours                          | Augias branding removed     |
-| Early access to new features | —                              | ✅                                |
-| Data ownership               | Full                           | Full — export anytime             |
-| Best for                     | Tinkerers, privacy-first teams | Anyone who wants to invoice today |
+|                | 🏠 **Self-Hosted** (Free, MIT)  | ☁️ **Hosted by HERC SI**                     |
+| -------------- | ------------------------------- | -------------------------------------------- |
+| Price          | Free forever                    | A free plan, and paid plans for automation   |
+| Setup          | You install & maintain          | Sign up and send                             |
+| Updates        | Manual                          | Automatic                                    |
+| Data location  | Your server                     | Hosted in Europe (Infomaniak)                |
+| Data ownership | Full                            | Full — export anytime                        |
+| Best for       | Tinkerers, privacy-first teams  | Anyone who wants to invoice today            |
 
 ---
 
@@ -143,7 +165,7 @@ chmod +x augias
 
 That's it — open `http://localhost:8765` and you're invoicing.
 
-### Option 4 — From source (for developers)
+### Option 3 — From source (for developers)
 
 ```bash
 git clone https://github.com/herc-si/Augias.git
@@ -158,13 +180,13 @@ For production builds:
 bun run build
 ```
 
-**Requirements:** PHP 8.4+, ext-curl, ext-gd, ext-intl, ext-openssl, ext-pdo, ext-soap, ext-xsl, MySQL/MariaDB or PostgreSQL.
+**Requirements:** PHP 8.4.1+, ext-curl, ext-gd, ext-intl, ext-openssl, ext-pdo, ext-soap, ext-xsl, MySQL/MariaDB or PostgreSQL.
 
 ---
 
 ## 🛠 Tech Stack
 
-**Backend:** Symfony 7.1 · PHP 8.4 · Doctrine ORM · API Platform 4 · Payum · MoneyPHP
+**Backend:** Symfony 8.1 · PHP 8.4 · Doctrine ORM · API Platform 4 · Payum · MoneyPHP
 **Frontend:** Tabler · Bootstrap 5.3 · Stimulus · Webpack Encore · Bun · Sass
 **Quality:** PHPStan (level 6) · ECS · Rector · PHPUnit · Foundry · GitHub Actions
 
@@ -219,4 +241,3 @@ Built on [SolidInvoice](https://github.com/SolidInvoice/SolidInvoice) by [SolidW
 
 </div>
 
-<!-- GitAds-Verify: 5A777YN6A52PDTET1VL1VHZGIO89ZZT5 -->
