@@ -15,6 +15,7 @@ namespace Augias\UserBundle\Onboarding\EventSubscriber;
 
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Onboarding\Manager\OnboardingManager;
+use Augias\UserBundle\Security\SupportAccess;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\Routing\RouterInterface;
@@ -35,6 +36,7 @@ final readonly class OnboardingLoginListener implements EventSubscriberInterface
     public function __construct(
         private OnboardingManager $onboardingManager,
         private RouterInterface $router,
+        private SupportAccess $supportAccess,
     ) {
     }
 
@@ -63,6 +65,12 @@ final readonly class OnboardingLoginListener implements EventSubscriberInterface
                 $this->onboardingManager->dismissOnboarding($user);
             }
 
+            return;
+        }
+
+        // Someone let into a company to help it is on their way there, not
+        // setting up a business of their own.
+        if ($this->supportAccess->hasAnyPass($user)) {
             return;
         }
 

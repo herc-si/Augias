@@ -5,7 +5,7 @@ description: Quelles données Augias traite, à quel titre, avec qui, et pendant
 
 # Politique de confidentialité
 
-Dernière mise à jour : 28 septembre 2026
+Dernière mise à jour : 1er octobre 2026
 
 :::warning À compléter avant publication
 Projet rédigé à partir du fonctionnement réel de l'application, à relire par un juriste. Les mentions **[À COMPLÉTER]** attendent une information ou une décision de HERC SI. Une politique qui décrirait des traitements différents de ceux réellement effectués serait sans valeur, et la section 4 dépend de choix d'exploitation encore ouverts.
@@ -35,6 +35,7 @@ Concrètement : c'est à vous d'avoir une base légale pour traiter les données
 | Invitations | adresse électronique des personnes que vous invitez dans votre équipe | leur ouvrir un accès |
 | Journaux techniques | adresse IP, date, page consultée, agent utilisateur, erreurs applicatives | sécurité, diagnostic de panne |
 | Journal de vos consultations | les dossiers que vous ouvrez — facture, devis, avoir, client, facture d'achat — avec leur nom et la date | vous permettre de retrouver ce que vous avez consulté ; ce journal est le vôtre et n'est visible que de vous |
+| Demandes d'assistance | le message que vous rédigez, l'adresse de la personne qui l'envoie, la durée d'accès choisie, l'intervenant de HERC SI qui la prend en charge, les dates, et le compte rendu d'intervention | vous assister à votre demande, et garder la trace de chaque accès ouvert à HERC SI |
 
 ### En tant que sous-traitant, pour votre compte
 
@@ -83,6 +84,7 @@ Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel
 | Journaux techniques du serveur | **[À COMPLÉTER : douze mois au plus est l'usage]** |
 | Rapports d'erreur | **[À COMPLÉTER : durée de rétention configurée chez Sentry]** |
 | Journal de vos consultations | **90 jours**, puis suppression automatique |
+| Demandes d'assistance et leurs comptes rendus | aussi longtemps que le compte de l'entreprise ; supprimées avec elle |
 | Demandes de réinitialisation de mot de passe | quelques heures, jusqu'à expiration du lien |
 
 ## 6. Sécurité
@@ -94,6 +96,7 @@ Les mesures effectivement en place :
 - **Cloisonnement entre entreprises** appliqué au niveau de la couche d'accès aux données, et non laissé à la vigilance de chaque écran : une requête ne peut pas atteindre les données d'une autre entreprise même si un identifiant est deviné.
 - **Jetons d'API et MCP** révocables à tout moment, avec un historique d'utilisation consultable.
 - **Journal des connexions** : chaque tentative de connexion à votre compte, réussie ou non, est consultable depuis votre compte pendant 90 jours, avec sa date, son adresse IP et son navigateur.
+- **Accès d'assistance sur demande uniquement** : HERC SI n'entre dans votre entreprise que si son propriétaire ou un administrateur l'a demandé depuis l'application, pour la durée qu'il a choisie, en lecture seule, sous le nom de l'intervenant et jamais sous celui d'un de vos utilisateurs. Un bandeau le signale à chaque membre de l'entreprise pendant toute la durée de l'accès, qui peut être refermé à tout moment.
 - **Journal des consultations par HERC SI** : toute lecture de vos données dans le cadre de l'exploitation ou du support est inscrite dans votre propre dossier, avec sa date, son auteur et son motif. Le relevé vous est communiqué sur demande, et il figure dans l'export de vos données.
 - **Chiffrement des échanges** entre votre navigateur et le service.
 
@@ -157,6 +160,8 @@ Cette annexe vaut accord de sous-traitance entre le Client, responsable de trait
 
 **Audit.** HERC SI met à disposition les informations nécessaires pour démontrer le respect de l'article 28 et permet la réalisation d'audits, dans des conditions à convenir et aux frais du Client.
 
-**Accès administrateur.** HERC SI n'accède aux données d'un Client que lorsque l'exploitation ou une demande de support l'exige. **Il n'existe pas de fonction permettant à HERC SI de se connecter sous l'identité d'un utilisateur.**
+**Accès administrateur.** HERC SI n'accède aux données d'un Client que lorsque l'exploitation l'exige ou à la demande expresse du Client. **Il n'existe pas de fonction permettant à HERC SI de se connecter sous l'identité d'un utilisateur.**
+
+**Accès d'assistance.** Le propriétaire ou un administrateur de l'entreprise peut ouvrir depuis l'application une demande d'assistance, qui précise son objet et la durée pendant laquelle HERC SI peut consulter l'entreprise ; cette demande vaut instruction documentée au sens de l'article 28. L'accès n'est ouvert qu'à l'intervenant de HERC SI qui prend la demande en charge, sous sa propre identité ; il est limité à la lecture — aucune donnée ne peut être modifiée, envoyée ni exportée — ; il est signalé sur chaque page aux membres de l'entreprise, révocable à tout moment, et se referme de lui-même à son échéance. Chaque page consultée est inscrite au journal des consultations, et l'intervention se clôt par un compte rendu adressé au Client et conservé avec sa demande.
 
 **Journal des consultations.** Chaque lecture des données d'un Client par HERC SI est inscrite dans un journal conservé **dans la base du Client** : date, personne qui a consulté, motif. Le Client en obtient le relevé **sur demande**, et ce journal est compris dans l'export intégré de ses données, qu'il déclenche lui-même. Il est conservé aussi longtemps que le compte.

@@ -1,0 +1,17 @@
+{#
+ # Where a visitor lands once out of the company.
+ #}
+{% extends "@AugiasCore/Layout/default_no_nav.html.twig" %}
+
+{% block content %}
+    <div class="empty">
+        <div class="empty-icon">
+            {{ ux_icon('tabler:door-exit', {width: 48, height: 48, class: 'text-secondary'}) }}
+        </div>
+        <p class="empty-title">{{ 'support.ended.title'|trans }}</p>
+        <p class="empty-subtitle text-secondary">{{ 'support.ended.text'|trans }}</p>
+        <div class="empty-action">
+            <a class="btn" href="{{ path('_logout') }}">{{ 'support.ended.logout'|trans }}</a>
+        </div>
+    </div>
+{% endblock content %}

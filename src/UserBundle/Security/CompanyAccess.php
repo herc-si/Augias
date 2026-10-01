@@ -32,6 +32,10 @@ use function in_array;
  * Null when there is no one, no open company, or no membership in it — none
  * of which grants anything. A company scheduled for closure is read-only for
  * everyone in it, whatever their role.
+ *
+ * Someone who is not a member may still be inside on a {@see SupportPass}, the
+ * leave a company gives the people running the service to come and help. They
+ * have no role, and the pass decides what they may do.
  */
 final class CompanyAccess implements ResetInterface
 {
@@ -48,10 +52,14 @@ final class CompanyAccess implements ResetInterface
     /** @var array<string, Membership|null> */
     private array $memberships = [];
 
+    /** @var array<string, SupportPass|null> */
+    private array $passes = [];
+
     public function __construct(
         private readonly Security $security,
         private readonly CompanySelector $companySelector,
         private readonly MembershipRepository $repository,
+        private readonly SupportAccess $supportAccess,
     ) {
     }
 
@@ -82,6 +90,32 @@ final class CompanyAccess implements ResetInterface
     }
 
     /**
+     * The leave on which a non-member is inside the open company, if that is
+     * how they are here. Never set for a member: belonging comes first.
+     */
+    public function pass(): ?SupportPass
+    {
+        if ($this->membership() instanceof Membership) {
+            return null;
+        }
+
+        $user = $this->security->getUser();
+        $companyId = $this->companySelector->getCompany();
+
+        if (! $user instanceof User || ! $companyId instanceof Ulid || ! $user->getId() instanceof Ulid) {
+            return null;
+        }
+
+        $key = $user->getId()->toBase32() . '|' . $companyId->toBase32();
+
+        if (! array_key_exists($key, $this->passes)) {
+            $this->passes[$key] = $this->supportAccess->passFor($user, $companyId);
+        }
+
+        return $this->passes[$key];
+    }
+
+    /**
      * Whether the open company is scheduled for closure — and so read-only.
      */
     public function isClosing(): bool
@@ -95,11 +129,18 @@ final class CompanyAccess implements ResetInterface
             return false;
         }
 
-        return $this->role()?->can($permission) ?? false;
+        $role = $this->role();
+
+        if (null === $role) {
+            return $this->pass()?->can($permission) ?? false;
+        }
+
+        return $role->can($permission);
     }
 
     public function reset(): void
     {
         $this->memberships = [];
+        $this->passes = [];
     }
 }

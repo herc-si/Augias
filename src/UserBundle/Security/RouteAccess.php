@@ -34,6 +34,12 @@ final readonly class RouteAccess
     public function allows(string $route): bool
     {
         $permission = $this->map->forRoute($route);
+        $pass = $this->access->pass();
+
+        // A visitor sees no link to what they could not open.
+        if ($pass instanceof SupportPass) {
+            return $pass->allowsRoute($route, $permission);
+        }
 
         if (! $permission instanceof CompanyPermission || null === $this->access->role()) {
             return true;

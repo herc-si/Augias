@@ -19,6 +19,7 @@ use Augias\UserBundle\Enum\CompanyPermission;
 use Augias\UserBundle\Security\CompanyAccess;
 use Augias\UserBundle\Security\RoleDoesNotAllow;
 use Augias\UserBundle\Security\RoutePermissionMap;
+use Augias\UserBundle\Security\SupportPass;
 use DateTimeImmutable;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
@@ -58,6 +59,15 @@ final readonly class EnforceCompanyRoleListener
 
         $request = $event->getRequest();
         $permission = $this->required($request);
+        $pass = $this->access->pass();
+
+        if ($pass instanceof SupportPass) {
+            if (! $this->passAllows($pass, $request, $permission)) {
+                throw new RoleDoesNotAllow($this->translator->trans('support.visit.denied'));
+            }
+
+            return;
+        }
 
         if (! $permission instanceof CompanyPermission || $this->access->can($permission)) {
             return;
@@ -78,6 +88,27 @@ final readonly class EnforceCompanyRoleListener
         throw new RoleDoesNotAllow($this->translator->trans('users.permission_denied.' . $permission->value, [
             '%role%' => null === $role ? '—' : $this->translator->trans($role->labelKey()),
         ]));
+    }
+
+    /**
+     * A visitor is held to what the pass lists, not to what nobody forbade:
+     * the API and any component or route left unclassified stay closed.
+     */
+    private function passAllows(SupportPass $pass, Request $request, ?CompanyPermission $permission): bool
+    {
+        $route = $request->attributes->get('_route');
+
+        if (! is_string($route) || str_starts_with($route, '_api_')) {
+            return false;
+        }
+
+        if (RoutePermissionMap::LIVE_COMPONENT_ROUTE === $route) {
+            $component = $request->attributes->get('_live_component');
+
+            return is_string($component) && $pass->allowsComponent($component);
+        }
+
+        return $pass->allowsRoute($route, $permission, true === $request->attributes->get(SupportPass::OPEN_ROUTE_ATTRIBUTE));
     }
 
     private function required(Request $request): ?CompanyPermission

@@ -3722,6 +3722,83 @@ supplier:
     view:
         address: Address
         details: 'Supplier Details'
+support:
+    ask:
+        intro: 'Describe what is blocking you. By sending this request, you allow %provider% to look at your company, read-only, for the time chosen below.'
+        submit: 'Send the request'
+        title: 'Ask %provider% for help'
+    duration:
+        days: '{1} 1 day|]1,Inf[ %count% days'
+        hours: '{1} 1 hour|]1,Inf[ %count% hours'
+    email:
+        accepted:
+            body: '%operator% (%provider%) has taken your request and may look at %company%, read-only, until %date%. Every page they open is recorded in the access log. You can end this access at any time.'
+            heading: 'Your request has been taken'
+            subject: '%provider% has taken your request for help'
+        message: 'Your request'
+        note: 'What was done'
+        open: 'See the request'
+        requested:
+            body: '%requester% asks for help with %company%. Read-only access is open until %date% once the request is taken.'
+            heading: 'New request for help'
+            subject: 'Request for help — %company%'
+        resolved:
+            body: '%operator% (%provider%) has closed your request. Access to %company% is closed.'
+            heading: 'Request closed'
+            subject: 'Your request for help is closed'
+    ended:
+        logout: 'Sign out'
+        text: 'You are no longer inside the company: the session was left, revoked by the company, or ran out.'
+        title: 'Support session ended'
+    flash:
+        invalid_token: 'The request expired, please try again.'
+        requested: 'Your request has been sent. You will be told by email as soon as it is taken.'
+        revoked: 'Access has been closed.'
+    form:
+        hours: 'How long access stays open'
+        hours_help: 'Access closes by itself at the end of this time, counted from now.'
+        message: 'Your problem'
+        message_help: 'What you are trying to do and what happens. Do not include any password.'
+    history:
+        message: Request
+        note: 'What was done'
+        requested: Requested
+        status: Status
+        title: 'Earlier requests'
+        until: 'until %date%'
+    member_banner:
+        accepted: '%operator% (%provider%) may look at the company, read-only'
+        manage: Manage
+        pending: 'A request for help to %provider% is open'
+        until: 'until %date%'
+    menu: Support
+    open:
+        accepted: '%operator% (%provider%) has taken your request and may look at the company, read-only, until %date%.'
+        pending: 'Your request is waiting for %provider% to take it. Access stays open until %date%.'
+        revoke: 'End access'
+        revoke_confirm: 'End access now? Any session under way will be cut off.'
+        title: 'Open request'
+    provider_fallback: 'the team running the service'
+    status:
+        accepted: Taken
+        expired: Expired
+        pending: Waiting
+        resolved: Closed
+        revoked: Revoked
+    terms:
+        identity: '%provider% works under their own name, never as one of your users.'
+        logged: "Every page they open is recorded in your company's access log."
+        read_only: 'Read-only: nothing can be changed, sent or exported.'
+        report: 'The request closes with an account of what was done, shown here.'
+        time: 'Access closes by itself when the time is up, and you can end it at any time.'
+        title: 'What you allow'
+    title: Support
+    visit:
+        banner:
+            leave: 'Leave the session'
+            text: 'read-only, until %date%'
+            title: 'Support session at %company%'
+        denied: 'This is not available during a support session: access is read-only.'
 status:
     accepted: Accepted
     active: Active

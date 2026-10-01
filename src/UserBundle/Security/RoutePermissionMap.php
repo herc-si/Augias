@@ -197,6 +197,14 @@ final class RoutePermissionMap
         '_user_invite' => CompanyPermission::ManageMembers,
         '_user_resend_invite' => CompanyPermission::ManageMembers,
         '_users_login_history' => CompanyPermission::ManageMembers,
+        // Asking the people who run the service in is letting someone in.
+        '_support' => CompanyPermission::ManageMembers,
+        '_support_revoke' => CompanyPermission::ManageMembers,
+
+        // The visitor's own way in and out: the request is checked there.
+        '_support_ended' => null,
+        '_support_enter' => null,
+        '_support_leave' => null,
 
         // Leaving is the member's own business; the manager checks the rest.
         '_member_leave' => null,

@@ -17,6 +17,8 @@ use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Company\ResolvedHost;
 use Augias\CoreBundle\Entity\Company;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Security\SupportAccess;
+use Augias\UserBundle\Security\SupportPass;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -41,6 +43,7 @@ final readonly class CompanyEventSubscriber implements EventSubscriberInterface
         private RouterInterface $router,
         private CompanySelector $companySelector,
         private Security $security,
+        private SupportAccess $supportAccess,
         private ?string $installed = null,
     ) {
     }
@@ -99,7 +102,28 @@ final readonly class CompanyEventSubscriber implements EventSubscriberInterface
             // access until they signed out; now their next page asks them to
             // pick one of the companies they are still in.
             if ($user instanceof User && $companyId instanceof Ulid && ! $user->getCompanies()->exists(static fn (int $key, Company $company): bool => $company->getId()->equals($companyId))) {
+                // Not a member, but let in to help, on leave that still runs.
+                if ($session->has(SupportAccess::SESSION_KEY) && $this->supportAccess->passFor($user, $companyId) instanceof SupportPass) {
+                    $this->companySelector->switchCompany($companyId);
+
+                    return;
+                }
+
                 $session->remove('company');
+
+                // A visit that has just ended: the visitor has no company of
+                // their own to be sent to choose from.
+                if ($session->has(SupportAccess::SESSION_KEY)) {
+                    $session->remove(SupportAccess::SESSION_KEY);
+                    $endedUrl = $this->supportAccess->endedUrl();
+
+                    if (null !== $endedUrl) {
+                        $event->setResponse(new RedirectResponse($endedUrl));
+                        $event->stopPropagation();
+
+                        return;
+                    }
+                }
 
                 if (! $this->isOnCompanySelectionRoute($request)) {
                     $event->setResponse(new RedirectResponse($this->router->generate('_select_company')));

@@ -87,6 +87,12 @@ class OperatorAccess
         AccessReason $reason,
         #[ORM\Column(name: 'accessed_at', type: Types::DATETIME_IMMUTABLE)]
         private readonly DateTimeImmutable $accessedAt,
+        /**
+         * What exactly, when the reason alone does not say: the page opened
+         * during a support visit. Null for the reasons that name a whole list.
+         */
+        #[ORM\Column(name: 'detail', type: Types::STRING, length: 255, nullable: true)]
+        private readonly ?string $detail = null,
     ) {
         $this->company = $company;
         $this->reason = $reason->value;
@@ -118,5 +124,10 @@ class OperatorAccess
     public function getAccessedAt(): DateTimeImmutable
     {
         return $this->accessedAt;
+    }
+
+    public function getDetail(): ?string
+    {
+        return $this->detail;
     }
 }
