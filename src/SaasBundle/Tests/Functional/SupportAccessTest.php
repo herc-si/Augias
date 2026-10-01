@@ -30,6 +30,7 @@ use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Test\Factory\UserFactory;
 use Override;
 use PHPUnit\Framework\Attributes\Group;
+use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -263,7 +264,8 @@ final class SupportAccessTest extends WebTestCase
         $this->em->getConnection()->update(
             SupportRequest::TABLE_NAME,
             ['expires_at' => '2000-01-01 00:00:00'],
-            ['id' => $request->getId()->toBinary()],
+            ['id' => $request->getId()],
+            ['id' => UlidType::NAME],
         );
 
         $visitor->visit('/clients/')->assertOn('/support/ended');
@@ -327,6 +329,8 @@ final class SupportAccessTest extends WebTestCase
 
     private function desk(): SupportDesk
     {
+        // Only the SaaS kernel has it; PHPStan reads the self-hosted container.
+        // @phpstan-ignore symfonyContainer.serviceNotFound
         return self::getContainer()->get(SupportDesk::class);
     }
 
