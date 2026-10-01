@@ -18,6 +18,8 @@ use Augias\SaasBundle\Service\SubscriptionService;
 use Augias\SettingsBundle\Entity\Setting;
 use Augias\SettingsBundle\Form\Type\SettingsType;
 use Augias\SettingsBundle\Repository\SettingsRepository;
+use Augias\UserBundle\Security\CompanyAccess;
+use Augias\UserBundle\Security\SupportPass;
 use Generator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -34,6 +36,7 @@ use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 use Symfony\UX\TwigComponent\Attribute\PreMount;
 use Throwable;
 use function array_key_first;
+use function is_array;
 use function str_replace;
 
 /**
@@ -66,6 +69,7 @@ final class Settings extends AbstractController
         private readonly PropertyAccessorInterface $propertyAccessor,
         private readonly ?SubscriptionService $subscriptionService = null,
         private readonly string $customDomainDnsRecord = '',
+        private readonly ?CompanyAccess $access = null,
     ) {
     }
 
@@ -109,6 +113,13 @@ final class Settings extends AbstractController
                 $path,
                 $useObject ? $setting : $value
             );
+        }
+
+        // Someone let in to help reads the settings, but not the company's
+        // credentials with its mail provider: they are not needed to see what
+        // was configured, and they are the one thing here worth taking.
+        if ($this->access?->pass() instanceof SupportPass && is_array($settings['email'] ?? null)) {
+            unset($settings['email']['sending_options']);
         }
 
         return $settings;

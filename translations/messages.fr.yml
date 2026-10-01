@@ -3790,6 +3790,7 @@ support:
         logged: 'Chaque page consultée est inscrite au journal des consultations de votre entreprise.'
         read_only: 'Accès en lecture seule : rien ne peut être modifié, envoyé ni exporté.'
         report: "La demande se clôt par un compte rendu de l'intervention, visible ici."
+        settings: "Vos paramètres sont visibles, sauf vos identifiants auprès d'autres services (envoi des courriels, moyens de paiement, facturation électronique, notifications)."
         time: "L'accès se referme de lui-même à l'échéance, et vous pouvez y mettre fin à tout moment."
         title: 'Ce que vous autorisez'
     title: Assistance

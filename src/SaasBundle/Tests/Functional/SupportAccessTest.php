@@ -23,6 +23,8 @@ use Augias\CoreBundle\Enum\AccessReason;
 use Augias\CoreBundle\Enum\SupportRequestStatus;
 use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
+use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
+use Augias\QuoteBundle\Test\Factory\QuoteFactory;
 use Augias\SaasBundle\Support\SupportDesk;
 use Augias\Test\SaasKernel;
 use Augias\UserBundle\Entity\User;
@@ -141,7 +143,18 @@ final class SupportAccessTest extends WebTestCase
             ->visit('/invoices/create/' . $this->client->getId())
             ->assertStatus(403)
             ->assertSee('read-only')
+            // What the company configured is readable; its credentials with
+            // other services, and saving anything, are not.
             ->visit('/settings')
+            ->assertSuccessful()
+            ->assertSee('Shop')
+            ->visit('/tax/rates')
+            ->assertSuccessful()
+            ->visit('/payments/methods')
+            ->assertStatus(403)
+            ->visit('/electronic-invoicing/providers')
+            ->assertStatus(403)
+            ->visit('/notifications/integrations')
             ->assertStatus(403)
             ->visit('/profile/exports')
             ->assertStatus(403)
@@ -156,7 +169,7 @@ final class SupportAccessTest extends WebTestCase
 
         $details = array_map(static fn (OperatorAccess $row): ?string => $row->getDetail(), $log);
         self::assertContains('GET /clients/view/' . $this->client->getId(), $details);
-        self::assertContains('GET /settings', $details, 'A refused attempt is on the record too.');
+        self::assertContains('GET /payments/methods', $details, 'A refused attempt is on the record too.');
 
         foreach ($log as $row) {
             self::assertSame(AccessReason::SupportSession, $row->getReasonKind());
@@ -195,6 +208,69 @@ final class SupportAccessTest extends WebTestCase
             ->click('Sign in')
             ->assertOn('/dashboard')
             ->assertSee('Support session at Shop');
+    }
+
+    /**
+     * The operator usually has a company of their own on the deployment. Inside
+     * the customer's, it is the customer's data they see — not their own.
+     */
+    /**
+     * The operator usually has a company of their own on the deployment, with
+     * documents in it. Inside the customer's, every page shows the customer's
+     * data and nothing of theirs.
+     */
+    public function testAnOperatorWithACompanyOfTheirOwnSeesOnlyTheCustomersData(): void
+    {
+        $this->settings();
+        $owner = $this->member(CompanyRole::Owner);
+        $operator = $this->outsider();
+
+        $own = CompanyFactory::createOne(['name' => 'Operator Ltd']);
+        $theirs = ClientFactory::createOne(['company' => $own, 'name' => 'Operator Customer']);
+        InvoiceFactory::createOne(['company' => $own, 'client' => $theirs]);
+        QuoteFactory::createOne(['company' => $own, 'client' => $theirs]);
+        $own = $this->em->find(Company::class, $own->getId());
+        self::assertInstanceOf(Company::class, $own);
+        $operator->addCompany($own, CompanyRole::Owner);
+        $this->em->flush();
+
+        $request = $this->request($owner);
+        $this->desk()->accept($request, (string) $operator->getEmail());
+
+        $browser = $this->as($operator)
+            ->visit('/invoices/')
+            ->assertSee('Operator Customer')
+            ->visit('/support/' . $request->getId() . '/enter')
+            ->assertOn('/dashboard')
+            ->assertSee('Support session at Shop');
+
+        foreach (['/dashboard', '/quotes/', '/invoices/', '/bills/', '/catalog/', '/users', '/categories', '/accounting/', '/payments/', '/clients/'] as $page) {
+            $browser->visit($page);
+            $content = $browser->content();
+            file_put_contents('/tmp/visit' . str_replace('/', '_', $page) . '.html', $content);
+            self::assertStringNotContainsString('Operator Customer', $content, $page . ' shows the operator\'s own data');
+        }
+    }
+
+    public function testTheVisitorReadsTheSettingsButNotTheMailCredentials(): void
+    {
+        $this->settings();
+        $owner = $this->member(CompanyRole::Owner);
+        $operator = $this->outsider();
+        $request = $this->request($owner);
+        $this->desk()->accept($request, (string) $operator->getEmail());
+
+        $this->as($owner)
+            ->visit('/settings?section=email')
+            ->assertSuccessful()
+            ->assertSeeElement('[name*="[sending_options]"]');
+
+        $this->as($operator)
+            ->visit('/support/' . $request->getId() . '/enter')
+            ->visit('/settings?section=email')
+            ->assertSuccessful()
+            ->assertNotSeeElement('[name*="[sending_options]"]')
+            ->assertSeeElement('[name*="[from_address]"]');
     }
 
     public function testOnlyWhoeverTookTheRequestComesIn(): void

@@ -44,6 +44,20 @@ final readonly class SupportPass
     private const array COMPONENTS = ['DataGrid'];
 
     /**
+     * Settings pages a visitor may look at, never save: what the company
+     * configured is often the answer to what went wrong. Payment methods,
+     * e-invoicing platforms and notification channels stay closed — their
+     * pages carry the company's credentials with those services.
+     */
+    private const array READABLE_SETTINGS = ['_settings', '_settings_custom_fields', '_tax_rates', '_template_preview'];
+
+    /**
+     * Live components a visitor may have re-rendered (switching a settings
+     * tab) but never asked to act — saving is an action.
+     */
+    private const array RENDERED_COMPONENTS = ['Settings'];
+
+    /**
      * Set on a route that a visitor must reach although it grants nothing —
      * the page that ends the visit, typically.
      */
@@ -69,8 +83,12 @@ final readonly class SupportPass
      * unclassified routes are open, a visitor is held to what is listed: a
      * route nobody thought about is closed.
      */
-    public function allowsRoute(string $route, ?CompanyPermission $permission, bool $markedOpen = false): bool
+    public function allowsRoute(string $route, ?CompanyPermission $permission, bool $markedOpen = false, bool $safe = true): bool
     {
+        if (CompanyPermission::Settings === $permission) {
+            return $safe && in_array($route, self::READABLE_SETTINGS, true);
+        }
+
         if ($permission instanceof CompanyPermission) {
             return $this->can($permission);
         }
@@ -78,8 +96,15 @@ final readonly class SupportPass
         return $markedOpen || in_array($route, self::OPEN_ROUTES, true);
     }
 
-    public function allowsComponent(string $component): bool
+    /**
+     * @param string $action the live action asked for; "get" only re-renders
+     */
+    public function allowsComponent(string $component, string $action = 'get'): bool
     {
-        return in_array($component, self::COMPONENTS, true);
+        if (in_array($component, self::COMPONENTS, true)) {
+            return true;
+        }
+
+        return 'get' === $action && in_array($component, self::RENDERED_COMPONENTS, true);
     }
 }
