@@ -1,0 +1,22 @@
+{#
+ # Shown to every member while the company's door is open.
+ #}
+{% set providerName = provider ?: 'support.provider_fallback'|trans %}
+<div class="alert alert-warning alert-banner mb-0 no-print" role="alert">
+    <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+        <div class="alert-icon">
+            {{ ux_icon('tabler:lifebuoy', {width: 24, height: 24}) }}
+        </div>
+        <div class="flex-grow-1">
+            {% if request.status.value == 'accepted' %}
+                <strong>{{ 'support.member_banner.accepted'|trans({'%provider%': providerName, '%operator%': request.operator}) }}</strong>
+            {% else %}
+                <strong>{{ 'support.member_banner.pending'|trans({'%provider%': providerName}) }}</strong>
+            {% endif %}
+            — {{ 'support.member_banner.until'|trans({'%date%': request.expiresAt|date('d/m/Y H:i')}) }}
+        </div>
+        {% if route_allowed('_support') %}
+            <a class="btn btn-sm btn-warning" href="{{ path('_support') }}">{{ 'support.member_banner.manage'|trans }}</a>
+        {% endif %}
+    </div>
+</div>

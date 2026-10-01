@@ -16,4 +16,7 @@ use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator->import('@AugiasSaasBundle/Resources/config/routing.php')
         ->prefix('/billing');
+
+    $routingConfigurator->import('@AugiasSaasBundle/Resources/config/support_routing.php')
+        ->prefix('/support');
 };

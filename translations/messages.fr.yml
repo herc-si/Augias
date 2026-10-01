@@ -3722,6 +3722,83 @@ supplier:
     view:
         address: Adresse
         details: 'Détails du fournisseur'
+support:
+    ask:
+        intro: "Décrivez ce qui vous bloque. En envoyant cette demande, vous autorisez %provider% à consulter votre entreprise, en lecture seule, pendant la durée choisie ci-dessous."
+        submit: 'Envoyer la demande'
+        title: "Demander de l'aide à %provider%"
+    duration:
+        days: '{1} 1 jour|]1,Inf[ %count% jours'
+        hours: '{1} 1 heure|]1,Inf[ %count% heures'
+    email:
+        accepted:
+            body: "%operator% (%provider%) a pris en charge votre demande et peut consulter %company% en lecture seule jusqu'au %date%. Chaque page consultée est inscrite au journal des consultations. Vous pouvez mettre fin à cet accès à tout moment."
+            heading: 'Votre demande est prise en charge'
+            subject: "%provider% a pris en charge votre demande d'assistance"
+        message: 'Votre demande'
+        note: "Compte rendu d'intervention"
+        open: 'Voir la demande'
+        requested:
+            body: "%requester% demande de l'aide pour %company%. L'accès en lecture seule est ouvert jusqu'au %date% dès que la demande est prise en charge."
+            heading: "Nouvelle demande d'assistance"
+            subject: "Demande d'assistance — %company%"
+        resolved:
+            body: "%operator% (%provider%) a clos votre demande. L'accès à %company% est refermé."
+            heading: 'Demande close'
+            subject: "Votre demande d'assistance est close"
+    ended:
+        logout: 'Se déconnecter'
+        text: "Vous n'êtes plus dans l'entreprise : la session a été quittée, révoquée par l'entreprise, ou sa durée est écoulée."
+        title: "Session d'assistance terminée"
+    flash:
+        invalid_token: 'La demande a expiré, veuillez réessayer.'
+        requested: 'Votre demande a été envoyée. Vous serez prévenu par courriel dès sa prise en charge.'
+        revoked: "L'accès a été refermé."
+    form:
+        hours: 'Durée de l''accès'
+        hours_help: "L'accès se referme de lui-même au terme de cette durée, compté à partir de maintenant."
+        message: 'Votre problème'
+        message_help: "Ce que vous essayez de faire et ce qui se passe. N'y mettez pas de mot de passe."
+    history:
+        message: Demande
+        note: 'Compte rendu'
+        requested: 'Demandée le'
+        status: État
+        title: 'Demandes précédentes'
+        until: "jusqu'au %date%"
+    member_banner:
+        accepted: "%operator% (%provider%) peut consulter l'entreprise en lecture seule"
+        manage: Gérer
+        pending: "Une demande d'assistance à %provider% est ouverte"
+        until: "jusqu'au %date%"
+    menu: Assistance
+    open:
+        accepted: "%operator% (%provider%) a pris en charge votre demande et peut consulter l'entreprise en lecture seule jusqu'au %date%."
+        pending: "Votre demande attend d'être prise en charge par %provider%. L'accès reste ouvert jusqu'au %date%."
+        revoke: "Mettre fin à l'accès"
+        revoke_confirm: "Mettre fin à l'accès maintenant ? Toute session en cours sera interrompue."
+        title: 'Demande en cours'
+    provider_fallback: "l'équipe qui exploite le service"
+    status:
+        accepted: 'Prise en charge'
+        expired: Expirée
+        pending: 'En attente'
+        resolved: Close
+        revoked: Révoquée
+    terms:
+        identity: "%provider% intervient sous son propre nom, jamais sous celui d'un de vos utilisateurs."
+        logged: 'Chaque page consultée est inscrite au journal des consultations de votre entreprise.'
+        read_only: 'Accès en lecture seule : rien ne peut être modifié, envoyé ni exporté.'
+        report: "La demande se clôt par un compte rendu de l'intervention, visible ici."
+        time: "L'accès se referme de lui-même à l'échéance, et vous pouvez y mettre fin à tout moment."
+        title: 'Ce que vous autorisez'
+    title: Assistance
+    visit:
+        banner:
+            leave: 'Quitter la session'
+            text: 'lecture seule, jusqu''au %date%'
+            title: "Session d'assistance chez %company%"
+        denied: "Cette action n'est pas disponible pendant une session d'assistance : l'accès est en lecture seule."
 status:
     accepted: Accepté
     active: Actif

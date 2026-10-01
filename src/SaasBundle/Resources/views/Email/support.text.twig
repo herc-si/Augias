@@ -1,0 +1,16 @@
+{% set params = {'%company%': companyName, '%provider%': provider, '%operator%': operator ?? '', '%requester%': requestedBy, '%date%': expiresAt|date('d/m/Y H:i')} %}
+{{ ('support.email.' ~ notice ~ '.heading')|trans(params)|upper }}
+
+{{ ('support.email.' ~ notice ~ '.body')|trans(params) }}
+
+{{ 'support.email.message'|trans }}
+{{ message }}
+{% if note %}
+
+{{ 'support.email.note'|trans }}
+{{ note }}
+{% endif %}
+{% if url %}
+
+{{ 'support.email.open'|trans }} : {{ url }}
+{% endif %}

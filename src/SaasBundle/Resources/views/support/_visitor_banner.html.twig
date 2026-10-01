@@ -1,0 +1,18 @@
+{#
+ # Shown to whoever is inside a company on its request for help.
+ #}
+<div class="alert alert-danger alert-banner mb-0 no-print" role="alert">
+    <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+        <div class="alert-icon">
+            {{ ux_icon('tabler:lifebuoy', {width: 24, height: 24}) }}
+        </div>
+        <div class="flex-grow-1">
+            <strong>{{ 'support.visit.banner.title'|trans({'%company%': companyName}) }}</strong>
+            — {{ 'support.visit.banner.text'|trans({'%date%': until|date('d/m/Y H:i')}) }}
+        </div>
+        <form method="post" action="{{ path('_support_leave') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('support_leave') }}">
+            <button class="btn btn-sm btn-danger">{{ 'support.visit.banner.leave'|trans }}</button>
+        </form>
+    </div>
+</div>

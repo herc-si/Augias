@@ -5,7 +5,7 @@ description: Conditions générales d'utilisation et de vente du service héberg
 
 # Conditions générales d'utilisation et de vente
 
-Dernière mise à jour : 28 septembre 2026
+Dernière mise à jour : 1er octobre 2026
 
 :::warning À compléter avant publication
 Ce document est un projet rédigé à partir du fonctionnement réel de l'application. Les mentions **[À COMPLÉTER]** attendent des informations ou des décisions de HERC SI, et l'ensemble doit être relu par un juriste avant d'engager la société.
@@ -96,6 +96,8 @@ Les données saisies par le Client lui appartiennent. Le Prestataire n'en acquie
 Le Client peut à tout moment demander depuis l'application un **export complet des données de son entreprise**, qui lui est fourni sous forme d'archive téléchargeable.
 
 À la fin du contrat, quelle qu'en soit la cause, les données sont conservées pendant **quatre-vingt-dix jours** afin de permettre au Client d'en demander l'export, puis supprimées définitivement des systèmes de production. Ce délai laisse le temps de récupérer une comptabilité, y compris lorsque la fin du contrat n'a pas été voulue par le Client. Le Prestataire ne conserve pas les données au-delà : il n'est soumis à aucune obligation légale de les garder pour le compte du Client. Les sauvegardes s'effacent selon leur propre cycle, décrit dans la [politique de confidentialité](./politique-de-confidentialite.md).
+
+**Assistance.** À la demande du Client, formulée depuis l'application par le propriétaire ou un administrateur de l'entreprise, le Prestataire peut consulter les données de l'entreprise pour l'aider. Cet accès est limité à la lecture, borné à la durée choisie par le Client, révocable à tout moment, et s'effectue sous l'identité de l'intervenant du Prestataire, jamais sous celle d'un utilisateur du Client. Il ne vaut pas mandat : le Prestataire ne modifie, n'envoie ni n'exporte aucune donnée, et le Client demeure seul responsable des suites qu'il donne aux constats de l'intervention, conformément à l'article 9. L'intervention se clôt par un compte rendu ; ses conditions sont détaillées dans la [politique de confidentialité](./politique-de-confidentialite.md). **[À COMPLÉTER : délai de prise en charge, si HERC SI souhaite en annoncer un ; à défaut, aucun délai n'est garanti.]**
 
 Le propriétaire d'une entreprise peut en demander la **fermeture** depuis l'application. La fermeture prend effet trente jours après la demande. Pendant ce délai, l'entreprise est accessible en lecture seule à tous ses membres, son export complet reste disponible, et le propriétaire peut annuler la fermeture. Le propriétaire et les administrateurs de l'entreprise en sont avertis par courriel lors de la demande, puis sept jours avant la date de fermeture. À cette date, l'entreprise et l'ensemble de ses données — factures, avoirs, devis, clients, paiements et écritures comptables compris — sont **supprimées définitivement** des systèmes de production, sans que le Prestataire en conserve de copie autre que les sauvegardes, effacées selon leur propre cycle.
 

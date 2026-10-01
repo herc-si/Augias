@@ -1,0 +1,47 @@
+{#
+ # A request for help: asked for, taken, closed — `notice` says which.
+ #}
+{% extends "@AugiasCore/Layout/Email/notification.html.twig" %}
+{% import "@AugiasCore/Layout/Email/components.html.twig" as email %}
+
+{% set params = {
+    '%company%': companyName,
+    '%provider%': provider,
+    '%operator%': operator ?? '',
+    '%requester%': requestedBy,
+    '%date%': expiresAt|date('d/m/Y H:i'),
+} %}
+
+{%- block title -%}
+    {{ ('support.email.' ~ notice ~ '.subject')|trans(params) }}
+{%- endblock -%}
+
+{%- block content -%}
+    {% apply inky_to_html %}
+        <row>
+            <columns>
+                <p style="color: #1e293b; font-size: 18px; font-weight: 600; line-height: 1.5; margin: 0 0 16px 0; Margin: 0 0 16px 0;">
+                    {{ ('support.email.' ~ notice ~ '.heading')|trans(params) }}
+                </p>
+                <p style="color: #1e293b; font-size: 16px; line-height: 1.5; margin: 0 0 16px 0; Margin: 0 0 16px 0;">
+                    {{ ('support.email.' ~ notice ~ '.body')|trans(params) }}
+                </p>
+                <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 0 0 4px 0; Margin: 0 0 4px 0;">
+                    {{ 'support.email.message'|trans }}
+                </p>
+                <p style="color: #1e293b; font-size: 15px; line-height: 1.5; margin: 0 0 16px 0; Margin: 0 0 16px 0; white-space: pre-line; border-left: 3px solid #cbd5e1; padding-left: 12px;">{{ message }}</p>
+                {% if note %}
+                    <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 0 0 4px 0; Margin: 0 0 4px 0;">
+                        {{ 'support.email.note'|trans }}
+                    </p>
+                    <p style="color: #1e293b; font-size: 15px; line-height: 1.5; margin: 0 0 16px 0; Margin: 0 0 16px 0; white-space: pre-line; border-left: 3px solid #cbd5e1; padding-left: 12px;">{{ note }}</p>
+                {% endif %}
+            </columns>
+        </row>
+    {% endapply %}
+
+    {% if url %}
+        {{ email.button('support.email.open'|trans, url, 'primary', 'large') }}
+        {{ email.spacer('md') }}
+    {% endif %}
+{%- endblock -%}

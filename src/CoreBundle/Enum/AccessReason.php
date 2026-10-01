@@ -48,6 +48,13 @@ enum AccessReason: string
     case SignInList = 'sign_in_list';
 
     /**
+     * A page opened inside the company during a visit it asked for — see
+     * {@see \Augias\CoreBundle\Entity\SupportRequest}. One line per page,
+     * with the page in the detail.
+     */
+    case SupportSession = 'support_session';
+
+    /**
      * The key under which this reason is translated for the customer.
      */
     public function translationKey(): string
