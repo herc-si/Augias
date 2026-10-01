@@ -1597,7 +1597,7 @@ export:
     title: 'Export de données'
 feature:
     available_on_plan: 'Disponible avec le plan %plan% et supérieur.'
-    contact_admin: 'Contactez votre administrateur pour activer cette fonctionnalité.'
+    not_in_any_plan: "Cette fonctionnalité n'est incluse dans aucune offre pour le moment."
     upgrade_required: 'Cette fonctionnalité nécessite une mise à niveau'
     upgrade_to: 'Passer au plan %plan%'
     view_all_plans: 'Voir tous les plans'
