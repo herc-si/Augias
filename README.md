@@ -62,25 +62,27 @@ And the books that follow from it:
 - Quotes that convert into invoices in one click
 - Recurring invoices on flexible schedules
 - Multi-currency support (real `Money` objects — no float rounding)
-- Multi-tax support with invoice-level tax and automatic rate snapshot on issue
-- Flat-rate and percentage tax types, plus per-line discounts
-- 8 built-in PDF templates for invoices and quotes
+- Credit notes, offset against an invoice or refunded
+- A tax rate per line — inclusive, exclusive or flat-rate — frozen on the document when it is issued
+- Document-level discounts, as a percentage or an amount, applied before VAT
+- 8 built-in PDF templates for invoices and quotes, with your colours, footer and bank details
 - Automatic overdue detection with configurable notifications
 - Payment reminders sent on a schedule you define
 - Create a new client directly from the invoice or quote form
-- Invoice state machine (draft → pending → paid)
+- Invoice state machine (draft → pending → overdue → paid, or cancelled)
 
 ### 👥 Clients & Contacts
 - Full client and contact management
-- Custom fields for clients and contacts
+- Custom fields for clients, contacts, invoices and quotes
 - Per-client currency, addresses and contact channels
 - Multi-tenancy out of the box (run multiple companies from one install)
 
 ### 🔐 User & Security
-- Two-Factor Authentication (2FA) via TOTP
+- Two-factor authentication, by authenticator app or by email
 - Google OAuth login
 - User email verification
-- Role-based access control with Symfony Security & Voters
+- Four roles per company — owner, administrator, billing, accountant
+- A sign-in journal for each user and each company
 - Guided onboarding flow with a checklist for new users
 
 ### 💳 Payments
@@ -156,11 +158,11 @@ Get up and running in seconds with a self-contained binary — no PHP, no web se
 
 **Direct binary download:**
 
-Grab the latest binary for your platform from the [releases page](https://github.com/herc-si/Augias/releases), make it executable, and run it:
+Grab the binary for your platform (`augias-linux-amd64`, `augias-linux-arm64`, `augias-mac-amd64`, `augias-mac-arm64`) from the [releases page](https://github.com/herc-si/Augias/releases), make it executable, and run it:
 
 ```bash
-chmod +x augias
-./augias run
+chmod +x augias-linux-amd64
+./augias-linux-amd64 run
 ```
 
 That's it — open `http://localhost:8765` and you're invoicing.
