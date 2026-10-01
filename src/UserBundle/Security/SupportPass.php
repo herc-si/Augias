@@ -46,16 +46,31 @@ final readonly class SupportPass
     /**
      * Settings pages a visitor may look at, never save: what the company
      * configured is often the answer to what went wrong. Payment methods,
-     * e-invoicing platforms and notification channels stay closed — their
-     * pages carry the company's credentials with those services.
+     * e-invoicing platforms and notification channels show which services
+     * are set up; the window that holds the company's credentials with each
+     * of them is not drawn for a visitor (see `support_visit()`).
      */
-    private const array READABLE_SETTINGS = ['_settings', '_settings_custom_fields', '_tax_rates', '_template_preview'];
+    private const array READABLE_SETTINGS = [
+        '_einvoicing_providers',
+        '_notification_integration',
+        '_payment_settings_index',
+        '_settings',
+        '_settings_custom_fields',
+        '_tax_rates',
+        '_template_preview',
+    ];
 
     /**
      * Live components a visitor may have re-rendered (switching a settings
      * tab) but never asked to act — saving is an action.
      */
-    private const array RENDERED_COMPONENTS = ['Settings'];
+    private const array RENDERED_COMPONENTS = [
+        'ElectronicInvoiceMarketplace',
+        'NotificationIntegrations',
+        'NotificationMarketplace',
+        'PaymentMarketplace',
+        'Settings',
+    ];
 
     /**
      * Set on a route that a visitor must reach although it grants nothing —

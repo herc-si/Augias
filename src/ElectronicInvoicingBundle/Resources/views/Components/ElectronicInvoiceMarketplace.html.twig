@@ -130,7 +130,11 @@
                         <a href="{{ path('_einvoicing_providers') }}" class="btn-close" aria-label="{{ 'action.close'|trans }}"></a>
                     </div>
                     <div class="modal-body">
-                        <twig:ElectronicInvoiceProviderConfiguration setting="{{ selectedSetting }}" provider="{{ selectedProvider }}" />
+                        {% if support_visit() %}
+                            <div class="alert alert-info mb-0">{{ 'support.visit.credentials_hidden'|trans }}</div>
+                        {% else %}
+                            <twig:ElectronicInvoiceProviderConfiguration setting="{{ selectedSetting }}" provider="{{ selectedProvider }}" />
+                        {% endif %}
                     </div>
                 </div>
             </div>
