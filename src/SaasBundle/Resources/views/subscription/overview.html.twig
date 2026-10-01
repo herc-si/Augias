@@ -89,15 +89,15 @@
                 </div>
                 <div class="card-body">
                     <div class="d-flex align-items-baseline gap-3 mb-3">
-                        <h2 class="mb-0">{{ plan.name }}</h2>
+                        <h2 class="mb-0">{{ plan_label(plan) }}</h2>
                         {% if isFree %}
                             <span class="text-subtle">{{ 'saas.overview.free'|trans }}</span>
                         {% else %}
                             <span class="text-subtle">
                                 <span class="money money--total">
-                                    <span class="money-currency">USD</span>
-                                    <strong class="money-amount">{{ plan.price|formatCurrencyAmount('USD') }}</strong>
-                                </span>{{ 'saas.plan.per_month'|trans }}
+                                    <span class="money-currency">{{ plan_currency() }}</span>
+                                    <strong class="money-amount">{{ plan.price|formatCurrencyAmount(plan_currency()) }}</strong>
+                                </span>{{ (plan_is_annual(plan) ? 'saas.plan.per_year' : 'saas.plan.per_month')|trans }}
                             </span>
                         {% endif %}
                     </div>

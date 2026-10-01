@@ -28,7 +28,7 @@
                 <div class="card-header">
                     <h3 class="card-title mb-0">
                         {{ ux_icon('tabler:arrow-down', {width: 22, height: 22, class: 'me-2'}) }}
-                        {{ 'saas.confirm.heading'|trans({'%plan%': newPlan.name}) }}
+                        {{ 'saas.confirm.heading'|trans({'%plan%': plan_label(newPlan)}) }}
                     </h3>
                 </div>
                 <div class="card-body">
@@ -36,7 +36,7 @@
                         {% if newPlan.isFree() %}
                             {{ 'saas.confirm.free_notice'|trans }}
                         {% else %}
-                            {{ 'saas.confirm.paid_notice'|trans({'%plan%': newPlan.name}) }}
+                            {{ 'saas.confirm.paid_notice'|trans({'%plan%': plan_label(newPlan)}) }}
                         {% endif %}
                     </p>
 
@@ -46,8 +46,8 @@
                             <thead>
                                 <tr>
                                     <th>{{ 'saas.confirm.feature'|trans }}</th>
-                                    <th>{{ currentPlan.name }}</th>
-                                    <th>{{ newPlan.name }}</th>
+                                    <th>{{ plan_label(currentPlan) }}</th>
+                                    <th>{{ plan_label(newPlan) }}</th>
                                 </tr>
                             </thead>
                             <tbody>
