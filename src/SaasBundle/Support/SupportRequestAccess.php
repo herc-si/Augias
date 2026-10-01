@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\Support;
 
+use Augias\SaasBundle\Feature\Feature;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Security\SupportAccess;
 use Augias\UserBundle\Security\SupportPass;
+use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Uid\Ulid;
@@ -33,6 +35,7 @@ final readonly class SupportRequestAccess implements SupportAccess
     public function __construct(
         private SupportDesk $desk,
         private UrlGeneratorInterface $urls,
+        private FeatureGate $featureGate,
     ) {
     }
 
@@ -43,7 +46,8 @@ final readonly class SupportRequestAccess implements SupportAccess
         }
 
         foreach ($this->desk->admitting($user->getUserIdentifier()) as $request) {
-            if ($request->getCompany()->getId()->equals($company)) {
+            // A company that moved to a plan without it closes its door too.
+            if ($request->getCompany()->getId()->equals($company) && $this->featureGate->isEnabled(Feature::SupportAccess->value, $request->getCompany())) {
                 return new SupportPass($request->getId(), $company, $request->getExpiresAt());
             }
         }

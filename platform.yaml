@@ -84,6 +84,12 @@ saas:
             type: boolean
             default: true
             description: 'Choose a custom design template for invoices and quotes across PDFs, emails and the client portal.'
+        # Off by default, unlike the others: it lets someone from outside into
+        # the company, so a plan has it only when the operator says so.
+        support_access:
+            type: boolean
+            default: false
+            description: 'Ask the people running the service for help, and let them look in, read-only, for a set time.'
 
 ui:
     templates:

@@ -16,9 +16,11 @@ namespace Augias\SaasBundle\Action\Support;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
+use Augias\SaasBundle\Feature\Feature;
 use Augias\SaasBundle\Form\SupportRequestType;
 use Augias\SaasBundle\Support\SupportDesk;
 use Augias\UserBundle\Entity\User;
+use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -43,6 +45,7 @@ final class SupportAction extends AbstractController
         private readonly SupportDesk $desk,
         private readonly CompanySelector $companySelector,
         private readonly CompanyRepository $companyRepository,
+        private readonly FeatureGate $featureGate,
     ) {
     }
 
@@ -55,6 +58,10 @@ final class SupportAction extends AbstractController
 
         if (! $settings->isEnabled() || ! $company instanceof Company || ! $user instanceof User) {
             throw new NotFoundHttpException();
+        }
+
+        if (! $this->featureGate->isEnabled(Feature::SupportAccess->value, $company)) {
+            return $this->render('@AugiasSaas/support/gated.html.twig');
         }
 
         $open = $this->desk->openFor($company);
