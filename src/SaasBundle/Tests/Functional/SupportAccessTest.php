@@ -135,6 +135,31 @@ final class SupportAccessTest extends WebTestCase
         $this->desk()->open($shop, (string) $owner->getEmail(), 'Help', 24);
     }
 
+    /**
+     * No plan includes it yet — the operator has not ticked it anywhere. The
+     * page says so, rather than sending the customer to "their administrator",
+     * who is usually themselves (test instance, 01/10/2026).
+     */
+    public function testWhenNoPlanIncludesItThePageSaysSo(): void
+    {
+        $this->settings();
+        $company = CompanyFactory::createOne(['name' => 'Lonely Shop']);
+        self::assertInstanceOf(Company::class, $company);
+        $this->onPlan($company, false);
+
+        $owner = $this->outsider();
+        $company = $this->em->find(Company::class, $company->getId());
+        self::assertInstanceOf(Company::class, $company);
+        $owner->addCompany($company, CompanyRole::Owner);
+        $this->em->flush();
+
+        $this->as($owner)
+            ->visit('/support/')
+            ->assertSuccessful()
+            ->assertSee('This feature is not included in any plan at the moment.')
+            ->assertNotSee('administrator');
+    }
+
     public function testMovingToAPlanWithoutItClosesTheDoor(): void
     {
         $this->settings();

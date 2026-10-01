@@ -96,9 +96,18 @@
                         {{ 'feature.view_all_plans'|trans }}
                     </a>
                 {% else %}
-                    <p class="text-muted mb-0">
-                        {{ 'feature.contact_admin'|trans }}
+                    {# No plan on sale includes it. Sending the customer to
+                       "their administrator" — themselves, usually — told them
+                       nothing they could act on. #}
+                    <p class="text-muted mb-2">
+                        {{ 'feature.not_in_any_plan'|trans }}
                     </p>
+                    {% set plans_url = optional_path('saas_subscription_plans') %}
+                    {% if plans_url %}
+                        <a href="{{ plans_url }}" class="btn btn-link">
+                            {{ 'feature.view_all_plans'|trans }}
+                        </a>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>
