@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\Support;
 
+use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\SupportRequest;
 use Augias\CoreBundle\Entity\SupportSettings;
@@ -38,6 +39,7 @@ final readonly class SupportDesk
         private EntityManagerInterface $entityManager,
         private ClockInterface $clock,
         private SupportMailer $mailer,
+        private CompanySelector $companySelector,
     ) {
     }
 
@@ -199,14 +201,25 @@ final readonly class SupportDesk
         $filters = $this->entityManager->getFilters();
         $wasEnabled = $filters->isEnabled('company');
 
-        if ($wasEnabled) {
-            $filters->disable('company');
+        if (! $wasEnabled) {
+            return $read();
         }
+
+        $selected = $this->companySelector->getCompany();
+        $filters->disable('company');
 
         try {
             return $read();
         } finally {
-            if ($wasEnabled) {
+            // Through the selector, not $filters->enable(): Doctrine re-enables
+            // a filter without its parameters, and the company filter without
+            // its company filters nothing for the rest of the request. This is
+            // asked on every page of a visit, after the company is opened, so
+            // the visitor saw every tenant's figures (test instance, 01/10/2026:
+            // two quotes counted in a company that had none).
+            if ($selected instanceof Ulid) {
+                $this->companySelector->switchCompany($selected);
+            } else {
                 $filters->enable('company');
             }
         }

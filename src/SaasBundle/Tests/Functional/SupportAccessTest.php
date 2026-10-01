@@ -244,6 +244,12 @@ final class SupportAccessTest extends WebTestCase
             ->assertOn('/dashboard')
             ->assertSee('Support session at Shop');
 
+        // The counts, not only the rows: the customer has no quote, and the
+        // figure on the page must say so (test instance, 01/10/2026: it said 2,
+        // every quote on the deployment).
+        $browser->visit('/quotes/');
+        self::assertSame('0', trim($browser->crawler()->filter('.card-body .fw-medium')->first()->text()), 'The quote count is the customer\'s.');
+
         foreach (['/dashboard', '/quotes/', '/invoices/', '/bills/', '/catalog/', '/users', '/categories', '/accounting/', '/payments/', '/clients/'] as $page) {
             $browser->visit($page);
             $content = $browser->content();
