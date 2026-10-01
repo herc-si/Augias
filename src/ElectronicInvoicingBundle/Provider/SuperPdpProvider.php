@@ -22,6 +22,7 @@ use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use Augias\ElectronicInvoicingBundle\Form\Type\Provider\SuperPdpConfigType;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\ElectronicAddressResolver;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\FacturXInvoiceBuilder;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpAccessTokens;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApiException;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -92,6 +93,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         private LoggerInterface $logger,
         private SystemConfig $systemConfig,
         private ElectronicAddressResolver $addressResolver,
+        private SuperPdpAccessTokens $tokens,
     ) {
     }
 
@@ -103,20 +105,16 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      * e-reporting to the tax administration on the schedule its VAT regime
      * sets, and reports payments for services only when VAT is not on debits.
      *
-     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     * @param array<string, mixed> $config
      */
     public function checkAccount(array $config): ElectronicInvoiceAccountStatus
     {
-        $credentials = $this->credentials($config);
-
-        if ($credentials === null) {
+        if (! $this->tokens->hasCredentials($config)) {
             return ElectronicInvoiceAccountStatus::refused('einvoicing.provider.super_pdp.missing_credentials');
         }
 
-        [$clientId, $clientSecret] = $credentials;
-
         try {
-            $accessToken = $this->client->getAccessToken($clientId, $clientSecret);
+            $accessToken = $this->tokens->accessToken($config);
             $verification = AccountVerification::tryFrom((string) ($this->client->getSession($accessToken)['company_verification_status'] ?? ''))
                 ?? AccountVerification::Unknown;
 
@@ -129,9 +127,13 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         } catch (SuperPdpApiException $e) {
             $this->logger->warning('Could not check the SUPER PDP account.', ['exception' => $e]);
 
-            return $e->isUnauthorized()
-                ? ElectronicInvoiceAccountStatus::refused('einvoicing.provider.super_pdp.bad_credentials')
-                : ElectronicInvoiceAccountStatus::unreachable($e->getMessage());
+            return match (true) {
+                // The company withdrew its consent, or nothing used the
+                // connection for a year.
+                $e->isInvalidGrant() => ElectronicInvoiceAccountStatus::refused('einvoicing.provider.super_pdp.disconnected'),
+                $e->isUnauthorized() => ElectronicInvoiceAccountStatus::refused('einvoicing.provider.super_pdp.bad_credentials'),
+                default => ElectronicInvoiceAccountStatus::unreachable($e->getMessage()),
+            };
         }
 
         return new ElectronicInvoiceAccountStatus(
@@ -197,14 +199,17 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      * verified, it answers 403 to everything, and its own message says
      * nothing about why.
      */
-    private function forbiddenReason(string $clientId, string $clientSecret, SuperPdpApiException $e): string
+    /**
+     * @param array<string, mixed> $config
+     */
+    private function forbiddenReason(array $config, SuperPdpApiException $e): string
     {
         if (! $e->isForbidden()) {
             return $e->getMessage();
         }
 
         try {
-            $status = AccountVerification::tryFrom((string) ($this->client->getSession($this->client->getAccessToken($clientId, $clientSecret))['company_verification_status'] ?? ''));
+            $status = AccountVerification::tryFrom((string) ($this->client->getSession($this->tokens->accessToken($config))['company_verification_status'] ?? ''));
         } catch (SuperPdpApiException) {
             return $e->getMessage();
         }
@@ -227,20 +232,16 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
     }
 
     /**
-     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     * @param array<string, mixed> $config
      */
     public function send(Invoice $invoice, array $config): ElectronicInvoiceSubmissionResult
     {
-        $credentials = $this->credentials($config);
-
-        if ($credentials === null) {
+        if (! $this->tokens->hasCredentials($config)) {
             return ElectronicInvoiceSubmissionResult::failure('einvoicing.provider.super_pdp.missing_credentials');
         }
 
-        [$clientId, $clientSecret] = $credentials;
-
         try {
-            $accessToken = $this->client->getAccessToken($clientId, $clientSecret);
+            $accessToken = $this->tokens->accessToken($config);
             // Where the invoice goes, and where answers come back to — found
             // in the directory when nobody typed it. Before building, since
             // the e-invoice carries both addresses.
@@ -250,7 +251,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         } catch (SuperPdpApiException $e) {
             $this->logger->error('SUPER PDP rejected the invoice submission.', ['exception' => $e, 'invoice' => (string) $invoice->getId()]);
 
-            return ElectronicInvoiceSubmissionResult::failure($this->forbiddenReason($clientId, $clientSecret, $e));
+            return ElectronicInvoiceSubmissionResult::failure($this->forbiddenReason($config, $e));
         } catch (Throwable $e) {
             $this->logger->error('Failed to build or send the Factur-X document for SUPER PDP.', ['exception' => $e, 'invoice' => (string) $invoice->getId()]);
 
@@ -282,20 +283,16 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
     }
 
     /**
-     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     * @param array<string, mixed> $config
      */
     public function fetchIncoming(array $config, ?string $afterExternalReference): array
     {
-        $credentials = $this->credentials($config);
-
-        if ($credentials === null) {
+        if (! $this->tokens->hasCredentials($config)) {
             return [];
         }
 
-        [$clientId, $clientSecret] = $credentials;
-
         try {
-            $accessToken = $this->client->getAccessToken($clientId, $clientSecret);
+            $accessToken = $this->tokens->accessToken($config);
             $response = $this->client->listIncomingInvoices(
                 $accessToken,
                 $afterExternalReference !== null ? (int) $afterExternalReference : null,
@@ -306,7 +303,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
             // arrives.
             $this->logger->error('Failed to list incoming invoices from SUPER PDP.', [
                 'exception' => $e,
-                'reason' => $this->forbiddenReason($clientId, $clientSecret, $e),
+                'reason' => $this->forbiddenReason($config, $e),
             ]);
 
             return [];
@@ -330,21 +327,17 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
     }
 
     /**
-     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     * @param array<string, mixed> $config
      *
      * @throws SuperPdpApiException
      */
     public function downloadIncomingDocument(array $config, string $externalReference): DownloadedElectronicInvoiceDocument
     {
-        $credentials = $this->credentials($config);
-
-        if ($credentials === null) {
+        if (! $this->tokens->hasCredentials($config)) {
             throw new SuperPdpApiException('Missing SUPER PDP credentials.');
         }
 
-        [$clientId, $clientSecret] = $credentials;
-
-        $accessToken = $this->client->getAccessToken($clientId, $clientSecret);
+        $accessToken = $this->tokens->accessToken($config);
         $raw = $this->client->downloadInvoiceDocument($accessToken, $externalReference);
 
         $mimeType = $raw['content_type'];
@@ -421,23 +414,19 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
     }
 
     /**
-     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     * @param array<string, mixed> $config
      *
      * @throws SuperPdpApiException
      */
     public function respond(array $config, string $externalReference, ReceiptResponse $response, ?ResponseReason $reason = null, ?string $comment = null): void
     {
-        $credentials = $this->credentials($config);
-
-        if ($credentials === null) {
+        if (! $this->tokens->hasCredentials($config)) {
             throw new SuperPdpApiException('einvoicing.provider.super_pdp.missing_credentials');
         }
 
-        [$clientId, $clientSecret] = $credentials;
-
         try {
             $this->client->createInvoiceEvent(
-                $this->client->getAccessToken($clientId, $clientSecret),
+                $this->tokens->accessToken($config),
                 (int) $externalReference,
                 $response->value,
                 $reason?->value,
@@ -446,12 +435,12 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         } catch (SuperPdpApiException $e) {
             $this->logger->error('SUPER PDP did not take the answer to a received invoice.', ['exception' => $e, 'invoice' => $externalReference]);
 
-            throw new SuperPdpApiException($this->forbiddenReason($clientId, $clientSecret, $e), $e->getApiCode(), $e);
+            throw new SuperPdpApiException($this->forbiddenReason($config, $e), $e->getApiCode(), $e);
         }
     }
 
     /**
-     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     * @param array<string, mixed> $config
      * @param list<ReportedTransaction>                      $transactions
      *
      * @throws SuperPdpApiException
@@ -478,7 +467,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
     }
 
     /**
-     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     * @param array<string, mixed> $config
      * @param list<ReportedPayment>                          $payments
      *
      * @throws SuperPdpApiException
@@ -502,7 +491,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      * fr:212 with the amount received by VAT rate ("MEN", tax included).
      * Once per payment: a second one on the same invoice adds to the first.
      *
-     * @param array{client_id?: mixed, client_secret?: mixed} $config
+     * @param array<string, mixed> $config
      *
      * @throws SuperPdpApiException
      */
@@ -527,7 +516,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
     }
 
     /**
-     * @param array{client_id?: mixed, client_secret?: mixed}   $config
+     * @param array<string, mixed>   $config
      * @param callable(string): array<string, mixed>            $call
      *
      * @return list<string>
@@ -536,20 +525,16 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      */
     private function report(array $config, callable $call): array
     {
-        $credentials = $this->credentials($config);
-
-        if ($credentials === null) {
+        if (! $this->tokens->hasCredentials($config)) {
             throw new SuperPdpApiException('einvoicing.provider.super_pdp.missing_credentials');
         }
 
-        [$clientId, $clientSecret] = $credentials;
-
         try {
-            $response = $call($this->client->getAccessToken($clientId, $clientSecret));
+            $response = $call($this->tokens->accessToken($config));
         } catch (SuperPdpApiException $e) {
             $this->logger->error('SUPER PDP did not take the e-reporting data.', ['exception' => $e]);
 
-            throw new SuperPdpApiException($this->forbiddenReason($clientId, $clientSecret, $e), $e->getApiCode(), $e);
+            throw new SuperPdpApiException($this->forbiddenReason($config, $e), $e->getApiCode(), $e);
         }
 
         $ids = [];
@@ -627,22 +612,5 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         } catch (Throwable) {
             return null;
         }
-    }
-
-    /**
-     * @param array{client_id?: mixed, client_secret?: mixed} $config
-     *
-     * @return array{0: string, 1: string}|null
-     */
-    private function credentials(array $config): ?array
-    {
-        $clientId = $config['client_id'] ?? null;
-        $clientSecret = $config['client_secret'] ?? null;
-
-        if (! is_string($clientId) || $clientId === '' || ! is_string($clientSecret) || $clientSecret === '') {
-            return null;
-        }
-
-        return [$clientId, $clientSecret];
     }
 }

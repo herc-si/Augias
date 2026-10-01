@@ -18,6 +18,7 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceDisputedNotification;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceRejectedNotification;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpAccessTokens;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApiException;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdpProvider;
@@ -69,6 +70,7 @@ final class PollSuperPdpInvoiceStatusCommand extends Command
         private readonly ElectronicInvoiceSubmissionRepository $submissionRepository,
         private readonly ElectronicInvoiceProviderSettingRepository $settingRepository,
         private readonly SuperPdpClient $client,
+        private readonly SuperPdpAccessTokens $tokens,
         private readonly NotificationManager $notificationManager,
         private readonly LoggerInterface $logger,
     ) {
@@ -133,15 +135,11 @@ final class PollSuperPdpInvoiceStatusCommand extends Command
             return false;
         }
 
-        $settings = $setting->getSettings();
-        $clientId = $settings['client_id'] ?? null;
-        $clientSecret = $settings['client_secret'] ?? null;
-
-        if (! is_string($clientId) || ! is_string($clientSecret)) {
+        if (! $this->tokens->hasCredentials($setting->getSettings())) {
             return false;
         }
 
-        $accessToken = $this->client->getAccessToken($clientId, $clientSecret);
+        $accessToken = $this->tokens->accessToken($setting->getSettings());
         $invoice = $this->client->getInvoice($accessToken, $externalReference);
 
         $event = SuperPdpProvider::latestEvent($invoice['events'] ?? null);
