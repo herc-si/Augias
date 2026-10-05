@@ -11,7 +11,8 @@
         <p class="empty-title">{{ 'support.ended.title'|trans }}</p>
         <p class="empty-subtitle text-secondary">{{ 'support.ended.text'|trans }}</p>
         <div class="empty-action">
-            <a class="btn" href="{{ path('_logout') }}">{{ 'support.ended.logout'|trans }}</a>
+            {# Signing out is a POST with a token: a plain link to /logout is refused. #}
+            <twig:Ui:Security:LogoutLink title="{{ 'support.ended.logout'|trans }}" color="primary" />
         </div>
     </div>
 {% endblock content %}
