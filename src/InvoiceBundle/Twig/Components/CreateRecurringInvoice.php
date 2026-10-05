@@ -74,6 +74,11 @@ final class CreateRecurringInvoice extends AbstractController
         return $this->createForm(RecurringInvoiceType::class, $this->invoice, $options);
     }
 
+    public function canAddLines(): bool
+    {
+        return ($this->formValues['client'] ?? '') !== '' || $this->invoice->getClient() !== null;
+    }
+
     #[LiveAction]
     public function clearClient(): void
     {

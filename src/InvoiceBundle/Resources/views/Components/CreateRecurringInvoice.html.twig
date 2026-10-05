@@ -67,7 +67,16 @@
 
                 <div class="billing-items-body">
                     {# Empty State #}
-                    {% if form.lines|length == 0 %}
+                    {% if form.lines|length == 0 and not this.canAddLines %}
+                        {# No line before the client: its currency and taxes price them. #}
+                        <div class="billing-items-empty">
+                            <div class="billing-items-empty-icon">
+                                {{ ux_icon('tabler:user', {width: 32, height: 32}) }}
+                            </div>
+                            <h3 class="billing-items-empty-title">{{ 'document_line.client_first_title'|trans }}</h3>
+                            <p class="billing-items-empty-text">{{ 'document_line.client_first'|trans }}</p>
+                        </div>
+                    {% elseif form.lines|length == 0 %}
                         <div class="billing-items-empty">
                             <div class="billing-items-empty-icon">
                                 {{ ux_icon('tabler:file-plus', {width: 32, height: 32}) }}
@@ -205,11 +214,14 @@
                     <div class="add-item-action">
                         {{ form_widget(form.lines.vars.button_add, {
                             label: 'invoice.item.add'|trans,
-                            attr: {class: 'add-item-btn btn-sm'}
+                            attr: {class: 'add-item-btn btn-sm', disabled: not this.canAddLines}
                         }) }}
-                        <button type="button" class="btn btn-sm add-item-btn" data-action="live#action" data-live-action-param="addNote">
+                        <button type="button" class="btn btn-sm add-item-btn" data-action="live#action" data-live-action-param="addNote"{% if not this.canAddLines %} disabled{% endif %}>
                             {{ ux_icon('tabler:text-plus', {width: 16, height: 16}) }} {{ 'document_line.add_note'|trans }}
                         </button>
+                        {% if not this.canAddLines and form.lines|length > 0 %}
+                            <small class="text-muted">{{ 'document_line.client_first'|trans }}</small>
+                        {% endif %}
                     </div>
                 </div>
             </div>

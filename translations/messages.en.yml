@@ -1400,6 +1400,8 @@ datagrid:
 delete_client: 'Delete Client'
 document_line:
     add_note: 'Add a note'
+    client_first: 'The lines are priced in the client''s currency and taxes: choose it above to add some.'
+    client_first_title: 'Choose the client first'
     move_down: 'Move the line down'
     move_up: 'Move the line up'
     note_placeholder: 'Note or heading, such as “Phase 2 — Development”'

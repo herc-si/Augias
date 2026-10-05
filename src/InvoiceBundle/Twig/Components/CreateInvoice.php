@@ -214,6 +214,10 @@ final class CreateInvoice extends AbstractController
     #[LiveAction]
     public function addFromCatalog(PropertyAccessorInterface $propertyAccessor): void
     {
+        if (! $this->canAddLines()) {
+            return;
+        }
+
         $productId = $this->catalogProductId;
         $this->catalogProductId = null;
 
@@ -502,12 +506,24 @@ final class CreateInvoice extends AbstractController
             return false;
         }
 
-        // Check client data based on mode
+        return $this->hasClient();
+    }
+
+    public function canAddLines(): bool
+    {
+        return $this->hasClient();
+    }
+
+    /**
+     * Whether the client is known: picked, or typed in as a new one.
+     */
+    private function hasClient(): bool
+    {
         if ($this->dto->clientMode === InvoiceClientMode::Existing) {
-            return $this->dto->client instanceof Client;
+            return $this->dto->client instanceof Client || ($this->formValues['client'] ?? '') !== '';
         }
 
-        // NewClient mode - need inline data
+        // A new client, typed in on the form.
         return $this->dto->hasInlineClientData();
     }
 

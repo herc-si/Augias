@@ -84,9 +84,13 @@ final class CreateInvoiceTest extends LiveComponentTest
         $entityManager->persist($product);
         $entityManager->flush();
 
+        // Lines wait for the client: see testNoLineIsAddedBeforeTheClient().
+        $dto = new InvoiceFormDTO();
+        $dto->client = ClientFactory::createOne(['name' => 'Acme Corp', 'currencyCode' => 'EUR']);
+
         $component = $this->createLiveComponent(
             name: CreateInvoice::class,
-            data: ['dto' => new InvoiceFormDTO()],
+            data: ['dto' => $dto],
         )->actingAs($this->getUser());
 
         $component->set('catalogProductId', (string) $product->getId());
@@ -274,6 +278,29 @@ final class CreateInvoiceTest extends LiveComponentTest
         // The action must have produced a redirect (not a 422 / exception page).
         $response = $this->client->getResponse();
         self::assertInstanceOf(RedirectResponse::class, $response);
+    }
+
+    /**
+     * No client, no lines: they are priced in the client's currency and taxes,
+     * and the totals wait for it (test instance, 05/10/2026).
+     */
+    public function testNoLineIsAddedBeforeTheClient(): void
+    {
+        $dto = new InvoiceFormDTO();
+        $dto->invoiceDate = CarbonImmutable::parse('2021-01-01');
+
+        $component = $this->createLiveComponent(
+            name: CreateInvoice::class,
+            data: ['dto' => $dto],
+            client: $this->client,
+        )->actingAs($this->getUser());
+
+        $html = $component->render()->toString();
+        self::assertStringContainsString('Choose the client first', $html);
+
+        $before = count($component->component()->formValues['lines'] ?? []);
+        $component->call('addNote');
+        self::assertCount($before, $component->component()->formValues['lines'] ?? []);
     }
 
     public function testANoteIsAddedAndMovedToTheTop(): void

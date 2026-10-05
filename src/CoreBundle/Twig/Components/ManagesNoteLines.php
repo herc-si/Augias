@@ -30,9 +30,19 @@ use function max;
  */
 trait ManagesNoteLines
 {
+    /**
+     * Whether lines may be added yet: not before the client is known, whose
+     * currency and taxes the lines are priced in and the totals need.
+     */
+    abstract public function canAddLines(): bool;
+
     #[LiveAction]
     public function addNote(): void
     {
+        if (! $this->canAddLines()) {
+            return;
+        }
+
         $lines = is_array($this->formValues['lines'] ?? null) ? $this->formValues['lines'] : [];
         $lines = LineOrder::renumber($lines);
 

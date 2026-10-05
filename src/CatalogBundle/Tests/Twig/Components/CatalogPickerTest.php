@@ -14,8 +14,11 @@ declare(strict_types=1);
 namespace Augias\CatalogBundle\Tests\Twig\Components;
 
 use Augias\CatalogBundle\Entity\Product;
+use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Test\LiveComponentTest;
+use Augias\InvoiceBundle\DTO\InvoiceFormDTO;
 use Augias\InvoiceBundle\Twig\Components\CreateInvoice;
+use Augias\QuoteBundle\DTO\QuoteFormDTO;
 use Augias\QuoteBundle\Twig\Components\CreateQuote;
 use Augias\TaxBundle\Entity\Tax;
 use Brick\Math\BigInteger;
@@ -28,19 +31,20 @@ use PHPUnit\Framework\Attributes\DataProvider;
 final class CatalogPickerTest extends LiveComponentTest
 {
     /**
-     * @return iterable<string, array{class-string}>
+     * @return iterable<string, array{class-string, class-string}>
      */
     public static function componentProvider(): iterable
     {
-        yield 'invoice' => [CreateInvoice::class];
-        yield 'quote' => [CreateQuote::class];
+        yield 'invoice' => [CreateInvoice::class, InvoiceFormDTO::class];
+        yield 'quote' => [CreateQuote::class, QuoteFormDTO::class];
     }
 
     /**
-     * @param class-string $componentClass
+     * @param class-string                                $componentClass
+     * @param class-string<InvoiceFormDTO|QuoteFormDTO> $dtoClass
      */
     #[DataProvider('componentProvider')]
-    public function testPickingAnEntryAddsAFullyFilledLine(string $componentClass): void
+    public function testPickingAnEntryAddsAFullyFilledLine(string $componentClass, string $dtoClass): void
     {
         $entityManager = self::getContainer()->get('doctrine')->getManager();
 
@@ -57,7 +61,11 @@ final class CatalogPickerTest extends LiveComponentTest
         $entityManager->persist($product);
         $entityManager->flush();
 
-        $component = $this->createLiveComponent(name: $componentClass, data: [], client: $this->client)
+        // Lines wait for the client, whose currency and taxes they are priced in.
+        $dto = new $dtoClass();
+        $dto->client = ClientFactory::createOne(['name' => 'Acme Corp', 'currencyCode' => 'EUR']);
+
+        $component = $this->createLiveComponent(name: $componentClass, data: ['dto' => $dto], client: $this->client)
             ->actingAs($this->getUser());
 
         $component->set('catalogProductId', (string) $product->getId())->call('addFromCatalog');

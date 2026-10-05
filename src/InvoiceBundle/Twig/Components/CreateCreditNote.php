@@ -252,4 +252,9 @@ final class CreateCreditNote extends AbstractController
             $this->router->generate('_credit_notes_view', ['id' => $creditNote->getId()]),
         );
     }
+
+    public function canAddLines(): bool
+    {
+        return $this->dto->client instanceof Client || ($this->formValues['client'] ?? '') !== '';
+    }
 }
