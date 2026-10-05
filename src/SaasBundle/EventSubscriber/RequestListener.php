@@ -21,6 +21,7 @@ use Augias\SaasBundle\Feature\Feature;
 use Augias\SaasBundle\Plan\FreePlanAllowance;
 use Augias\SaasBundle\Service\TrialBanner;
 use Augias\SaasBundle\Service\TrialBannerResolver;
+use Augias\SaasBundle\Subscription\CoveredSubscriptionProvider;
 use Augias\UserBundle\Entity\User;
 use Psr\Clock\ClockInterface;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
@@ -31,6 +32,7 @@ use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionProviderInterface;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -76,6 +78,21 @@ final readonly class RequestListener implements EventSubscriberInterface
      * Still open once the subscription has ended: the terms promise the data
      * can be taken out for ninety days, until it is deleted.
      */
+    /**
+     * Where a subscription is chosen, paid or changed. A company covered by
+     * another's subscription has none of its own to manage: it is sent to its
+     * subscription page, which names the company to manage it from.
+     */
+    private const array MANAGED_ROUTES = [
+        'saas_subscription_checkout',
+        'saas_subscription_plans',
+        'saas_subscription_choose',
+        'saas_subscription_change',
+        'saas_subscription_change_confirm',
+        'saas_subscription_cancel_downgrade',
+        'saas_company_abandon',
+    ];
+
     private const array EXPORT_ROUTES = [
         '_export_list',
         '_export_request',
@@ -95,6 +112,7 @@ final readonly class RequestListener implements EventSubscriberInterface
         private FreePlanAllowance $freePlanAllowance,
         private TranslatorInterface $translator,
         private PlanFeatureManager $planFeatures,
+        private CoveredSubscriptionProvider $coverage,
         #[Autowire(env: 'AUGIAS_SAAS_ONBOARDING_COUPON_CODE')]
         private string $onboardingCouponCode = '',
         #[Autowire(env: 'int:AUGIAS_SAAS_ONBOARDING_COUPON_PERCENT')]
@@ -112,6 +130,10 @@ final readonly class RequestListener implements EventSubscriberInterface
 
     public function onRequest(RequestEvent $event): void
     {
+        if ($this->sendCoveredCompanyHome($event)) {
+            return;
+        }
+
         $subscription = $this->getSubscription($event->getRequest());
 
         if (! $subscription instanceof Subscription) {
@@ -232,6 +254,28 @@ final readonly class RequestListener implements EventSubscriberInterface
         $user = $this->security->getUser();
 
         return $user instanceof User && AbandonCompanyAction::canBeAbandoned($company, $user, $subscription);
+    }
+
+    private function sendCoveredCompanyHome(RequestEvent $event): bool
+    {
+        if (! in_array($event->getRequest()->attributes->get('_route'), self::MANAGED_ROUTES, true)) {
+            return false;
+        }
+
+        if (! $this->security->getUser() instanceof UserInterface) {
+            return false;
+        }
+
+        $companyId = $this->companySelector->getCompany();
+        $company = $companyId instanceof Ulid ? $this->companyRepository->find($companyId) : null;
+
+        if (! $company instanceof Company || ! $this->coverage->hostOf($company) instanceof Company) {
+            return false;
+        }
+
+        $event->setResponse(new RedirectResponse($this->urlGenerator->generate('billing_index')));
+
+        return true;
     }
 
     private function getSubscription(Request $request): ?Subscription

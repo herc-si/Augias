@@ -15,6 +15,7 @@ namespace Augias\SaasBundle\Action;
 
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Repository\CompanyRepository;
+use Augias\SaasBundle\Subscription\CoveredSubscriptionProvider;
 use Carbon\CarbonImmutable;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
@@ -27,6 +28,7 @@ final class SubscriptionOverviewAction extends AbstractController
 {
     public function __construct(
         private readonly SubscriptionProviderInterface $subscriptionProvider,
+        private readonly CoveredSubscriptionProvider $coverage,
         private readonly CompanyRepository $companyRepository,
         private readonly CompanySelector $companySelector,
     ) {
@@ -61,6 +63,11 @@ final class SubscriptionOverviewAction extends AbstractController
             'isPaused' => $subscription->getStatus() === SubscriptionStatus::PAUSED,
             'hasExternalBilling' => $subscription->isExternallyBilled(),
             'trialDaysRemaining' => $this->trialDaysRemaining($subscription),
+            // Paid for by another company's subscription, managed from there.
+            'coveredBy' => $this->coverage->hostOf($company),
+            // Or the companies this one's subscription pays for, its own aside.
+            'coveredCompanies' => $this->coverage->coveredBy($company),
+            'companyAllowance' => $this->coverage->allowance($subscription->getPlan()),
         ]);
     }
 

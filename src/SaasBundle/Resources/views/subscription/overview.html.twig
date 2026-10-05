@@ -33,7 +33,13 @@
 {% block content %}
     <div class="row g-3">
         <div class="col-12">
-            {% if subscription.hasPendingPlanChange() %}
+            {% if coveredBy|default(null) %}
+                <twig:Ui:Alert type="info">
+                    {{ ux_icon('tabler:building', {width: 20, height: 20, class: 'me-1'}) }}
+                    {{ 'saas.overview.covered_by'|trans({'%company%': coveredBy.name}) }}
+                </twig:Ui:Alert>
+            {% endif %}
+            {% if subscription.hasPendingPlanChange() and not coveredBy|default(null) %}
                 <div class="alert alert-warning d-flex align-items-center" role="alert">
                     {{ ux_icon('tabler:arrow-down-circle', {width: 20, height: 20, class: 'me-2'}) }}
                     <div class="flex-fill">
@@ -125,6 +131,7 @@
                         {# Per-feature usage bars are wired here once feature gates land. #}
                     {% endblock %}
                 </div>
+                {% if not coveredBy|default(null) %}
                 <div class="card-footer d-flex flex-wrap gap-2">
                     <a href="{{ path('saas_subscription_change') }}" class="btn btn-primary">
                         {{ ux_icon('tabler:arrows-exchange', {width: 18, height: 18}) }}
@@ -137,7 +144,32 @@
                         </a>
                     {% endif %}
                 </div>
+                {% endif %}
             </div>
+            {% if not coveredBy|default(null) and companyAllowance|default(1) != 1 %}
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h3 class="card-title mb-0">{{ 'saas.overview.covered_companies'|trans }}</h3>
+                        <span class="badge bg-secondary-lt ms-auto">
+                            {% if companyAllowance == -1 %}
+                                {{ 'saas.overview.covered_count_unlimited'|trans({'%count%': coveredCompanies|length + 1}) }}
+                            {% else %}
+                                {{ 'saas.overview.covered_count'|trans({'%count%': coveredCompanies|length + 1, '%max%': companyAllowance}) }}
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-subtle">{{ 'saas.overview.covered_help'|trans }}</p>
+                        {% if coveredCompanies is not empty %}
+                            <ul class="mb-0">
+                                {% for covered in coveredCompanies %}
+                                    <li>{{ covered.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
         </div>
 
         <div class="col-md-4">

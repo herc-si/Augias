@@ -90,6 +90,12 @@ saas:
             type: boolean
             default: false
             description: 'Ask the people running the service for help, and let them look in, read-only, for a set time.'
+        # Companies one subscription pays for, its own included: the others are
+        # opened by the same owner and follow it. One unless the plan says more.
+        companies:
+            type: integer
+            default: 1
+            description: 'Companies covered by one subscription, its own included (-1 = unlimited).'
 
 ui:
     templates:

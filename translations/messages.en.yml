@@ -3231,6 +3231,11 @@ saas:
         cancel_change: 'Cancel change'
         change_plan: 'Change plan'
         choose_to_continue: 'Choose a plan to continue.'
+        covered_by: 'This company is covered by the subscription of %company%, which is managed from %company%.'
+        covered_companies: 'Companies covered'
+        covered_count: '%count% of %max%'
+        covered_count_unlimited: '%count%'
+        covered_help: 'Companies you open are covered by this subscription while there is room, this one included. Each keeps its own data.'
         current_plan: 'Current plan'
         free: Free
         manage_payment_method: 'Manage payment method'

@@ -14,12 +14,15 @@ declare(strict_types=1);
 namespace Augias\SaasBundle\Tests\EventSubscriber;
 
 use Augias\CoreBundle\Entity\Company;
+use Augias\CoreBundle\Entity\CompanyCoverage;
 use Augias\CoreBundle\Event\CompanyCreatedEvent;
 use Augias\SaasBundle\EventSubscriber\CompanyEventSubscriber;
 use Augias\SaasBundle\Plan\DefaultPlanProvider;
 use Augias\SaasBundle\Tests\Plan\BuildsFreePlanAllowance;
+use Augias\SaasBundle\Tests\Subscription\BuildsCoveredSubscriptionProvider;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\CompanyRole;
+use DateInterval;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -44,6 +47,7 @@ use Symfony\Component\Uid\Ulid;
 final class CompanyEventSubscriberTest extends TestCase
 {
     use BuildsFreePlanAllowance;
+    use BuildsCoveredSubscriptionProvider;
 
     /**
      * Sign-up on the test instance (29/09/2026): Free as the default plan, no
@@ -112,6 +116,37 @@ final class CompanyEventSubscriberTest extends TestCase
         self::assertSame('/billing/subscription/plans', $event->getResponse()->headers->get('Location'));
     }
 
+    /**
+     * An owner whose agency plan has room: the new company goes under it,
+     * with no trial and no detour through the plans.
+     */
+    public function testACompanyOpenedByAnAgencysOwnerIsCoveredByIt(): void
+    {
+        $decouverte = new Plan()->setName('Découverte')->setPlanId('price_decouverte')->setPrice(300)->setTrialDuration(new DateInterval('P30D'));
+        $agence = new Plan()->setName('Agence')->setPlanId('price_agence')->setPrice(3999);
+        $saved = [];
+
+        $owner = new User();
+        $host = $this->company($owner);
+        $hostSubscription = new Subscription()->setSubscriber($host)->setPlan($agence)->setStatus(SubscriptionStatus::ACTIVE);
+
+        $subscriber = $this->subscriber($decouverte, $saved, [$hostSubscription], $owner, ['price_agence' => 5], $covers);
+        $company = $this->company($owner);
+        $subscriber->onCompanyCreated(new CompanyCreatedEvent($company));
+
+        $response = new Response('dashboard');
+        $event = new ResponseEvent($this->createStub(HttpKernelInterface::class), new Request(), HttpKernelInterface::MAIN_REQUEST, $response);
+        $subscriber->onResponse($event);
+
+        self::assertSame($response, $event->getResponse());
+        self::assertCount(1, $covers);
+        self::assertSame($company, $covers[0]->getCovered());
+        self::assertSame($host, $covers[0]->getHost());
+        $own = end($saved);
+        self::assertInstanceOf(Subscription::class, $own);
+        self::assertSame(SubscriptionStatus::PENDING, $own->getStatus(), 'Kept to fall back on, never started.');
+    }
+
     private function company(User $owner): Company
     {
         $company = new Company();
@@ -123,9 +158,11 @@ final class CompanyEventSubscriberTest extends TestCase
 
     /**
      * @param list<Subscription> $saved
-     * @param list<Subscription> $existing
+     * @param list<Subscription>         $existing
+     * @param array<string, int>         $allowances
+     * @param list<CompanyCoverage>|null $covers
      */
-    private function subscriber(Plan $default, array &$saved, array $existing = []): CompanyEventSubscriber
+    private function subscriber(Plan $default, array &$saved, array $existing = [], ?User $user = null, array $allowances = [], ?array &$covers = null): CompanyEventSubscriber
     {
         $plans = $this->createStub(PlanRepositoryInterface::class);
         $plans->method('findDefault')->willReturn($default);
@@ -146,7 +183,7 @@ final class CompanyEventSubscriberTest extends TestCase
         });
 
         $security = $this->createStub(Security::class);
-        $security->method('getUser')->willReturn(new User());
+        $security->method('getUser')->willReturn($user ?? new User());
 
         $trials = $this->createStub(TrialManagerInterface::class);
         $trials->method('userHasTrial')->willReturn(false);
@@ -164,6 +201,7 @@ final class CompanyEventSubscriberTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $router,
             $this->freePlanAllowance($manager),
+            $this->coveredSubscriptionProvider($manager, [], $allowances, $user, $covers),
         );
     }
 }

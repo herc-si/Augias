@@ -19,14 +19,17 @@ use Augias\CoreBundle\Company\CompanyClosure;
 use Augias\CoreBundle\Company\CompanyClosureNotifier;
 use Augias\CoreBundle\Company\CompanyPurgeContext;
 use Augias\CoreBundle\Entity\Company;
+use Augias\CoreBundle\Entity\CompanyCoverage;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
+use Augias\SaasBundle\Feature\Feature;
 use Augias\SaasBundle\Retention\CompanyRemovalTakesSubscriptionListener;
 use Augias\SaasBundle\Retention\RenewalCancelsClosureListener;
 use Augias\SaasBundle\Retention\SubscriptionEndRetention;
+use Augias\SaasBundle\Subscription\CoveredSubscriptionProvider;
 use Augias\Test\SaasKernel;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\CompanyRole;
@@ -36,7 +39,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
+use SolidWorx\Platform\PlatformBundle\Feature\FeatureType;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
+use SolidWorx\Platform\SaasBundle\Entity\PlanFeature;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -152,6 +157,33 @@ final class SubscriptionEndRetentionTest extends KernelTestCase
     /**
      * On the date the company goes, issued invoices and subscription with it.
      */
+    /**
+     * An agency plan covering other companies: they were paid for by it, and
+     * go, or stay, with it.
+     */
+    public function testTheCompaniesASubscriptionCoveredFollowItsEnd(): void
+    {
+        [$host, $subscription] = $this->subscribed(SubscriptionStatus::CANCELLED, '2026-09-20 00:00:00');
+        $this->em()->persist(new PlanFeature()->setPlan($subscription->getPlan())->setFeatureKey(Feature::Companies->value)->setType(FeatureType::INTEGER)->setValue(5));
+        $covered = CompanyFactory::createOne(['name' => 'Client Shop']);
+        $covered = $this->em()->find(Company::class, $covered->getId());
+        self::assertInstanceOf(Company::class, $covered);
+        $this->em()->persist(new CompanyCoverage($covered, $host, new DateTimeImmutable('2026-05-01')));
+        $this->em()->flush();
+
+        $this->retention(new MockClock('2026-09-26 10:00:00'))->reconcile();
+
+        self::assertSame(ClosureReason::SubscriptionEnded, $host->getClosureReason());
+        self::assertSame(ClosureReason::SubscriptionEnded, $covered->getClosureReason());
+        self::assertEquals($host->getClosesAt(), $covered->getClosesAt());
+
+        $subscription->setStatus(SubscriptionStatus::ACTIVE)->setEndDate(new DateTimeImmutable('2027-09-20'));
+        $this->em()->flush();
+        $this->retention(new MockClock('2026-09-27 10:00:00'))->reconcile();
+
+        self::assertFalse($covered->isClosing(), 'Renewed: called off for the covered company too.');
+    }
+
     public function testOnTheDateTheCompanyAndItsSubscriptionGo(): void
     {
         [$company, $subscription] = $this->subscribed(SubscriptionStatus::CANCELLED, '2026-09-20 00:00:00', owner: 'owner@gone.test');
@@ -204,7 +236,11 @@ final class SubscriptionEndRetentionTest extends KernelTestCase
 
     private function retention(MockClock $clock): SubscriptionEndRetention
     {
-        return new SubscriptionEndRetention($this->em(), $this->closure($clock), $clock);
+        // Only the SaaS kernel has it; PHPStan reads the self-hosted container.
+        // @phpstan-ignore symfonyContainer.serviceNotFound
+        $coverage = self::getContainer()->get(CoveredSubscriptionProvider::class);
+
+        return new SubscriptionEndRetention($this->em(), $this->closure($clock), $clock, $coverage);
     }
 
     private function closure(MockClock $clock): CompanyClosure
