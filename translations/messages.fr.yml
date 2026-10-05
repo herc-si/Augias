@@ -3245,6 +3245,7 @@ saas:
         covered_count_unlimited: '%count%'
         covered_help: 'Les sociétés que vous créez sont couvertes par cet abonnement tant qu''il reste de la place, celle-ci comprise. Chacune garde ses propres données.'
         current_plan: 'Plan actuel'
+        first_payment: 'Premier paiement'
         free: Gratuit
         manage_payment_method: 'Gérer le moyen de paiement'
         next_renewal: 'Prochain renouvellement'
@@ -3265,6 +3266,7 @@ saas:
             past_due: 'En retard'
             paused: 'En pause'
             pending: 'En attente'
+            subscribed: 'Abonné'
             trial: Essai
             unpaid: Impayé
         title: Abonnement
@@ -3272,6 +3274,9 @@ saas:
         trial_ended: 'Votre période d''essai est terminée.'
         trial_ends: 'Fin de l''essai'
         trial_keep_features: 'Choisissez un plan payant pour continuer à profiter de toutes les fonctionnalités après la fin de l''essai.'
+        yearly_action: 'Passer à l''annuel'
+        yearly_message: 'Payez %price% une fois par an au lieu de chaque mois. Le changement est calculé au prorata.'
+        yearly_title: 'Économisez %saving% par an.'
     paused:
         feature_clients: 'Gestion des clients et des contacts'
         feature_invoices: 'Factures et devis illimités'
@@ -3301,6 +3306,7 @@ saas:
         current: 'Plan actuel'
         feature:
             automated_reminders: 'Relances automatiques'
+            companies: 'Sociétés couvertes'
             custom_branding: 'Votre marque sur les documents'
             custom_domain: 'Domaine personnalisé'
             custom_fields: 'Champs personnalisés'
@@ -3321,9 +3327,12 @@ saas:
         just_getting_started: 'Vous débutez ?'
         no_credit_card: 'Aucune carte bancaire requise'
         not_included: 'Non inclus'
+        or_yearly: 'ou %price% par an'
+        or_yearly_saving: 'ou %price% par an, soit %saving% d''économie'
         per_month: /mois
         per_year: /an
         period:
+            free_months: '%count% mois offert|jusqu''à %count% mois offerts'
             label: 'Période de facturation'
             month: Mensuel
             year: Annuel

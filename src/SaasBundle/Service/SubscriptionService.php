@@ -52,7 +52,8 @@ final readonly class SubscriptionService
 
             $subscription = $this->subscriptionProvider->getSubscriptionFor($company);
 
-            return $subscription?->getStatus() === SubscriptionStatus::TRIAL;
+            // Subscribed during the trial (billed at its end): not restricted.
+            return $subscription?->getStatus() === SubscriptionStatus::TRIAL && ! $subscription->isExternallyBilled();
         } catch (Exception) {
             // Handle cases where subscription tables don't exist (self-hosted, dev environments)
             return false;

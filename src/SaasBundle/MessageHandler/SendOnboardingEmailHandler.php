@@ -76,7 +76,7 @@ final readonly class SendOnboardingEmailHandler
 
             $subscription = $trial->getSubscription();
 
-            if ($subscription->getStatus() !== SubscriptionStatus::TRIAL) {
+            if ($subscription->getStatus() !== SubscriptionStatus::TRIAL || $subscription->isExternallyBilled()) {
                 // User upgraded, cancelled, or trial expired between dispatch and
                 // handling — stop the sequence silently.
                 return;

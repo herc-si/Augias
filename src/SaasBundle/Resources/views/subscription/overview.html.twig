@@ -27,6 +27,10 @@
     'unpaid':    {label: 'saas.overview.status.unpaid',    color: 'danger'},
     'inactive':  {label: 'saas.overview.status.inactive',  color: 'secondary'},
 }[status] ?? {label: status|capitalize, color: 'secondary'} %}
+{# Subscribed during the trial: billed at its end, already a subscription. #}
+{% if firstPaymentOn|default(null) %}
+    {% set statusBadge = {label: 'saas.overview.status.subscribed', color: 'success'} %}
+{% endif %}
 
 {% block title %}{{ ux_icon('tabler:receipt-2', {width: 24, height: 24, class: 'me-2'}) }}{{ 'saas.overview.title'|trans }}{% endblock %}
 
@@ -38,6 +42,20 @@
                 <twig:Ui:Alert type="info">
                     {{ ux_icon('tabler:building', {width: 20, height: 20, class: 'me-1'}) }}
                     {{ 'saas.overview.covered_by'|trans({'%company%': coveredBy.name}) }}
+                </twig:Ui:Alert>
+            {% endif %}
+            {% if yearlyOffer|default(null) and not coveredBy|default(null) and not subscription.hasPendingPlanChange() %}
+                <twig:Ui:Alert type="success">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        {{ ux_icon('tabler:calendar', {width: 20, height: 20}) }}
+                        <div class="flex-grow-1">
+                            <strong>{{ 'saas.overview.yearly_title'|trans({'%saving%': yearlyOffer.saving|formatCurrency(plan_currency())}) }}</strong>
+                            {{ 'saas.overview.yearly_message'|trans({'%price%': yearlyOffer.plan.price|formatCurrency(plan_currency())}) }}
+                        </div>
+                        <a href="{{ path('saas_subscription_change', {period: 'year'}) }}" class="btn btn-success btn-sm">
+                            {{ 'saas.overview.yearly_action'|trans }}
+                        </a>
+                    </div>
                 </twig:Ui:Alert>
             {% endif %}
             {% if subscription.hasPendingPlanChange() and not coveredBy|default(null) %}
@@ -116,7 +134,10 @@
                         <dt class="col-sm-4 text-subtle">{{ 'saas.overview.started'|trans }}</dt>
                         <dd class="col-sm-8">{{ subscription.startDate|format_date('medium') }}</dd>
 
-                        {% if isTrial %}
+                        {% if firstPaymentOn|default(null) %}
+                            <dt class="col-sm-4 text-subtle">{{ 'saas.overview.first_payment'|trans }}</dt>
+                            <dd class="col-sm-8">{{ firstPaymentOn|format_date('medium') }}</dd>
+                        {% elseif isTrial %}
                             <dt class="col-sm-4 text-subtle">{{ 'saas.overview.trial_ends'|trans }}</dt>
                             <dd class="col-sm-8">{{ subscription.endDate|format_date('medium') }}</dd>
                         {% elseif isFree %}
