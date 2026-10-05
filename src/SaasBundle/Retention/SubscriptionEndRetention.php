@@ -17,6 +17,7 @@ use Augias\CoreBundle\Company\ClosureReason;
 use Augias\CoreBundle\Company\ClosureSchedule;
 use Augias\CoreBundle\Company\CompanyClosure;
 use Augias\CoreBundle\Entity\Company;
+use Augias\SaasBundle\Subscription\CoveredSubscriptionProvider;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
@@ -51,6 +52,7 @@ final readonly class SubscriptionEndRetention implements ClosureSchedule
         private EntityManagerInterface $entityManager,
         private CompanyClosure $closure,
         private ClockInterface $clock,
+        private CoveredSubscriptionProvider $coverage,
     ) {
     }
 
@@ -85,12 +87,16 @@ final readonly class SubscriptionEndRetention implements ClosureSchedule
             }
 
             $ended = self::hasEnded($subscription, $now);
-            $reason = $company->getClosureReason();
 
-            if ($ended && null === $reason) {
-                $this->closure->scheduleAt($company, $this->deletionDate($subscription, $now), ClosureReason::SubscriptionEnded);
-            } elseif (! $ended && ClosureReason::SubscriptionEnded === $reason) {
-                $this->closure->cancel($company);
+            // The companies this subscription paid for go, or stay, with it.
+            foreach ([$company, ...$this->coverage->coveredBy($company)] as $target) {
+                $reason = $target->getClosureReason();
+
+                if ($ended && null === $reason) {
+                    $this->closure->scheduleAt($target, $this->deletionDate($subscription, $now), ClosureReason::SubscriptionEnded);
+                } elseif (! $ended && ClosureReason::SubscriptionEnded === $reason) {
+                    $this->closure->cancel($target);
+                }
             }
         }
     }

@@ -39,9 +39,11 @@ Le Client informe sans délai le Prestataire de tout accès non autorisé dont i
 
 ## 5. Plans, quotas et évolutions
 
-Le service est proposé par plans. Chaque plan ouvre un ensemble de fonctionnalités et de quotas, notamment : nombre de clients, factures par mois, sièges d'équipe, devis, paiements en ligne, factures récurrentes, relances automatiques, multidevise, marque blanche, accès à l'API REST, accès MCP, domaine personnalisé, champs et gabarits sur mesure.
+Le service est proposé par plans. Chaque plan ouvre un ensemble de fonctionnalités et de quotas, notamment : nombre de clients, factures par mois, sièges d'équipe, nombre de sociétés couvertes, devis, paiements en ligne, factures récurrentes, relances automatiques, multidevise, marque blanche, accès à l'API REST, accès MCP, domaine personnalisé, champs et gabarits sur mesure.
 
 Le détail et les tarifs de chaque plan figurent sur la page des tarifs, qui fait partie intégrante des présentes conditions.
+
+Un abonnement porte sur une société. Lorsque son plan couvre plusieurs sociétés, les sociétés que crée ensuite le même propriétaire sont rattachées à cet abonnement, dans la limite fixée par le plan, la société abonnée comprise. Chacune garde ses propres données ; l'abonnement, sa facturation et sa résiliation se gèrent depuis la société abonnée, et les sociétés rattachées en suivent le sort. Si le plan cesse de les couvrir, les dernières rattachées doivent souscrire leur propre plan pour continuer.
 
 **[À COMPLÉTER : adresse de la page des tarifs, et tarifs eux-mêmes.]**
 

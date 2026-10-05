@@ -17,6 +17,7 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Event\CompanyCreatedEvent;
 use Augias\SaasBundle\Plan\DefaultPlanProvider;
 use Augias\SaasBundle\Plan\FreePlanAllowance;
+use Augias\SaasBundle\Subscription\CoveredSubscriptionProvider;
 use Augias\UserBundle\Entity\User;
 use DateInterval;
 use Doctrine\ORM\EntityManagerInterface;
@@ -49,6 +50,7 @@ final class CompanyEventSubscriber
         private readonly EntityManagerInterface $entityManager,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly FreePlanAllowance $freePlanAllowance,
+        private readonly CoveredSubscriptionProvider $coverage,
     ) {
     }
 
@@ -57,10 +59,23 @@ final class CompanyEventSubscriber
         $plan = $this->defaultPlanProvider->get();
 
         if ($plan instanceof Plan) {
-            $this->subscription = $this->subscriptionManager->createSubscription(
+            $subscription = $this->subscriptionManager->createSubscription(
                 $event->company,
                 $plan,
             );
+
+            // An owner whose subscription pays for more than one company (an
+            // agency plan): the new company goes under it, no trial, no
+            // checkout. Its own subscription stays pending, to fall back on.
+            $user = $this->security->getUser();
+            $host = $user instanceof User ? $this->coverage->hostWithRoomFor($user) : null;
+            if ($host instanceof Company) {
+                $this->coverage->cover($event->company, $host);
+
+                return;
+            }
+
+            $this->subscription = $subscription;
             $this->company = $event->company;
         }
     }

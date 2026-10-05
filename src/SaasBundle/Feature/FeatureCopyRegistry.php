@@ -147,6 +147,16 @@ final readonly class FeatureCopyRegistry
                     'Every page opened is in your access log',
                 ],
             ),
+            Feature::Companies => new FeatureCopy(
+                icon: 'tabler:building',
+                headline: 'Run several companies on one subscription',
+                description: 'Open the companies you manage under the subscription you already pay for, each with its own books, clients and numbering.',
+                bullets: [
+                    'One bill for every company covered',
+                    'Each company keeps its own data and settings',
+                    'New companies are covered as you open them',
+                ],
+            ),
             Feature::McpAccess => new FeatureCopy(
                 icon: 'tabler:robot',
                 headline: 'Let AI agents work for you',

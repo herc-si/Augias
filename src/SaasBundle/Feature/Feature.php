@@ -40,13 +40,15 @@ enum Feature: string
     case CustomFields = 'custom_fields';
     case CustomTemplates = 'custom_templates';
     case SupportAccess = 'support_access';
+    case Companies = 'companies';
 
     public function getType(): FeatureType
     {
         return match ($this) {
             self::TotalClients,
             self::InvoicesPerMonth,
-            self::TeamSeats => FeatureType::INTEGER,
+            self::TeamSeats,
+            self::Companies => FeatureType::INTEGER,
             self::Quotes,
             self::OnlinePayments,
             self::RecurringInvoices,

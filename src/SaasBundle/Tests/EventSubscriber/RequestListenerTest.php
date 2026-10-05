@@ -14,12 +14,15 @@ declare(strict_types=1);
 namespace Augias\SaasBundle\Tests\EventSubscriber;
 
 use Augias\CoreBundle\Company\CompanySelector;
+use Augias\CoreBundle\Entity\Company;
+use Augias\CoreBundle\Entity\CompanyCoverage;
 use Augias\CoreBundle\Intl\LocalisedDate;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\SaasBundle\EventSubscriber\RequestListener;
 use Augias\SaasBundle\Service\TrialBannerResolver;
 use Augias\SaasBundle\Tests\Plan\BuildsFreePlanAllowance;
+use Augias\SaasBundle\Tests\Subscription\BuildsCoveredSubscriptionProvider;
 use Augias\Test\SaasKernel;
 use Augias\UserBundle\Entity\User;
 use Carbon\CarbonImmutable;
@@ -39,6 +42,7 @@ use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
 use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionProviderInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -55,6 +59,7 @@ use Twig\Environment;
 final class RequestListenerTest extends KernelTestCase
 {
     use BuildsFreePlanAllowance;
+    use BuildsCoveredSubscriptionProvider;
 
     use M\Adapter\Phpunit\MockeryPHPUnitIntegration;
     use EnsureApplicationInstalled;
@@ -350,6 +355,40 @@ final class RequestListenerTest extends KernelTestCase
         self::assertTrue($capturedContext['has_recurring_invoices']);
     }
 
+    /**
+     * A company another one's subscription pays for has no subscription of
+     * its own to choose, change or pay: it is sent to its subscription page.
+     */
+    public function testACoveredCompanyIsSentFromThePlanPagesToItsSubscription(): void
+    {
+        $subscription = $this->createSubscription(SubscriptionStatus::ACTIVE);
+        $listener = $this->createListener(new User(), null, $subscription, covered: true);
+
+        $request = new Request();
+        $request->attributes->set('_route', 'saas_subscription_change');
+        $event = new RequestEvent(M::mock(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST);
+
+        $listener->onRequest($event);
+
+        $response = $event->getResponse();
+        self::assertInstanceOf(RedirectResponse::class, $response);
+        self::assertStringEndsWith('/billing/', $response->getTargetUrl());
+    }
+
+    public function testACoveredCompanyUsesTheRestOfTheApplication(): void
+    {
+        $subscription = $this->createSubscription(SubscriptionStatus::ACTIVE);
+        $listener = $this->createListener(new User(), null, $subscription, covered: true);
+
+        $request = new Request();
+        $request->attributes->set('_route', '_dashboard');
+        $event = new RequestEvent(M::mock(HttpKernelInterface::class), $request, HttpKernelInterface::MAIN_REQUEST);
+
+        $listener->onRequest($event);
+
+        self::assertNull($event->getResponse());
+    }
+
     public function testOnRequestWithTrialStatusBeforeEndDate(): void
     {
         $now = CarbonImmutable::parse('2024-01-10');
@@ -499,6 +538,7 @@ final class RequestListenerTest extends KernelTestCase
         ?callable $onBannerRender = null,
         int $couponPercent = 30,
         array $planFeatures = [],
+        bool $covered = false,
     ): RequestListener {
         // Get real services from container
         $companySelector = self::getContainer()->get(CompanySelector::class);
@@ -586,6 +626,12 @@ final class RequestListenerTest extends KernelTestCase
             $this->freePlanAllowance($subscriptionManager),
             $translator,
             $planFeatureManager,
+            $this->coveredSubscriptionProvider(
+                $subscriptionManager,
+                // The open company under another one, whose plan covers five.
+                $covered ? [new CompanyCoverage($this->company, new Company(), new DateTimeImmutable('2026-10-01'))] : [],
+                $subscription instanceof Subscription ? [$subscription->getPlan()->getPlanId() => 5] : [],
+            ),
             $couponCode,
             $couponPercent,
         );
