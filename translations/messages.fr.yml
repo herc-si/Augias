@@ -761,6 +761,12 @@ client:
         empty:
             description: 'Créez un devis pour proposer un tarif à ce client.'
             title: 'Aucun devis pour le moment'
+    registry:
+        closed: 'Fermée'
+        help: 'Nom, SIREN ou SIRET : le nom, les identifiants et l''adresse du siège se remplissent depuis l''annuaire officiel des entreprises (France).'
+        label: 'Rechercher dans l''annuaire des entreprises'
+        none: 'Aucune entreprise trouvée. Essayez le SIREN, ou remplissez la fiche à la main.'
+        placeholder: 'Nom de l''entreprise ou SIREN'
     restore:
         success: 'Client restauré avec succès'
     save: Enregistrer

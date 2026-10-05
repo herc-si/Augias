@@ -761,6 +761,12 @@ client:
         empty:
             description: 'Create a quote to propose pricing to this client.'
             title: 'No quotes yet'
+    registry:
+        closed: 'Closed'
+        help: 'Name, SIREN or SIRET: the name, identifiers and head office address are filled in from the official French company register.'
+        label: 'Search the company register'
+        none: 'No company found. Try the SIREN, or fill in the form by hand.'
+        placeholder: 'Company name or SIREN'
     restore:
         success: 'Client Successfully Restored'
     save: Save
