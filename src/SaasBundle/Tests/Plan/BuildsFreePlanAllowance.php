@@ -23,6 +23,8 @@ use Augias\UserBundle\Repository\MembershipRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Query\FilterCollection;
 use Doctrine\Persistence\ManagerRegistry;
+use SolidWorx\Platform\SaasBundle\Entity\Plan;
+use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
 use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionProviderInterface;
 
 /**
@@ -31,8 +33,11 @@ use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionProviderInterface;
  */
 trait BuildsFreePlanAllowance
 {
-    private function freePlanAllowance(SubscriptionProviderInterface $subscriptions): FreePlanAllowance
+    private function freePlanAllowance(SubscriptionProviderInterface $subscriptions, bool $freePlanOnSale = true): FreePlanAllowance
     {
+        $plans = $this->createStub(PlanRepositoryInterface::class);
+        $plans->method('findAllOrdered')->willReturn($freePlanOnSale ? [new Plan()->setName('Free')->setPlanId('0')->setPrice(0)] : []);
+
         $owners = static fn (iterable $memberships): array => array_values(array_filter(
             [...$memberships],
             static fn (Membership $membership): bool => CompanyRole::Owner === $membership->getRole(),
@@ -53,6 +58,7 @@ trait BuildsFreePlanAllowance
             $memberships,
             $entityManager,
             new CompanySelector($this->createStub(ManagerRegistry::class)),
+            $plans,
         );
     }
 }

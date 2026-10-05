@@ -37,10 +37,12 @@
                         {{ ux_icon('tabler:check', {width: 20, height: 20}) }}
                         {{ 'saas.trial_expired.feature_invoices'|trans }}
                     </li>
-                    <li>
-                        {{ ux_icon('tabler:check', {width: 20, height: 20}) }}
-                        {{ 'saas.trial_expired.feature_payments'|trans }}
-                    </li>
+                    {% if has_online_payments|default(true) %}
+                        <li>
+                            {{ ux_icon('tabler:check', {width: 20, height: 20}) }}
+                            {{ 'saas.trial_expired.feature_payments'|trans }}
+                        </li>
+                    {% endif %}
                     <li>
                         {{ ux_icon('tabler:check', {width: 20, height: 20}) }}
                         {{ 'saas.trial_expired.feature_clients'|trans }}
@@ -49,10 +51,12 @@
                         {{ ux_icon('tabler:check', {width: 20, height: 20}) }}
                         {{ 'saas.trial_expired.feature_reports'|trans }}
                     </li>
-                    <li>
-                        {{ ux_icon('tabler:check', {width: 20, height: 20}) }}
-                        {{ 'saas.trial_expired.feature_recurring'|trans }}
-                    </li>
+                    {% if has_recurring_invoices|default(true) %}
+                        <li>
+                            {{ ux_icon('tabler:check', {width: 20, height: 20}) }}
+                            {{ 'saas.trial_expired.feature_recurring'|trans }}
+                        </li>
+                    {% endif %}
                 </ul>
             </div>
 

@@ -229,7 +229,7 @@ onboarding:
         fine_print: 'Des questions sur la facturation ou ce qui vous attend ? Répondez à cet e-mail — nous les lisons tous.'
         heading: 'Votre période d''essai se termine demain.|Votre période d''essai se termine dans %days% jours.'
         if_not:
-            1: "Votre compte se verrouille — vous ne pourrez plus vous connecter ni accéder à vos données."
+            1: "Votre compte se verrouille : vous ne pourrez plus facturer, seulement exporter vos données."
             2: "Les factures en attente ne seront pas envoyées. La facturation récurrente sera suspendue."
             3: 'Vos clients pourront toujours payer les factures existantes via leurs liens de paiement directs.'
             4: 'Réactivez à tout moment — tout est restauré immédiatement dès l''abonnement.'

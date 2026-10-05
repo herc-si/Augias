@@ -5,7 +5,7 @@ description: Conditions générales d'utilisation et de vente du service héberg
 
 # Conditions générales d'utilisation et de vente
 
-Dernière mise à jour : 1er octobre 2026
+Dernière mise à jour : 5 octobre 2026
 
 :::warning À compléter avant publication
 Ce document est un projet rédigé à partir du fonctionnement réel de l'application. Les mentions **[À COMPLÉTER]** attendent des informations ou des décisions de HERC SI, et l'ensemble doit être relu par un juriste avant d'engager la société.
@@ -51,7 +51,7 @@ Le Prestataire peut faire évoluer les plans et leurs tarifs. Toute évolution d
 
 ## 6. Période d'essai
 
-Le service peut être ouvert par une période d'essai, dont la durée est indiquée lors de la souscription. À son terme, l'accès est suspendu jusqu'à la souscription d'un plan payant.
+Le service s'ouvre par une période d'essai gratuite de **trente jours**, sur le plan d'entrée de gamme, sans moyen de paiement à fournir. Elle n'est accordée qu'une fois par utilisateur : une entreprise créée ensuite par le même utilisateur choisit directement un plan payant. À son terme, l'accès est suspendu jusqu'à la souscription d'un plan payant.
 
 La suspension ne supprime pas les données : elle bloque l'accès à l'application. Le Client conserve le droit d'en demander l'export dans les conditions de l'article 10.
 

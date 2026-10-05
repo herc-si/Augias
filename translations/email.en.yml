@@ -229,7 +229,7 @@ onboarding:
         fine_print: 'Questions about billing or what to expect? Reply to this email — we read every one.'
         heading: 'Your trial ends tomorrow.|Your trial ends in %days% days.'
         if_not:
-            1: "Your account locks — you won't be able to log in or access any data."
+            1: "Your account locks — you can no longer invoice, only export your data."
             2: "Pending invoices won't be delivered. Recurring billing pauses."
             3: 'Clients can still pay existing invoices via their direct payment links.'
             4: 'Reactivate any time — everything restores immediately on subscription.'

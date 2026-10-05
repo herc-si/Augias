@@ -71,6 +71,20 @@ final class FreePlanAllowanceTest extends TestCase
         self::assertSame([$this->solo], $this->allowance()->plansFor($second, [$this->free, $this->solo]));
     }
 
+    /**
+     * Free taken off sale (05/10/2026, replaced by a paid entry plan): an
+     * owner who kept a free company is not told Free is "taken".
+     */
+    public function testNothingIsHeldBackOnceNoFreePlanIsOnSale(): void
+    {
+        $owner = new User();
+        $this->subscribe($this->company($owner), $this->free, SubscriptionStatus::ACTIVE);
+        $second = $this->company($owner);
+
+        self::assertTrue($this->allowance(freePlanOnSale: false)->allows($second));
+        self::assertSame([$this->solo], $this->allowance(freePlanOnSale: false)->plansFor($second, [$this->solo]));
+    }
+
     public function testTheFreeCompanyItselfStaysAllowed(): void
     {
         $owner = new User();
@@ -103,7 +117,7 @@ final class FreePlanAllowanceTest extends TestCase
         self::assertFalse($this->allowance()->ownsFreeCompany($user));
     }
 
-    private function allowance(): FreePlanAllowance
+    private function allowance(bool $freePlanOnSale = true): FreePlanAllowance
     {
         $provider = $this->createStub(SubscriptionProviderInterface::class);
         $provider->method('getSubscriptionFor')->willReturnCallback(
@@ -112,7 +126,7 @@ final class FreePlanAllowanceTest extends TestCase
                 : null,
         );
 
-        return $this->freePlanAllowance($provider);
+        return $this->freePlanAllowance($provider, $freePlanOnSale);
     }
 
     private function company(User $owner): Company
