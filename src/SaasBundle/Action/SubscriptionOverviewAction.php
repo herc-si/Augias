@@ -15,8 +15,10 @@ namespace Augias\SaasBundle\Action;
 
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Repository\CompanyRepository;
+use Augias\SaasBundle\Plan\PlanPeriods;
 use Augias\SaasBundle\Subscription\CoveredSubscriptionProvider;
 use Carbon\CarbonImmutable;
+use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
 use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionProviderInterface;
@@ -29,6 +31,7 @@ final class SubscriptionOverviewAction extends AbstractController
     public function __construct(
         private readonly SubscriptionProviderInterface $subscriptionProvider,
         private readonly CoveredSubscriptionProvider $coverage,
+        private readonly PlanPeriods $periods,
         private readonly CompanyRepository $companyRepository,
         private readonly CompanySelector $companySelector,
     ) {
@@ -57,7 +60,10 @@ final class SubscriptionOverviewAction extends AbstractController
         return $this->render('@AugiasSaas/subscription/overview.html.twig', [
             'subscription' => $subscription,
             'plan' => $subscription->getPlan(),
-            'isTrial' => $subscription->getStatus() === SubscriptionStatus::TRIAL,
+            // Subscribed during the trial: Stripe bills at its end. A
+            // subscription, not a trial, whatever its status says.
+            'isTrial' => $subscription->getStatus() === SubscriptionStatus::TRIAL && ! $subscription->isExternallyBilled(),
+            'firstPaymentOn' => $subscription->getStatus() === SubscriptionStatus::TRIAL && $subscription->isExternallyBilled() ? $subscription->getEndDate() : null,
             'isFree' => $subscription->getPlan()->isFree(),
             'isPastDue' => $subscription->getStatus() === SubscriptionStatus::PAST_DUE,
             'isPaused' => $subscription->getStatus() === SubscriptionStatus::PAUSED,
@@ -68,7 +74,26 @@ final class SubscriptionOverviewAction extends AbstractController
             // Or the companies this one's subscription pays for, its own aside.
             'coveredCompanies' => $this->coverage->coveredBy($company),
             'companyAllowance' => $this->coverage->allowance($subscription->getPlan()),
+            // A monthly subscriber whose offer has a yearly price: what it saves.
+            'yearlyOffer' => $this->yearlyOffer($subscription),
         ]);
+    }
+
+    /**
+     * @return array{plan: Plan, saving: int}|null
+     */
+    private function yearlyOffer(Subscription $subscription): ?array
+    {
+        $plan = $subscription->getPlan();
+        $annual = $this->periods->annualOf($plan);
+
+        if (! $annual instanceof Plan || $this->periods->isAnnual($plan) || ! $subscription->isExternallyBilled()) {
+            return null;
+        }
+
+        $saving = $this->periods->yearlySaving($plan, $annual);
+
+        return $saving > 0 ? ['plan' => $annual, 'saving' => $saving] : null;
     }
 
     private function trialDaysRemaining(Subscription $subscription): ?int

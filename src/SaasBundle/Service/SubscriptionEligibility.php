@@ -48,7 +48,8 @@ final readonly class SubscriptionEligibility implements PaidSubscriptionGateInte
 
         return match ($subscription->getStatus()) {
             SubscriptionStatus::ACTIVE => EligibilityResult::active(),
-            SubscriptionStatus::TRIAL => $subscription->getEndDate() > $now
+            // Subscribed during the trial: billed at its end, by Stripe.
+            SubscriptionStatus::TRIAL => $subscription->getEndDate() > $now || $subscription->isExternallyBilled()
                 ? EligibilityResult::active()
                 : EligibilityResult::denied('Your trial has ended. Activate a subscription to continue using this resource.'),
             SubscriptionStatus::CANCELLED, SubscriptionStatus::EXPIRED => $subscription->getEndDate() > $now

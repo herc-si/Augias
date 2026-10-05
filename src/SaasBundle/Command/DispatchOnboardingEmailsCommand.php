@@ -74,6 +74,8 @@ final class DispatchOnboardingEmailsCommand extends Command
                 ->innerJoin('t.subscription', 's')
                 ->where('s.status = :status')
                 ->andWhere('s.endDate > :now')
+                // Subscribed during the trial: "your trial ends" would be wrong.
+                ->andWhere('s.subscriptionId IS NULL')
                 ->setParameter('status', SubscriptionStatus::TRIAL)
                 ->setParameter('now', $this->clock->now());
 

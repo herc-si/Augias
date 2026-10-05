@@ -31,9 +31,14 @@
 {% set freePlan = null %}
 {% set paidPlans = [] %}
 {% set hasAnnual = false %}
+{# Whole months the best yearly price saves, for the period switch to say. #}
+{% set freeMonths = 0 %}
 {% for plan in plans|filter(plan => not plan_is_annual(plan)) %}
     {% if plan_annual(plan) %}
         {% set hasAnnual = true %}
+        {% if plan.price > 0 %}
+            {% set freeMonths = max(freeMonths, (plan_yearly_saving(plan, plan_annual(plan)) / plan.price)|round(0, 'floor')) %}
+        {% endif %}
     {% endif %}
     {% if plan.isFree() %}
         {% set freePlan = plan %}
@@ -55,6 +60,9 @@
             </a>
             <a href="{{ path(route, query|merge({period: 'year'})) }}" class="btn {{ period == 'year' ? 'btn-primary' : 'btn-outline-primary' }}" {{ period == 'year' ? 'aria-current="true"' }}>
                 {{ 'saas.plan.period.year'|trans }}
+                {% if freeMonths > 0 %}
+                    <span class="badge bg-success text-white ms-1">{{ 'saas.plan.period.free_months'|trans({'%count%': freeMonths}) }}</span>
+                {% endif %}
             </a>
         </div>
     </div>
@@ -96,6 +104,14 @@
                                 {% if saving > 0 %}
                                     — <span class="text-success">{{ 'saas.plan.yearly_saving'|trans({'%saving%': saving|formatCurrency(currency)}) }}</span>
                                 {% endif %}
+                            </div>
+                        {% elseif annual %}
+                            {# The monthly card says what a year would cost, and save. #}
+                            {% set saving = plan_yearly_saving(offer, annual) %}
+                            <div class="small mt-1">
+                                <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all|merge({period: 'year'})) }}" class="text-success">
+                                    {{ (saving > 0 ? 'saas.plan.or_yearly_saving' : 'saas.plan.or_yearly')|trans({'%price%': annual.price|formatCurrency(currency), '%saving%': saving|formatCurrency(currency)}) }}
+                                </a>
                             </div>
                         {% endif %}
                     </div>

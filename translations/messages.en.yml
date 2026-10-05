@@ -3245,6 +3245,7 @@ saas:
         covered_count_unlimited: '%count%'
         covered_help: 'Companies you open are covered by this subscription while there is room, this one included. Each keeps its own data.'
         current_plan: 'Current plan'
+        first_payment: 'First payment'
         free: Free
         manage_payment_method: 'Manage payment method'
         next_renewal: 'Next renewal'
@@ -3265,6 +3266,7 @@ saas:
             past_due: 'Past due'
             paused: Paused
             pending: Pending
+            subscribed: Subscribed
             trial: Trial
             unpaid: Unpaid
         title: Subscription
@@ -3272,6 +3274,9 @@ saas:
         trial_ended: 'Your trial has ended.'
         trial_ends: 'Trial ends'
         trial_keep_features: 'Pick a paid plan to keep using all features after the trial ends.'
+        yearly_action: 'Switch to yearly'
+        yearly_message: 'Pay %price% once a year instead of every month. The change is prorated.'
+        yearly_title: 'Save %saving% a year.'
     paused:
         feature_clients: 'Client and contact management'
         feature_invoices: 'Unlimited invoices and quotes'
@@ -3301,6 +3306,7 @@ saas:
         current: 'Current plan'
         feature:
             automated_reminders: 'Automated reminders'
+            companies: 'Companies covered'
             custom_branding: 'Your branding on documents'
             custom_domain: 'Custom domain'
             custom_fields: 'Custom fields'
@@ -3321,9 +3327,12 @@ saas:
         just_getting_started: 'Just getting started?'
         no_credit_card: 'No credit card required'
         not_included: 'Not included'
+        or_yearly: 'or %price% a year'
+        or_yearly_saving: 'or %price% a year, saving %saving%'
         per_month: /month
         per_year: /year
         period:
+            free_months: '%count% month free|up to %count% months free'
             label: 'Billing period'
             month: Monthly
             year: Yearly

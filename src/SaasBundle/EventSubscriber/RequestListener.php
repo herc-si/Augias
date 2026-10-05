@@ -182,6 +182,12 @@ final readonly class RequestListener implements EventSubscriberInterface
                 );
                 break;
             case SubscriptionStatus::TRIAL:
+                // Subscribed during the trial: Stripe bills at its end and
+                // says how it went; the trial is not "over" for us to block.
+                if ($subscription->isExternallyBilled()) {
+                    return;
+                }
+
                 if ($subscription->getEndDate() <= $this->clock->now() && ! $this->isExport($event->getRequest())) {
                     $event->setResponse(
                         new Response(

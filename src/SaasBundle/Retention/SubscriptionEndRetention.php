@@ -58,6 +58,12 @@ final readonly class SubscriptionEndRetention implements ClosureSchedule
 
     public static function hasEnded(Subscription $subscription, DateTimeImmutable $now): bool
     {
+        // Subscribed during the trial: its end is the first payment, which
+        // Stripe reports; an ended trial is one nobody subscribed from.
+        if (SubscriptionStatus::TRIAL === $subscription->getStatus() && $subscription->isExternallyBilled()) {
+            return false;
+        }
+
         return in_array($subscription->getStatus(), self::ENDED, true) && $subscription->getEndDate() <= $now;
     }
 
