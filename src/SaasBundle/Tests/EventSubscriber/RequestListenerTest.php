@@ -34,6 +34,7 @@ use Psr\Clock\ClockInterface;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
+use SolidWorx\Platform\SaasBundle\Feature\PlanFeatureManager;
 use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
 use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionProviderInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -316,6 +317,39 @@ final class RequestListenerTest extends KernelTestCase
         self::assertSame(30, $capturedContext['coupon_percent']);
     }
 
+    /**
+     * The expired page lists what paying keeps: an entry plan without online
+     * payments or recurring invoices must not promise them (05/10/2026).
+     */
+    public function testOnRequestWithExpiredTrialPassesThePlanRightsToTemplate(): void
+    {
+        $subscription = $this->createSubscription(SubscriptionStatus::TRIAL, CarbonImmutable::parse('2024-01-10'));
+
+        $capturedContext = null;
+        $listener = $this->createListener(
+            new User(),
+            CarbonImmutable::parse('2024-01-15'),
+            $subscription,
+            onTrialExpiredRender: static function (array $context) use (&$capturedContext): void {
+                $capturedContext = $context;
+            },
+            planFeatures: ['online_payments' => false, 'recurring_invoices' => true],
+        );
+
+        $request = new Request();
+        $request->attributes->set('_route', '_dashboard');
+
+        $listener->onRequest(new RequestEvent(
+            M::mock(HttpKernelInterface::class),
+            $request,
+            HttpKernelInterface::MAIN_REQUEST
+        ));
+
+        self::assertIsArray($capturedContext);
+        self::assertFalse($capturedContext['has_online_payments']);
+        self::assertTrue($capturedContext['has_recurring_invoices']);
+    }
+
     public function testOnRequestWithTrialStatusBeforeEndDate(): void
     {
         $now = CarbonImmutable::parse('2024-01-10');
@@ -453,6 +487,9 @@ final class RequestListenerTest extends KernelTestCase
         yield ['_view_invoice_external'];
     }
 
+    /**
+     * @param array<string, bool> $planFeatures rights of the subscribed plan; unnamed ones are granted
+     */
     private function createListener(
         ?User $user = null,
         ?DateTimeImmutable $now = null,
@@ -461,6 +498,7 @@ final class RequestListenerTest extends KernelTestCase
         ?callable $onTrialExpiredRender = null,
         ?callable $onBannerRender = null,
         int $couponPercent = 30,
+        array $planFeatures = [],
     ): RequestListener {
         // Get real services from container
         $companySelector = self::getContainer()->get(CompanySelector::class);
@@ -520,6 +558,12 @@ final class RequestListenerTest extends KernelTestCase
 
         $translator = self::getContainer()->get(TranslatorInterface::class);
 
+        // A right the test does not name is granted, as on a full plan.
+        // A readonly class: Mockery cannot double it, PHPUnit can.
+        $planFeatureManager = $this->createStub(PlanFeatureManager::class);
+        $planFeatureManager->method('hasFeature')
+            ->willReturnCallback(static fn (Plan $plan, string $featureKey): bool => $planFeatures[$featureKey] ?? true);
+
         $trialBannerResolver = new TrialBannerResolver(
             $clock,
             new LocalisedDate(),
@@ -541,6 +585,7 @@ final class RequestListenerTest extends KernelTestCase
             $trialBannerResolver,
             $this->freePlanAllowance($subscriptionManager),
             $translator,
+            $planFeatureManager,
             $couponCode,
             $couponPercent,
         );

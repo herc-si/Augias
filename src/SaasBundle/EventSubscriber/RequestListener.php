@@ -17,6 +17,7 @@ use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\SaasBundle\Action\AbandonCompanyAction;
+use Augias\SaasBundle\Feature\Feature;
 use Augias\SaasBundle\Plan\FreePlanAllowance;
 use Augias\SaasBundle\Service\TrialBanner;
 use Augias\SaasBundle\Service\TrialBannerResolver;
@@ -24,6 +25,7 @@ use Augias\UserBundle\Entity\User;
 use Psr\Clock\ClockInterface;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
+use SolidWorx\Platform\SaasBundle\Feature\PlanFeatureManager;
 use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
 use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionProviderInterface;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -92,6 +94,7 @@ final readonly class RequestListener implements EventSubscriberInterface
         private TrialBannerResolver $trialBannerResolver,
         private FreePlanAllowance $freePlanAllowance,
         private TranslatorInterface $translator,
+        private PlanFeatureManager $planFeatures,
         #[Autowire(env: 'AUGIAS_SAAS_ONBOARDING_COUPON_CODE')]
         private string $onboardingCouponCode = '',
         #[Autowire(env: 'int:AUGIAS_SAAS_ONBOARDING_COUPON_PERCENT')]
@@ -162,6 +165,10 @@ final readonly class RequestListener implements EventSubscriberInterface
                                 'subscription' => $subscription,
                                 'coupon_code' => $this->onboardingCouponCode,
                                 'coupon_percent' => $this->couponPercent,
+                                // The page lists what the plan tried keeps on
+                                // paying for: an entry plan has neither.
+                                'has_online_payments' => $this->planFeatures->hasFeature($subscription->getPlan(), Feature::OnlinePayments->value),
+                                'has_recurring_invoices' => $this->planFeatures->hasFeature($subscription->getPlan(), Feature::RecurringInvoices->value),
                             ]),
                         )
                     );

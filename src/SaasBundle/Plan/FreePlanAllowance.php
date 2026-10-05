@@ -22,6 +22,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
+use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
 use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionProviderInterface;
 use Symfony\Component\Uid\Ulid;
 use function array_filter;
@@ -38,6 +39,9 @@ use function array_values;
  * only: the answer would depend on when Doctrine happened to load it — for
  * the signed-in user, before the filter; for another owner, after.
  *
+ * With no free plan on sale, there is nothing to hold back: companies already
+ * on Free keep it, and nobody is told Free is "taken" when it is simply gone.
+ *
  * @see \Augias\SaasBundle\Tests\Plan\FreePlanAllowanceTest
  */
 final readonly class FreePlanAllowance
@@ -47,11 +51,16 @@ final readonly class FreePlanAllowance
         private MembershipRepository $memberships,
         private EntityManagerInterface $entityManager,
         private CompanySelector $companySelector,
+        private PlanRepositoryInterface $plans,
     ) {
     }
 
     public function allows(Company $company): bool
     {
+        if (! $this->freePlanOnSale()) {
+            return true;
+        }
+
         foreach ($this->acrossCompanies(fn (): array => $this->memberships->ownersOf($company)) as $membership) {
             if ($this->ownsFreeCompany($membership->getUser(), $company)) {
                 return false;
@@ -98,6 +107,17 @@ final readonly class FreePlanAllowance
         }
 
         return array_values(array_filter($plans, static fn (Plan $plan): bool => ! $plan->isFree()));
+    }
+
+    private function freePlanOnSale(): bool
+    {
+        foreach ($this->plans->findAllOrdered() as $plan) {
+            if ($plan->isFree()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function isActiveOnFreePlan(Company $company): bool

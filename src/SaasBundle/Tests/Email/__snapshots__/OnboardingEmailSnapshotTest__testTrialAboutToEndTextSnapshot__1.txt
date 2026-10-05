@@ -11,7 +11,7 @@ Subscribing takes about 30 seconds. Your workspace picks up exactly where it lef
 What happens when your trial ends
 ------------------------------------------------------------
 
-* Your account locks — you won't be able to log in or access any data.
+* Your account locks — you can no longer invoice, only export your data.
 * Pending invoices won't be delivered. Recurring billing pauses.
 * Clients can still pay existing invoices via their direct payment links.
 * Reactivate any time — everything restores immediately on subscription.
