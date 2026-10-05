@@ -112,6 +112,25 @@ accounting:
         sales_notice: "La TVA sur les biens est due à la livraison, pas au paiement. Chaque facture émise avec des biens s'inscrit ici à sa date, chaque avoir qui en reprend aussi — et, sous l'option pour les débits, les services avec. Ce journal alimente la déclaration de TVA ; le chiffre d'affaires, lui, reste ce qui est encaissé, au livre des recettes."
     books:
         title: Livres comptables
+    catch_up:
+        title: "Reprendre l'historique"
+        intro: "Vos livres s'écrivent au fil de l'eau, à partir du moment où un régime est choisi. Les factures, avoirs, paiements et factures fournisseurs datés d'avant n'y figurent pas, et leur chiffre d'affaires manque aux déclarations. Reprenez-les ici : rien de ce qui est déjà dans vos livres n'est ajouté deux fois."
+        from: 'Reprendre depuis le'
+        refresh: 'Afficher'
+        locked_until: "Vos livres sont verrouillés : la reprise ne peut pas commencer avant le %date%."
+        book: 'Livre'
+        missing: "{1}1 écriture manque à vos livres|]1,Inf]%count% écritures manquent à vos livres"
+        missing_since: 'Pour les documents datés à partir du %date%.'
+        help: "Chaque écriture est rangée dans sa période. Vous pourrez la retrouver, la modifier ou la supprimer dans son livre, tant que la période n'est pas verrouillée."
+        confirm: "{1}Ajouter cette écriture|]1,Inf]Ajouter ces %count% écritures"
+        notice: "{1}1 écriture datée depuis le %date% manque à vos livres : son document a été enregistré avant que la comptabilité soit activée.|]1,Inf]%count% écritures datées depuis le %date% manquent à vos livres : leurs documents ont été enregistrés avant que la comptabilité soit activée."
+        review: 'Vérifier et reprendre'
+        empty:
+            title: 'Rien à reprendre'
+            description: 'Tous les documents datés à partir du %date% sont déjà dans vos livres.'
+        flash:
+            added: "Les documents antérieurs ont été repris dans vos livres."
+            nothing: "Il n'y avait rien à reprendre : vos livres contenaient déjà tout."
     declaration:
         vat_credit: 'Crédit de TVA reporté'
         taxable_base: 'Base taxable'

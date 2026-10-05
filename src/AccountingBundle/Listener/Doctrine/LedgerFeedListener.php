@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Augias\AccountingBundle\Listener\Doctrine;
 
-use Augias\AccountingBundle\Entity\LedgerEntry;
 use Augias\AccountingBundle\Service\LedgerFeeder;
 use Augias\BillBundle\Entity\Bill;
 use Augias\BillBundle\Entity\BillPayment;
@@ -21,7 +20,6 @@ use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\PaymentBundle\Entity\Payment;
-use Brick\Math\Exception\MathException;
 use Doctrine\Bundle\DoctrineBundle\Attribute\AsDoctrineListener;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\ORM\Event\PostFlushEventArgs;
@@ -98,9 +96,7 @@ final class LedgerFeedListener
 
         try {
             foreach ($pending as $subject) {
-                foreach ($this->entriesFor($subject) as $entry) {
-                    $written = $written || $entry instanceof LedgerEntry;
-                }
+                $written = $this->feeder->recordFor($subject) !== [] || $written;
             }
 
             if ($written) {
@@ -109,53 +105,5 @@ final class LedgerFeedListener
         } finally {
             $this->writing = false;
         }
-    }
-
-    /**
-     * Both feeders are asked of a payment, and each decides for itself whether
-     * it has anything to write: one books a capture, the other takes it back
-     * when the gateway reverses it. Asking twice is cheaper than teaching this
-     * listener to read payment statuses.
-     *
-     * @return iterable<LedgerEntry|null>
-     * @throws MathException
-     */
-    private function entriesFor(Payment | BillPayment | CreditNoteAllocation | Invoice | CreditNote | Bill $subject): iterable
-    {
-        // A supplier's bill, the same way on the other side: its VAT may be
-        // deductible on its date, and a cancellation takes that back.
-        if ($subject instanceof Bill) {
-            yield $this->feeder->recordBillReceipt($subject);
-            yield $this->feeder->recordBillCancellation($subject);
-
-            return;
-        }
-
-        if ($subject instanceof Invoice) {
-            yield $this->feeder->recordInvoiceIssue($subject);
-
-            return;
-        }
-
-        if ($subject instanceof CreditNote) {
-            yield $this->feeder->recordCreditNoteIssue($subject);
-
-            return;
-        }
-
-        if ($subject instanceof BillPayment) {
-            yield $this->feeder->recordBillPayment($subject);
-
-            return;
-        }
-
-        if ($subject instanceof CreditNoteAllocation) {
-            yield $this->feeder->recordCreditNoteRefund($subject);
-
-            return;
-        }
-
-        yield $this->feeder->recordInvoicePayment($subject);
-        yield $this->feeder->recordPaymentRefund($subject);
     }
 }

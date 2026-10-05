@@ -50,9 +50,12 @@ use Money\Money;
 use NumberFormatter;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function array_filter;
 use function array_map;
+use function array_values;
 use function count;
 use function in_array;
+use function iterator_to_array;
 use function trim;
 
 /**
@@ -72,7 +75,7 @@ use function trim;
  *
  * @see \Augias\AccountingBundle\Tests\Functional\LedgerBookkeepingTest
  */
-final readonly class LedgerFeeder
+final class LedgerFeeder
 {
     /**
      * A payment counts as turnover once the money is actually in — authorised
@@ -106,16 +109,118 @@ final readonly class LedgerFeeder
      */
     private const array RECEIVED_BILL_STATUSES = [BillStatus::Pending, BillStatus::Overdue, BillStatus::Paid];
 
+    /**
+     * The entries a preview has gathered instead of writing them; null when
+     * not previewing. See {@see preview()}.
+     *
+     * @var list<LedgerEntry>|null
+     */
+    private ?array $previewed = null;
+
     public function __construct(
-        private EntityManagerInterface $entityManager,
-        private AccountingProfileProvider $profileProvider,
-        private AccountingPeriodManager $periodManager,
-        private LedgerEntryRepository $entryRepository,
-        private SystemConfig $systemConfig,
-        private TranslatorInterface $translator,
-        private LedgerTaxSplitter $taxSplitter,
-        private CompanyBooks $companyBooks,
+        private readonly EntityManagerInterface $entityManager,
+        private readonly AccountingProfileProvider $profileProvider,
+        private readonly AccountingPeriodManager $periodManager,
+        private readonly LedgerEntryRepository $entryRepository,
+        private readonly SystemConfig $systemConfig,
+        private readonly TranslatorInterface $translator,
+        private readonly LedgerTaxSplitter $taxSplitter,
+        private readonly CompanyBooks $companyBooks,
     ) {
+    }
+
+    /**
+     * What the given recordings would write, with nothing written: the
+     * entries are built, handed back, and never persisted nor filed in a
+     * period. Every recording passes through {@see persist()}, deposits
+     * included, which is what lets one switch cover them all.
+     *
+     * Used to take a company's history into books opened after it, where the
+     * user is shown what is missing before anything is added.
+     *
+     * @param callable(self): void $record
+     *
+     * @return list<LedgerEntry>
+     */
+    public function preview(callable $record): array
+    {
+        $this->previewed = [];
+
+        try {
+            $record($this);
+
+            return $this->previewed;
+        } finally {
+            $this->previewed = null;
+        }
+    }
+
+    /**
+     * Both feeders are asked of a payment, and each decides for itself whether
+     * it has anything to write: one books a capture, the other takes it back
+     * when the gateway reverses it. Asking twice is cheaper than teaching this
+     * listener to read payment statuses.
+     *
+     * @return list<LedgerEntry> what was written, or would be under {@see preview()}
+     * @throws MathException
+     */
+    public function recordFor(Payment | BillPayment | CreditNoteAllocation | Invoice | CreditNote | Bill $subject): array
+    {
+        return array_values(array_filter(
+            iterator_to_array($this->entriesFor($subject), false),
+            static fn (?LedgerEntry $entry): bool => $entry instanceof LedgerEntry,
+        ));
+    }
+
+    /**
+     * @return iterable<LedgerEntry|null>
+     * @throws MathException
+     */
+    private function entriesFor(Payment | BillPayment | CreditNoteAllocation | Invoice | CreditNote | Bill $subject): iterable
+    {
+        // A supplier's bill, the same way on the other side: its VAT may be
+        // deductible on its date, and a cancellation takes that back.
+        if ($subject instanceof Bill) {
+            yield $this->recordBillReceipt($subject);
+            yield $this->recordBillCancellation($subject);
+
+            return;
+        }
+
+        if ($subject instanceof Invoice) {
+            yield $this->recordInvoiceIssue($subject);
+
+            return;
+        }
+
+        if ($subject instanceof CreditNote) {
+            yield $this->recordCreditNoteIssue($subject);
+
+            return;
+        }
+
+        if ($subject instanceof BillPayment) {
+            yield $this->recordBillPayment($subject);
+
+            return;
+        }
+
+        if ($subject instanceof CreditNoteAllocation) {
+            yield $this->recordCreditNoteRefund($subject);
+
+            return;
+        }
+
+        yield $this->recordInvoicePayment($subject);
+        yield $this->recordPaymentRefund($subject);
+    }
+
+    /**
+     * Writes an entry a preview built: filed in its period, then persisted.
+     */
+    public function file(LedgerEntry $entry): void
+    {
+        $this->persist($entry, $this->profileProvider->forCompany($entry->getCompany()));
     }
 
     /**
@@ -972,6 +1077,12 @@ final readonly class LedgerFeeder
 
     private function persist(LedgerEntry $entry, AccountingProfile $profile): LedgerEntry
     {
+        if ($this->previewed !== null) {
+            $this->previewed[] = $entry;
+
+            return $entry;
+        }
+
         $this->periodManager->assignPeriod($entry, $profile->declarationPeriodicity, $profile->fiscalYearStartMonth);
 
         $this->entityManager->persist($entry);

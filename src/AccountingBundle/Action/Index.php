@@ -18,6 +18,7 @@ use Augias\AccountingBundle\Entity\ThresholdAlert;
 use Augias\AccountingBundle\Enum\LedgerBook;
 use Augias\AccountingBundle\Fec\FecGenerator;
 use Augias\AccountingBundle\Model\AccountingProfile;
+use Augias\AccountingBundle\Model\CatchUpPlan;
 use Augias\AccountingBundle\Model\LimitUsage;
 use Augias\AccountingBundle\Model\TurnoverSummary;
 use Augias\AccountingBundle\Regime\RegimeInterface;
@@ -25,12 +26,14 @@ use Augias\AccountingBundle\Regime\RegimeRegistry;
 use Augias\AccountingBundle\Repository\AccountingPeriodRepository;
 use Augias\AccountingBundle\Repository\ThresholdAlertRepository;
 use Augias\AccountingBundle\Service\AccountingProfileProvider;
+use Augias\AccountingBundle\Service\BooksCatchUp;
 use Augias\AccountingBundle\Service\CompanyBooks;
 use Augias\AccountingBundle\Service\CurrentCompany;
 use Augias\AccountingBundle\Service\LedgerLockDate;
 use Augias\AccountingBundle\Service\LimitUsageCalculator;
 use Augias\AccountingBundle\Service\TurnoverCalculator;
 use Augias\CoreBundle\Entity\Company;
+use Brick\Math\Exception\MathException;
 use DateTimeImmutable;
 use Symfony\Bridge\Twig\Attribute\Template;
 
@@ -59,6 +62,7 @@ final readonly class Index
         private LedgerLockDate $lockDate,
         private CompanyBooks $books,
         private FecGenerator $fec,
+        private BooksCatchUp $catchUp,
     ) {
     }
 
@@ -74,8 +78,11 @@ final readonly class Index
      *     alerts: list<ThresholdAlert>,
      *     year: int,
      *     lockDate: DateTimeImmutable|null,
-     *     fecYears: list<int>
+     *     fecYears: list<int>,
+     *     catchUp?: CatchUpPlan
      * }
+     *
+     * @throws MathException
      */
     #[Template('@AugiasAccounting/Default/index.html.twig')]
     public function __invoke(): array
@@ -123,6 +130,9 @@ final readonly class Index
             // of the last period sealed, whichever is later.
             'lockDate' => $this->lockDate->forCompany($company),
             'fecYears' => $this->fec->years($company, $today),
+            // Documents of this financial year the books do not hold yet —
+            // dated before they were opened. Offered to take in.
+            'catchUp' => $this->catchUp->plan($company, $this->catchUp->defaultStart($company, $today)),
         ];
     }
 }

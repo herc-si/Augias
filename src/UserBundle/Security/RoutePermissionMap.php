@@ -162,6 +162,7 @@ final class RoutePermissionMap
 
         // Keeping the books.
         '_accounting_attachment_delete' => CompanyPermission::AccountingWrite,
+        '_accounting_catch_up' => CompanyPermission::AccountingWrite,
         '_accounting_declaration_submit' => CompanyPermission::AccountingWrite,
         '_accounting_entry_add' => CompanyPermission::AccountingWrite,
         '_accounting_entry_delete' => CompanyPermission::AccountingWrite,

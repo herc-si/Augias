@@ -112,6 +112,25 @@ accounting:
         sales_notice: 'VAT on goods falls due on delivery, not on payment. Every invoice issued with goods on it files itself here on its date, and so does every credit note that takes goods back — services too, under the option for VAT on debits. This journal feeds the VAT return; turnover stays what was received, in the revenue book.'
     books:
         title: Books
+    catch_up:
+        title: 'Take in earlier documents'
+        intro: "Your books are written as things happen, from the moment a regime is chosen. Invoices, credit notes, payments and supplier bills dated before that are not in them, and their turnover is missing from your declarations. Take them in here: nothing already in your books is added twice."
+        from: 'Take in from'
+        refresh: 'Show'
+        locked_until: 'Your books are locked: taking documents in cannot start before %date%.'
+        book: 'Book'
+        missing: "{1}1 entry is missing from your books|]1,Inf]%count% entries are missing from your books"
+        missing_since: 'For documents dated from %date%.'
+        help: 'Each entry is filed in its period. You can find, edit or delete it in its book as long as the period is not locked.'
+        confirm: "{1}Add this entry|]1,Inf]Add these %count% entries"
+        notice: "{1}1 entry dated since %date% is missing from your books: its document was recorded before accounting was turned on.|]1,Inf]%count% entries dated since %date% are missing from your books: their documents were recorded before accounting was turned on."
+        review: 'Review and take in'
+        empty:
+            title: 'Nothing to take in'
+            description: 'Every document dated from %date% is already in your books.'
+        flash:
+            added: 'The earlier documents have been taken into your books.'
+            nothing: 'There was nothing to take in: your books already held everything.'
     declaration:
         vat_credit: 'VAT credit carried forward'
         taxable_base: 'Taxable base'
