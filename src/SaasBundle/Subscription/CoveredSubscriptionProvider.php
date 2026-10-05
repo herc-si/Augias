@@ -19,6 +19,7 @@ use Augias\CoreBundle\Entity\CompanyCoverage;
 use Augias\SaasBundle\Feature\Feature;
 use Augias\UserBundle\Entity\Membership;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Repository\MembershipRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
@@ -40,6 +41,7 @@ use function array_map;
 use function array_slice;
 use function array_values;
 use function count;
+use function in_array;
 use function max;
 
 /**
@@ -156,9 +158,13 @@ final class CoveredSubscriptionProvider implements SubscriptionProviderInterface
      * A company this user owns whose subscription is paid up and has room for
      * one more company; null when there is none.
      */
-    public function hostWithRoomFor(User $owner): ?Company
+    public function hostWithRoomFor(User $owner, ?Company $except = null): ?Company
     {
         foreach ($this->ownedBy($owner) as $candidate) {
+            if ($except instanceof Company && $candidate->getId()->equals($except->getId())) {
+                continue;
+            }
+
             // A covered company does not lend its host's subscription on.
             if ($this->entityManager->getRepository(CompanyCoverage::class)->count(['covered' => $candidate]) > 0) {
                 continue;
@@ -176,6 +182,46 @@ final class CoveredSubscriptionProvider implements SubscriptionProviderInterface
         }
 
         return null;
+    }
+
+    /**
+     * The company whose subscription could take this existing one, for its
+     * owner to choose to: null when it is covered already, covers others
+     * itself, still pays for its own subscription, or the owner has no
+     * agency plan with room.
+     */
+    public function hostOnOffer(Company $company, User $user): ?Company
+    {
+        if (CompanyRole::Owner !== $this->memberships->findOne($user, $company)?->getRole()) {
+            return null;
+        }
+
+        $repository = $this->entityManager->getRepository(CompanyCoverage::class);
+        if ($repository->count(['covered' => $company]) > 0 || $repository->count(['host' => $company]) > 0) {
+            return null;
+        }
+
+        // Paying for itself: covering it would bill the owner twice.
+        $own = $this->inner->getSubscriptionFor($company);
+        if ($own instanceof Subscription && $own->isExternallyBilled() && ! in_array($own->getStatus(), [SubscriptionStatus::CANCELLED, SubscriptionStatus::EXPIRED], true)) {
+            return null;
+        }
+
+        return $this->hostWithRoomFor($user, $company);
+    }
+
+    /**
+     * The companies the host covers now that the given plan would no longer
+     * cover: the latest, beyond its allowance.
+     *
+     * @return list<Company>
+     */
+    public function uncoveredOn(Company $host, Plan $plan): array
+    {
+        $covered = $this->coveredBy($host);
+        $allowance = $this->allowance($plan);
+
+        return $allowance === -1 ? [] : array_values(array_slice($covered, max(0, $allowance - 1)));
     }
 
     /**

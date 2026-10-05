@@ -18,6 +18,7 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\SaasBundle\Plan\FreePlanAllowance;
 use Augias\SaasBundle\Plan\PlanPeriods;
+use Augias\SaasBundle\Subscription\CoveredSubscriptionProvider;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
@@ -37,6 +38,7 @@ final class ConfirmPlanChangeAction extends AbstractController
         private readonly PlanRepositoryInterface $planRepository,
         private readonly SubscriptionManager $subscriptionManager,
         private readonly SubscriptionProviderInterface $subscriptionProvider,
+        private readonly CoveredSubscriptionProvider $coverage,
         private readonly CompanyRepository $companyRepository,
         private readonly CompanySelector $companySelector,
         private readonly FreePlanAllowance $freePlanAllowance,
@@ -83,12 +85,15 @@ final class ConfirmPlanChangeAction extends AbstractController
 
         $isDowngrade = $this->periods->isDowngrade($subscription->getPlan(), $plan);
         $confirmed = $request->request->getBoolean('confirmed');
+        // The companies this subscription pays for that the new plan would not.
+        $uncovered = $company instanceof Company ? $this->coverage->uncoveredOn($company, $plan) : [];
 
-        if ($isDowngrade && ! $confirmed) {
+        if (($isDowngrade || $uncovered !== []) && ! $confirmed) {
             return $this->render('@AugiasSaas/subscription/_change_confirm.html.twig', [
                 'subscription' => $subscription,
                 'currentPlan' => $subscription->getPlan(),
                 'newPlan' => $plan,
+                'uncovered' => $uncovered,
             ]);
         }
 

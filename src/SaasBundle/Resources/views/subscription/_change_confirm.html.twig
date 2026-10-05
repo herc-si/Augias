@@ -40,6 +40,18 @@
                         {% endif %}
                     </p>
 
+                    {% if uncovered|default([]) is not empty %}
+                        <twig:Ui:Alert type="warning" class="mt-3">
+                            <strong>{{ 'saas.confirm.uncovered_heading'|trans({'%count%': uncovered|length}) }}</strong>
+                            <ul class="mb-1 mt-1">
+                                {% for company in uncovered %}
+                                    <li>{{ company.name }}</li>
+                                {% endfor %}
+                            </ul>
+                            {{ 'saas.confirm.uncovered_message'|trans({'%plan%': plan_label(newPlan)}) }}
+                        </twig:Ui:Alert>
+                    {% endif %}
+
                     <h4 class="mt-4">{{ 'saas.confirm.what_changes'|trans }}</h4>
                     <div class="table-responsive">
                         <table class="table table-vcenter">

@@ -1,0 +1,24 @@
+{#
+ # Offers to put the open company under its owner's agency subscription.
+ # Shows nothing when there is no such subscription with room.
+ #}
+{% set coverHost = cover_offer() %}
+{% if coverHost %}
+    <div class="card subscription-cover-offer mb-4 text-start">
+        <div class="card-body d-flex flex-wrap align-items-center gap-3">
+            <div class="text-primary">
+                {{ ux_icon('tabler:building', {width: 32, height: 32}) }}
+            </div>
+            <div class="flex-grow-1">
+                <strong>{{ 'saas.cover.heading'|trans({'%company%': coverHost.name}) }}</strong>
+                <div class="text-muted">{{ 'saas.cover.message'|trans({'%company%': coverHost.name}) }}</div>
+            </div>
+            <form method="post" action="{{ path('saas_subscription_cover') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('cover_company') }}">
+                <button type="submit" class="btn btn-primary">
+                    {{ 'saas.cover.action'|trans }}
+                </button>
+            </form>
+        </div>
+    </div>
+{% endif %}

@@ -3200,7 +3200,13 @@ saas:
         heading: 'Confirm downgrade to %plan%'
         paid_notice: 'Your plan will switch to %plan% immediately. The change is processed by our payment provider and any proration will be applied to your next invoice.'
         title: 'Confirm downgrade'
+        uncovered_heading: 'This company will no longer be covered by the subscription:|These %count% companies will no longer be covered by the subscription:'
+        uncovered_message: 'The %plan% plan covers fewer companies. They will have to choose their own plan to carry on; their data is kept.'
         what_changes: 'What changes'
+    cover:
+        action: 'Put it under that subscription'
+        heading: 'The subscription of %company% can cover this company'
+        message: 'It has room left: this company would go under the subscription of %company% at no extra cost. It keeps its data.'
     feature:
         approaching_limit: 'Approaching plan limit'
         available_on_plan: 'This feature is available on the %plan% plan.'
@@ -3210,10 +3216,12 @@ saas:
     flash:
         abandon_refused: 'This company cannot be abandoned: only its owner can, and only before it is activated.'
         checkout_failed: 'Unable to create checkout session. Please try again later.'
+        company_abandoned: 'The company "%name%" was deleted.'
+        company_covered: 'This company is now covered by your Agence subscription.'
+        cover_unavailable: 'This company cannot be put under it: the subscription has no room left, or the company already pays for its own.'
         downgrade_cancel_failed: 'Could not cancel the scheduled change: %error%'
         downgrade_cancelled: 'Scheduled plan change cancelled.'
         downgrade_scheduled: 'Your plan will be downgraded at the end of the current billing period.'
-        company_abandoned: 'The company "%name%" was deleted.'
         free_plan_active: 'Your free plan is now active.'
         free_plan_taken: 'You already have a company on the free plan: this one needs a paid plan.'
         invalid_plan: 'The selected plan is invalid.'
