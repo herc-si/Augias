@@ -276,6 +276,105 @@ final class CreateInvoiceTest extends LiveComponentTest
         self::assertInstanceOf(RedirectResponse::class, $response);
     }
 
+    public function testANoteIsAddedAndMovedToTheTop(): void
+    {
+        $component = $this->editorWithLines([
+            ['description' => 'Design work', 'price' => '100', 'qty' => '1'],
+            ['description' => 'Build work', 'price' => '200', 'qty' => '1'],
+        ], 'INV-NOTE-UI');
+
+        $component->call('addNote');
+        $component->call('moveLine', ['line' => '2', 'direction' => 'up']);
+        $component->call('moveLine', ['line' => '2', 'direction' => 'up']);
+
+        $instance = $component->component();
+        self::assertInstanceOf(CreateInvoice::class, $instance);
+        self::assertSame('1', $instance->formValues['lines'][2]['note']);
+        self::assertSame(['0', '1', '2'], [$instance->formValues['lines'][2]['position'], $instance->formValues['lines'][0]['position'], $instance->formValues['lines'][1]['position']]);
+
+        $html = $component->render()->toString();
+        self::assertNotFalse(strpos($html, 'billing-item-note'));
+        self::assertLessThan(strpos($html, '<div class="billing-item-row">'), strpos($html, 'billing-item-note'), 'The note comes first.');
+    }
+
+    /**
+     * Sent with a price, a quantity and a tax, a note is still only text; the
+     * lines come back in the order of their positions, not of their writing.
+     */
+    public function testANoteIsSavedAsTextOnly(): void
+    {
+        $client = ClientFactory::createOne(['name' => 'Acme Corp', 'currencyCode' => 'USD']);
+
+        $work = new Line()->setDescription('Design work')->setPrice(10000)->setQty(2)->setPosition(1);
+        $note = new Line()->setDescription('Phase 1')->setNote(true)->setPrice(99900)->setQty(3)->setPosition(0);
+        $lineTax = new \Augias\TaxBundle\Entity\LineTax();
+        $lineTax->setNameSnapshot('VAT');
+        $lineTax->setRateSnapshot('20.0000');
+        $note->addTax($lineTax);
+
+        $invoice = new Invoice();
+        $invoice->setStatus(InvoiceStatus::Draft);
+        $invoice->setClient($client);
+        $invoice->setInvoiceId('INV-NOTE-SAVE');
+        $invoice->setInvoiceDate(CarbonImmutable::parse('2024-01-15'));
+        $invoice->addLine($work);
+        $invoice->addLine($note);
+
+        $em = self::getContainer()->get('doctrine')->getManager();
+        $em->persist($invoice);
+        $em->flush();
+        $em->clear();
+
+        $invoice = $em->getRepository(Invoice::class)->findOneBy(['invoiceId' => 'INV-NOTE-SAVE']);
+        self::assertInstanceOf(Invoice::class, $invoice);
+
+        $lines = array_values($invoice->getLines()->toArray());
+        self::assertCount(2, $lines);
+        self::assertTrue($lines[0]->isNote(), 'Position 0 first, though written second.');
+        self::assertTrue($lines[0]->getTotal()->isZero());
+        self::assertCount(0, $lines[0]->getTaxes());
+        self::assertFalse($lines[1]->isNote());
+        self::assertTrue($invoice->getBaseTotal()->isEqualTo(20000));
+        self::assertTrue($invoice->getTax()->isZero(), 'The note\'s tax went with it.');
+    }
+
+    /**
+     * @param list<array<string, string>> $lines
+     */
+    private function editorWithLines(array $lines, string $invoiceId): \Symfony\UX\LiveComponent\Test\TestLiveComponent
+    {
+        $client = ClientFactory::createOne(['name' => 'Acme Corp', 'currencyCode' => 'USD']);
+        $contact = ContactFactory::createOne(['firstName' => 'Alice', 'lastName' => 'Smith', 'email' => 'alice@example.com', 'client' => $client]);
+
+        $dto = new InvoiceFormDTO();
+        $dto->invoiceDate = CarbonImmutable::parse('2021-01-01');
+
+        $component = $this->createLiveComponent(
+            name: CreateInvoice::class,
+            data: ['dto' => $dto],
+            client: $this->client,
+        )->actingAs($this->getUser());
+
+        $component->render();
+        $component->submitForm([
+            'invoice' => [
+                'clientMode' => 'existing',
+                'client' => (string) $client->getId(),
+                'users' => [(string) $contact->getId()],
+                'invoiceId' => $invoiceId,
+                'invoiceDate' => '2021-01-01',
+                'lines' => $lines,
+                'total' => '0',
+                'baseTotal' => '0',
+                'tax' => '0',
+                'terms' => '',
+                'notes' => '',
+            ],
+        ]);
+
+        return $component;
+    }
+
     /**
      * Tests that the component correctly tracks previous client ID.
      * The PostMount hook should set previousClientId when auto-selecting contacts.

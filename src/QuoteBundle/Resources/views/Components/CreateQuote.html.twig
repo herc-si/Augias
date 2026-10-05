@@ -160,83 +160,114 @@
                                 <div class="column-actions"></div>
                             </div>
 
-                            {% for index, item in form.lines %}
-                                <div class="billing-item-row">
-                                    <div class="column-description">
-                                        <span class="mobile-label">{{ 'quote.item.heading.description'|trans }}</span>
-                                        {{ form_widget(item.description, {attr: {placeholder: 'quote.item.description.placeholder'|trans, rows: 2}}) }}
-                                        {{ form_errors(item.description) }}
-                                        {%- if item.supplyType is defined %}
-                                            {# Goods or a service: when the VAT on the line falls due. Under the
-                                             # description, like the disbursement switch, rather than in a column
-                                             # of its own that most invoices would carry for nothing. #}
-                                            <div class="item-supply-type">{{ form_widget(item.supplyType, {attr: {'aria-label': 'form.field.supply_type'|trans}}) }}</div>
-                                        {%- endif %}
-                                    </div>
-                                    <div class="column-price">
-                                        <span class="mobile-label">{{ 'quote.item.heading.price'|trans }}</span>
-                                        {{ form_widget(item.price) }}
-                                        {{ form_errors(item.price) }}
-                                    </div>
-                                    <div class="column-qty">
-                                        <span class="mobile-label">{{ 'quote.item.heading.qty'|trans }}</span>
-                                        {{ form_widget(item.qty) }}
-                                        {{ form_errors(item.qty) }}
-                                        {%- if item.unit is defined %}
-                                            <div class="item-unit mt-1">{{ form_widget(item.unit, {attr: {'aria-label': 'form.field.unit'|trans}}) }}</div>
-                                        {%- endif %}
-                                    </div>
-                                    {% if this.hasTax %}
-                                        <div class="column-tax">
-                                            <span class="mobile-label">{{ 'quote.item.heading.tax'|trans }}</span>
-                                            {% if item.taxes is defined %}
-                                                <div class="line-tax-collection" {{ stimulus_controller('line-tax') }}>
-                                                    {% if item.taxes|length > 0 %}
-                                                        <div class="line-tax-list">
-                                                            {% for taxIndex, lineTax in item.taxes %}
-                                                                <div class="line-tax-row" data-line-tax-target="row">
-                                                                    <div class="line-tax-field line-tax-field-tax">
-                                                                        {{ form_widget(lineTax.tax) }}
-                                                                        {{ form_errors(lineTax.tax) }}
-                                                                    </div>
-                                                                    {{ form_widget(lineTax.sequence) }}
-                                                                    <div class="line-tax-actions">
-                                                                        {{ form_widget(lineTax.vars.button_delete, {
-                                                                            label: ux_icon('tabler:x', {width: 14, height: 14})|raw,
-                                                                            label_html: true,
-                                                                            attr: {class: 'btn btn-sm line-tax-remove-btn', title: 'quote.item.tax.remove'|trans, 'aria-label': 'quote.item.tax.remove'|trans}
-                                                                        }) }}
-                                                                    </div>
-                                                                </div>
-                                                            {% endfor %}
-                                                        </div>
-                                                    {% endif %}
-                                                    {{ form_widget(item.taxes.vars.button_add, {
-                                                        label: 'quote.item.tax.add'|trans,
-                                                        attr: {class: 'line-tax-add-btn'}
-                                                    }) }}
-                                                </div>
-                                            {% endif %}
+                            {% for index, item in form.lines|sort((a, b) => (a.vars.value.position ?? 0) <=> (b.vars.value.position ?? 0)) %}
+                                {% if item.vars.value.note|default(false) %}
+                                    {# A line of text only: a heading over the lines that follow. #}
+                                    <div class="billing-item-row billing-item-note">
+                                        <div class="column-description">
+                                            {{ form_widget(item.description, {attr: {placeholder: 'document_line.note_placeholder'|trans, rows: 1}}) }}
+                                            {{ form_errors(item.description) }}
+                                            <div class="d-none">{{ form_rest(item) }}</div>
                                         </div>
-                                    {% endif %}
-                                    <div class="column-total">
-                                        <span class="mobile-label">{{ 'quote.item.heading.total'|trans }}</span>
-                                        <span class="item-total-value">{{ item.vars.value.total|formatCurrency(currency) }}</span>
+                                        <div class="column-actions">
+                                            <div class="line-order-actions">
+                                                {{ include('@AugiasCore/Components/_line_order_buttons.html.twig', {item: item}) }}
+                                                {% if form.lines|length > 1 %}
+                                                    {{ form_widget(item.vars.button_delete, {
+                                                        label: ux_icon('tabler:trash', {width: 16, height: 16})|raw,
+                                                        label_html: true,
+                                                        attr: {class: 'btn btn-sm remove-item-btn', title: 'quote.item.remove'|trans, 'aria-label': 'quote.item.remove'|trans}
+                                                    }) }}
+                                                {% else %}
+                                                    {# Not shown for a lone line, so form_end would render it
+                                                       below the form, out of place: it is marked as rendered. #}
+                                                    {% do item.vars.button_delete.setRendered() %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="column-actions">
-                                        {% if form.lines|length > 1 %}
-                                            {{ form_widget(item.vars.button_delete, {
-                                                label: ux_icon('tabler:trash', {width: 16, height: 16})|raw,
-                                                label_html: true,
-                                                attr: {class: 'btn btn-sm remove-item-btn', title: 'quote.item.remove'|trans, 'aria-label': 'quote.item.remove'|trans}
-                                            }) }}
-                                        {% else %}
-                                            {# Not shown for a lone line, so form_end would render it
-                                               below the form, out of place: it is marked as rendered. #}
-                                            {% do item.vars.button_delete.setRendered() %}
+                                {% else %}
+                                    <div class="billing-item-row">
+                                        <div class="column-description">
+                                            <span class="mobile-label">{{ 'quote.item.heading.description'|trans }}</span>
+                                            {{ form_widget(item.description, {attr: {placeholder: 'quote.item.description.placeholder'|trans, rows: 2}}) }}
+                                            {{ form_errors(item.description) }}
+                                            {{ form_widget(item.note) }}{{ form_widget(item.position) }}
+                                            {%- if item.supplyType is defined %}
+                                                {# Goods or a service: when the VAT on the line falls due. Under the
+                                                 # description, like the disbursement switch, rather than in a column
+                                                 # of its own that most invoices would carry for nothing. #}
+                                                <div class="item-supply-type">{{ form_widget(item.supplyType, {attr: {'aria-label': 'form.field.supply_type'|trans}}) }}</div>
+                                            {%- endif %}
+                                        </div>
+                                        <div class="column-price">
+                                            <span class="mobile-label">{{ 'quote.item.heading.price'|trans }}</span>
+                                            {{ form_widget(item.price) }}
+                                            {{ form_errors(item.price) }}
+                                        </div>
+                                        <div class="column-qty">
+                                            <span class="mobile-label">{{ 'quote.item.heading.qty'|trans }}</span>
+                                            {{ form_widget(item.qty) }}
+                                            {{ form_errors(item.qty) }}
+                                            {%- if item.unit is defined %}
+                                                <div class="item-unit mt-1">{{ form_widget(item.unit, {attr: {'aria-label': 'form.field.unit'|trans}}) }}</div>
+                                            {%- endif %}
+                                        </div>
+                                        {% if this.hasTax %}
+                                            <div class="column-tax">
+                                                <span class="mobile-label">{{ 'quote.item.heading.tax'|trans }}</span>
+                                                {% if item.taxes is defined %}
+                                                    <div class="line-tax-collection" {{ stimulus_controller('line-tax') }}>
+                                                        {% if item.taxes|length > 0 %}
+                                                            <div class="line-tax-list">
+                                                                {% for taxIndex, lineTax in item.taxes %}
+                                                                    <div class="line-tax-row" data-line-tax-target="row">
+                                                                        <div class="line-tax-field line-tax-field-tax">
+                                                                            {{ form_widget(lineTax.tax) }}
+                                                                            {{ form_errors(lineTax.tax) }}
+                                                                        </div>
+                                                                        {{ form_widget(lineTax.sequence) }}
+                                                                        <div class="line-tax-actions">
+                                                                            {{ form_widget(lineTax.vars.button_delete, {
+                                                                                label: ux_icon('tabler:x', {width: 14, height: 14})|raw,
+                                                                                label_html: true,
+                                                                                attr: {class: 'btn btn-sm line-tax-remove-btn', title: 'quote.item.tax.remove'|trans, 'aria-label': 'quote.item.tax.remove'|trans}
+                                                                            }) }}
+                                                                        </div>
+                                                                    </div>
+                                                                {% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                        {{ form_widget(item.taxes.vars.button_add, {
+                                                            label: 'quote.item.tax.add'|trans,
+                                                            attr: {class: 'line-tax-add-btn'}
+                                                        }) }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
                                         {% endif %}
+                                        <div class="column-total">
+                                            <span class="mobile-label">{{ 'quote.item.heading.total'|trans }}</span>
+                                            <span class="item-total-value">{{ item.vars.value.total|formatCurrency(currency) }}</span>
+                                        </div>
+                                        <div class="column-actions">
+                                            <div class="line-order-actions">
+                                                {{ include('@AugiasCore/Components/_line_order_buttons.html.twig', {item: item}) }}
+                                                {% if form.lines|length > 1 %}
+                                                    {{ form_widget(item.vars.button_delete, {
+                                                        label: ux_icon('tabler:trash', {width: 16, height: 16})|raw,
+                                                        label_html: true,
+                                                        attr: {class: 'btn btn-sm remove-item-btn', title: 'quote.item.remove'|trans, 'aria-label': 'quote.item.remove'|trans}
+                                                    }) }}
+                                                {% else %}
+                                                    {# Not shown for a lone line, so form_end would render it
+                                                       below the form, out of place: it is marked as rendered. #}
+                                                    {% do item.vars.button_delete.setRendered() %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                {% endif %}
                             {% endfor %}
                         </div>
                     {% endif %}
@@ -247,6 +278,9 @@
                             label: 'quote.item.add'|trans,
                             attr: {class: 'add-item-btn btn-sm'}
                         }) }}
+                        <button type="button" class="btn btn-sm add-item-btn" data-action="live#action" data-live-action-param="addNote">
+                            {{ ux_icon('tabler:text-plus', {width: 16, height: 16}) }} {{ 'document_line.add_note'|trans }}
+                        </button>
                     
                         {% set catalogProducts = this.catalogProducts %}
                         {% if catalogProducts is not empty %}

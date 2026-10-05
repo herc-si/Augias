@@ -17,6 +17,7 @@ use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\ClientBundle\Form\ClientAutocompleteType;
 use Augias\CoreBundle\Enum\CustomFieldTarget;
+use Augias\CoreBundle\Form\LineOrderFields;
 use Augias\CoreBundle\Form\Type\CustomFieldValueCollectionType;
 use Augias\CoreBundle\Form\Type\DiscountType;
 use Augias\CoreBundle\Generator\BillingIdGenerator;
@@ -156,6 +157,8 @@ class QuoteType extends AbstractType
                 'currency' => $options['currency']
             ]
         );
+
+        LineOrderFields::addToDocument($builder);
 
         $builder->add(
             'lines',

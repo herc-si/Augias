@@ -18,6 +18,7 @@ use Augias\ClientBundle\Repository\ClientRepository;
 use Augias\CoreBundle\Billing\TotalCalculator;
 use Augias\CoreBundle\Contracts\EmailVerificationGateInterface;
 use Augias\CoreBundle\Entity\Discount;
+use Augias\CoreBundle\Twig\Components\ManagesNoteLines;
 use Augias\InvoiceBundle\DTO\CreditNoteFormDTO;
 use Augias\InvoiceBundle\Email\CreditNoteEmail;
 use Augias\InvoiceBundle\Entity\CreditNote;
@@ -57,6 +58,7 @@ final class CreateCreditNote extends AbstractController
 {
     use DefaultActionTrait;
     use LiveCollectionTrait;
+    use ManagesNoteLines;
 
     /**
      * Not a LiveProp: the live state lives in $formValues, and the DTO is

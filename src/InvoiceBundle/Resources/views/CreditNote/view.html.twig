@@ -110,12 +110,19 @@
                     </thead>
                     <tbody>
                         {% for line in creditNote.lines %}
-                            <tr>
-                                <td>{{ line.description|nl2br }}</td>
-                                <td class="text-end">{{ line.price|formatCurrency(currency) }}</td>
-                                <td class="text-end">{{ line|line_quantity }}</td>
-                                <td class="text-end">{{ line.total|formatCurrency(currency) }}</td>
-                            </tr>
+                            {% if line.note|default(false) %}
+                                {# A line of text only: a heading over the lines that follow. #}
+                                <tr>
+                                    <td colspan="4"><strong>{{ line.description|nl2br }}</strong></td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td>{{ line.description|nl2br }}</td>
+                                    <td class="text-end">{{ line.price|formatCurrency(currency) }}</td>
+                                    <td class="text-end">{{ line|line_quantity }}</td>
+                                    <td class="text-end">{{ line.total|formatCurrency(currency) }}</td>
+                                </tr>
+                            {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>

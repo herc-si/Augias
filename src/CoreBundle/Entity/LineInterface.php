@@ -74,4 +74,17 @@ interface LineInterface
      * What the quantity counts. See {@see QuantityUnit}.
      */
     public function getUnit(): QuantityUnit;
+
+    /**
+     * A line of text only, counting in no total: see
+     * {@see \Augias\InvoiceBundle\Entity\Line::isNote()}.
+     */
+    public function isNote(): bool;
+
+    public function getPosition(): int;
+
+    /**
+     * Takes price, quantity and taxes off a note; does nothing to a priced line.
+     */
+    public function neutraliseNote(): void;
 }

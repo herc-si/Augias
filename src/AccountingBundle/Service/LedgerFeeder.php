@@ -688,7 +688,7 @@ final readonly class LedgerFeeder
     private function hasGoods(Invoice | CreditNote $document): bool
     {
         foreach ($document->getLines() as $line) {
-            if ($line->getSupplyType()->isTaxedOnIssue() && ! $line->isDisbursement()) {
+            if ($line->getSupplyType()->isTaxedOnIssue() && ! $line->isDisbursement() && ! $line->isNote()) {
                 return true;
             }
         }

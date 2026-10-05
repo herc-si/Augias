@@ -49,6 +49,7 @@ use JsonException;
 use Twig\Environment;
 use function array_values;
 use function ctype_digit;
+use function implode;
 use function json_decode;
 use function round;
 use function str_starts_with;
@@ -177,9 +178,19 @@ final readonly class FacturXInvoiceBuilder
         $vatGroups = [];
         $lineTotal = 0.0;
         $documentTax = $this->documentVat($result);
+        // Lines of text only are no lines to EN 16931, which wants a quantity
+        // and a price on each: their text goes, as a note, on the line that
+        // follows them (BT-127).
+        $notes = [];
 
         foreach ($lines as $index => $line) {
             $breakdown = $result->lineBreakdowns[$index] ?? null;
+
+            if ($line->isNote()) {
+                $notes[] = (string) $line->getDescription();
+
+                continue;
+            }
 
             // Disbursements are not on the invoice: they go out on a note of
             // their own. EN 16931 forbids a "not subject to VAT" breakdown next
@@ -198,6 +209,10 @@ final readonly class FacturXInvoiceBuilder
             $lineTotal += $lineNet;
 
             $documentBuilder->addNewPosition((string) $line->getId());
+            if ($notes !== []) {
+                $documentBuilder->setDocumentPositionNote(implode("\n", $notes));
+                $notes = [];
+            }
             $documentBuilder->setDocumentPositionProductDetails((string) $line->getDescription());
             $documentBuilder->setDocumentPositionNetPrice($unitPrice);
             // What the quantity counts, as the catalogue or the user set it on the line (BT-130).
@@ -236,6 +251,11 @@ final readonly class FacturXInvoiceBuilder
             $vatGroups[$groupKey]['net'] += $lineNet;
             $vatGroups[$groupKey]['basis'] += $this->minorToFloat($breakdown->taxableAmount);
             $vatGroups[$groupKey]['tax'] += $taxAmount;
+        }
+
+        // A note after the last line has no line to sit on: the invoice's own.
+        if ($notes !== []) {
+            $documentBuilder->addDocumentNote(implode("\n", $notes));
         }
 
         $allowanceTotal = 0.0;
@@ -542,7 +562,7 @@ final readonly class FacturXInvoiceBuilder
         $goods = false;
 
         foreach ($invoice->getLines() as $line) {
-            if ($line->isDisbursement()) {
+            if ($line->isDisbursement() || $line->isNote()) {
                 continue;
             }
 

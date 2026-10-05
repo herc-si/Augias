@@ -15,6 +15,7 @@ namespace Augias\InvoiceBundle\Form\Type;
 
 use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Enum\CustomFieldTarget;
+use Augias\CoreBundle\Form\LineOrderFields;
 use Augias\CoreBundle\Form\Type\CustomFieldValueCollectionType;
 use Augias\CoreBundle\Form\Type\DiscountType;
 use Augias\CronBundle\Form\Type\RecurringScheduleType;
@@ -72,6 +73,8 @@ class RecurringInvoiceType extends AbstractType
         );
 
         $builder->add('discount', DiscountType::class, ['required' => false, 'label' => 'billing.discount', 'currency' => $options['currency']]);
+
+        LineOrderFields::addToDocument($builder);
 
         $builder->add(
             'lines',

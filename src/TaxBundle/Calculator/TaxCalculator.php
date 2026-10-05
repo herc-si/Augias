@@ -53,6 +53,11 @@ final readonly class TaxCalculator implements TaxCalculatorInterface
     {
         $options ??= CalculationOptions::defaults();
 
+        // A line of text only counts for nothing, whatever it was sent with.
+        foreach ($document->getLines() as $line) {
+            $line->neutraliseNote();
+        }
+
         // A company outside the scope of VAT charges none, whatever rates
         // happen to be configured or still attached to an old line. Answering
         // here rather than at each caller is deliberate: this is the single

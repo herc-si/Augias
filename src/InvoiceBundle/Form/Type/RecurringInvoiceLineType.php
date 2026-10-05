@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Form\Type;
 
+use Augias\CoreBundle\Form\LineOrderFields;
 use Augias\CoreBundle\Form\Transformer\QuantityTransformer;
 use Augias\CoreBundle\Form\Type\QuantityUnitType;
 use Augias\CoreBundle\Form\Type\SupplyTypeType;
@@ -84,6 +85,7 @@ class RecurringInvoiceLineType extends AbstractType
             ->addViewTransformer(new QuantityTransformer());
 
         $builder->add('unit', QuantityUnitType::class);
+        LineOrderFields::addToLine($builder);
 
         if ($this->taxAvailability->isOffered()) {
             // Carried onto every invoice the schedule raises.

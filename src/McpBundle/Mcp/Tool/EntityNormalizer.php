@@ -189,6 +189,8 @@ final class EntityNormalizer
                 'unit' => $line->getUnit()->value,
                 'total' => $this->bigNumber($line->getTotal()),
                 'supply_type' => $line->getSupplyType()->value,
+                // A line of text only: no price, no quantity, in no total.
+                'note' => $line->isNote(),
                 'taxes' => array_values(array_map(
                     $this->lineTax(...),
                     $line->getTaxes()->toArray(),

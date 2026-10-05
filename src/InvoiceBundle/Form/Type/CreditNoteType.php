@@ -16,6 +16,7 @@ namespace Augias\InvoiceBundle\Form\Type;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\ClientBundle\Form\ClientAutocompleteType;
+use Augias\CoreBundle\Form\LineOrderFields;
 use Augias\CoreBundle\Form\Type\DiscountType;
 use Augias\CoreBundle\Generator\BillingIdGenerator;
 use Augias\InvoiceBundle\DTO\CreditNoteFormDTO;
@@ -136,6 +137,8 @@ class CreditNoteType extends AbstractType
 
         // ItemType is shared with invoices; only the row's class differs, so a
         // line added here is a CreditNoteLine rather than a plain Line.
+        LineOrderFields::addToDocument($builder);
+
         $builder->add('lines', LiveCollectionType::class, [
             'entry_type' => ItemType::class,
             'allow_add' => true,

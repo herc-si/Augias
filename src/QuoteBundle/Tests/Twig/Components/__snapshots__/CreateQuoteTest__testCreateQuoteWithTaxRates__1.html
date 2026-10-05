@@ -1,5 +1,5 @@
 <html><body>
-<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateQuote" data-live-url-value="/_components/CreateQuote" data-live-props-value='{"isEdit":false,"quoteEntity":null,"previousClientId":null,"catalogProductId":null,"formName":"quote","quote":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","unit":"unit","supplyType":"services","taxes":[]}],"invoiceTaxes":[],"quoteId":"1","terms":"","notes":"","total":0,"baseTotal":0,"tax":0,"customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateQuote" data-live-url-value="/_components/CreateQuote" data-live-props-value='{"isEdit":false,"quoteEntity":null,"previousClientId":null,"catalogProductId":null,"formName":"quote","quote":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"0","supplyType":"services","taxes":[]}],"invoiceTaxes":[],"quoteId":"1","terms":"","notes":"","total":0,"baseTotal":0,"tax":0,"customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
     
     <form name="quote" method="post" data-model="on(change)|*">
 
@@ -103,47 +103,60 @@
                                 <div class="column-actions"></div>
                             </div>
 
-                                                            <div class="billing-item-row">
-                                    <div class="column-description">
-                                        <span class="mobile-label">Description</span>
-                                        <textarea id="quote_lines_0_description" name="quote[lines][0][description]" class="input-medium quote-item-name form-control" placeholder="Describe the service or product..." rows="2"></textarea>
-                                                                                                                                <div class="item-supply-type"><select id="quote_lines_0_supplyType" name="quote[lines][0][supplyType]" class="form-select-sm form-select" aria-label="Supply"><option value="goods">Goods</option>
-<option value="services" selected>Service</option></select></div>                                    </div>
-                                    <div class="column-price">
-                                        <span class="mobile-label">Price</span>
-                                        <div class="input-group flex-nowrap">
+                                                                                                <div class="billing-item-row">
+                                        <div class="column-description">
+                                            <span class="mobile-label">Description</span>
+                                            <textarea id="quote_lines_0_description" name="quote[lines][0][description]" class="input-medium quote-item-name form-control" placeholder="Describe the service or product..." rows="2"></textarea>
+                                            
+                                            <input type="hidden" id="quote_lines_0_note" name="quote[lines][0][note]" value="0"><input type="hidden" id="quote_lines_0_position" name="quote[lines][0][position]" value="0">                                                                                                <div class="item-supply-type"><select id="quote_lines_0_supplyType" name="quote[lines][0][supplyType]" class="form-select-sm form-select" aria-label="Supply"><option value="goods">Goods</option>
+<option value="services" selected>Service</option></select></div>                                        </div>
+                                        <div class="column-price">
+                                            <span class="mobile-label">Price</span>
+                                            <div class="input-group flex-nowrap">
 <span class="input-group-text">$ </span><input type="text" id="quote_lines_0_price" name="quote[lines][0][price]" class="input-small quote-item-price form-control" inputmode="decimal" value="100.00">
 </div>
-                                        
-                                    </div>
-                                    <div class="column-qty">
-                                        <span class="mobile-label">Qty</span>
-                                        <input type="text" id="quote_lines_0_qty" name="quote[lines][0][qty]" class="input-mini quote-item-qty form-control" inputmode="decimal" value="1">
-                                                                                    <div class="item-unit mt-1"><select id="quote_lines_0_unit" name="quote[lines][0][unit]" class="form-select-sm invoice-item-unit form-select" aria-label="Unit"><option value="unit" selected>Unit</option>
+                                            
+                                        </div>
+                                        <div class="column-qty">
+                                            <span class="mobile-label">Qty</span>
+                                            <input type="text" id="quote_lines_0_qty" name="quote[lines][0][qty]" class="input-mini quote-item-qty form-control" inputmode="decimal" value="1">
+                                                                                            <div class="item-unit mt-1"><select id="quote_lines_0_unit" name="quote[lines][0][unit]" class="form-select-sm invoice-item-unit form-select" aria-label="Unit"><option value="unit" selected>Unit</option>
 <option value="hour">Hour</option>
 <option value="day">Day</option>
 <option value="month">Month</option>
 <option value="kilogram">Kilogram</option>
 <option value="litre">Litre</option>
 <option value="metre">Metre</option>
-<option value="flat_rate">Flat rate</option></select></div>                                    </div>
-                                                                            <div class="column-tax">
-                                            <span class="mobile-label">Tax</span>
-                                                                                            <div class="line-tax-collection" data-controller="line-tax">
-                                                                                                        <button type="button" id="quote_lines_0_taxes_add" name="quote[lines][0][taxes][add]" data-action="live#action" data-live-action-param="addCollectionItem" data-live-name-param="quote[lines][0][taxes]" class="line-tax-add-btn btn">+ Add tax</button>
-                                                </div>
-                                                                                    </div>
-                                                                        <div class="column-total">
-                                        <span class="mobile-label">Total</span>
-                                        <span class="item-total-value">$0.00</span>
-                                    </div>
-                                    <div class="column-actions">
-                                                                                                                                                                                                            </div>
-                                </div>
+<option value="flat_rate">Flat rate</option></select></div>                                        </div>
+                                                                                    <div class="column-tax">
+                                                <span class="mobile-label">Tax</span>
+                                                                                                    <div class="line-tax-collection" data-controller="line-tax">
+                                                                                                                <button type="button" id="quote_lines_0_taxes_add" name="quote[lines][0][taxes][add]" data-action="live#action" data-live-action-param="addCollectionItem" data-live-name-param="quote[lines][0][taxes]" class="line-tax-add-btn btn">+ Add tax</button>
                                                     </div>
+                                                                                            </div>
+                                                                                <div class="column-total">
+                                            <span class="mobile-label">Total</span>
+                                            <span class="item-total-value">$0.00</span>
+                                        </div>
+                                        <div class="column-actions">
+                                            <div class="line-order-actions">
+                                                <button type="button" class="btn btn-sm btn-ghost-secondary" data-action="live#action" data-live-action-param="moveLine" data-live-line-param="0" data-live-direction-param="up" title="Move the line up" aria-label="Move the line up">
+    <svg viewbox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 15l6-6l6 6"></path></svg>
+</button>
+<button type="button" class="btn btn-sm btn-ghost-secondary" data-action="live#action" data-live-action-param="moveLine" data-live-line-param="0" data-live-direction-param="down" title="Move the line down" aria-label="Move the line down">
+    <svg viewbox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9l6 6l6-6"></path></svg>
+</button>
+
+                                                                                                                                                                                                                                                    </div>
+                                        </div>
+                                    </div>
+                                                                                    </div>
                     
                                         <div class="add-item-action d-flex align-items-center gap-2 flex-wrap">
                         <button type="button" id="quote_lines_add" name="quote[lines][add]" data-action="live#action" data-live-action-param="addCollectionItem" data-live-name-param="quote[lines]" class="add-item-btn btn-sm btn">Add Item</button>
+                        <button type="button" class="btn btn-sm add-item-btn" data-action="live#action" data-live-action-param="addNote">
+                            <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 10H5m0-4h14m-5 8H5m0 4h6m7-3v6m-3-3h6"></path></svg> Add a note
+                        </button>
                     
                                                                     </div>
                 </div>

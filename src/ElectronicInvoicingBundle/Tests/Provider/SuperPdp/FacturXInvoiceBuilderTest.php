@@ -217,6 +217,57 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
     }
 
     /**
+     * A line of text only is no line to EN 16931: its text goes as a note on
+     * the line that follows (BT-127), or on the invoice when nothing follows,
+     * and it counts for nothing, whatever price or tax it was sent with.
+     */
+    public function testANoteGoesOnTheNextLineAndCountsForNothing(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+
+        $invoice = new Invoice();
+        $invoice->setCompany($this->company);
+        $invoice->setClient($client);
+        $invoice->setInvoiceId('INV-NOTE-1');
+        $invoice->setStatus(InvoiceStatus::Draft);
+
+        $heading = new Line();
+        $heading->setDescription('Phase 1: design')->setNote(true)->setPosition(0)->setPrice(99900)->setQty(3)->updateTotal();
+        $headingVat = new LineTax();
+        $headingVat->setNameSnapshot('VAT');
+        $headingVat->setRateSnapshot('20.0000');
+        $heading->addTax($headingVat);
+        $invoice->addLine($heading);
+
+        $goods = new Line();
+        $goods->setDescription('Printed mock-ups')->setPosition(1)->setPrice(10000)->setQty(1)->setSupplyType(SupplyType::Goods)->updateTotal();
+        $vat = new LineTax();
+        $vat->setNameSnapshot('VAT');
+        $vat->setRateSnapshot('20.0000');
+        $goods->addTax($vat);
+        $invoice->addLine($goods);
+
+        $closing = new Line();
+        $closing->setDescription('End of phase 1')->setNote(true)->setPosition(2)->updateTotal();
+        $invoice->addLine($closing);
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($invoice);
+        $entityManager->flush();
+
+        $xml = self::getContainer()->get(FacturXInvoiceBuilder::class)->buildDocument($invoice)->getContent();
+
+        self::assertSame(1, substr_count($xml, '<ram:IncludedSupplyChainTradeLineItem>'), 'One line: the notes are none.');
+        self::assertMatchesRegularExpression('#<ram:AssociatedDocumentLineDocument>.*?<ram:IncludedNote>\s*<ram:Content>Phase 1: design</ram:Content>#s', $xml);
+        self::assertMatchesRegularExpression('#<rsm:ExchangedDocument>.*?<ram:Content>End of phase 1</ram:Content>.*?</rsm:ExchangedDocument>#s', $xml);
+        // The note's price and tax are gone: 100 of goods and 20 of tax.
+        self::assertStringContainsString('<ram:LineTotalAmount>100.00</ram:LineTotalAmount>', $xml);
+        self::assertStringContainsString('<ram:GrandTotalAmount>120.00</ram:GrandTotalAmount>', $xml);
+        // Goods only: the notes, services by default, do not make it "S1".
+        self::assertStringContainsString('<ram:ID>B1</ram:ID>', $xml);
+    }
+
+    /**
      * BT-23 follows the lines: goods alone are "B1". A single service keeps
      * the invoice on "S1" — "M1" would be exact for a mixed one, but SUPER PDP
      * refuses it on an international flow.

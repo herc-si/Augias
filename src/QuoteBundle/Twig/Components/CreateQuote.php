@@ -22,6 +22,7 @@ use Augias\CoreBundle\Contracts\EmailVerificationGateInterface;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Enum\CustomFieldTarget;
 use Augias\CoreBundle\Service\CustomField\CustomFieldFormWriter;
+use Augias\CoreBundle\Twig\Components\ManagesNoteLines;
 use Augias\MoneyBundle\Calculator;
 use Augias\MoneyBundle\Currency\CurrencyScale;
 use Augias\QuoteBundle\DTO\QuoteFormDTO;
@@ -64,6 +65,7 @@ final class CreateQuote extends AbstractController
 {
     use DefaultActionTrait;
     use LiveCollectionTrait;
+    use ManagesNoteLines;
 
     public QuoteFormDTO $dto;
 
