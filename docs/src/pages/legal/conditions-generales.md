@@ -59,13 +59,13 @@ La suspension ne supprime pas les données : elle bloque l'accès à l'applicati
 
 Les prix sont exprimés en euros. Le Prestataire bénéficie de la franchise en base de TVA : **TVA non applicable, article 293 B du code général des impôts**. Le prix affiché est donc le prix payé. Si le Prestataire devient redevable de la TVA, celle-ci s'ajoutera aux prix au taux en vigueur, dans les conditions de l'article 5 pour toute évolution défavorable.
 
-L'abonnement est payable d'avance, pour la période du plan choisi, **par carte bancaire ou par prélèvement SEPA**. Le premier paiement intervient à la souscription ou, si celle-ci a lieu pendant la période d'essai, au terme de cette période ; les suivants, à chaque échéance de la période. **[À COMPLÉTER : périodicités proposées — mensuelle seule, ou aussi annuelle.]**
+L'abonnement est payable d'avance, pour la période du plan choisi, **par carte bancaire ou par prélèvement SEPA**. Le premier paiement intervient à la souscription ou, si celle-ci a lieu pendant la période d'essai, au terme de cette période ; les suivants, à chaque échéance de la période. Chaque plan payant est proposé au mois ou à l'année ; le prix annuel est indiqué sur la page des tarifs. Un abonnement annuel est payé en une fois pour douze mois et reconduit pour une année, sauf résiliation dans les conditions de l'article 8.
 
 Les paiements sont traités par **Stripe**, prestataire de services de paiement. Le Prestataire ne reçoit ni ne conserve les numéros de carte ni les coordonnées bancaires, que le Client saisit directement auprès de Stripe et peut modifier depuis l'espace de facturation de son compte.
 
 Chaque paiement donne lieu à une **facture émise par le Prestataire**, adressée par courriel au Client et, lorsque la réglementation l'exige, transmise sous forme de facture électronique.
 
-Le passage à un plan supérieur en cours de période prend effet immédiatement et donne lieu à la facturation, au prorata du temps restant, de la différence de prix. Le passage à un plan inférieur prend effet au terme de la période en cours.
+Le passage à un plan supérieur en cours de période prend effet immédiatement et donne lieu à la facturation, au prorata du temps restant, de la différence de prix ; il en va de même du passage d'un abonnement mensuel à l'abonnement annuel du même plan. Le passage à un plan inférieur, comme celui d'un abonnement annuel à l'abonnement mensuel, prend effet au terme de la période en cours.
 
 Conformément à l'article L441-10 du code de commerce, tout retard de paiement entraîne de plein droit des pénalités calculées au taux d'intérêt de la Banque centrale européenne majoré de dix points, ainsi qu'une indemnité forfaitaire pour frais de recouvrement de quarante euros, sans qu'un rappel soit nécessaire.
 

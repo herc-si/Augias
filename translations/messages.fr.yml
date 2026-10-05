@@ -3282,6 +3282,7 @@ saas:
         switch_company: 'Basculer vers une autre société'
         title: 'Activez votre abonnement'
     plan:
+        annual_label: '%plan% (annuel)'
         choose: 'Choisir le plan'
         continue_free: 'Continuer avec le plan gratuit'
         current: 'Plan actuel'
@@ -3308,7 +3309,14 @@ saas:
         no_credit_card: 'Aucune carte bancaire requise'
         not_included: 'Non inclus'
         per_month: /mois
+        per_year: /an
+        period:
+            label: 'Période de facturation'
+            month: Mensuel
+            year: Annuel
         recommended: Recommandé
+        yearly_equivalent: 'soit %monthly% par mois'
+        yearly_saving: '%saving% d''économie par an'
         unlimited: Illimité
         value_separator: "\u00a0:"
         your_current_plan: 'Votre plan actuel'
