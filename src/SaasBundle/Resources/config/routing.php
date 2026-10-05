@@ -16,6 +16,7 @@ use Augias\SaasBundle\Action\CancelDowngradeAction;
 use Augias\SaasBundle\Action\ChangePlanAction;
 use Augias\SaasBundle\Action\ChoosePlanAction;
 use Augias\SaasBundle\Action\ConfirmPlanChangeAction;
+use Augias\SaasBundle\Action\CoverCompanyAction;
 use Augias\SaasBundle\Action\SelectPlanAction;
 use Augias\SaasBundle\Action\SubscriptionOverviewAction;
 use Augias\SaasBundle\Controller\PaymentSuccess;
@@ -55,5 +56,9 @@ return static function (RoutingConfigurator $routingConfigurator): void {
 
     $routingConfigurator->add('saas_subscription_cancel_downgrade', '/subscription/cancel-downgrade')
         ->controller(CancelDowngradeAction::class)
+        ->methods(['POST']);
+
+    $routingConfigurator->add('saas_subscription_cover', '/subscription/cover')
+        ->controller(CoverCompanyAction::class)
         ->methods(['POST']);
 };

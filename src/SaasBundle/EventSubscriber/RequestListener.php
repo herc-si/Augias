@@ -62,6 +62,8 @@ final readonly class RequestListener implements EventSubscriberInterface
         'saas_subscription_change_confirm',
         'saas_subscription_cancel_downgrade',
         'saas_company_abandon',
+        // Offered on the pending, expired and cancelled pages themselves.
+        'saas_subscription_cover',
         'saas_payment_success',
 
         // Debug routes

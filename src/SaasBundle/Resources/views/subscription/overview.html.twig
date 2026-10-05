@@ -33,6 +33,7 @@
 {% block content %}
     <div class="row g-3">
         <div class="col-12">
+            {% include '@AugiasSaas/subscription/_cover_offer.html.twig' %}
             {% if coveredBy|default(null) %}
                 <twig:Ui:Alert type="info">
                     {{ ux_icon('tabler:building', {width: 20, height: 20, class: 'me-1'}) }}

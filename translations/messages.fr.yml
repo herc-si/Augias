@@ -3200,7 +3200,13 @@ saas:
         heading: 'Confirmer la rétrogradation vers %plan%'
         paid_notice: 'Votre plan basculera vers %plan% immédiatement. Le changement est traité par notre prestataire de paiement et tout prorata sera appliqué à votre prochaine facture.'
         title: 'Confirmer la rétrogradation'
+        uncovered_heading: 'Cette société ne sera plus couverte par l''abonnement :|Ces %count% sociétés ne seront plus couvertes par l''abonnement :'
+        uncovered_message: 'L''offre %plan% couvre moins de sociétés. Elles devront choisir leur propre offre pour continuer ; leurs données sont conservées.'
         what_changes: 'Ce qui change'
+    cover:
+        action: 'Rattacher à cet abonnement'
+        heading: 'L''abonnement de %company% peut couvrir cette société'
+        message: 'Il lui reste de la place : cette société passerait sous l''abonnement de %company%, sans rien payer de plus. Elle garde ses données.'
     feature:
         approaching_limit: 'Limite du plan bientôt atteinte'
         available_on_plan: 'Cette fonctionnalité est disponible avec le plan %plan%.'
@@ -3210,10 +3216,12 @@ saas:
     flash:
         abandon_refused: 'Cette société ne peut pas être abandonnée : seul son propriétaire le peut, et seulement avant son activation.'
         checkout_failed: 'Impossible de créer la session de paiement. Veuillez réessayer plus tard.'
+        company_abandoned: 'La société « %name% » a été supprimée.'
+        company_covered: 'Cette société est maintenant couverte par votre abonnement Agence.'
+        cover_unavailable: 'Cette société ne peut pas être rattachée : l''abonnement n''a plus de place, ou elle paie déjà le sien.'
         downgrade_cancel_failed: 'Impossible d''annuler le changement programmé : %error%'
         downgrade_cancelled: 'Changement de plan programmé annulé.'
         downgrade_scheduled: 'Votre plan sera rétrogradé à la fin de la période de facturation en cours.'
-        company_abandoned: 'La société « %name% » a été supprimée.'
         free_plan_active: 'Votre plan gratuit est maintenant actif.'
         free_plan_taken: 'Vous avez déjà une entreprise sur le plan gratuit : celle-ci doit choisir un plan payant.'
         invalid_plan: 'Le plan sélectionné n''est pas valide.'

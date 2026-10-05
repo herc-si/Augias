@@ -86,10 +86,20 @@ final readonly class SubscriptionEndRetention implements ClosureSchedule
                 continue;
             }
 
+            if ($this->coverage->hostOf($company) instanceof Company) {
+                // A covered company goes, or stays, with its host's subscription,
+                // whatever became of its own (an ended trial, a cancelled plan).
+                // Read here too: a renewal takes the host out of this list at once.
+                $subscription = $this->coverage->getSubscriptionFor($company) ?? $subscription;
+                $targets = [$company];
+            } else {
+                // The companies this subscription paid for go, or stay, with it.
+                $targets = [$company, ...$this->coverage->coveredBy($company)];
+            }
+
             $ended = self::hasEnded($subscription, $now);
 
-            // The companies this subscription paid for go, or stay, with it.
-            foreach ([$company, ...$this->coverage->coveredBy($company)] as $target) {
+            foreach ($targets as $target) {
                 $reason = $target->getClosureReason();
 
                 if ($ended && null === $reason) {
