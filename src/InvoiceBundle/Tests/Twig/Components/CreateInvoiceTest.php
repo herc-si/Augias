@@ -298,9 +298,16 @@ final class CreateInvoiceTest extends LiveComponentTest
         $html = $component->render()->toString();
         self::assertStringContainsString('Choose the client first', $html);
 
-        $before = count($component->component()->formValues['lines'] ?? []);
         $component->call('addNote');
-        self::assertCount($before, $component->component()->formValues['lines'] ?? []);
+        self::assertSame([], $component->component()->formValues['lines'] ?? []);
+
+        // The client chosen, the first line opens on its own.
+        $client = ClientFactory::createOne(['name' => 'Acme Corp', 'currencyCode' => 'EUR']);
+        $html = $component->set('invoice.client', (string) $client->getId())->render()->toString();
+
+        self::assertCount(1, $component->component()->formValues['lines']);
+        self::assertStringNotContainsString('Choose the client first', $html);
+        self::assertStringContainsString('invoice[lines][0][description]', $html);
     }
 
     public function testANoteIsAddedAndMovedToTheTop(): void

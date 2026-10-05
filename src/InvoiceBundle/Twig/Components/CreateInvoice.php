@@ -238,7 +238,10 @@ final class CreateInvoice extends AbstractController
             $propertyAccessor->setValue($this->formValues, '[lines]', $lines);
         }
 
-        $index = $lines === [] ? 0 : max(array_keys($lines)) + 1;
+        // The empty line a document opens with is filled in rather than left
+        // above the entry, blank.
+        $blank = $this->lastBlankLine($lines);
+        $index = $blank ?? ($lines === [] ? 0 : max(array_keys($lines)) + 1);
 
         $line = [
             'description' => $this->catalogLineDescription($product),
@@ -258,6 +261,10 @@ final class CreateInvoice extends AbstractController
 
         if ($tax instanceof Tax) {
             $line['taxes'] = [['tax' => (string) $tax->getId()]];
+        }
+
+        if ($blank !== null && is_array($lines[$blank])) {
+            $line = [...$lines[$blank], ...$line];
         }
 
         $propertyAccessor->setValue($this->formValues, sprintf('[lines][%d]', $index), $line);
