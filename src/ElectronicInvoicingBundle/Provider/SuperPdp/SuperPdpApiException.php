@@ -29,6 +29,7 @@ final class SuperPdpApiException extends RuntimeException
         private readonly ?int $apiCode = null,
         ?Throwable $previous = null,
         private readonly ?int $httpStatus = null,
+        private readonly ?string $oauthError = null,
     ) {
         parent::__construct($message, 0, $previous);
     }
@@ -51,5 +52,15 @@ final class SuperPdpApiException extends RuntimeException
     public function isUnauthorized(): bool
     {
         return 401 === $this->httpStatus;
+    }
+
+    /**
+     * The token endpoint refused the code or refresh token itself: spent,
+     * expired, or revoked by the company on SUPER PDP. Only connecting again
+     * gets a new one; retrying never will.
+     */
+    public function isInvalidGrant(): bool
+    {
+        return 'invalid_grant' === $this->oauthError;
     }
 }

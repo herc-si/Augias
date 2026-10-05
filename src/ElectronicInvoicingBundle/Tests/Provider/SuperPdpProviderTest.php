@@ -16,10 +16,13 @@ namespace Augias\ElectronicInvoicingBundle\Tests\Provider;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
+use Augias\ElectronicInvoicingBundle\Entity\SuperPdpAuthorization;
 use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApplication;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\TokenCipher;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdpProvider;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -28,14 +31,20 @@ use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\LineTax;
 use Augias\TaxBundle\Test\Factory\TaxIdentifierFactory;
+use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use function array_unique;
+use function array_values;
 use function json_decode;
 use function json_encode;
+use function str_contains;
 use function str_ends_with;
 
 #[CoversClass(SuperPdpProvider::class)]
@@ -186,6 +195,50 @@ final class SuperPdpProviderTest extends KernelTestCase
         self::assertSame(AccountVerification::Failed, $status->verification);
         self::assertTrue($status->answered);
         self::assertSame('einvoicing.provider.super_pdp.bad_credentials', $status->error);
+    }
+
+    /**
+     * A connected account: the stored access token goes out, and no
+     * credentials are asked for.
+     */
+    public function testSendGoesThroughAConnectedAccount(): void
+    {
+        $tokens = [];
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient(
+            static function (string $method, string $url, array $options) use (&$tokens): MockResponse {
+                $tokens[] = $options['normalized_headers']['authorization'][0] ?? null;
+
+                return new MockResponse((string) json_encode(str_contains($url, '/v1.beta/invoices?') ? ['id' => 4242] : ['data' => []]));
+            },
+        ));
+
+        $result = self::getContainer()->get(SuperPdpProvider::class)->send($this->createEligibleInvoice(), [
+            'authorization' => (string) $this->connectedAccount(new DateTimeImmutable('+20 minutes')),
+        ]);
+
+        self::assertTrue($result->success);
+        self::assertSame('4242', $result->externalReference);
+        self::assertSame(['Authorization: Bearer stored-access'], array_values(array_unique($tokens)));
+    }
+
+    /**
+     * The company withdrew its consent on SUPER PDP: an answer about the
+     * account, which stops electronic invoicing until it connects again.
+     */
+    public function testCheckAccountSaysWhenTheConnectionIsGone(): void
+    {
+        self::getContainer()->set(SuperPdpApplication::class, new SuperPdpApplication('app-id', 'app-secret'));
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
+            static fn (): MockResponse => new MockResponse((string) json_encode(['error' => 'invalid_grant']), ['http_code' => 400]),
+        ]));
+
+        $status = self::getContainer()->get(SuperPdpProvider::class)->checkAccount([
+            'authorization' => (string) $this->connectedAccount(new DateTimeImmutable('-1 hour')),
+        ]);
+
+        self::assertSame(AccountVerification::Failed, $status->verification);
+        self::assertTrue($status->answered);
+        self::assertSame('einvoicing.provider.super_pdp.disconnected', $status->error);
     }
 
     public function testResolveProcessingStatusReturnsRejectedWhenTheInitialSendFailed(): void
@@ -430,6 +483,22 @@ final class SuperPdpProviderTest extends KernelTestCase
         self::assertSame('%PDF-1.7 fake content', $document->content);
         self::assertSame('application/pdf', $document->mimeType);
         self::assertSame('pdf', $document->fileExtension);
+    }
+
+    private function connectedAccount(DateTimeImmutable $expiresAt): Ulid
+    {
+        $cipher = self::getContainer()->get(TokenCipher::class);
+        $authorization = new SuperPdpAuthorization($cipher->encrypt('stored-refresh'), $cipher->encrypt('stored-access'), $expiresAt, new DateTimeImmutable());
+        $authorization->setCompany($this->company);
+
+        $entityManager = self::getContainer()->get(EntityManagerInterface::class);
+        $entityManager->persist($authorization);
+        $entityManager->flush();
+
+        $id = $authorization->getId();
+        self::assertInstanceOf(Ulid::class, $id);
+
+        return $id;
     }
 
     private function createEligibleInvoice(): Invoice

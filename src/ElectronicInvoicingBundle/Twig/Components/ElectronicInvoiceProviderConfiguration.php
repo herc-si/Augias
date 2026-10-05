@@ -19,6 +19,9 @@ use Augias\ElectronicInvoicingBundle\Form\Type\ElectronicInvoiceProviderSettingT
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceAccountMonitor;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceAccountCheckerInterface;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpAccessTokens;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpConnector;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdpProvider;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -72,7 +75,37 @@ final class ElectronicInvoiceProviderConfiguration extends AbstractController
         private readonly RequestStack $requestStack,
         private readonly ElectronicInvoiceProviderRegistry $providers,
         private readonly ElectronicInvoiceAccountMonitor $accountMonitor,
+        private readonly SuperPdpConnector $superPdpConnector,
+        private readonly SuperPdpAccessTokens $superPdpTokens,
     ) {
+    }
+
+    /**
+     * For SUPER PDP, when the deployment has its own application: the
+     * company connects its account rather than pasting credentials. Null
+     * otherwise.
+     *
+     * @return array{connected: bool, url: ?string}|null
+     */
+    #[ExposeInTemplate]
+    public function connection(): ?array
+    {
+        if (! $this->connectsToSuperPdp()) {
+            return null;
+        }
+
+        $setting = $this->providerSetting();
+
+        return [
+            'connected' => $this->superPdpTokens->isConnected($setting->getSettings()),
+            'url' => $this->isNewSetting() ? null : $this->generateUrl('_einvoicing_super_pdp_connect', ['id' => $setting->getId()]),
+        ];
+    }
+
+    private function connectsToSuperPdp(): bool
+    {
+        return SuperPdpProvider::getName() === $this->providerSetting()->getProvider()
+            && $this->superPdpConnector->isAvailable();
     }
 
     /**
@@ -172,6 +205,15 @@ final class ElectronicInvoiceProviderConfiguration extends AbstractController
             $setting->setActive(true);
         }
 
+        // Not connected yet: off to SUPER PDP, and back with the account.
+        // Asking it now would only record that there are no credentials.
+        if ($this->connectsToSuperPdp() && ! $this->superPdpTokens->isConnection($setting->getSettings())) {
+            $this->entityManager->persist($setting);
+            $this->entityManager->flush();
+
+            return $this->redirectToRoute('_einvoicing_super_pdp_connect', ['id' => $setting->getId()]);
+        }
+
         // Asked as soon as there are credentials to ask with: a platform that
         // has not verified the company refuses everything, and the user should
         // learn that now rather than on the first invoice.
@@ -213,6 +255,8 @@ final class ElectronicInvoiceProviderConfiguration extends AbstractController
         }
 
         $wasActive = $setting->isActive();
+        // A connected account is revoked on SUPER PDP, not left behind.
+        $this->superPdpConnector->forgetAuthorization($setting);
         $this->entityManager->remove($setting);
         $this->entityManager->flush();
 

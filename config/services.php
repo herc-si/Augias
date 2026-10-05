@@ -49,6 +49,11 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('env(AUGIAS_ALLOW_REGISTRATION)', '0');
     $parameters->set('env(AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_ID)', null);
     $parameters->set('env(AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_SECRET)', null);
+    // The OAuth application registered with SUPER PDP, for companies to
+    // connect their account to instead of pasting credentials. Empty, each
+    // company brings its own.
+    $parameters->set('env(AUGIAS_SUPER_PDP_CLIENT_ID)', '');
+    $parameters->set('env(AUGIAS_SUPER_PDP_CLIENT_SECRET)', '');
     $parameters->set('env(AUGIAS_TURNSTILE_SITE_KEY)', null);
     $parameters->set('env(AUGIAS_TURNSTILE_SECRET_KEY)', null);
 

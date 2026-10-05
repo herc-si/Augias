@@ -13,13 +13,17 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdp;
 
+use const PHP_URL_QUERY;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApiException;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
+use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use function json_encode;
+use function parse_str;
+use function parse_url;
 
 #[CoversClass(SuperPdpClient::class)]
 final class SuperPdpClientTest extends TestCase
@@ -133,5 +137,85 @@ final class SuperPdpClientTest extends TestCase
 
         self::assertSame('%PDF-1.7 ...', $document['content']);
         self::assertSame('application/pdf', $document['content_type']);
+    }
+
+    public function testTheAuthorizationUrlCarriesPkceAndFillsInTheCompany(): void
+    {
+        $url = new SuperPdpClient(new MockHttpClient())->authorizationUrl('app-id', 'https://augias.test/callback', 'the-state', 'the-challenge', 'owner@example.com', '732829320');
+
+        self::assertStringStartsWith('https://api.superpdp.tech/oauth2/authorize?', $url);
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+        self::assertSame([
+            'response_type' => 'code',
+            'client_id' => 'app-id',
+            'redirect_uri' => 'https://augias.test/callback',
+            'state' => 'the-state',
+            'code_challenge' => 'the-challenge',
+            'code_challenge_method' => 'S256',
+            'login_hint' => 'owner@example.com',
+            'superpdp_company_number' => '732829320',
+            'superpdp_company_number_scheme' => 'fr_siren',
+        ], $query);
+    }
+
+    /**
+     * The number and its scheme go together: without a SIREN, neither.
+     */
+    public function testTheAuthorizationUrlLeavesOutWhatIsNotKnown(): void
+    {
+        $url = new SuperPdpClient(new MockHttpClient())->authorizationUrl('app-id', 'https://augias.test/callback', 'the-state', 'the-challenge');
+
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+        self::assertArrayNotHasKey('login_hint', $query);
+        self::assertArrayNotHasKey('superpdp_company_number', $query);
+        self::assertArrayNotHasKey('superpdp_company_number_scheme', $query);
+    }
+
+    public function testTheCodeIsTradedForTokens(): void
+    {
+        $sent = null;
+        $httpClient = new MockHttpClient(static function (string $method, string $url, array $options) use (&$sent): MockResponse {
+            $sent = $options['body'];
+
+            return new MockResponse((string) json_encode(['access_token' => 'access', 'refresh_token' => 'refresh', 'expires_in' => 1800, 'token_type' => 'Bearer']));
+        });
+        $now = new DateTimeImmutable('2026-10-01 12:00:00');
+
+        $tokens = new SuperPdpClient($httpClient)->exchangeAuthorizationCode('app-id', 'app-secret', 'the-code', 'https://augias.test/callback', 'the-verifier', $now);
+
+        self::assertSame('access', $tokens->accessToken);
+        self::assertSame('refresh', $tokens->refreshToken);
+        self::assertEquals(new DateTimeImmutable('2026-10-01 12:30:00'), $tokens->expiresAt);
+        self::assertIsString($sent);
+        parse_str($sent, $body);
+        self::assertSame('authorization_code', $body['grant_type']);
+        self::assertSame('the-code', $body['code']);
+        self::assertSame('the-verifier', $body['code_verifier']);
+        self::assertSame('https://augias.test/callback', $body['redirect_uri']);
+    }
+
+    public function testARefreshThatIsRefusedSaysSo(): void
+    {
+        $httpClient = new MockHttpClient(new MockResponse(
+            (string) json_encode(['error' => 'invalid_grant', 'error_description' => 'The refresh token is invalid.']),
+            ['http_code' => 400],
+        ));
+
+        try {
+            new SuperPdpClient($httpClient)->refreshTokens('app-id', 'app-secret', 'spent', new DateTimeImmutable());
+            self::fail('Expected a SuperPdpApiException to be thrown.');
+        } catch (SuperPdpApiException $e) {
+            self::assertTrue($e->isInvalidGrant());
+            self::assertSame('The refresh token is invalid.', $e->getMessage());
+        }
+    }
+
+    public function testATokenResponseWithoutARefreshTokenIsAnError(): void
+    {
+        $httpClient = new MockHttpClient(new MockResponse((string) json_encode(['access_token' => 'access'])));
+
+        $this->expectException(SuperPdpApiException::class);
+
+        new SuperPdpClient($httpClient)->refreshTokens('app-id', 'app-secret', 'refresh', new DateTimeImmutable());
     }
 }

@@ -15,6 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Tests\Twig\Components;
 
 use Augias\CoreBundle\Test\LiveComponentTest;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApplication;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\ElectronicInvoicingBundle\Twig\Components\ElectronicInvoiceProviderConfiguration;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -94,5 +95,48 @@ final class ElectronicInvoiceProviderConfigurationTest extends LiveComponentTest
 
         self::assertStringContainsString('the-id', $rendered);
         self::assertStringNotContainsString('saved-secret-xyz', $rendered);
+    }
+
+    /**
+     * With the deployment's own application, there is nothing to paste: the
+     * setting is saved, and the user goes on to SUPER PDP to connect the
+     * account — the platform is not asked about an account it has none for.
+     */
+    public function testASettingNotConnectedYetGoesOnToSuperPdp(): void
+    {
+        self::getContainer()->set(SuperPdpApplication::class, new SuperPdpApplication('app-id', 'app-secret'));
+        // Nothing may reach SUPER PDP before the user has connected.
+        self::getContainer()->set(SuperPdpClient::class, new SuperPdpClient(new MockHttpClient([])));
+
+        $user = $this->getUser();
+        $setting = new ElectronicInvoiceProviderSetting();
+        $setting->setCompany($user->getCompanies()->first())
+            ->setName('SUPER PDP')
+            ->setProvider('super_pdp')
+            ->setSettings([]);
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($setting);
+        $entityManager->flush();
+
+        $component = $this->createLiveComponent(
+            name: ElectronicInvoiceProviderConfiguration::class,
+            data: ['setting' => (string) $setting->getId(), 'provider' => 'super_pdp'],
+            client: $this->client,
+        )->actingAs($user);
+
+        $rendered = $component->render()->toString();
+        self::assertStringNotContainsString('client_secret', $rendered);
+        self::assertStringContainsString('Not connected', $rendered);
+        self::assertStringContainsString('/electronic-invoicing/super-pdp/connect/' . $setting->getId(), $rendered);
+
+        $response = $component->call('save')->response();
+
+        self::assertStringContainsString('/electronic-invoicing/super-pdp/connect/' . $setting->getId(), (string) $response->headers->get('Location') . (string) $response->headers->get('X-Live-Redirect'));
+
+        $entityManager->clear();
+        $saved = $entityManager->find(ElectronicInvoiceProviderSetting::class, $setting->getId());
+        self::assertInstanceOf(ElectronicInvoiceProviderSetting::class, $saved);
+        self::assertNull($saved->getAccountVerification());
     }
 }
