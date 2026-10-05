@@ -1566,6 +1566,16 @@ email_verification:
         send_reminder: 'Veuillez vérifier votre adresse e-mail avant d''envoyer des rappels de paiement. Consultez votre boîte de réception pour le lien de vérification.'
     gate:
         reason: 'Veuillez vérifier votre adresse e-mail avant %action%.'
+    required:
+        check_spam: 'Pensez à regarder dans les indésirables. Le lien reste valable une heure ; au-delà, demandez-en un nouveau.'
+        invalid_token: 'La demande a expiré. Réessayez.'
+        logout: 'Se déconnecter'
+        message: 'Nous avons envoyé un lien de vérification à %email%. Augias s''ouvrira dès que vous aurez cliqué dessus.'
+        not_sent: 'Le message n''a pas pu partir. Réessayez dans un instant.'
+        resend: 'Renvoyer le lien'
+        sent: 'Un nouveau lien vient de partir. Consultez votre boîte de réception.'
+        title: 'Vérifiez votre adresse e-mail'
+        wait: 'Un lien vient déjà de partir. Patientez une minute avant d''en demander un autre.'
 exception:
     403:
         text: "Vous n'avez pas la permission de consulter cette page."

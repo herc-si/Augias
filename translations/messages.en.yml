@@ -1566,6 +1566,16 @@ email_verification:
         send_reminder: 'Please verify your email address before sending payment reminders. Check your inbox for the verification link.'
     gate:
         reason: 'Please verify your email address before %action%.'
+    required:
+        check_spam: 'Have a look in your spam folder too. The link is valid for an hour; after that, ask for a new one.'
+        invalid_token: 'The request expired. Please try again.'
+        logout: 'Sign out'
+        message: 'We sent a verification link to %email%. Augias opens as soon as you click it.'
+        not_sent: 'The message could not be sent. Please try again in a moment.'
+        resend: 'Send the link again'
+        sent: 'A new link is on its way. Check your inbox.'
+        title: 'Verify your email address'
+        wait: 'A link has just been sent. Wait a minute before asking for another.'
 exception:
     403:
         text: "You don't have permission to view this page."

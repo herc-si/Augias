@@ -1,0 +1,45 @@
+{#
+ # The only page an account sees until its email address is verified.
+ #
+ # Context:
+ #   - email: string   the address the link went to
+ #}
+{% extends '@AugiasCore/Layout/default_no_nav.html.twig' %}
+
+{% block heading %}
+    <div class="subscription-page-header">
+        <div class="container-xl">
+            <div class="d-flex align-items-center gap-3 py-4">
+                {{ app_logo(48) }}
+                <div class="h4 mb-0">{{ constant('Augias\\CoreBundle\\AugiasCoreBundle::APP_NAME') }}</div>
+            </div>
+        </div>
+    </div>
+{% endblock heading %}
+
+{% block content %}
+    <div class="subscription-page subscription-verify-email-page">
+        <div class="subscription-container">
+            <div class="subscription-icon subscription-icon-warning">
+                {{ ux_icon('tabler:mail', {width: 32, height: 32}) }}
+            </div>
+
+            <h1 class="subscription-title">{{ 'email_verification.required.title'|trans }}</h1>
+            <p class="subscription-subtitle">
+                {{ 'email_verification.required.message'|trans({'%email%': email}) }}
+            </p>
+            <p class="text-muted">{{ 'email_verification.required.check_spam'|trans }}</p>
+
+            <div class="subscription-actions">
+                <form method="post" action="{{ path('_verify_email_resend') }}">
+                    <input type="hidden" name="_token" value="{{ csrf_token('verify_email_resend') }}">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        {{ ux_icon('tabler:send', {width: 20, height: 20}) }}
+                        {{ 'email_verification.required.resend'|trans }}
+                    </button>
+                </form>
+                <twig:Ui:Security:LogoutLink title="{{ 'email_verification.required.logout'|trans }}" color="ghost" size="lg" />
+            </div>
+        </div>
+    </div>
+{% endblock content %}

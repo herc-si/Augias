@@ -32,6 +32,7 @@ use Augias\UserBundle\Action\ResendUserInvite;
 use Augias\UserBundle\Action\Security\ChangePassword;
 use Augias\UserBundle\Action\Security\OAuthConnect;
 use Augias\UserBundle\Action\Security\OAuthConnectCheck;
+use Augias\UserBundle\Action\Security\ResendVerificationEmail;
 use Augias\UserBundle\Action\Security\TwoFactorIndex;
 use Augias\UserBundle\Action\Security\VerifyEmail;
 use Augias\UserBundle\Action\Users;
@@ -138,6 +139,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_verify_email', '/verify')
         ->controller(VerifyEmail::class);
+
+    $routingConfigurator
+        ->add('_verify_email_resend', '/verify/resend')
+        ->controller(ResendVerificationEmail::class)
+        ->methods(['POST']);
 
     $routingConfigurator->add(OAuthConnect::ROUTE, '/oauth/connect/{service}')
         ->controller(OAuthConnect::class);
