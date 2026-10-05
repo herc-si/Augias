@@ -17,6 +17,7 @@ use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\SaasBundle\Plan\FreePlanAllowance;
+use Augias\SaasBundle\Plan\PlanPeriods;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
@@ -40,6 +41,7 @@ final class ConfirmPlanChangeAction extends AbstractController
         private readonly CompanySelector $companySelector,
         private readonly FreePlanAllowance $freePlanAllowance,
         private readonly TranslatorInterface $translator,
+        private readonly PlanPeriods $periods,
     ) {
     }
 
@@ -79,7 +81,7 @@ final class ConfirmPlanChangeAction extends AbstractController
             return $this->redirectToRoute('saas_subscription_change');
         }
 
-        $isDowngrade = $plan->getPrice() < $subscription->getPlan()->getPrice();
+        $isDowngrade = $this->periods->isDowngrade($subscription->getPlan(), $plan);
         $confirmed = $request->request->getBoolean('confirmed');
 
         if ($isDowngrade && ! $confirmed) {
