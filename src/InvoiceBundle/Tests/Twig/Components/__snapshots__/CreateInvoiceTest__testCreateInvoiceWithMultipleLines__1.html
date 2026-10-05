@@ -1,5 +1,5 @@
 <html><body>
-<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateInvoice" data-live-url-value="/_components/CreateInvoice" data-live-props-value='{"isEdit":false,"invoiceEntity":null,"previousClientId":null,"catalogProductId":null,"formName":"invoice","invoice":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","unit":"unit","disbursement":null},{"description":"","price":"100.00","qty":"1","unit":"unit","disbursement":null}],"invoiceId":"1","terms":"","notes":"","total":0,"baseTotal":0,"tax":0,"invoiceDate":"2021-01-01","deliveryDate":"","due":"","customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateInvoice" data-live-url-value="/_components/CreateInvoice" data-live-props-value='{"isEdit":false,"invoiceEntity":null,"previousClientId":null,"catalogProductId":null,"formName":"invoice","invoice":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"0","disbursement":null},{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"1","disbursement":null}],"invoiceId":"1","terms":"","notes":"","total":0,"baseTotal":0,"tax":0,"invoiceDate":"2021-01-01","deliveryDate":"","due":"","customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
     
     <form name="invoice" method="post" data-model="on(change)|*">
 
@@ -113,11 +113,12 @@
                                 <div class="column-actions"></div>
                             </div>
 
-                                                            <div class="billing-item-row">
-                                    <div class="column-description">
-                                        <span class="mobile-label">Description</span>
-                                        <textarea id="invoice_lines_0_description" name="invoice[lines][0][description]" class="input-medium invoice-item-name form-control" placeholder="Describe the service or product..." rows="2"></textarea>
-                                                                                    <div class="item-disbursement-check">                                <div class="form-switch-field">
+                                                                                                <div class="billing-item-row">
+                                        <div class="column-description">
+                                            <span class="mobile-label">Description</span>
+                                            <textarea id="invoice_lines_0_description" name="invoice[lines][0][description]" class="input-medium invoice-item-name form-control" placeholder="Describe the service or product..." rows="2"></textarea>
+                                            
+                                            <input type="hidden" id="invoice_lines_0_note" name="invoice[lines][0][note]" value="0"><input type="hidden" id="invoice_lines_0_position" name="invoice[lines][0][position]" value="0">                                                <div class="item-disbursement-check">                                <div class="form-switch-field">
             <div class="form-switch-wrapper"><div class="form-check form-switch">
 <input type="checkbox" id="invoice_lines_0_disbursement" name="invoice[lines][0][disbursement]" class="invoice-item-disbursement form-check-input" aria-describedby="invoice_lines_0_disbursement_help" value="1">
         <label class="form-check-label checkbox-switch" for="invoice_lines_0_disbursement">Disbursement</label>
@@ -125,38 +126,48 @@
 <div class="form-text text-muted mb-0" id="invoice_lines_0_disbursement_help">Money advanced in this client's name, re-billed to the euro</div>
 </div>
     </div>
-                                                                                </div>
-                                    <div class="column-price">
-                                        <span class="mobile-label">Price</span>
-                                        <div class="input-group flex-nowrap">
+                                                                                        </div>
+                                        <div class="column-price">
+                                            <span class="mobile-label">Price</span>
+                                            <div class="input-group flex-nowrap">
 <span class="input-group-text">$ </span><input type="text" id="invoice_lines_0_price" name="invoice[lines][0][price]" class="input-small invoice-item-price form-control" inputmode="decimal" value="100.00">
 </div>
-                                        
-                                    </div>
-                                    <div class="column-qty">
-                                        <span class="mobile-label">Qty</span>
-                                        <input type="text" id="invoice_lines_0_qty" name="invoice[lines][0][qty]" class="input-mini invoice-item-qty form-control" inputmode="decimal" value="1">
-                                                                                    <div class="item-unit mt-1"><select id="invoice_lines_0_unit" name="invoice[lines][0][unit]" class="form-select-sm invoice-item-unit form-select" aria-label="Unit"><option value="unit" selected>Unit</option>
+                                            
+                                        </div>
+                                        <div class="column-qty">
+                                            <span class="mobile-label">Qty</span>
+                                            <input type="text" id="invoice_lines_0_qty" name="invoice[lines][0][qty]" class="input-mini invoice-item-qty form-control" inputmode="decimal" value="1">
+                                                                                            <div class="item-unit mt-1"><select id="invoice_lines_0_unit" name="invoice[lines][0][unit]" class="form-select-sm invoice-item-unit form-select" aria-label="Unit"><option value="unit" selected>Unit</option>
 <option value="hour">Hour</option>
 <option value="day">Day</option>
 <option value="month">Month</option>
 <option value="kilogram">Kilogram</option>
 <option value="litre">Litre</option>
 <option value="metre">Metre</option>
-<option value="flat_rate">Flat rate</option></select></div>                                    </div>
-                                                                        <div class="column-total">
-                                        <span class="mobile-label">Total</span>
-                                        <span class="item-total-value">$0.00</span>
+<option value="flat_rate">Flat rate</option></select></div>                                        </div>
+                                                                                <div class="column-total">
+                                            <span class="mobile-label">Total</span>
+                                            <span class="item-total-value">$0.00</span>
+                                        </div>
+                                        <div class="column-actions">
+                                            <div class="line-order-actions">
+                                                <button type="button" class="btn btn-sm btn-ghost-secondary" data-action="live#action" data-live-action-param="moveLine" data-live-line-param="0" data-live-direction-param="up" title="Move the line up" aria-label="Move the line up">
+    <svg viewbox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 15l6-6l6 6"></path></svg>
+</button>
+<button type="button" class="btn btn-sm btn-ghost-secondary" data-action="live#action" data-live-action-param="moveLine" data-live-line-param="0" data-live-direction-param="down" title="Move the line down" aria-label="Move the line down">
+    <svg viewbox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9l6 6l6-6"></path></svg>
+</button>
+
+                                                                                                    <button type="button" id="invoice_lines_0_delete" name="invoice[lines][0][delete]" data-action="live#action" data-live-action-param="removeCollectionItem" data-live-name-param="invoice[lines]" data-live-index-param="0" class="btn btn-sm remove-item-btn btn" title="Remove Item" aria-label="Remove Item"><svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"></path></svg></button>
+                                                                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="column-actions">
-                                                                                    <button type="button" id="invoice_lines_0_delete" name="invoice[lines][0][delete]" data-action="live#action" data-live-action-param="removeCollectionItem" data-live-name-param="invoice[lines]" data-live-index-param="0" class="btn btn-sm remove-item-btn btn" title="Remove Item" aria-label="Remove Item"><svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"></path></svg></button>
-                                                                            </div>
-                                </div>
-                                                            <div class="billing-item-row">
-                                    <div class="column-description">
-                                        <span class="mobile-label">Description</span>
-                                        <textarea id="invoice_lines_1_description" name="invoice[lines][1][description]" class="input-medium invoice-item-name form-control" placeholder="Describe the service or product..." rows="2"></textarea>
-                                                                                    <div class="item-disbursement-check">                                <div class="form-switch-field">
+                                                                                                                                <div class="billing-item-row">
+                                        <div class="column-description">
+                                            <span class="mobile-label">Description</span>
+                                            <textarea id="invoice_lines_1_description" name="invoice[lines][1][description]" class="input-medium invoice-item-name form-control" placeholder="Describe the service or product..." rows="2"></textarea>
+                                            
+                                            <input type="hidden" id="invoice_lines_1_note" name="invoice[lines][1][note]" value="0"><input type="hidden" id="invoice_lines_1_position" name="invoice[lines][1][position]" value="1">                                                <div class="item-disbursement-check">                                <div class="form-switch-field">
             <div class="form-switch-wrapper"><div class="form-check form-switch">
 <input type="checkbox" id="invoice_lines_1_disbursement" name="invoice[lines][1][disbursement]" class="invoice-item-disbursement form-check-input" aria-describedby="invoice_lines_1_disbursement_help" value="1">
         <label class="form-check-label checkbox-switch" for="invoice_lines_1_disbursement">Disbursement</label>
@@ -164,37 +175,49 @@
 <div class="form-text text-muted mb-0" id="invoice_lines_1_disbursement_help">Money advanced in this client's name, re-billed to the euro</div>
 </div>
     </div>
-                                                                                </div>
-                                    <div class="column-price">
-                                        <span class="mobile-label">Price</span>
-                                        <div class="input-group flex-nowrap">
+                                                                                        </div>
+                                        <div class="column-price">
+                                            <span class="mobile-label">Price</span>
+                                            <div class="input-group flex-nowrap">
 <span class="input-group-text">$ </span><input type="text" id="invoice_lines_1_price" name="invoice[lines][1][price]" class="input-small invoice-item-price form-control" inputmode="decimal" value="100.00">
 </div>
-                                        
-                                    </div>
-                                    <div class="column-qty">
-                                        <span class="mobile-label">Qty</span>
-                                        <input type="text" id="invoice_lines_1_qty" name="invoice[lines][1][qty]" class="input-mini invoice-item-qty form-control" inputmode="decimal" value="1">
-                                                                                    <div class="item-unit mt-1"><select id="invoice_lines_1_unit" name="invoice[lines][1][unit]" class="form-select-sm invoice-item-unit form-select" aria-label="Unit"><option value="unit" selected>Unit</option>
+                                            
+                                        </div>
+                                        <div class="column-qty">
+                                            <span class="mobile-label">Qty</span>
+                                            <input type="text" id="invoice_lines_1_qty" name="invoice[lines][1][qty]" class="input-mini invoice-item-qty form-control" inputmode="decimal" value="1">
+                                                                                            <div class="item-unit mt-1"><select id="invoice_lines_1_unit" name="invoice[lines][1][unit]" class="form-select-sm invoice-item-unit form-select" aria-label="Unit"><option value="unit" selected>Unit</option>
 <option value="hour">Hour</option>
 <option value="day">Day</option>
 <option value="month">Month</option>
 <option value="kilogram">Kilogram</option>
 <option value="litre">Litre</option>
 <option value="metre">Metre</option>
-<option value="flat_rate">Flat rate</option></select></div>                                    </div>
-                                                                        <div class="column-total">
-                                        <span class="mobile-label">Total</span>
-                                        <span class="item-total-value">$0.00</span>
+<option value="flat_rate">Flat rate</option></select></div>                                        </div>
+                                                                                <div class="column-total">
+                                            <span class="mobile-label">Total</span>
+                                            <span class="item-total-value">$0.00</span>
+                                        </div>
+                                        <div class="column-actions">
+                                            <div class="line-order-actions">
+                                                <button type="button" class="btn btn-sm btn-ghost-secondary" data-action="live#action" data-live-action-param="moveLine" data-live-line-param="1" data-live-direction-param="up" title="Move the line up" aria-label="Move the line up">
+    <svg viewbox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 15l6-6l6 6"></path></svg>
+</button>
+<button type="button" class="btn btn-sm btn-ghost-secondary" data-action="live#action" data-live-action-param="moveLine" data-live-line-param="1" data-live-direction-param="down" title="Move the line down" aria-label="Move the line down">
+    <svg viewbox="0 0 24 24" fill="currentColor" width="14" height="14" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9l6 6l6-6"></path></svg>
+</button>
+
+                                                                                                    <button type="button" id="invoice_lines_1_delete" name="invoice[lines][1][delete]" data-action="live#action" data-live-action-param="removeCollectionItem" data-live-name-param="invoice[lines]" data-live-index-param="1" class="btn btn-sm remove-item-btn btn" title="Remove Item" aria-label="Remove Item"><svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"></path></svg></button>
+                                                                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="column-actions">
-                                                                                    <button type="button" id="invoice_lines_1_delete" name="invoice[lines][1][delete]" data-action="live#action" data-live-action-param="removeCollectionItem" data-live-name-param="invoice[lines]" data-live-index-param="1" class="btn btn-sm remove-item-btn btn" title="Remove Item" aria-label="Remove Item"><svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7h16m-10 4v6m4-6v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"></path></svg></button>
-                                                                            </div>
-                                </div>
-                                                    </div>
+                                                                                    </div>
                     
                                         <div class="add-item-action d-flex align-items-center gap-2 flex-wrap">
                         <button type="button" id="invoice_lines_add" name="invoice[lines][add]" data-action="live#action" data-live-action-param="addCollectionItem" data-live-name-param="invoice[lines]" class="add-item-btn btn-sm btn">Add Item</button>
+                        <button type="button" class="btn btn-sm add-item-btn" data-action="live#action" data-live-action-param="addNote">
+                            <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 10H5m0-4h14m-5 8H5m0 4h6m7-3v6m-3-3h6"></path></svg> Add a note
+                        </button>
 
                                                                                             </div>
                 </div>

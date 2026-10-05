@@ -65,6 +65,11 @@ final class DocumentTemplatesPhoneLayoutTest extends TestCase
                 continue;
             }
 
+            // A line of text only spans the row: no figure, no label to give.
+            if (str_contains($attributes, 'doc-lines-note')) {
+                continue;
+            }
+
             if (! str_contains($table[0], '<thead')) {
                 continue;
             }

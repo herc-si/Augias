@@ -293,17 +293,24 @@
                         </thead>
                         <tbody>
                             {% for item in quote.lines %}
-                                <tr>
-                                    <td class="column-description" data-label="{{ 'quote.item.heading.description'|trans }}">{{ item.description|nl2br }}</td>
-                                    <td class="column-price" data-label="{{ 'quote.item.heading.price'|trans }}">{{ item.price|formatCurrency(currency) }}</td>
-                                    <td class="column-qty" data-label="{{ 'quote.item.heading.qty'|trans }}">{{ item|line_quantity }}</td>
-                                    {% if quote.tax.positive %}
-                                        <td class="column-tax" data-label="{{ 'quote.item.heading.tax'|trans }}">
-                                            {% for lineTax in item.taxes %}{{ lineTax.nameSnapshot }} ({{ lineTax.rateSnapshot }}%){% if not loop.last %}, {% endif %}{% endfor %}
-                                        </td>
-                                    {% endif %}
-                                    <td class="column-total" data-label="{{ 'quote.item.heading.total'|trans }}">{{ item.total|formatCurrency(currency) }}</td>
-                                </tr>
+                                {% if item.note|default(false) %}
+                                    {# A line of text only: a heading over the lines that follow. #}
+                                    <tr>
+                                        <td class="column-description" colspan="{{ 4 + (quote.tax.positive ? 1 : 0) }}"><strong>{{ item.description|nl2br }}</strong></td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td class="column-description" data-label="{{ 'quote.item.heading.description'|trans }}">{{ item.description|nl2br }}</td>
+                                        <td class="column-price" data-label="{{ 'quote.item.heading.price'|trans }}">{{ item.price|formatCurrency(currency) }}</td>
+                                        <td class="column-qty" data-label="{{ 'quote.item.heading.qty'|trans }}">{{ item|line_quantity }}</td>
+                                        {% if quote.tax.positive %}
+                                            <td class="column-tax" data-label="{{ 'quote.item.heading.tax'|trans }}">
+                                                {% for lineTax in item.taxes %}{{ lineTax.nameSnapshot }} ({{ lineTax.rateSnapshot }}%){% if not loop.last %}, {% endif %}{% endfor %}
+                                            </td>
+                                        {% endif %}
+                                        <td class="column-total" data-label="{{ 'quote.item.heading.total'|trans }}">{{ item.total|formatCurrency(currency) }}</td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
                         </tbody>
                     </table>

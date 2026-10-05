@@ -174,17 +174,24 @@
                             </thead>
                             <tbody>
                                 {% for item in invoice.feeLines %}
-                                    <tr>
-                                        <td class="doc-lines-description item-description">{{ item.description|nl2br }}{% if item.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
-                                        <td class="text-end item-amount" data-label="{{ 'invoice.item.heading.price'|trans }}">{{ item.price|formatCurrency(currency) }}</td>
-                                        <td class="text-center" data-label="{{ 'invoice.item.heading.qty'|trans }}">{{ item|line_quantity }}</td>
-                                        {% if invoice.tax.positive %}
-                                            <td class="text-end item-amount" data-label="{{ 'invoice.item.heading.tax'|trans }}">
-                                                {% for lineTax in item.taxes %}{{ lineTax.nameSnapshot }} ({{ lineTax.rateSnapshot }}%){% if not loop.last %}, {% endif %}{% endfor %}
-                                            </td>
-                                        {% endif %}
-                                        <td class="text-end fw-bold item-amount" data-label="{{ 'invoice.item.heading.total'|trans }}">{{ item.total|formatCurrency(currency) }}</td>
-                                    </tr>
+                                    {% if item.note|default(false) %}
+                                        {# A line of text only: a heading over the lines that follow. #}
+                                        <tr>
+                                            <td class="doc-lines-note item-description" colspan="{{ 4 + (invoice.tax.positive ? 1 : 0) }}"><strong>{{ item.description|nl2br }}</strong></td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td class="doc-lines-description item-description">{{ item.description|nl2br }}{% if item.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
+                                            <td class="text-end item-amount" data-label="{{ 'invoice.item.heading.price'|trans }}">{{ item.price|formatCurrency(currency) }}</td>
+                                            <td class="text-center" data-label="{{ 'invoice.item.heading.qty'|trans }}">{{ item|line_quantity }}</td>
+                                            {% if invoice.tax.positive %}
+                                                <td class="text-end item-amount" data-label="{{ 'invoice.item.heading.tax'|trans }}">
+                                                    {% for lineTax in item.taxes %}{{ lineTax.nameSnapshot }} ({{ lineTax.rateSnapshot }}%){% if not loop.last %}, {% endif %}{% endfor %}
+                                                </td>
+                                            {% endif %}
+                                            <td class="text-end fw-bold item-amount" data-label="{{ 'invoice.item.heading.total'|trans }}">{{ item.total|formatCurrency(currency) }}</td>
+                                        </tr>
+                                    {% endif %}
                                 {% endfor %}
                             </tbody>
                         </table>

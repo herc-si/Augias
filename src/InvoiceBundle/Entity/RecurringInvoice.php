@@ -145,6 +145,7 @@ class RecurringInvoice extends BaseInvoice
      * @var Collection<int, RecurringInvoiceLine>
      */
     #[ORM\OneToMany(targetEntity: RecurringInvoiceLine::class, mappedBy: 'recurringInvoice', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     #[Assert\Valid]
     #[Assert\Count(min: 1, minMessage: 'recurring_invoice.lines.min')]
     #[Serialize\Groups(['recurring_invoice_api:read', 'recurring_invoice_api:write'])]

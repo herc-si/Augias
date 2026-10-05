@@ -213,6 +213,23 @@ class Line implements LineInterface, Stringable
     #[Groups(['quote_api:read', 'quote_api:write'])]
     private SupplyType $supplyType = SupplyType::Services;
 
+    /**
+     * A line of text only — a heading or a word on the lines that follow, such
+     * as "Phase 2: development". No price, no quantity, no tax: it counts in
+     * no total, and the e-invoice carries its text as a note on the next line.
+     */
+    #[ORM\Column(name: 'note', type: Types::BOOLEAN, options: ['default' => false])]
+    #[Groups(['quote_api:read', 'quote_api:write'])]
+    private bool $note = false;
+
+    /**
+     * Where the line stands among the document's lines. Lines written before
+     * it existed are all at 0 and keep their order by id.
+     */
+    #[ORM\Column(name: 'position', type: Types::INTEGER, options: ['default' => 0])]
+    #[Groups(['quote_api:read', 'quote_api:write'])]
+    private int $position = 0;
+
     public function __construct()
     {
         $this->total = BigDecimal::zero();
@@ -321,6 +338,49 @@ class Line implements LineInterface, Stringable
     public function isDisbursement(): bool
     {
         return false;
+    }
+
+    public function isNote(): bool
+    {
+        return $this->note;
+    }
+
+    public function setNote(bool $note): static
+    {
+        $this->note = $note;
+
+        return $this;
+    }
+
+    public function getPosition(): int
+    {
+        return $this->position;
+    }
+
+    public function setPosition(int $position): static
+    {
+        $this->position = $position;
+
+        return $this;
+    }
+
+    /**
+     * Takes from a note whatever would make it count: a note sent with a
+     * price, a quantity or a tax (by the API, say) is still only text.
+     */
+    public function neutraliseNote(): void
+    {
+        if (! $this->note) {
+            return;
+        }
+
+        $this->price = BigDecimal::zero();
+        $this->qty = BigDecimal::zero();
+        $this->total = BigDecimal::zero();
+
+        foreach ($this->getTaxes()->toArray() as $lineTax) {
+            $this->removeTax($lineTax);
+        }
     }
 
     public function getSupplyType(): SupplyType

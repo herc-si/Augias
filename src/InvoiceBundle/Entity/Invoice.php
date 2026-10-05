@@ -218,6 +218,7 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
      * @var Collection<int, Line>
      */
     #[ORM\OneToMany(targetEntity: Line::class, mappedBy: 'invoice', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     #[Assert\Valid]
     #[Assert\Count(min: 1, minMessage: 'invoice.lines.min')]
     #[Groups(['invoice_api:read', 'invoice_api:write'])]

@@ -15,6 +15,7 @@ namespace Augias\InvoiceBundle\Twig\Components;
 
 use Augias\ClientBundle\Repository\ClientRepository;
 use Augias\CoreBundle\Billing\TotalCalculator;
+use Augias\CoreBundle\Twig\Components\ManagesNoteLines;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
 use Augias\InvoiceBundle\Form\Type\RecurringInvoiceType;
 use Augias\TaxBundle\Service\TaxAvailability;
@@ -34,6 +35,7 @@ final class CreateRecurringInvoice extends AbstractController
 {
     use DefaultActionTrait;
     use LiveCollectionTrait;
+    use ManagesNoteLines;
 
     #[LiveProp(writable: true, fieldName: 'formData')]
     public RecurringInvoice $invoice;

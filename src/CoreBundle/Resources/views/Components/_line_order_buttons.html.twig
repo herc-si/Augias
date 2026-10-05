@@ -1,0 +1,11 @@
+{#
+ # Moves a document line one place up or down. See ManagesNoteLines.
+ #
+ #   - item: FormView  the line's form
+ #}
+<button type="button" class="btn btn-sm btn-ghost-secondary" data-action="live#action" data-live-action-param="moveLine" data-live-line-param="{{ item.vars.name }}" data-live-direction-param="up" title="{{ 'document_line.move_up'|trans }}" aria-label="{{ 'document_line.move_up'|trans }}">
+    {{ ux_icon('tabler:chevron-up', {width: 14, height: 14}) }}
+</button>
+<button type="button" class="btn btn-sm btn-ghost-secondary" data-action="live#action" data-live-action-param="moveLine" data-live-line-param="{{ item.vars.name }}" data-live-direction-param="down" title="{{ 'document_line.move_down'|trans }}" aria-label="{{ 'document_line.move_down'|trans }}">
+    {{ ux_icon('tabler:chevron-down', {width: 14, height: 14}) }}
+</button>

@@ -116,6 +116,7 @@ class CreditNote extends BaseInvoice implements Stringable, Journalled
      * @var Collection<int, CreditNoteLine>
      */
     #[ORM\OneToMany(targetEntity: CreditNoteLine::class, mappedBy: 'creditNote', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     #[Assert\Valid]
     #[Assert\Count(min: 1, minMessage: 'credit_note.lines.min')]
     private Collection $lines;

@@ -22,6 +22,7 @@ use Augias\CoreBundle\Contracts\EmailVerificationGateInterface;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Enum\CustomFieldTarget;
 use Augias\CoreBundle\Service\CustomField\CustomFieldFormWriter;
+use Augias\CoreBundle\Twig\Components\ManagesNoteLines;
 use Augias\InvoiceBundle\DTO\InvoiceFormDTO;
 use Augias\InvoiceBundle\Email\InvoiceEmail;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -67,6 +68,7 @@ final class CreateInvoice extends AbstractController
 {
     use DefaultActionTrait;
     use LiveCollectionTrait;
+    use ManagesNoteLines;
 
     public InvoiceFormDTO $dto;
 

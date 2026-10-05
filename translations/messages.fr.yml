@@ -1392,6 +1392,11 @@ datagrid:
     select_row: 'Sélectionner la ligne'
     selected: sélectionné(s)
 delete_client: 'Supprimer le client'
+document_line:
+    add_note: 'Ajouter une note'
+    move_down: 'Descendre la ligne'
+    move_up: 'Monter la ligne'
+    note_placeholder: 'Note ou intertitre, par exemple « Phase 2 — Développement »'
 edit_client: 'Modifier le tiers'
 einvoicing:
     account:

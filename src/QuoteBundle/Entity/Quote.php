@@ -284,6 +284,7 @@ class Quote implements Journalled
      * @var Collection<int, Line>
      */
     #[ORM\OneToMany(targetEntity: Line::class, mappedBy: 'quote', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['position' => 'ASC', 'id' => 'ASC'])]
     #[Assert\Valid]
     #[Assert\Count(min: 1, minMessage: 'quote.lines.min')]
     #[Groups(['quote_api:read', 'quote_api:write'])]

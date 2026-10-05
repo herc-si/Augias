@@ -245,7 +245,8 @@ final readonly class ReportDataBuilder
         $out = [];
 
         foreach ($result->lineBreakdowns as $index => $breakdown) {
-            if (($lines[$index] ?? null)?->isDisbursement() === true) {
+            // Disbursements are not turnover; a line of text only is nothing.
+            if (($lines[$index] ?? null)?->isDisbursement() === true || ($lines[$index] ?? null)?->isNote() === true) {
                 continue;
             }
 

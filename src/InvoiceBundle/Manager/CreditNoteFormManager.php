@@ -116,6 +116,8 @@ final readonly class CreditNoteFormManager
                     // the invoice was.
                     ->setSupplyType($line->getSupplyType())
                     ->setUnit($line->getUnit())
+                    ->setNote($line->isNote())
+                    ->setPosition($line->getPosition())
                     ->updateTotal(),
             );
         }

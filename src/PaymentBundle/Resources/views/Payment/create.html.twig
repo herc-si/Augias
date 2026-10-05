@@ -111,7 +111,8 @@
                                     {{ 'payment.line_items'|trans }}
                                 </div>
                                 <div class="line-items-preview">
-                                    {% for item in invoice.lines %}
+                                    {# A note has no amount to show here. #}
+                                    {% for item in invoice.lines|filter(l => not l.note) %}
                                         <div class="line-item-row">
                                             <span class="line-item-desc">{{ item.description|striptags|u.truncate(40, '...') }}</span>
                                             <span class="line-item-amount">{{ item.total|formatCurrency(invoice.client.currency) }}</span>

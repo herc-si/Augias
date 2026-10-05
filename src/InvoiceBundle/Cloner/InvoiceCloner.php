@@ -132,6 +132,8 @@ final readonly class InvoiceCloner
             $invoiceLine->setDisbursement($line->isDisbursement());
             $invoiceLine->setSupplyType($line->getSupplyType());
             $invoiceLine->setUnit($line->getUnit());
+            $invoiceLine->setNote($line->isNote());
+            $invoiceLine->setPosition($line->getPosition());
 
             $invoiceLine->getTaxes()->clear();
             foreach ($line->getTaxes() as $sourceLineTax) {

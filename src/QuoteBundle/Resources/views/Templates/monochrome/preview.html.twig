@@ -49,11 +49,18 @@
                 </thead>
                 <tbody>
                     {% for line in quote.lines %}
-                        <tr style="border-bottom: 1px solid #e0d8c8;">
-                            <td class="doc-lines-description">{{ line.description|nl2br }}</td>
-                            <td class="text-muted text-end" data-label="{{ 'quote.item.heading.qty'|trans }} × {{ 'quote.item.heading.price'|trans }}">{{ line|line_quantity }} × {{ line.price|formatCurrency(currency) }}</td>
-                            <td class="text-end fw-bold" data-label="{{ 'quote.item.heading.total'|trans }}">{{ line.total|formatCurrency(currency) }}</td>
-                        </tr>
+                        {% if line.note|default(false) %}
+                            {# A line of text only: a heading over the lines that follow. #}
+                            <tr style="border-bottom: 1px solid #e0d8c8;">
+                                <td class="doc-lines-note" colspan="3"><strong>{{ line.description|nl2br }}</strong></td>
+                            </tr>
+                        {% else %}
+                            <tr style="border-bottom: 1px solid #e0d8c8;">
+                                <td class="doc-lines-description">{{ line.description|nl2br }}</td>
+                                <td class="text-muted text-end" data-label="{{ 'quote.item.heading.qty'|trans }} × {{ 'quote.item.heading.price'|trans }}">{{ line|line_quantity }} × {{ line.price|formatCurrency(currency) }}</td>
+                                <td class="text-end fw-bold" data-label="{{ 'quote.item.heading.total'|trans }}">{{ line.total|formatCurrency(currency) }}</td>
+                            </tr>
+                        {% endif %}
                     {% endfor %}
                 </tbody>
             </table>

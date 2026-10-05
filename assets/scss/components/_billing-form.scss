@@ -1835,3 +1835,42 @@
         transform: translateY(-1px);
     }
 }
+
+// A line of text only: a heading over the lines that follow. It spans the
+// price, quantity, tax and total columns it has no use for, on a phone too.
+
+.billing-item-row.billing-item-note {
+
+    .column-description {
+        grid-column: 1 / -2;
+
+        textarea {
+            min-height: 38px;
+            font-weight: var(--swp-font-semibold);
+        }
+    }
+
+    @media (width <= 900px) {
+        grid-template-areas:
+            'desc desc'
+            'actions actions';
+    }
+}
+
+// Up, down and remove, stacked in the narrow actions column.
+
+.billing-item-row .column-actions .line-order-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+
+    @media (width <= 900px) {
+        flex-direction: row;
+    }
+
+    .btn {
+        padding: 2px;
+        line-height: 1;
+    }
+}

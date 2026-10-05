@@ -61,11 +61,18 @@
                 </thead>
                 <tbody>
                     {% for line in invoice.feeLines %}
-                        <tr style="border-bottom: 1px solid #f1eada;">
-                            <td class="doc-lines-description">{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
-                            <td class="text-end text-muted" data-label="{{ 'invoice.item.heading.qty'|trans }}">{{ line|line_quantity }}</td>
-                            <td class="text-end fw-bold" data-label="{{ 'invoice.item.heading.total'|trans }}">{{ line.total|formatCurrency(currency) }}</td>
-                        </tr>
+                        {% if line.note|default(false) %}
+                            {# A line of text only: a heading over the lines that follow. #}
+                            <tr style="border-bottom: 1px solid #f1eada;">
+                                <td class="doc-lines-note" colspan="3"><strong>{{ line.description|nl2br }}</strong></td>
+                            </tr>
+                        {% else %}
+                            <tr style="border-bottom: 1px solid #f1eada;">
+                                <td class="doc-lines-description">{{ line.description|nl2br }}{% if line.disbursement %} <span class="badge bg-secondary-lt">{{ 'invoice.item.disbursement.badge'|trans }}</span>{% endif %}</td>
+                                <td class="text-end text-muted" data-label="{{ 'invoice.item.heading.qty'|trans }}">{{ line|line_quantity }}</td>
+                                <td class="text-end fw-bold" data-label="{{ 'invoice.item.heading.total'|trans }}">{{ line.total|formatCurrency(currency) }}</td>
+                            </tr>
+                        {% endif %}
                     {% endfor %}
                 </tbody>
             </table>

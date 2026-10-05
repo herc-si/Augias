@@ -1392,6 +1392,11 @@ datagrid:
     select_row: 'Select row'
     selected: selected
 delete_client: 'Delete Client'
+document_line:
+    add_note: 'Add a note'
+    move_down: 'Move the line down'
+    move_up: 'Move the line up'
+    note_placeholder: 'Note or heading, such as “Phase 2 — Development”'
 edit_client: 'Edit Party'
 einvoicing:
     account:
