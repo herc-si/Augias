@@ -236,7 +236,11 @@ final class SubscriptionEndRetentionTest extends KernelTestCase
 
     private function retention(MockClock $clock): SubscriptionEndRetention
     {
-        return new SubscriptionEndRetention($this->em(), $this->closure($clock), $clock, self::getContainer()->get(CoveredSubscriptionProvider::class));
+        // Only the SaaS kernel has it; PHPStan reads the self-hosted container.
+        // @phpstan-ignore symfonyContainer.serviceNotFound
+        $coverage = self::getContainer()->get(CoveredSubscriptionProvider::class);
+
+        return new SubscriptionEndRetention($this->em(), $this->closure($clock), $clock, $coverage);
     }
 
     private function closure(MockClock $clock): CompanyClosure
