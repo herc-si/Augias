@@ -1,5 +1,5 @@
 <html><body>
-<div class="form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="ClientForm" data-live-url-value="/_components/ClientForm" data-live-props-value='{"formData":null,"formName":"client","client":{"name":"","isClient":"1","isSupplier":null,"website":"","currencyCode":"","contacts":[{"firstName":"","lastName":"","email":"","customFields":{"additional_email":"","phone":"","mobile":""}}],"addresses":[{"street1":"","street2":"","city":"","state":"","zip":"","country":""}],"siret":"","siren":"","vatNumber":"","otherTaxIdentifiers":[],"customFields":[],"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="ClientForm" data-live-url-value="/_components/ClientForm" data-live-props-value='{"formData":null,"registryQuery":"","formName":"client","client":{"name":"","isClient":"1","isSupplier":null,"website":"","currencyCode":"","contacts":[{"firstName":"","lastName":"","email":"","customFields":{"additional_email":"","phone":"","mobile":""}}],"addresses":[{"street1":"","street2":"","city":"","state":"","zip":"","country":""}],"siret":"","siren":"","vatNumber":"","otherTaxIdentifiers":[],"customFields":[],"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
     <form name="client" method="post" data-model="on(change)|*" data-action="live#action:prevent" data-live-action-param="save" class="client-form">
 
     
@@ -63,6 +63,12 @@
 
                 <div class="section-content">
                     <div class="form-grid">
+                                                <div class="form-field form-field-wide company-registry-search">
+                            <label class="form-label" for="client-registry-query">Search the company register</label>
+                            <input type="search" id="client-registry-query" class="form-control" data-model="debounce(400)|registryQuery" value="" placeholder="Company name or SIREN" autocomplete="off">
+                            <small class="form-hint text-muted">Name, SIREN or SIRET: the name, identifiers and head office address are filled in from the official French company register.</small>
+                                                                                </div>
+
                         <div class="form-field form-field-wide">
                             <div class="mb-3">    
             <label class="control-label form-label" for="client_name">Name</label><input type="text" id="client_name" name="client[name]" maxlength="125" placeholder="Acme Corporation" aria-describedby="client_name_help" class="form-control"><div class="form-text text-muted mb-0" id="client_name_help">For an individual, leave this empty: it'll be filled in from the contact's name below.</div>

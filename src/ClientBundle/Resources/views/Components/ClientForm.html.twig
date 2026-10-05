@@ -73,6 +73,28 @@
 
                 <div class="section-content">
                     <div class="form-grid">
+                        {# The French register: a name or a SIREN fills in the name, the
+                         # identifiers and the head office address. See CompanyRegistry. #}
+                        <div class="form-field form-field-wide company-registry-search">
+                            <label class="form-label" for="client-registry-query">{{ 'client.registry.label'|trans }}</label>
+                            <input type="search" id="client-registry-query" class="form-control" data-model="debounce(400)|registryQuery" value="{{ registryQuery }}" placeholder="{{ 'client.registry.placeholder'|trans }}" autocomplete="off">
+                            <small class="form-hint text-muted">{{ 'client.registry.help'|trans }}</small>
+                            {% set registryResults = this.registryResults %}
+                            {% if registryResults is not empty %}
+                                <div class="list-group mt-2">
+                                    {% for company in registryResults %}
+                                        <button type="button" class="list-group-item list-group-item-action text-start" data-action="live#action" data-live-action-param="fillFromRegistry" data-live-siren-param="{{ company.siren }}">
+                                            <span class="fw-semibold">{{ company.name }}</span>
+                                            {% if not company.active %}<span class="badge bg-secondary-lt ms-1">{{ 'client.registry.closed'|trans }}</span>{% endif %}
+                                            <span class="d-block text-muted small">SIREN {{ company.siren }}{% if company.zip or company.city %} — {{ company.zip }} {{ company.city }}{% endif %}</span>
+                                        </button>
+                                    {% endfor %}
+                                </div>
+                            {% elseif registryQuery|length >= 3 %}
+                                <small class="d-block text-muted mt-2">{{ 'client.registry.none'|trans }}</small>
+                            {% endif %}
+                        </div>
+
                         <div class="form-field form-field-wide">
                             {{ form_row(form.name, {
                                 attr: {

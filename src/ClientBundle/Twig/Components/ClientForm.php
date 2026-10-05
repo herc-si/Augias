@@ -17,6 +17,8 @@ use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\ClientBundle\Form\Type\ClientType;
+use Augias\ClientBundle\Registry\CompanyRegistry;
+use Augias\ClientBundle\Registry\RegistryCompany;
 use Augias\CoreBundle\Enum\CustomFieldTarget;
 use Augias\CoreBundle\Service\CustomField\CustomFieldFormWriter;
 use Doctrine\ORM\EntityManagerInterface;
@@ -25,6 +27,7 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
+use Symfony\UX\LiveComponent\Attribute\LiveArg;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 use Symfony\UX\LiveComponent\LiveCollectionTrait;
@@ -41,10 +44,60 @@ class ClientForm extends AbstractController
     #[LiveProp(fieldName: 'formData')]
     public ?Client $client = null;
 
+    /**
+     * What is typed in the register search: a name, a SIREN or a SIRET.
+     */
+    #[LiveProp(writable: true)]
+    public string $registryQuery = '';
+
     public function __construct(
         private readonly EntityManagerInterface $manager,
         private readonly CustomFieldFormWriter $customFieldFormWriter,
+        private readonly CompanyRegistry $registry,
     ) {
+    }
+
+    /**
+     * The companies of the French register matching the search.
+     *
+     * @return list<RegistryCompany>
+     */
+    public function getRegistryResults(): array
+    {
+        return $this->registry->search($this->registryQuery);
+    }
+
+    /**
+     * Fills in the client from the register: its name, SIREN, SIRET (the
+     * head office's), VAT number and head office address. What was typed in
+     * the other fields stays.
+     */
+    #[LiveAction]
+    public function fillFromRegistry(#[LiveArg] string $siren): void
+    {
+        $company = $this->registry->find($siren);
+        $this->registryQuery = '';
+
+        if (! $company instanceof RegistryCompany) {
+            return;
+        }
+
+        $this->formValues['name'] = $company->name;
+        $this->formValues['siren'] = $company->siren;
+        $this->formValues['siret'] = $company->siret ?? '';
+        $this->formValues['vatNumber'] = $company->vatNumber();
+
+        $addresses = is_array($this->formValues['addresses'] ?? null) ? $this->formValues['addresses'] : [];
+        $key = array_key_first($addresses) ?? 0;
+        $address = is_array($addresses[$key] ?? null) ? $addresses[$key] : [];
+        $addresses[$key] = array_merge($address, [
+            'street1' => $company->street1 ?? '',
+            'street2' => $company->street2 ?? '',
+            'zip' => $company->zip ?? '',
+            'city' => $company->city ?? '',
+            'country' => 'FR',
+        ]);
+        $this->formValues['addresses'] = $addresses;
     }
 
     /**
