@@ -13,9 +13,18 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle;
 
+use Augias\SaasBundle\DependencyInjection\Compiler\PlanFeatureCachePass;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 final class AugiasSaasBundle extends Bundle
 {
     public const NAMESPACE = __NAMESPACE__;
+
+    public function build(ContainerBuilder $container): void
+    {
+        parent::build($container);
+
+        $container->addCompilerPass(new PlanFeatureCachePass());
+    }
 }

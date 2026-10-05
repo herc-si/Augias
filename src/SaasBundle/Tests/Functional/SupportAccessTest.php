@@ -426,6 +426,13 @@ final class SupportAccessTest extends WebTestCase
         $visitor->visit('/clients/')
             ->assertOn('/support/ended')
             ->assertSee('Support session ended');
+
+        // The page's way out works: it was a plain link, refused (403).
+        $logout = $visitor->crawler()->filter('input[name=_csrf_token]')->attr('value');
+        $visitor
+            ->interceptRedirects()
+            ->post('/logout', ['body' => ['_csrf_token' => $logout]])
+            ->assertRedirected();
     }
 
     public function testTheDoorClosesByItselfWhenTimeRunsOut(): void

@@ -15,6 +15,13 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 return App::config([
     'framework' => [
-        'cache' => [],
+        'cache' => [
+            'pools' => [
+                // The plan rights, for one request: see PlanFeatureCachePass.
+                'cache.plan_features' => [
+                    'adapter' => 'cache.adapter.array',
+                ],
+            ],
+        ],
     ],
 ]);
