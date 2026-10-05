@@ -72,6 +72,7 @@ final class RoutePermissionMap
         '_user_forgot_password_check_email' => null,
         '_user_password_reset' => null,
         '_verify_email' => null,
+        '_verify_email_resend' => null,
         '_view_invoice_disbursement_note_external' => null,
         '_view_invoice_external' => null,
         '_view_invoice_receipt_external' => null,

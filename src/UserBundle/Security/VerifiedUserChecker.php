@@ -26,10 +26,9 @@ use Symfony\Component\Security\Core\User\UserInterface;
  *
  * Wired onto the stateless API and MCP firewalls so that, on hosted
  * (`saas_enabled`) deployments, an unverified user is hard-blocked from those
- * channels regardless of a valid token. Unverified web users are NOT blocked —
- * they keep full login and are nudged by the email-verification banner while the
- * verification gate ({@see \Augias\CoreBundle\Contracts\EmailVerificationGateInterface})
- * limits sensitive actions such as sending invoices.
+ * channels regardless of a valid token. On the web they sign in, and see only
+ * the page asking them to verify, with a new link on offer, since 05/10/2026
+ * ({@see \Augias\SaasBundle\EventSubscriber\UnverifiedEmailListener}).
  *
  * @see \Augias\UserBundle\Tests\Security\VerifiedUserCheckerTest
  */
