@@ -27,6 +27,7 @@ use Augias\NotificationBundle\Notification\NotificationManager;
 use Augias\NotificationBundle\Notification\NotificationMessage;
 use Augias\NotificationBundle\Test\Factory\UserNotificationFactory;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Test\Factory\UserFactory;
 use Hamcrest\Core\IsEqual;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
@@ -633,6 +634,48 @@ final class NotificationManagerTest extends KernelTestCase
             ->never();
 
         $this->withoutCompanyFilter(fn () => $this->notificationManager->sendNotification($class));
+    }
+
+    /**
+     * What goes wrong reaches whoever can bill without their asking — and
+     * stops reaching them once they say so.
+     */
+    public function testANotificationOnByDefaultReachesWhoeverCanBillUntilTheySayOtherwise(): void
+    {
+        $em = self::getContainer()->get('doctrine.orm.entity_manager');
+        $company = $em->find(Company::class, $this->company->getId());
+        self::assertInstanceOf(Company::class, $company);
+
+        $members = [];
+
+        foreach (['told' => CompanyRole::Billing, 'declined' => CompanyRole::Admin, 'accountant' => CompanyRole::Accountant] as $who => $role) {
+            $members[$who] = new User()->setEmail($who . '@example.com')->setPassword('password');
+            $members[$who]->addCompany($company, $role);
+            $em->persist($members[$who]);
+        }
+
+        $declined = new UserNotification()->setEvent('on_by_default')->setEmail(false)->setUser($members['declined']);
+        $declined->setCompany($company);
+        $em->persist($declined);
+        $em->flush();
+
+        $class = new #[AsNotification(name: 'on_by_default', defaultOn: true)] class(['company' => $company]) extends NotificationMessage {
+            public function getTextContent(Environment $twig): string
+            {
+                return '';
+            }
+        };
+
+        $channels = [];
+        $this->notifier
+            ->allows('send')
+            ->andReturnUsing(static function (NotificationMessage $message, Recipient $recipient) use (&$channels): void {
+                $channels[$recipient->getEmail()] = $message->getChannels($recipient);
+            });
+
+        $this->notificationManager->sendNotification($class);
+
+        self::assertSame(['declined@example.com' => [], 'told@example.com' => ['email']], $channels);
     }
 
     private function subscribe(Company $company): string

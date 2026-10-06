@@ -1564,6 +1564,30 @@ einvoicing:
             simulate_failure: 'Simulate a failed submission'
             simulated_failure: 'Simulated failure (test provider)'
             tagline: 'Simulate electronic-invoice submissions without any external call, for testing.'
+    status_code:
+        api_accepted: 'Accepted by the client''s platform'
+        api_acknowledged: 'Acknowledged by the client''s platform'
+        api_invalid: 'Invalid'
+        api_received: 'Received'
+        api_rejected: 'Rejected by the client''s platform'
+        api_sent: 'Sent'
+        api_uploaded: 'Uploaded to the platform'
+        api_validated: 'Validated'
+        fr_200: 'Submitted'
+        fr_201: 'Sent by the platform'
+        fr_202: 'Received by the client''s platform'
+        fr_203: 'Made available to the client'
+        fr_204: 'Acknowledged'
+        fr_205: 'Approved'
+        fr_206: 'Partly approved'
+        fr_207: 'Disputed'
+        fr_208: 'On hold'
+        fr_209: 'Completed'
+        fr_210: 'Refused'
+        fr_211: 'Payment sent'
+        fr_212: 'Payment received'
+        fr_213: 'Rejected'
+        fr_501: 'Inadmissible'
     super_pdp:
         connect:
             connected: 'SUPER PDP account connected.'
@@ -1586,6 +1610,7 @@ einvoicing:
         no_active_provider: 'No active electronic-invoicing provider is configured.'
         success: 'The electronic invoice was sent successfully.'
     view:
+        history: 'History'
         title: 'Electronic Invoicing'
 email: Email
 email_verification:

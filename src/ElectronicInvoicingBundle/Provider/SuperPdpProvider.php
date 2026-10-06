@@ -87,6 +87,16 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      */
     public const string DISPUTED_STATUS_CODE = 'fr:207';
 
+    /**
+     * fr:208 Suspended — the client's platform waits for something missing
+     * (an order reference, an attachment); the invoice is completed (fr:209)
+     * or refused once it comes.
+     */
+    public const string SUSPENDED_STATUS_CODE = 'fr:208';
+
+    /** fr:212 Payment received: the last thing that happens to an invoice. */
+    public const string PAID_STATUS_CODE = 'fr:212';
+
     public function __construct(
         private FacturXInvoiceBuilder $documentBuilder,
         private SuperPdpClient $client,
@@ -278,6 +288,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
             in_array($statusCode, self::REJECTED_STATUS_CODES, true) => ElectronicInvoiceProcessingStatus::Rejected,
             in_array($statusCode, self::ACCEPTED_STATUS_CODES, true) => ElectronicInvoiceProcessingStatus::Accepted,
             self::DISPUTED_STATUS_CODE === $statusCode => ElectronicInvoiceProcessingStatus::Disputed,
+            self::SUSPENDED_STATUS_CODE === $statusCode => ElectronicInvoiceProcessingStatus::Suspended,
             default => ElectronicInvoiceProcessingStatus::Pending,
         };
     }

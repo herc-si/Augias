@@ -667,6 +667,23 @@
                                     </div>
                                     <div class="text-muted small text-nowrap">{{ submission.created|format_datetime('medium', 'short') }}</div>
                                 </div>
+                                {% if submission.events|length > 0 %}
+                                    <ol class="list-unstyled small border-start ps-3 ms-1 mb-0" aria-label="{{ 'einvoicing.view.history'|trans }}">
+                                        {% for event in submission.events %}
+                                            <li class="{{ loop.last ? '' : 'mb-2' }}">
+                                                <div class="d-flex justify-content-between gap-2">
+                                                    <span class="{{ loop.last ? 'fw-medium' : '' }}">{{ einvoicing_status_code_label(event.statusCode) }}</span>
+                                                    <time class="text-muted text-nowrap" datetime="{{ event.occurredAt|date('c') }}">{{ event.occurredAt|format_datetime('short', 'short') }}</time>
+                                                </div>
+                                                {% if event.reason or event.note %}
+                                                    <div class="text-muted">
+                                                        {{ einvoicing_reason_label(event.reason) }}{% if event.reason and event.note %} — {% endif %}{{ event.note }}
+                                                    </div>
+                                                {% endif %}
+                                            </li>
+                                        {% endfor %}
+                                    </ol>
+                                {% endif %}
                             {% endfor %}
                         </div>
                     </div>

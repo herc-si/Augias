@@ -18,8 +18,10 @@ use Augias\CoreBundle\Traits\FlashErrorTrait;
 use Augias\NotificationBundle\Attribute\AsNotification;
 use Augias\NotificationBundle\Configurator\ConfiguratorInterface;
 use Augias\NotificationBundle\Entity\TransportSetting;
+use Augias\NotificationBundle\Entity\UserNotification;
 use Augias\NotificationBundle\Exception\InvalidNotificationMessageException;
 use Augias\NotificationBundle\Repository\UserNotificationRepository;
+use Augias\UserBundle\Enum\CompanyPermission;
 use Psr\Log\LoggerInterface;
 use ReflectionObject;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
@@ -64,9 +66,11 @@ class NotificationManager
             ));
         }
 
-        $event = $attributes[0]->getArguments()['name'] ?? null;
+        $notification = $attributes[0]->newInstance();
+        $event = $notification->name;
+        $company = $this->companyOf($message);
 
-        $userNotifications = $this->userNotificationRepository->findSubscribers($event, $this->companyOf($message));
+        $userNotifications = $this->userNotificationRepository->findSubscribers($event, $company);
 
         if ($userNotifications === null) {
             $this->logger->error('Notification not sent: no company to send it within', ['event' => $event]);
@@ -124,8 +128,50 @@ class NotificationManager
             }
         }
 
+        if ($notification->defaultOn && $company instanceof Company) {
+            $this->sendByDefault($message, $event, $company, $userNotifications, $failures);
+        }
+
         foreach (array_keys($failures) as $failure) {
             $this->addFlashError($failure);
+        }
+    }
+
+    /**
+     * By e-mail to the members of $company who can bill and have not said
+     * what they want for this event — saying anything, even nothing, is
+     * a row, and a row is theirs to keep.
+     *
+     * @param list<UserNotification> $subscribers
+     * @param array<string, true>    $failures
+     */
+    private function sendByDefault(NotificationMessage $message, string $event, Company $company, array $subscribers, array &$failures): void
+    {
+        $decided = [];
+
+        foreach ($subscribers as $subscriber) {
+            $decided[$subscriber->getUser()->getEmail()] = true;
+        }
+
+        foreach ($company->getMemberships() as $membership) {
+            $user = $membership->getUser();
+
+            if (isset($decided[$user->getEmail()]) || ! $membership->getRole()->can(CompanyPermission::BillingWrite)) {
+                continue;
+            }
+
+            $message->channels(['email']);
+
+            try {
+                $this->notifier->send($message, new Recipient($user->getEmail(), (string) $user->getMobile()));
+            } catch (TransportExceptionInterface | HandlerFailedException $e) {
+                $this->logger->error('Failed to send notification: ' . $e->getMessage(), [
+                    'exception' => $e,
+                    'event' => $event,
+                ]);
+
+                $failures[$this->trans('notification.send_failed')] = true;
+            }
         }
     }
 

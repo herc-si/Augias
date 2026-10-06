@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Repository;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
+use DateTimeImmutable;
 use Doctrine\Persistence\ManagerRegistry;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
 
@@ -28,23 +29,36 @@ final class ElectronicInvoiceSubmissionRepository extends EntityRepository
     }
 
     /**
-     * Successful submissions for $provider that have not yet reached one of
-     * $terminalStatusCodes — candidates for a status-polling command. Meant
-     * to run with the company filter disabled, so it must be called across
-     * every company, not just the current one.
+     * Successful submissions for $provider still worth asking about: not yet
+     * at one of $finalStatusCodes, and — once at one of $settledStatusCodes,
+     * where only the payment is still to come — sent since $followedSince.
+     * Meant to run with the company filter disabled, so it must be called
+     * across every company, not just the current one.
      *
-     * @param list<string> $terminalStatusCodes
+     * @param list<string> $finalStatusCodes
+     * @param list<string> $settledStatusCodes
      *
      * @return list<ElectronicInvoiceSubmission>
      */
-    public function findPendingByProvider(string $provider, array $terminalStatusCodes): array
+    public function findPendingByProvider(string $provider, array $finalStatusCodes, array $settledStatusCodes = [], ?DateTimeImmutable $followedSince = null): array
     {
-        return $this->createQueryBuilder('s')
+        $qb = $this->createQueryBuilder('s')
             ->andWhere('s.provider = :provider')
             ->andWhere('s.success = true')
-            ->andWhere('s.statusCode IS NULL OR s.statusCode NOT IN (:terminalStatusCodes)')
             ->setParameter('provider', $provider)
-            ->setParameter('terminalStatusCodes', $terminalStatusCodes)
+            ->setParameter('finalStatusCodes', $finalStatusCodes);
+
+        if ([] === $settledStatusCodes || ! $followedSince instanceof DateTimeImmutable) {
+            return $qb
+                ->andWhere('s.statusCode IS NULL OR s.statusCode NOT IN (:finalStatusCodes)')
+                ->getQuery()
+                ->getResult();
+        }
+
+        return $qb
+            ->andWhere('s.statusCode IS NULL OR (s.statusCode NOT IN (:finalStatusCodes) AND (s.statusCode NOT IN (:settledStatusCodes) OR s.created >= :followedSince))')
+            ->setParameter('settledStatusCodes', $settledStatusCodes)
+            ->setParameter('followedSince', $followedSince)
             ->getQuery()
             ->getResult();
     }

@@ -17,6 +17,9 @@ use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceSubmissionRepository;
 use Augias\InvoiceBundle\Entity\Invoice;
+use DateTimeImmutable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
@@ -70,6 +73,18 @@ class ElectronicInvoiceSubmission
      */
     #[ORM\Column(name: 'status_code', type: Types::STRING, length: 64, nullable: true)]
     private ?string $statusCode = null;
+
+    /**
+     * @var Collection<int, ElectronicInvoiceSubmissionEvent>
+     */
+    #[ORM\OneToMany(targetEntity: ElectronicInvoiceSubmissionEvent::class, mappedBy: 'submission', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['occurredAt' => 'ASC', 'providerEventId' => 'ASC'])]
+    private Collection $events;
+
+    public function __construct()
+    {
+        $this->events = new ArrayCollection();
+    }
 
     public function getId(): ?Ulid
     {
@@ -146,5 +161,30 @@ class ElectronicInvoiceSubmission
         $this->statusCode = $statusCode;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, ElectronicInvoiceSubmissionEvent>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    /**
+     * Records a step of the invoice's life, unless it already is — a poll
+     * reads every event each time. True when it was new.
+     */
+    public function recordEvent(string $providerEventId, string $statusCode, DateTimeImmutable $occurredAt, ?string $reason = null, ?string $note = null): bool
+    {
+        foreach ($this->events as $event) {
+            if ($event->getProviderEventId() === $providerEventId) {
+                return false;
+            }
+        }
+
+        $this->events->add(new ElectronicInvoiceSubmissionEvent($this, $providerEventId, $statusCode, $occurredAt, $reason, $note));
+
+        return true;
     }
 }

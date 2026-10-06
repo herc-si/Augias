@@ -13,7 +13,11 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Provider\SuperPdp;
 
+use Augias\ElectronicInvoicingBundle\Entity\SuperPdpAuthorization;
+use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoicingAlerts;
 use Augias\ElectronicInvoicingBundle\Repository\SuperPdpAuthorizationRepository;
+use DateTimeImmutable;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Clock\ClockInterface;
 use Symfony\Component\Uid\Ulid;
@@ -66,6 +70,7 @@ final readonly class SuperPdpAccessTokens
         private TokenCipher $cipher,
         private ClockInterface $clock,
         private LoggerInterface $logger,
+        private ElectronicInvoicingAlerts $alerts,
     ) {
     }
 
@@ -148,7 +153,7 @@ final readonly class SuperPdpAccessTokens
         if (null === $refreshToken || ! $this->application->isConfigured()) {
             // Sealed under another application secret, or the application is
             // gone from the configuration: nothing will refresh it.
-            $this->authorizations->markDisconnected($id, $now);
+            $this->disconnect($id, $now);
 
             throw self::disconnected();
         }
@@ -158,7 +163,7 @@ final readonly class SuperPdpAccessTokens
         } catch (SuperPdpApiException $e) {
             if ($e->isInvalidGrant()) {
                 $this->logger->warning('SUPER PDP refused the refresh token: the company has to connect again.', ['authorization' => (string) $id]);
-                $this->authorizations->markDisconnected($id, $now);
+                $this->disconnect($id, $now);
 
                 throw self::disconnected($e);
             }
@@ -222,6 +227,21 @@ final readonly class SuperPdpAccessTokens
         }
 
         return $this->cipher->decrypt($tokens['accessToken']);
+    }
+
+    /**
+     * Nothing will refresh the tokens any more: forgotten, and the company
+     * told — until it connects again, nothing is sent or received.
+     */
+    private function disconnect(Ulid $id, DateTimeImmutable $now): void
+    {
+        $this->authorizations->markDisconnected($id, $now);
+
+        $authorization = $this->authorizations->find($id);
+
+        if ($authorization instanceof SuperPdpAuthorization) {
+            $this->alerts->raise($authorization->getCompany(), ElectronicInvoicingProblem::Disconnected);
+        }
     }
 
     private static function disconnected(?SuperPdpApiException $previous = null): SuperPdpApiException

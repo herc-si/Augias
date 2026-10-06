@@ -15,6 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Manager;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
+use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -46,6 +47,7 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
         private ElectronicInvoiceProviderRegistry $registry,
         private ElectronicInvoiceProviderSettingRepository $settingRepository,
         private EntityManagerInterface $entityManager,
+        private ElectronicInvoicingAlerts $alerts,
     ) {
     }
 
@@ -90,6 +92,12 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
 
         $this->entityManager->persist($submission);
         $this->entityManager->flush();
+
+        // Sent from cron for a recurring invoice, or for a SaaS subscription,
+        // nobody is there to see the page say so.
+        if (! $result->success) {
+            $this->alerts->raise($invoice->getCompany(), ElectronicInvoicingProblem::SendFailed, $invoice, $result->message);
+        }
 
         return $submission;
     }

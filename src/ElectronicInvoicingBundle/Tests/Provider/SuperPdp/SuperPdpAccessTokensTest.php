@@ -14,6 +14,9 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdp;
 
 use Augias\ElectronicInvoicingBundle\Entity\SuperPdpAuthorization;
+use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoicingAlerts;
+use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoicingProblemNotification;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpAccessTokens;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApiException;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApplication;
@@ -21,8 +24,12 @@ use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\TokenCipher;
 use Augias\ElectronicInvoicingBundle\Repository\SuperPdpAuthorizationRepository;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use Augias\NotificationBundle\Notification\NotificationManager;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Mockery as M;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -38,8 +45,11 @@ use function parse_str;
 final class SuperPdpAccessTokensTest extends KernelTestCase
 {
     use EnsureApplicationInstalled;
+    use MockeryPHPUnitIntegration;
 
     private MockClock $clock;
+
+    private NotificationManager & MockInterface $notifications;
 
     private TokenCipher $cipher;
 
@@ -52,6 +62,7 @@ final class SuperPdpAccessTokensTest extends KernelTestCase
     {
         $this->clock = new MockClock('2026-10-01 12:00:00 UTC');
         $this->cipher = new TokenCipher('test-secret');
+        $this->notifications = M::spy(NotificationManager::class);
     }
 
     public function testOwnCredentialsGetAFreshTokenEveryTime(): void
@@ -133,6 +144,13 @@ final class SuperPdpAccessTokensTest extends KernelTestCase
 
         self::assertFalse($tokens->isConnected(['authorization' => (string) $id]));
         self::assertNull($this->repository()->readTokens($id)['refreshToken'] ?? null);
+
+        // Nothing goes out or comes in until it is connected again: the company is told.
+        $this->notifications->shouldHaveReceived('sendNotification')
+            ->once()
+            ->with(M::on(fn (mixed $notification): bool => $notification instanceof ElectronicInvoicingProblemNotification
+                && ElectronicInvoicingProblem::Disconnected === $notification->getParameters()['problem']
+                && $this->company->getId()->equals($notification->getParameters()['company']->getId())));
     }
 
     /**
@@ -157,6 +175,7 @@ final class SuperPdpAccessTokensTest extends KernelTestCase
         self::assertTrue($tokens->isConnected(['authorization' => (string) $id]));
         self::assertSame('new-access', $tokens->accessToken(['authorization' => (string) $id]));
         self::assertSame('stored-refresh', $this->sent[0]['refresh_token']);
+        $this->notifications->shouldNotHaveReceived('sendNotification');
     }
 
     /**
@@ -221,6 +240,7 @@ final class SuperPdpAccessTokensTest extends KernelTestCase
             $this->cipher,
             $this->clock,
             new NullLogger(),
+            new ElectronicInvoicingAlerts($this->notifications, new NullLogger()),
         );
     }
 

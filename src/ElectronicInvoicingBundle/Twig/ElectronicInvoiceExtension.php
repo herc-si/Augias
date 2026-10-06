@@ -15,17 +15,21 @@ namespace Augias\ElectronicInvoicingBundle\Twig;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
+use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Override;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Environment;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 use function is_callable;
+use function str_replace;
 
 final class ElectronicInvoiceExtension extends AbstractExtension
 {
     public function __construct(
         private readonly ElectronicInvoiceProviderRegistry $registry,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -38,6 +42,8 @@ final class ElectronicInvoiceExtension extends AbstractExtension
         return [
             new TwigFunction('einvoicing_processing_status', $this->resolveProcessingStatus(...)),
             new TwigFunction('einvoicing_latest_status_label', $this->renderLatestStatusLabel(...), ['is_safe' => ['html'], 'needs_environment' => true]),
+            new TwigFunction('einvoicing_status_code_label', $this->statusCodeLabel(...)),
+            new TwigFunction('einvoicing_reason_label', $this->reasonLabel(...)),
         ];
     }
 
@@ -65,6 +71,32 @@ final class ElectronicInvoiceExtension extends AbstractExtension
         $label = $environment->getFunction('einvoicing_status_label')?->getCallable();
 
         return is_callable($label) ? (string) $label($environment, $this->resolveProcessingStatus($latest)) : '';
+    }
+
+    /**
+     * A step of the invoice's life said in words — « Mise à disposition » for
+     * fr:203 — or the platform's own code, for one Augias does not know yet.
+     */
+    public function statusCodeLabel(string $statusCode): string
+    {
+        $key = 'einvoicing.status_code.' . str_replace(':', '_', $statusCode);
+        $label = $this->translator->trans($key);
+
+        return $label === $key ? $statusCode : $label;
+    }
+
+    /**
+     * A reason code (MDT-113) in words, or as it came.
+     */
+    public function reasonLabel(?string $reason): ?string
+    {
+        if (null === $reason) {
+            return null;
+        }
+
+        $known = ResponseReason::tryFrom($reason);
+
+        return $known instanceof ResponseReason ? $this->translator->trans($known->translationKey()) : $reason;
     }
 
     /**

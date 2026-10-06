@@ -16,6 +16,7 @@ namespace Augias\UserBundle\Tests\Functional;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\NotificationBundle\Entity\TransportSetting;
 use Augias\NotificationBundle\Entity\UserNotification;
+use Augias\UserBundle\Form\Type\NotificationSettingType;
 use Augias\UserBundle\Test\Factory\UserFactory;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -41,6 +42,29 @@ final class NotificationPreferencesTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Notification Preferences');
+    }
+
+    /**
+     * Sent unless the user says otherwise, an alert shows ticked — so that
+     * saving the page untouched does not turn it off.
+     */
+    public function testANotificationOnByDefaultShowsTicked(): void
+    {
+        $user = UserFactory::createOne([
+            'companies' => [$this->company],
+            'email' => 'test@example.com',
+        ]);
+
+        self::ensureKernelShutdown();
+        $client = self::createClient();
+        $client->loginUser($user);
+
+        $crawler = $client->request(Request::METHOD_GET, '/profile/notifications');
+
+        $email = sprintf('input[name$="[%%s][transports][]"][value="%s"]', NotificationSettingType::EMAIL_NOTIFICATION);
+
+        self::assertSame('checked', $crawler->filter(sprintf($email, 'electronic_invoicing_problem'))->attr('checked'));
+        self::assertNull($crawler->filter(sprintf($email, 'client_create'))->attr('checked'));
     }
 
     public function testNotificationPreferencesDisplaysIntegrationManagementCard(): void

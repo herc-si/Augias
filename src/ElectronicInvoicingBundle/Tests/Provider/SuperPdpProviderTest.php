@@ -275,7 +275,7 @@ final class SuperPdpProviderTest extends KernelTestCase
         yield 'api:rejected' => ['api:rejected', ElectronicInvoiceProcessingStatus::Rejected];
         yield 'api:invalid' => ['api:invalid', ElectronicInvoiceProcessingStatus::Rejected];
         yield 'fr:201 Sent (non-terminal)' => ['fr:201', ElectronicInvoiceProcessingStatus::Pending];
-        yield 'fr:208 On hold (non-terminal)' => ['fr:208', ElectronicInvoiceProcessingStatus::Pending];
+        yield 'fr:208 On hold: the company has something to provide' => ['fr:208', ElectronicInvoiceProcessingStatus::Suspended];
     }
 
     #[DataProvider('statusCodeProvider')]
