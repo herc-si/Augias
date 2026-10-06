@@ -1610,6 +1610,11 @@ einvoicing:
         only_disbursements: "Facture électronique non envoyée : elle ne porte que des débours. Ils figurent sur la note de débours, qui n'est pas une facture et ne passe pas par la plateforme."
         no_active_provider: "Aucun fournisseur de facturation électronique actif n'est configuré."
         success: "La facture électronique a été envoyée avec succès."
+    sync:
+        button: 'Synchroniser maintenant'
+        done: 'Synchronisé : %received% facture(s) reçue(s), %refreshed% statut(s) mis à jour, %failed% erreur(s).'
+        invalid_token: 'La page a expiré : rechargez-la, puis synchronisez à nouveau.'
+        too_soon: "Déjà synchronisé il y a moins d'une minute : réessayez dans un instant."
     view:
         history: 'Historique'
         title: 'Facturation électronique'
