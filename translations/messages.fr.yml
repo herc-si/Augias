@@ -1554,6 +1554,7 @@ einvoicing:
             disconnected: "SUPER PDP ne reconnaît plus l'accès donné à Augias : l'accord a été retiré, ou le compte est resté inutilisé un an. Reconnectez le compte pour reprendre l'envoi."
             display_name: 'SUPER PDP'
             needs_review: "SUPER PDP n'a pas encore vérifié l'identité de l'entreprise : son support examine le compte. Aucune facture ne peut partir d'ici là."
+            receiver_unreachable: "Le client n'est pas joignable par la facturation électronique à l'adresse de sa fiche : personne n'y reçoit de facture. Vérifiez son SIREN et son « Adresse électronique » (celle de l'annuaire, par exemple 0225:123456789_12345), puis renvoyez la facture."
             verification_failed: "SUPER PDP a refusé de lier ces identifiants à l'entreprise : aucune facture ne peut partir. Contactez son support."
             missing_credentials: "L'identifiant client et la clé secrète SUPER PDP doivent être configurés."
             tagline: 'Envoyez des factures Factur-X via SUPER PDP, une Plateforme Agréée (PA/PDP) française.'

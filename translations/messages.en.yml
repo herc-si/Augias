@@ -1554,6 +1554,7 @@ einvoicing:
             disconnected: 'SUPER PDP no longer recognises the access given to Augias: consent was withdrawn, or the account went unused for a year. Connect the account again to resume sending.'
             display_name: 'SUPER PDP'
             needs_review: 'SUPER PDP has not verified the company''s identity yet: its support is reviewing the account. No invoice can be sent until then.'
+            receiver_unreachable: "The client cannot be reached by electronic invoicing at the address on their record: nobody receives invoices there. Check their SIREN and their \"Electronic address\" (the one in the directory, e.g. 0225:123456789_12345), then send the invoice again."
             verification_failed: 'SUPER PDP refused to link these credentials to the company: no invoice can be sent. Contact their support.'
             missing_credentials: 'The SUPER PDP client ID and client secret must be configured.'
             tagline: 'Send Factur-X invoices through SUPER PDP, a French Plateforme Agréée (PA/PDP).'

@@ -108,6 +108,32 @@ final class SuperPdpProviderTest extends KernelTestCase
     }
 
     /**
+     * Nobody on the network at the client's address: said so, and where to
+     * look — not the platform's Peppol document identifiers.
+     */
+    public function testSendExplainsThatTheClientCannotBeReachedAtItsAddress(): void
+    {
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
+            static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token', 'expires_in' => 3600])),
+            static fn (): MockResponse => new MockResponse((string) json_encode(['data' => []])),
+            static fn (): MockResponse => new MockResponse((string) json_encode(['data' => []])),
+            // As SUPER PDP answered on the test instance, 06/10/2026.
+            static fn (): MockResponse => new MockResponse(
+                (string) json_encode(['code' => 1, 'http_status_code' => 400, 'message' => 'pre-check: receiver address <0225:000000001> does not accept this document <busdox-docid-qns::urn:peppol:doctype:pdf+xml##urn:cen.eu:en16931:2017#conformant#urn:peppol:france:billing:Factur-X:1.0::D22B>:<{{ } urn:peppol:france:billing:regulated cenbii-procid-ubl}>']),
+                ['http_code' => 400],
+            ),
+        ]));
+
+        $result = self::getContainer()->get(SuperPdpProvider::class)->send($this->createEligibleInvoice(), [
+            'client_id' => 'id',
+            'client_secret' => 'secret',
+        ]);
+
+        self::assertFalse($result->success);
+        self::assertSame('einvoicing.provider.super_pdp.receiver_unreachable', $result->message);
+    }
+
+    /**
      * An unverified account is refused everywhere with a bare 403. The user is
      * told why, not shown the platform's message.
      */

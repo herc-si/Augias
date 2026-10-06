@@ -214,6 +214,14 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      */
     private function forbiddenReason(array $config, SuperPdpApiException $e): string
     {
+        // The Peppol network has no one at the client's address for an
+        // e-invoice: "pre-check: receiver address <0225:000000001> does not
+        // accept this document <busdox-docid-qns::…>" (test instance,
+        // 06/10/2026) — a bare SIREN the directory does not know.
+        if (str_contains($e->getMessage(), 'does not accept this document')) {
+            return 'einvoicing.provider.super_pdp.receiver_unreachable';
+        }
+
         if (! $e->isForbidden()) {
             return $e->getMessage();
         }
