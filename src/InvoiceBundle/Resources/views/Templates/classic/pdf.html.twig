@@ -70,7 +70,6 @@
     </tbody>
 </table>
 
-{{ inv.totals_block(invoice, currency) }}
-{{ inv.terms_block(invoice) }}
+{{ inv.closing_block(invoice, currency, {}, {}) }}
 {{ inv.payment_cta(invoice) }}
 {% endblock %}

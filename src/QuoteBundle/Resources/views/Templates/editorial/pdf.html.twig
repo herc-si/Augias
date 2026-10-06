@@ -67,6 +67,5 @@
 </table>
 
 <div class="editorial-marker" style="margin-bottom: 12px; text-align: right;">IV. {{ 'quote.total'|trans }}</div>
-{{ q.totals_block(quote, currency, {totalBg: '#f5ebd9', totalColor: '#94704a', totalLabelColor: '#1a1a1a', mono: 'Georgia, serif'}) }}
-{{ q.terms_block(quote, {labelColor: '#94704a', borderColor: '#e8dcc4'}) }}
+{{ q.closing_block(quote, currency, {totalBg: '#f5ebd9', totalColor: '#94704a', totalLabelColor: '#1a1a1a', mono: 'Georgia, serif'}, {labelColor: '#94704a', borderColor: '#e8dcc4'}) }}
 {% endblock %}

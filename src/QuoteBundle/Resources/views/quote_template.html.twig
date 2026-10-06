@@ -200,7 +200,7 @@
                                         </div>
                                         {% if quote.discount.type is not empty %}
                                             <div class="ext-doc-totals-row">
-                                                <div class="ext-doc-totals-label">{{ 'quote.discount'|trans }}</div>
+                                                <div class="ext-doc-totals-label">{{ discount_label(quote) }}</div>
                                                 <div class="ext-doc-totals-value text-success">-{{ discount(quote)|formatCurrency(currency) }}</div>
                                             </div>
                                         {% endif %}

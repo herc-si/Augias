@@ -97,13 +97,37 @@ final class TemplatesRenderingTest extends KernelTestCase
             // PDF and preview render every line item and the company logo —
             // assert both surface so a regression that drops
             // `{% for line in invoice.lines %}` or the logo block is caught.
-            'pdf' => $this->assertChannelContains($output, ['</html>', 'Sample line item', 'data:image/png;base64', 'Discount', '-$150.00']),
-            'preview' => $this->assertChannelContains($output, ['Sample line item', 'data:image/png;base64', 'Discount', '-$150.00']),
+            'pdf' => $this->assertChannelContains($output, ['</html>', 'Sample line item', 'data:image/png;base64', 'Discount (10%)', '-$150.00']),
+            'preview' => $this->assertChannelContains($output, ['Sample line item', 'data:image/png;base64', 'Discount (10%)', '-$150.00']),
             // Email is a summary (totals only, no per-line breakdown), so we
             // verify the schema.org payload + the displayed total instead.
             'email' => $this->assertChannelContains($output, ['schema.org', '$1,500.00']),
             default => self::fail('Unknown channel: ' . $channel),
         };
+    }
+
+    /**
+     * Long terms in small print, two columns, kept with the totals: at full
+     * size they spilled alone onto a second page (06/10/2026). Monochrome
+     * lays its end out in a table cell of its own, and stays one page.
+     */
+    #[DataProvider('pdfTemplateProvider')]
+    public function testLongTermsStayWithTheTotals(string $slug): void
+    {
+        $invoice = $this->createFixtureInvoice();
+        $invoice->setTerms(implode("\n", array_map(static fn (int $i): string => sprintf('Clause %d.', $i), range(1, 10))));
+
+        $twig = self::getContainer()->get('twig');
+        self::assertInstanceOf(Environment::class, $twig);
+
+        $html = $twig->render(sprintf('@AugiasInvoice/Templates/%s/pdf.html.twig', $slug), ['invoice' => $invoice]);
+
+        if ('monochrome' !== $slug) {
+            self::assertStringContainsString('page-break-inside: avoid', $html);
+        }
+
+        // Split in two halves: the first clause in one column, the last in the other.
+        self::assertMatchesRegularExpression('#Clause 1\.<br />.*?Clause 5\.</td>\s*<td[^>]*>Clause 6\.#s', $html);
     }
 
     /**

@@ -15,7 +15,8 @@
 {% block body_attrs %} style="background-color: #fffaf3;"{% endblock %}
 
 {% block body %}
-<div style="padding: 16px 0;">
+{# No padding below: with a page just full, it made an empty second one. #}
+<div style="padding: 16px 0 0;">
     <table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
         <tr>
             <td style="vertical-align: middle;">
@@ -91,11 +92,6 @@
         </tbody>
     </table>
 
-    {{ q.totals_block(quote, currency, {totalBg: '#ecf7ee', totalColor: '#166534'}) }}
-    {{ q.terms_block(quote, {labelColor: '#94704a', borderColor: '#e8d7b8'}) }}
-
-    <div style="margin-top: 24px; font-family: Georgia, serif; font-size: 11pt; color: #475569; font-style: italic;">
-        {{ 'quote.template.friendly.signoff'|trans }}
-    </div>
+    {{ q.closing_block(quote, currency, {totalBg: '#ecf7ee', totalColor: '#166534'}, {labelColor: '#94704a', borderColor: '#e8d7b8'}, 'quote.template.friendly.signoff'|trans) }}
 </div>
 {% endblock %}

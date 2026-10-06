@@ -166,7 +166,7 @@
                             {% if invoice.hasDiscount %}
                                 <tr>
                                     <td colspan="{{ footerSpan }}" class="no-line text-right">
-                                        <strong>{{ 'invoice.discount'|trans }}</strong>
+                                        <strong>{{ discount_label(invoice) }}</strong>
                                     </td>
                                     <td class="no-line text-right">
                                         <span class="text-danger invoice-discount">

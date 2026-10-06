@@ -46,12 +46,14 @@ enum QuantityUnit: string
     }
 
     /**
-     * Written after the quantity on a document — "3 h", "2 j" — or nothing for
-     * a plain count, which reads as pieces without saying so.
+     * Written with the quantity on a document, in words and agreeing with it
+     * — "1 heure", "3 heures", "2 jours" — or nothing for a plain count, which
+     * reads as pieces without saying so. Abbreviated ("3 h", "2 j") until
+     * 06/10/2026: "affiche le mot complet".
      */
-    public function shortLabel(): ?string
+    public function quantityLabel(): ?string
     {
-        return self::Unit === $this ? null : 'catalog.unit_short.' . $this->value;
+        return self::Unit === $this ? null : 'catalog.unit_quantity.' . $this->value;
     }
 
     /**

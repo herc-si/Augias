@@ -87,7 +87,7 @@
 
     {% if invoice.discount.type is not empty %}
         {{ email.spacer('xs') }}
-        {{ email.info_row('invoice.discount'|trans({}, 'email'), '-' ~ discount(invoice)|formatCurrency(invoice.client.currency)) }}
+        {{ email.info_row(discount_label(invoice, 'email'), '-' ~ discount(invoice)|formatCurrency(invoice.client.currency)) }}
     {% endif %}
 
     {% set _tb = tax_breakdown(invoice) %}

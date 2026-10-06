@@ -14,10 +14,13 @@ declare(strict_types=1);
 namespace Augias\CoreBundle\Twig\Extension;
 
 use Augias\CoreBundle\Enum\QuantityUnit;
+use NumberFormatter;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Twig\Attribute\AsTwigFilter;
 use function is_array;
+use function is_numeric;
 use function method_exists;
+use function str_replace;
 
 /**
  * `line|line_quantity`: a document line's quantity with what it counts —
@@ -44,10 +47,21 @@ final readonly class LineQuantityExtension
             return (string) ($line['qty'] ?? '');
         }
 
+        // A BigNumber on the entities: its string is what it always printed.
         $quantity = method_exists($line, 'getQty') ? (string) $line->getQty() : '';
         $unit = method_exists($line, 'getUnit') ? $line->getUnit() : null;
-        $short = $unit instanceof QuantityUnit ? $unit->shortLabel() : null;
+        $label = $unit instanceof QuantityUnit ? $unit->quantityLabel() : null;
 
-        return null === $short ? $quantity : $quantity . ' ' . $this->translator->trans($short);
+        if (null === $label || ! is_numeric($quantity)) {
+            return $quantity;
+        }
+
+        // "1,5 heure": the number as the reader writes it, the word agreeing with it.
+        $number = new NumberFormatter($this->translator->getLocale(), NumberFormatter::DECIMAL);
+        $number->setAttribute(NumberFormatter::MAX_FRACTION_DIGITS, 3);
+
+        // Bound by a no-break space: in a narrow column, "12,5" and "heures"
+        // were set on two lines.
+        return str_replace(' ', "\u{00A0}", $this->translator->trans($label, ['%count%' => (float) $quantity, '%quantity%' => $number->format((float) $quantity)]));
     }
 }

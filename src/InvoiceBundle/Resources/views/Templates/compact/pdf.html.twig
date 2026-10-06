@@ -74,7 +74,6 @@
     </tbody>
 </table>
 
-{{ inv.totals_block(invoice, currency, {totalBg: '#1e293b', totalColor: '#ffffff', totalLabelColor: '#e2e8f0', balanceBg: '#1e293b', balanceColor: '#fbbf24', balanceLabelColor: '#e2e8f0'}) }}
-{{ inv.terms_block(invoice) }}
+{{ inv.closing_block(invoice, currency, {totalBg: '#1e293b', totalColor: '#ffffff', totalLabelColor: '#e2e8f0', balanceBg: '#1e293b', balanceColor: '#fbbf24', balanceLabelColor: '#e2e8f0'}, {}) }}
 {{ inv.payment_cta(invoice) }}
 {% endblock %}

@@ -276,6 +276,9 @@
 {# ============================================================================
    TOTALS SUMMARY
 ============================================================================ #}
+{# The end of the document kept on one page, as in every design: apart, the
+   terms were left alone on the next page, or the totals cut (06/10/2026). #}
+<table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; page-break-inside: avoid;"><tr><td style="padding: 0;">
 <div class="totals-wrapper">
     <table class="totals-table" cellpadding="0" cellspacing="0" style="width: 280px; border-collapse: collapse; margin-left: auto;">
         {# Subtotal #}
@@ -293,7 +296,7 @@
         {% if invoice.discount.type is not empty %}
             <tr class="discount-row">
                 <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
-                    {{ 'invoice.discount'|trans }}
+                    {{ discount_label(invoice) }}
                 </td>
                 <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #ef4444;">
                     -{{ discount(invoice)|formatCurrency(currency) }}
@@ -470,16 +473,8 @@
     <div style="margin-top: 12px; font-size: 8pt; color: #64748b; line-height: 1.5;">{{ disbursement_note_reference(invoice) }}</div>
 {% endif %}
 
-{% if invoice.terms is not empty %}
-    <div class="terms-section" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-        <div class="terms-title" style="font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 8px;">
-            {{ 'invoice.terms'|trans }}
-        </div>
-        <div class="terms-content" style="font-size: 9pt; color: #475569; line-height: 1.6;">
-            {{ invoice.terms|nl2br }}
-        </div>
-    </div>
-{% endif %}
+{{ inv.terms_block(invoice) }}
+</td></tr></table>
 
 </body>
 </html>

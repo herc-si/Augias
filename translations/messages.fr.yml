@@ -578,14 +578,14 @@ catalog:
         metre: "Mètre"
         month: "Mois"
         unit: "Unité"
-    unit_short:
-        day: 'j'
-        flat_rate: 'forfait'
-        hour: 'h'
-        kilogram: 'kg'
-        litre: 'L'
-        metre: 'm'
-        month: 'mois'
+    unit_quantity:
+        day: '%quantity% jour|%quantity% jours'
+        flat_rate: '%quantity% forfait|%quantity% forfaits'
+        hour: '%quantity% heure|%quantity% heures'
+        kilogram: '%quantity% kilogramme|%quantity% kilogrammes'
+        litre: '%quantity% litre|%quantity% litres'
+        metre: '%quantity% mètre|%quantity% mètres'
+        month: '%quantity% mois|%quantity% mois'
 category:
     constraint:
         at_least_one_usage: 'Choisissez au moins un endroit où cette catégorie peut servir.'

@@ -326,7 +326,7 @@
 
                         {% if discount(quote).isPositive() %}
                             <div class="totals-row totals-row-discount">
-                                <span class="totals-label">{{ 'quote.discount'|trans }}</span>
+                                <span class="totals-label">{{ discount_label(quote) }}</span>
                                 <span class="totals-value">-{{ discount(quote)|formatCurrency(currency) }}</span>
                             </div>
                         {% endif %}
