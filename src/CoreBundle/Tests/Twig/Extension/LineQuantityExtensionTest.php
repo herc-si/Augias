@@ -34,9 +34,14 @@ final class LineQuantityExtensionTest extends KernelTestCase
         $translator->setLocale('fr_FR');
         $extension = new LineQuantityExtension($translator);
 
-        self::assertSame('3 h', $extension->lineQuantity(new Line()->setQty(3)->setUnit(QuantityUnit::Hour)));
-        self::assertSame('2 j', $extension->lineQuantity(new QuoteLine()->setQty(2)->setUnit(QuantityUnit::Day)));
-        self::assertSame('1 forfait', $extension->lineQuantity(new Line()->setQty(1)->setUnit(QuantityUnit::FlatRate)));
+        // In words, agreeing with the number ("affiche le mot complet", 06/10/2026).
+        self::assertSame("3\u{00A0}heures", $extension->lineQuantity(new Line()->setQty(3)->setUnit(QuantityUnit::Hour)));
+        self::assertSame("1\u{00A0}heure", $extension->lineQuantity(new Line()->setQty(1)->setUnit(QuantityUnit::Hour)));
+        self::assertSame("1,5\u{00A0}heure", $extension->lineQuantity(new Line()->setQty('1.5')->setUnit(QuantityUnit::Hour)));
+        self::assertSame("2\u{00A0}jours", $extension->lineQuantity(new QuoteLine()->setQty(2)->setUnit(QuantityUnit::Day)));
+        self::assertSame("1\u{00A0}forfait", $extension->lineQuantity(new Line()->setQty(1)->setUnit(QuantityUnit::FlatRate)));
+        self::assertSame("2\u{00A0}forfaits", $extension->lineQuantity(new Line()->setQty(2)->setUnit(QuantityUnit::FlatRate)));
+        self::assertSame("3\u{00A0}mois", $extension->lineQuantity(new Line()->setQty(3)->setUnit(QuantityUnit::Month)));
     }
 
     public function testAPlainCountReadsAsBefore(): void

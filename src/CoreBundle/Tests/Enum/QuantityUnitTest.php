@@ -43,9 +43,9 @@ final class QuantityUnitTest extends TestCase
         ], $codes);
     }
 
-    public function testAPlainCountHasNoShortLabel(): void
+    public function testAPlainCountHasNoWordAfterIt(): void
     {
-        self::assertNull(QuantityUnit::Unit->shortLabel());
-        self::assertSame('catalog.unit_short.hour', QuantityUnit::Hour->shortLabel());
+        self::assertNull(QuantityUnit::Unit->quantityLabel());
+        self::assertSame('catalog.unit_quantity.hour', QuantityUnit::Hour->quantityLabel());
     }
 }
