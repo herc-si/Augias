@@ -138,7 +138,16 @@
 
                 <div class="billing-items-body">
                     {# Empty State #}
-                    {% if form.lines|length == 0 %}
+                    {% if form.lines|length == 0 and not this.canAddLines %}
+                        {# No line before the client: its currency and taxes price them. #}
+                        <div class="empty">
+                            <div class="empty-icon">
+                                {{ ux_icon('tabler:user', {width: 32, height: 32}) }}
+                            </div>
+                            <p class="empty-title">{{ 'document_line.client_first_title'|trans }}</p>
+                            <p class="empty-subtitle text-secondary">{{ 'document_line.client_first'|trans }}</p>
+                        </div>
+                    {% elseif form.lines|length == 0 %}
                         <div class="empty">
                             <div class="empty-icon">
                                 {{ ux_icon('tabler:file-plus', {width: 32, height: 32}) }}
@@ -276,11 +285,14 @@
                     <div class="add-item-action d-flex align-items-center gap-2 flex-wrap">
                         {{ form_widget(form.lines.vars.button_add, {
                             label: 'quote.item.add'|trans,
-                            attr: {class: 'add-item-btn btn-sm'}
+                            attr: {class: 'add-item-btn btn-sm', disabled: not this.canAddLines}
                         }) }}
-                        <button type="button" class="btn btn-sm add-item-btn" data-action="live#action" data-live-action-param="addNote">
+                        <button type="button" class="btn btn-sm add-item-btn" data-action="live#action" data-live-action-param="addNote"{% if not this.canAddLines %} disabled{% endif %}>
                             {{ ux_icon('tabler:text-plus', {width: 16, height: 16}) }} {{ 'document_line.add_note'|trans }}
                         </button>
+                        {% if not this.canAddLines and form.lines|length > 0 %}
+                            <small class="text-muted">{{ 'document_line.client_first'|trans }}</small>
+                        {% endif %}
                     
                         {% set catalogProducts = this.catalogProducts %}
                         {% if catalogProducts is not empty %}
@@ -289,6 +301,7 @@
                                 data-model="catalogProductId"
                                 data-action="live#action"
                                 data-live-action-param="addFromCatalog"
+                                {% if not this.canAddLines %}disabled{% endif %}
                                 aria-label="{{ 'catalog.picker.label'|trans }}"
                             >
                                 <option value="">{{ 'catalog.picker.placeholder'|trans }}</option>

@@ -214,6 +214,10 @@ final class CreateInvoice extends AbstractController
     #[LiveAction]
     public function addFromCatalog(PropertyAccessorInterface $propertyAccessor): void
     {
+        if (! $this->canAddLines()) {
+            return;
+        }
+
         $productId = $this->catalogProductId;
         $this->catalogProductId = null;
 
@@ -234,7 +238,10 @@ final class CreateInvoice extends AbstractController
             $propertyAccessor->setValue($this->formValues, '[lines]', $lines);
         }
 
-        $index = $lines === [] ? 0 : max(array_keys($lines)) + 1;
+        // The empty line a document opens with is filled in rather than left
+        // above the entry, blank.
+        $blank = $this->lastBlankLine($lines);
+        $index = $blank ?? ($lines === [] ? 0 : max(array_keys($lines)) + 1);
 
         $line = [
             'description' => $this->catalogLineDescription($product),
@@ -254,6 +261,10 @@ final class CreateInvoice extends AbstractController
 
         if ($tax instanceof Tax) {
             $line['taxes'] = [['tax' => (string) $tax->getId()]];
+        }
+
+        if ($blank !== null && is_array($lines[$blank])) {
+            $line = [...$lines[$blank], ...$line];
         }
 
         $propertyAccessor->setValue($this->formValues, sprintf('[lines][%d]', $index), $line);
@@ -502,12 +513,24 @@ final class CreateInvoice extends AbstractController
             return false;
         }
 
-        // Check client data based on mode
+        return $this->hasClient();
+    }
+
+    public function canAddLines(): bool
+    {
+        return $this->hasClient();
+    }
+
+    /**
+     * Whether the client is known: picked, or typed in as a new one.
+     */
+    private function hasClient(): bool
+    {
         if ($this->dto->clientMode === InvoiceClientMode::Existing) {
-            return $this->dto->client instanceof Client;
+            return $this->dto->client instanceof Client || ($this->formValues['client'] ?? '') !== '';
         }
 
-        // NewClient mode - need inline data
+        // A new client, typed in on the form.
         return $this->dto->hasInlineClientData();
     }
 

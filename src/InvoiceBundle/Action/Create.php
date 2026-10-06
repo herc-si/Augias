@@ -87,8 +87,11 @@ final class Create extends AbstractController
         // Set default invoice date to today
         $dto->invoiceDate = CarbonImmutable::now();
 
-        // Add one empty line item by default
-        $dto->lines->add(new Line());
+        // One empty line to start with, once the client is known: before, the
+        // form asks for it first. See ManagesNoteLines::openTheFirstLineOnceTheClientIsKnown().
+        if ($client instanceof Client) {
+            $dto->lines->add(new Line());
+        }
 
         // Contact auto-selection is handled by the LiveComponent's initializeContacts() hook
 

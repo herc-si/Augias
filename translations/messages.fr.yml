@@ -1400,6 +1400,8 @@ datagrid:
 delete_client: 'Supprimer le client'
 document_line:
     add_note: 'Ajouter une note'
+    client_first: 'Les lignes se chiffrent dans la devise et avec les taxes du client : choisissez-le ci-dessus pour pouvoir en ajouter.'
+    client_first_title: 'Choisissez d''abord le client'
     move_down: 'Descendre la ligne'
     move_up: 'Monter la ligne'
     note_placeholder: 'Note ou intertitre, par exemple « Phase 2 — Développement »'

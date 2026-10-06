@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Augias\InvoiceBundle\Action\CreditNote;
 
 use Augias\InvoiceBundle\DTO\CreditNoteFormDTO;
-use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Manager\CreditNoteFormManager;
 use Carbon\CarbonImmutable;
@@ -46,7 +45,8 @@ final readonly class Create
         } else {
             $dto = new CreditNoteFormDTO();
             $dto->creditNoteDate = CarbonImmutable::now();
-            $dto->lines->add(new CreditNoteLine());
+            // No line yet: the first one opens once the client is chosen,
+            // see ManagesNoteLines::openTheFirstLineOnceTheClientIsKnown().
         }
 
         return ['dto' => $dto, 'isEdit' => false, 'creditNote' => null];

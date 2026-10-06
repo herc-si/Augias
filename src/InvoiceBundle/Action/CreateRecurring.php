@@ -79,7 +79,11 @@ final class CreateRecurring extends AbstractController
         }
 
         $invoice = new RecurringInvoice();
-        $invoice->addLine(new RecurringInvoiceLine());
+
+        // The first line waits for the client, see ManagesNoteLines.
+        if ($client instanceof Client) {
+            $invoice->addLine(new RecurringInvoiceLine());
+        }
         $invoice->setClient($client);
 
         // Auto-select all client contacts

@@ -93,20 +93,20 @@
                 </div>
 
                 <div class="billing-items-body">
-                                                                <div class="empty">
+                                                                                        <div class="empty">
                             <div class="empty-icon">
-                                <svg viewbox="0 0 24 24" fill="currentColor" width="32" height="32" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M14 3v4a1 1 0 0 0 1 1h4"></path><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2m-5-10v6m-3-3h6"></path></g></svg>
+                                <svg viewbox="0 0 24 24" fill="currentColor" width="32" height="32" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0-8 0M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"></path></svg>
                             </div>
-                            <p class="empty-title">No items yet</p>
-                            <p class="empty-subtitle text-secondary">Add your first item to get started</p>
+                            <p class="empty-title">Choose the client first</p>
+                            <p class="empty-subtitle text-secondary">The lines are priced in the client's currency and taxes: choose it above to add some.</p>
                         </div>
                     
                                         <div class="add-item-action d-flex align-items-center gap-2 flex-wrap">
-                        <button type="button" id="quote_lines_add" name="quote[lines][add]" data-action="live#action" data-live-action-param="addCollectionItem" data-live-name-param="quote[lines]" class="add-item-btn btn-sm btn">Add Item</button>
-                        <button type="button" class="btn btn-sm add-item-btn" data-action="live#action" data-live-action-param="addNote">
+                        <button type="button" id="quote_lines_add" name="quote[lines][add]" data-action="live#action" data-live-action-param="addCollectionItem" data-live-name-param="quote[lines]" class="add-item-btn btn-sm btn" disabled>Add Item</button>
+                        <button type="button" class="btn btn-sm add-item-btn" data-action="live#action" data-live-action-param="addNote" disabled>
                             <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 10H5m0-4h14m-5 8H5m0 4h6m7-3v6m-3-3h6"></path></svg> Add a note
                         </button>
-                    
+                                            
                                                                     </div>
                 </div>
 
