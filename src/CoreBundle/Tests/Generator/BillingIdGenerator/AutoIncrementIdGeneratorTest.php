@@ -114,4 +114,33 @@ final class AutoIncrementIdGeneratorTest extends KernelTestCase
 
         self::assertSame('102', $generator->generate(new Invoice(), ['field' => 'invoiceId', 'prefix' => 'INV-', 'suffix' => '-00']));
     }
+
+    /**
+     * A number from before the prefix was set — shorter than it, or not a
+     * number once it is cut off — says nothing about the next one. On
+     * PostgreSQL it made creating a quote a 500: "negative substring length
+     * not allowed", then "invalid input syntax for type numeric" (preprod,
+     * 06/10/2026).
+     */
+    public function testANumberFromAnotherSchemeIsLeftOut(): void
+    {
+        $client = ClientFactory::new([]);
+
+        InvoiceFactory::createOne(['client' => $client, 'invoiceId' => '7']);
+        InvoiceFactory::createOne(['client' => $client, 'invoiceId' => 'FACTURE-ABC']);
+        InvoiceFactory::createOne(['client' => $client, 'invoiceId' => 'DEV-2026-0004']);
+
+        $generator = new AutoIncrementIdGenerator(self::getContainer()->get('doctrine'));
+
+        self::assertSame('5', $generator->generate(new Invoice(), ['field' => 'invoiceId', 'prefix' => 'DEV-2026-', 'suffix' => '']));
+    }
+
+    public function testOnlyNumbersFromAnotherSchemeStartsAtOne(): void
+    {
+        InvoiceFactory::createOne(['client' => ClientFactory::new([]), 'invoiceId' => '7']);
+
+        $generator = new AutoIncrementIdGenerator(self::getContainer()->get('doctrine'));
+
+        self::assertSame('1', $generator->generate(new Invoice(), ['field' => 'invoiceId', 'prefix' => 'DEV-2026-', 'suffix' => '']));
+    }
 }
