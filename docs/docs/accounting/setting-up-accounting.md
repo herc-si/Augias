@@ -66,8 +66,18 @@ This does not apply if you are not liable for VAT (franchise en base), or if all
 - Every payment you record from now on writes itself into the right book. See [Your books](./your-books.md).
 - Turnover is compared with the limits of your regime once a day, and you are told the first time you approach or pass one. See [Declaring your turnover](./declaring-your-turnover.md).
 
+## Taking in documents from before
+
+Invoices, credit notes, payments and supplier invoices recorded in Augias *before* you set a regime are not in your books yet. While some from the current financial year are missing, the `Accounting` page says so and offers `Review and take in`. You can also open the page at any time with `Take in earlier documents`, at the bottom of the regime card.
+
+1. Pick the day to start from. It defaults to the first day of your current financial year. It cannot be on or before the date your books are locked to.
+2. Click `Show` to list the entries that would be added, with their date, book, document and amount.
+3. Click `Add these entries` to write them into your books.
+
+Each entry goes into the period its date falls in, as if it had been written on the day. Anything already in your books is left alone, so running it twice adds nothing.
+
 :::note
-Payments recorded *before* you set a regime are not written into the books retroactively. If you are switching to Augias part-way through a year, add the earlier receipts by hand — see [Adding an entry by hand](./your-books.md#adding-an-entry-by-hand).
+This only covers what was recorded in Augias. Money received outside it — before you started using Augias, or never entered here — still has to be added by hand: see [Adding an entry by hand](./your-books.md#adding-an-entry-by-hand).
 :::
 
 ## Related

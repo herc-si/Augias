@@ -35,6 +35,17 @@
             {% endif %}
         </twig:Ui:Card>
     {% else %}
+        {# Documents dated before the books were opened are in none of them:
+         # their turnover would be missing from every figure on this page. #}
+        {% if catchUp is defined and not catchUp.isEmpty and route_allowed('_accounting_catch_up') %}
+            <twig:Ui:Alert type="warning" icon="tabler:history">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 w-100">
+                    <span>{{ 'accounting.catch_up.notice'|trans({'%count%': catchUp.entries|length, '%date%': catchUp.from|format_date('long')}) }}</span>
+                    <a class="btn btn-sm btn-warning" href="{{ path('_accounting_catch_up') }}">{{ 'accounting.catch_up.review'|trans }}</a>
+                </div>
+            </twig:Ui:Alert>
+        {% endif %}
+
         <div class="row row-cards">
             <div class="col-lg-8">
                 {# Title and subtitle go through the header block rather than
@@ -218,6 +229,12 @@
                         <a class="btn btn-ghost" href="{{ path('_settings') }}">
                             {{ ux_icon('tabler:settings', {width: 18, height: 18}) }}
                             {{ 'accounting.setup.edit'|trans }}
+                        </a>
+                        {% endif %}
+                        {% if route_allowed('_accounting_catch_up') %}
+                        <a class="btn btn-ghost" href="{{ path('_accounting_catch_up') }}">
+                            {{ ux_icon('tabler:history', {width: 18, height: 18}) }}
+                            {{ 'accounting.catch_up.title'|trans }}
                         </a>
                         {% endif %}
                     </twig:block>

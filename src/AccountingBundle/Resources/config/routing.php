@@ -16,6 +16,7 @@ use Augias\AccountingBundle\Action\Bank\Import as BankImport;
 use Augias\AccountingBundle\Action\Bank\Index as BankIndex;
 use Augias\AccountingBundle\Action\Bank\Reconcile as BankReconcile;
 use Augias\AccountingBundle\Action\Book;
+use Augias\AccountingBundle\Action\CatchUp;
 use Augias\AccountingBundle\Action\ClosePeriod;
 use Augias\AccountingBundle\Action\CreatePeriod;
 use Augias\AccountingBundle\Action\Declaration\Index as DeclarationIndex;
@@ -35,6 +36,12 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->add('_accounting_index', '/')
         ->controller(Index::class)
         ->methods(['GET']);
+
+    // Documents dated before the books were opened, taken into them.
+    $routingConfigurator
+        ->add('_accounting_catch_up', '/catch-up')
+        ->controller(CatchUp::class)
+        ->methods(['GET', 'POST']);
 
     $routingConfigurator
         ->add('_accounting_fec', '/fec/{year}/{part}')
