@@ -491,10 +491,12 @@ bill:
             pay: "La facture ne peut pas être payée"
             reopen: "La facture ne peut pas être réouverte"
     view:
+        answer_supplier: 'Répondre au fournisseur'
         document: 'Voir la facture du fournisseur'
         balance: Solde
         details: 'Détails de la facture'
         net: 'HT'
+        supplier_answer: 'Réponse au fournisseur'
         tax: 'TVA'
         total: Total
 billing:
@@ -1515,6 +1517,8 @@ einvoicing:
         seller_name: "Fournisseur"
     incoming:
         menu: 'Factures reçues'
+        open: 'Voir les factures reçues'
+        panel_title: 'Facturation électronique'
         pending: "{0}Toutes les factures reçues ont été enregistrées|{1}1 facture reçue n'a pas pu être enregistrée automatiquement|]1,Inf[%count% factures reçues n'ont pas pu être enregistrées automatiquement"
         title: 'Factures reçues'
     marketplace:

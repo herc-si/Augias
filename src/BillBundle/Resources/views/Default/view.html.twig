@@ -144,6 +144,19 @@
                             {{ ux_icon('tabler:paperclip', {width: 16, height: 16}) }} {{ 'bill.view.document'|trans }}
                         </a>
                     {% endif %}
+                    {# Received electronically: the answer goes back to the supplier the same way. #}
+                    {% set receipt = bill.electronicInvoiceReceipt %}
+                    {% if receipt %}
+                        <div class="mt-3 pt-3 border-top">
+                            <span class="summary-label">{{ 'bill.view.supplier_answer'|trans }}</span>
+                            <p class="mb-2">{{ (receipt.response ? receipt.response.translationKey : 'einvoicing.response.none')|trans }}</p>
+                            {% if route_allowed('_einvoicing_incoming_respond') and (receipt.response is null or receipt.response.value == 'fr:207') %}
+                                <a class="btn btn-sm" href="{{ path('_einvoicing_incoming_respond', {'id': receipt.id, 'back': path('_bills_view', {'id': bill.id})}) }}">
+                                    {{ ux_icon('tabler:file-check', {width: 16, height: 16}) }} {{ 'bill.view.answer_supplier'|trans }}
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 

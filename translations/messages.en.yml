@@ -491,10 +491,12 @@ bill:
             pay: 'Bill cannot be paid'
             reopen: 'Bill cannot be re-opened'
     view:
+        answer_supplier: 'Answer the supplier'
         document: 'See the supplier''s invoice'
         balance: Balance
         details: 'Bill Details'
         net: 'Net'
+        supplier_answer: 'Answer to the supplier'
         tax: 'VAT'
         total: Total
 billing:
@@ -1515,6 +1517,8 @@ einvoicing:
         seller_name: "Supplier"
     incoming:
         menu: 'Received Invoices'
+        open: 'See the received invoices'
+        panel_title: 'Electronic invoicing'
         pending: "{0}All received invoices have been filed|{1}1 received invoice could not be filed automatically|]1,Inf[%count% received invoices could not be filed automatically"
         title: 'Received Invoices'
     marketplace:
