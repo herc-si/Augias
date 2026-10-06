@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\NotificationBundle\Tests;
 
+use Augias\CoreBundle\Entity\Company;
+use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use Augias\CoreBundle\Test\Traits\FakerTestTrait;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\NotificationBundle\Attribute\AsNotification;
@@ -569,5 +571,102 @@ final class NotificationManagerTest extends KernelTestCase
         self::assertCount(1, $flash);
         self::assertStringContainsString('Telegram "Perso"', $flash[0]);
         self::assertStringContainsString('chat not found', $flash[0]);
+    }
+
+    /**
+     * Run from cron, the company filter is off: the overdue invoice of one
+     * company was told to the users of every company who had asked to hear
+     * about it (found 06/10/2026).
+     */
+    public function testFromCronOnlyTheCompanyTheNotificationIsAboutIsTold(): void
+    {
+        $other = CompanyFactory::createOne(['name' => 'Other']);
+        $ours = $this->subscribe($this->company);
+        $theirs = $this->subscribe($other);
+
+        $about = new class($this->company) {
+            public function __construct(
+                private readonly Company $company
+            ) {
+            }
+
+            public function getCompany(): Company
+            {
+                return $this->company;
+            }
+        };
+
+        $class = new #[AsNotification(name: 'test_event')] class(['invoice' => $about]) extends NotificationMessage {
+            public function getTextContent(Environment $twig): string
+            {
+                return '';
+            }
+        };
+
+        $this->notifier
+            ->expects('send')
+            ->with($class, IsEqual::equalTo(new Recipient($ours, '')))
+            ->once();
+
+        $this->notifier
+            ->expects('send')
+            ->with($class, IsEqual::equalTo(new Recipient($theirs, '')))
+            ->never();
+
+        $this->withoutCompanyFilter(fn () => $this->notificationManager->sendNotification($class));
+    }
+
+    public function testFromCronANotificationAboutNoCompanyIsNotSent(): void
+    {
+        $this->subscribe($this->company);
+        $this->subscribe(CompanyFactory::createOne(['name' => 'Other']));
+
+        $class = new #[AsNotification(name: 'test_event')] class() extends NotificationMessage {
+            public function getTextContent(Environment $twig): string
+            {
+                return '';
+            }
+        };
+
+        $this->notifier
+            ->expects('send')
+            ->never();
+
+        $this->withoutCompanyFilter(fn () => $this->notificationManager->sendNotification($class));
+    }
+
+    private function subscribe(Company $company): string
+    {
+        $email = $this->getFaker()->unique()->email();
+
+        $user = new User()
+            ->setEmail($email)
+            ->setPassword('password');
+        $user->addCompany($company);
+
+        $userNotification = new UserNotification()
+            ->setEvent('test_event')
+            ->setEmail(true)
+            ->setUser($user);
+        $userNotification->setCompany($company);
+
+        $em = self::getContainer()->get('doctrine.orm.entity_manager');
+        $em->persist($user);
+        $em->persist($userNotification);
+        $em->flush();
+
+        return $email;
+    }
+
+    private function withoutCompanyFilter(callable $send): void
+    {
+        $filters = self::getContainer()->get('doctrine.orm.entity_manager')->getFilters();
+        $filters->disable('company');
+
+        try {
+            $send();
+        } finally {
+            $filters->enable('company');
+        }
     }
 }

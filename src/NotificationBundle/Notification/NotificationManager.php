@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\NotificationBundle\Notification;
 
+use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Traits\FlashErrorTrait;
 use Augias\NotificationBundle\Attribute\AsNotification;
 use Augias\NotificationBundle\Configurator\ConfiguratorInterface;
@@ -65,7 +66,14 @@ class NotificationManager
 
         $event = $attributes[0]->getArguments()['name'] ?? null;
 
-        $userNotifications = $this->userNotificationRepository->findBy(['event' => $event]);
+        $userNotifications = $this->userNotificationRepository->findSubscribers($event, $this->companyOf($message));
+
+        if ($userNotifications === null) {
+            $this->logger->error('Notification not sent: no company to send it within', ['event' => $event]);
+
+            return;
+        }
+
         /** @var array<string, true> $failures what to tell the user, once each */
         $failures = [];
 
@@ -119,6 +127,30 @@ class NotificationManager
         foreach (array_keys($failures) as $failure) {
             $this->addFlashError($failure);
         }
+    }
+
+    /**
+     * The company the notification is about, read from what it carries — an
+     * invoice, a client, a payment, an alert. Tasks run from cron have no
+     * company of their own: this is what keeps their notifications within one.
+     */
+    private function companyOf(NotificationMessage $message): ?Company
+    {
+        foreach ($message->getParameters() as $parameter) {
+            if ($parameter instanceof Company) {
+                return $parameter;
+            }
+
+            if (is_object($parameter) && method_exists($parameter, 'getCompany')) {
+                $company = $parameter->getCompany();
+
+                if ($company instanceof Company) {
+                    return $company;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**
