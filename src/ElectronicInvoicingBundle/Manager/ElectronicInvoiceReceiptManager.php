@@ -18,6 +18,7 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
+use Augias\ElectronicInvoicingBundle\Event\ElectronicInvoiceReceiptAnsweredEvent;
 use Augias\ElectronicInvoicingBundle\Event\ElectronicInvoiceReceiptImportedEvent;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceResponderInterface;
@@ -174,6 +175,8 @@ final readonly class ElectronicInvoiceReceiptManager implements ElectronicInvoic
         // never received is not an answer.
         $receipt->setStatusCode($response->value);
         $this->entityManager->flush();
+
+        $this->eventDispatcher->dispatch(new ElectronicInvoiceReceiptAnsweredEvent($receipt, $response));
     }
 
     /**

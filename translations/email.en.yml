@@ -43,6 +43,9 @@ einvoicing:
             heading: 'Electronic invoicing platform disconnected'
             message: 'The connection to the electronic invoicing platform was lost: no invoice is sent or received until the account is connected again. Reconnect it in the settings.'
         invoice_number: 'Invoice number'
+        payment_sent_failed:
+            heading: 'Payment not passed on to the supplier'
+            message: 'The payment of a purchase received through electronic invoicing could not be reported to its supplier ("payment sent" status). Augias tries again every hour; if it goes on, check the account in the settings.'
         payment_status_failed:
             heading: 'Payment not passed on'
             message: 'The payment of an invoice sent electronically could not be reported to the platform ("payment received" status). Augias tries again every hour; if it goes on, check the account in the settings.'

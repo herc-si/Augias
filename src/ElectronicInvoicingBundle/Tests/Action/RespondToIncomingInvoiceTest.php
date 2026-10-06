@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Tests\Action;
 
+use Augias\BillBundle\Entity\Bill;
+use Augias\BillBundle\Enum\BillStatus;
 use Augias\CoreBundle\Entity\Company;
 use Augias\ElectronicInvoicingBundle\Action\RespondToIncomingInvoice;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
@@ -42,6 +44,8 @@ final class RespondToIncomingInvoiceTest extends WebTestCase
 
     private EntityManagerInterface $entityManager;
 
+    private bool $platformUp = true;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -61,9 +65,9 @@ final class RespondToIncomingInvoiceTest extends WebTestCase
 
         // The platform takes whatever is sent; the answer is not over the network.
         self::getContainer()->set(SuperPdpClient::class, new SuperPdpClient(new MockHttpClient(
-            static fn (string $method, string $url): MockResponse => new MockResponse((string) json_encode(
-                str_ends_with($url, '/oauth2/token') ? ['access_token' => 'a-token'] : ['id' => 1],
-            )),
+            fn (string $method, string $url): MockResponse => str_ends_with($url, '/oauth2/token') || $this->platformUp
+                ? new MockResponse((string) json_encode(str_ends_with($url, '/oauth2/token') ? ['access_token' => 'a-token'] : ['id' => 1]))
+                : new MockResponse((string) json_encode(['message' => 'down']), ['http_code' => 503]),
         )));
     }
 
@@ -137,27 +141,70 @@ final class RespondToIncomingInvoiceTest extends WebTestCase
 
     /**
      * A received invoice becomes a purchase on its own, and nobody found the
-     * inbox's "…" menu: the purchase offers the answer, and comes back to it.
+     * inbox's "…" menu: the purchase offers the answer, already chosen, and
+     * comes back to it.
      */
     public function testAPurchaseReceivedElectronicallyIsAnsweredFromItsPage(): void
     {
-        $receipt = $this->receipt();
-
-        $this->client->request('GET', '/bills/create-from-receipt/' . $receipt->getId());
-        $purchase = (string) $this->client->getResponse()->headers->get('Location');
-        self::assertStringStartsWith('/bills/view/', $purchase);
+        $purchase = $this->purchase($receipt = $this->receipt());
 
         $crawler = $this->client->request('GET', $purchase);
         self::assertSelectorTextContains('body', 'No answer');
-        $this->client->click($crawler->selectLink('Answer the supplier')->link());
+        $this->client->click($crawler->selectLink('Accept the invoice')->link());
+
+        // Chosen in the menu: nothing left to pick.
+        $this->client->submit($this->client->getCrawler()->filter('form[name="einvoicing_receipt_response"]')->form());
+
+        self::assertResponseRedirects($purchase);
+        self::assertSame(ReceiptResponse::Accepted, $this->reload($receipt)->getResponse());
+    }
+
+    /**
+     * Received electronically, a purchase is cancelled by refusing it — the
+     * supplier hears of it — not by hand, and a refusal is final.
+     */
+    public function testRefusingAPurchaseCancelsIt(): void
+    {
+        $purchase = $this->purchase($receipt = $this->receipt());
+
+        $crawler = $this->client->request('GET', $purchase);
+        self::assertSelectorNotExists('a[href*="/action/cancel/"]');
+        $this->client->click($crawler->selectLink('Refuse the invoice (cancels the purchase)')->link());
 
         $form = $this->client->getCrawler()->filter('form[name="einvoicing_receipt_response"]')->form([
-            'einvoicing_receipt_response[response]' => ReceiptResponse::Accepted->value,
+            'einvoicing_receipt_response[reason]' => ResponseReason::Duplicate->value,
         ]);
         $this->client->submit($form);
 
         self::assertResponseRedirects($purchase);
-        self::assertSame(ReceiptResponse::Accepted, $this->reload($receipt)->getResponse());
+        self::assertSame(ReceiptResponse::Refused, $this->reload($receipt)->getResponse());
+        self::assertSame(BillStatus::Cancelled, $this->bill($receipt)->getStatus());
+
+        $this->client->request('GET', $purchase);
+        self::assertSelectorNotExists('a[href*="/action/reopen/"]');
+        self::assertSelectorNotExists('a[href*="/action/edit/"]');
+    }
+
+    /**
+     * The platform did not take the refusal: the supplier was told nothing,
+     * so the purchase stands.
+     */
+    public function testAPurchaseStandsWhenThePlatformDoesNotTakeTheRefusal(): void
+    {
+        $purchase = $this->purchase($receipt = $this->receipt());
+
+        $this->platformUp = false;
+
+        $this->client->request('GET', '/electronic-invoicing/incoming/respond/' . $receipt->getId() . '?response=fr:210&back=' . urlencode($purchase));
+        $form = $this->client->getCrawler()->filter('form[name="einvoicing_receipt_response"]')->form([
+            'einvoicing_receipt_response[reason]' => ResponseReason::Duplicate->value,
+        ]);
+        $this->client->submit($form);
+
+        // Shown again, with the platform's refusal: not sent back to the purchase.
+        self::assertFalse($this->client->getResponse()->isRedirect());
+        self::assertNull($this->reload($receipt)->getResponse());
+        self::assertNotSame(BillStatus::Cancelled, $this->bill($receipt)->getStatus());
     }
 
     public function testAnAnswerNeverSendsBackOutsideTheApplication(): void
@@ -171,6 +218,34 @@ final class RespondToIncomingInvoiceTest extends WebTestCase
         $this->client->submit($form);
 
         self::assertResponseRedirects('/electronic-invoicing/incoming');
+    }
+
+    /**
+     * The purchase the receipt became, as the import would make it: its page.
+     */
+    private function purchase(ElectronicInvoiceReceipt $receipt): string
+    {
+        $this->client->request('GET', '/bills/create-from-receipt/' . $receipt->getId());
+        $purchase = (string) $this->client->getResponse()->headers->get('Location');
+        self::assertStringStartsWith('/bills/view/', $purchase);
+
+        // Confirmed, as one waiting to be paid: a draft has nothing to cancel yet.
+        $bill = $this->bill($receipt);
+
+        if (BillStatus::Draft === $bill->getStatus()) {
+            $this->client->request('GET', '/bills/action/confirm/' . $bill->getId());
+        }
+
+        return $purchase;
+    }
+
+    private function bill(ElectronicInvoiceReceipt $receipt): Bill
+    {
+        $this->entityManager->clear();
+        $bill = $this->entityManager->getRepository(Bill::class)->findOneBy(['electronicInvoiceReceipt' => $receipt->getId()]);
+        self::assertInstanceOf(Bill::class, $bill);
+
+        return $bill;
     }
 
     private function receipt(): ElectronicInvoiceReceipt

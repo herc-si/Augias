@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Provider;
 
+use DateTimeImmutable;
 use RuntimeException;
 
 /**
@@ -55,4 +56,18 @@ interface ElectronicReporterInterface
      * @throws RuntimeException
      */
     public function reportPaymentReceived(array $config, string $invoiceReference, ReportedPayment $payment): array;
+
+    /**
+     * Tells the supplier of an invoice received through the provider that
+     * it was paid, and how much.
+     *
+     * @param array<string, mixed> $config
+     * @param string               $invoiceReference the provider's id for the invoice received
+     * @param string               $amount           in major units, "120.00"
+     *
+     * @return list<string> the provider's id for the status sent
+     *
+     * @throws RuntimeException
+     */
+    public function reportPaymentSent(array $config, string $invoiceReference, DateTimeImmutable $date, string $currency, string $amount): array;
 }

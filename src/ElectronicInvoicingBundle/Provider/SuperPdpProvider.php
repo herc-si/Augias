@@ -535,6 +535,29 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
     }
 
     /**
+     * fr:211 with the amount paid ("MPA"), as the sandbox took it on
+     * 06/10/2026. Once per payment.
+     *
+     * @param array<string, mixed> $config
+     *
+     * @throws SuperPdpApiException
+     */
+    public function reportPaymentSent(array $config, string $invoiceReference, DateTimeImmutable $date, string $currency, string $amount): array
+    {
+        return $this->report($config, fn (string $token): array => ['data' => [$this->client->createInvoiceEvent(
+            $token,
+            (int) $invoiceReference,
+            'fr:211',
+            reportedData: [[
+                'type_code' => 'MPA',
+                'amount' => $amount,
+                'currency_code' => $currency,
+                'date' => $date->format('Y-m-d'),
+            ]],
+        )]]);
+    }
+
+    /**
      * @param array<string, mixed>   $config
      * @param callable(string): array<string, mixed>            $call
      *

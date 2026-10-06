@@ -491,6 +491,10 @@ bill:
             pay: 'Bill cannot be paid'
             reopen: 'Bill cannot be re-opened'
     view:
+        answer:
+            '205': 'Accept the invoice'
+            '207': 'Dispute the invoice'
+            '210': 'Refuse the invoice (cancels the purchase)'
         answer_supplier: 'Answer the supplier'
         document: 'See the supplier''s invoice'
         balance: Balance

@@ -13,11 +13,17 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Tests\Manager;
 
+use Augias\BillBundle\Entity\Bill;
+use Augias\BillBundle\Enum\BillPaymentMethod;
+use Augias\BillBundle\Manager\BillManager;
+use Augias\BillBundle\Manager\BillPaymentManager;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
+use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicReport;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
+use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoicingAlerts;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicReportManager;
 use Augias\ElectronicInvoicingBundle\Manager\ReportDataBuilder;
@@ -37,6 +43,7 @@ use Augias\NotificationBundle\Notification\NotificationManager;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\SettingsBundle\SystemConfig;
+use Brick\Math\BigInteger;
 use DateTimeImmutable;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery as M;
@@ -166,6 +173,41 @@ final class ElectronicReportManagerTest extends KernelTestCase
         self::assertSame(['reported' => 0, 'failed' => 1], $manager->reportPending($this->company));
     }
 
+    /**
+     * A purchase received electronically and accepted, paid: the supplier is
+     * told (fr:211, amount "MPA" as the sandbox took it) — once.
+     */
+    public function testPayingAnAcceptedPurchaseTellsTheSupplier(): void
+    {
+        $bill = $this->purchase(ReceiptResponse::Accepted);
+        self::getContainer()->get(BillPaymentManager::class)->recordPayment($bill, BigInteger::of(12000), new DateTimeImmutable('today'), BillPaymentMethod::BankTransfer);
+
+        self::assertSame(['reported' => 1, 'failed' => 0], $this->manager()->reportPending($this->company));
+        self::assertSame(['reported' => 0, 'failed' => 0], $this->manager()->reportPending($this->company), 'Not twice.');
+
+        self::assertSame(747283, $this->lastEvent['invoice_id'] ?? null);
+        self::assertSame('fr:211', $this->lastEvent['status_code'] ?? null);
+        self::assertSame([[
+            'type_code' => 'MPA',
+            'amount' => '120.00',
+            'currency_code' => 'EUR',
+            'date' => new DateTimeImmutable('today')->format('Y-m-d'),
+        ]], $this->lastEvent['details'][0]['reported_data'] ?? null);
+    }
+
+    /**
+     * Disputed, or never answered, the invoice is not settled: its payment is
+     * not passed on.
+     */
+    public function testPayingAPurchaseNotAcceptedTellsNoOne(): void
+    {
+        $bill = $this->purchase(ReceiptResponse::Disputed);
+        self::getContainer()->get(BillPaymentManager::class)->recordPayment($bill, BigInteger::of(12000), new DateTimeImmutable('today'), BillPaymentMethod::BankTransfer);
+
+        self::assertSame(['reported' => 0, 'failed' => 0], $this->manager()->reportPending($this->company));
+        self::assertNull($this->lastEvent);
+    }
+
     public function testAPaymentOnAnInvoiceSentElectronicallyMarksItPaid(): void
     {
         self::getContainer()->get(SystemConfig::class)->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, '0');
@@ -283,6 +325,25 @@ final class ElectronicReportManagerTest extends KernelTestCase
         $entityManager->flush();
 
         return $invoice;
+    }
+
+    private function purchase(ReceiptResponse $answered): Bill
+    {
+        $receipt = new ElectronicInvoiceReceipt();
+        $receipt->setCompany($this->company)
+            ->setProvider('super_pdp')
+            ->setExternalReference('747283')
+            ->setInvoiceNumber('TRI-SVC-154004')
+            ->setSellerName('Tricatel')
+            ->setTotalAmount(BigInteger::of(12000))
+            ->setCurrencyCode('EUR')
+            ->setStatusCode($answered->value);
+
+        $entityManager = self::getContainer()->get('doctrine.orm.entity_manager');
+        $entityManager->persist($receipt);
+        $entityManager->flush();
+
+        return self::getContainer()->get(BillManager::class)->createFromReceipt($receipt);
     }
 
     private function manager(): ElectronicReportManager

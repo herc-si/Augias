@@ -40,6 +40,9 @@ enum ElectronicInvoicingProblem: string
     /** The payment of an invoice sent electronically could not be passed on (fr:212). */
     case PaymentStatusFailed = 'payment_status_failed';
 
+    /** A purchase received electronically was paid, and its supplier could not be told (fr:211). */
+    case PaymentSentFailed = 'payment_sent_failed';
+
     public function translationKey(string $part): string
     {
         return sprintf('einvoicing.notification_problem.%s.%s', $this->value, $part);

@@ -67,7 +67,9 @@ final readonly class RespondToIncomingInvoice
             return ['receipt' => $receipt, 'form' => null, 'back' => $back];
         }
 
-        $form = $this->formFactory->create(ReceiptResponseType::class, null, ['previous' => $receipt->getResponse()]);
+        // Chosen in the purchase's "Répondre au fournisseur" menu.
+        $chosen = ReceiptResponse::tryFrom((string) $request->query->get('response'));
+        $form = $this->formFactory->create(ReceiptResponseType::class, null === $chosen || $chosen === $receipt->getResponse() ? null : ['response' => $chosen], ['previous' => $receipt->getResponse()]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
