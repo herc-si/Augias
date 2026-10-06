@@ -172,7 +172,16 @@
                     {% if receipt %}
                         <div class="mt-3 pt-3 border-top">
                             <span class="summary-label">{{ 'bill.view.supplier_answer'|trans }}</span>
-                            <p class="mb-2">{{ (receipt.response ? receipt.response.translationKey : 'einvoicing.response.none')|trans }}</p>
+                            <p class="mb-1">
+                                {{ (receipt.response ? receipt.response.translationKey : 'einvoicing.response.none')|trans }}
+                                {% if receipt.respondedAt %}<span class="text-muted small">— {{ receipt.respondedAt|format_date('medium') }}</span>{% endif %}
+                            </p>
+                            {% if receipt.responseReason %}
+                                <p class="mb-1 small"><span class="text-muted">{{ 'einvoicing.response.form.reason'|trans }} :</span> {{ receipt.responseReason.translationKey|trans }}</p>
+                            {% endif %}
+                            {% if receipt.responseComment %}
+                                <p class="mb-2 small text-muted fst-italic">« {{ receipt.responseComment }} »</p>
+                            {% endif %}
                         </div>
                     {% endif %}
                 </div>

@@ -29,6 +29,8 @@
             {% if receipt.response %}
                 <twig:Ui:Alert type="info" icon="tabler:info-circle">
                     {{ 'einvoicing.response.already_answered_as'|trans({'%response%': receipt.response.translationKey|trans}) }}
+                    {% if receipt.responseReason %}<br>{{ 'einvoicing.response.form.reason'|trans }} : {{ receipt.responseReason.translationKey|trans }}{% endif %}
+                    {% if receipt.responseComment %}<br><em>« {{ receipt.responseComment }} »</em>{% endif %}
                 </twig:Ui:Alert>
             {% else %}
                 <twig:Ui:Alert type="warning" icon="tabler:alert-triangle">{{ 'einvoicing.response.unavailable'|trans }}</twig:Ui:Alert>

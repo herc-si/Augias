@@ -173,6 +173,7 @@ final class RespondToIncomingInvoiceTest extends WebTestCase
 
         $form = $this->client->getCrawler()->filter('form[name="einvoicing_receipt_response"]')->form([
             'einvoicing_receipt_response[reason]' => ResponseReason::Duplicate->value,
+            'einvoicing_receipt_response[comment]' => 'Déjà reçue sous TRI-SVC.',
         ]);
         $this->client->submit($form);
 
@@ -180,7 +181,10 @@ final class RespondToIncomingInvoiceTest extends WebTestCase
         self::assertSame(ReceiptResponse::Refused, $this->reload($receipt)->getResponse());
         self::assertSame(BillStatus::Cancelled, $this->bill($receipt)->getStatus());
 
+        // Why, still said once sent (06/10/2026: "je ne vois plus ensuite le motif").
         $this->client->request('GET', $purchase);
+        self::assertSelectorTextContains('body', 'Duplicate');
+        self::assertSelectorTextContains('body', 'Déjà reçue sous TRI-SVC.');
         self::assertSelectorNotExists('a[href*="/action/reopen/"]');
         self::assertSelectorNotExists('a[href*="/action/edit/"]');
     }

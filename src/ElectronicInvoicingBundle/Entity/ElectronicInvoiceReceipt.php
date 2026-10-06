@@ -18,6 +18,7 @@ use Augias\CoreBundle\Enum\SupplyType;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
+use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceReceiptRepository;
 use Brick\Math\BigNumber;
 use DateTimeImmutable;
@@ -96,6 +97,19 @@ class ElectronicInvoiceReceipt
      */
     #[ORM\Column(name: 'status_code', type: Types::STRING, length: 64, nullable: true)]
     private ?string $statusCode = null;
+
+    /**
+     * Why it was refused or disputed (MDT-113), and what was added for the
+     * supplier — kept, so that the purchase still says it once sent.
+     */
+    #[ORM\Column(name: 'response_reason', type: Types::STRING, length: 32, nullable: true, enumType: ResponseReason::class)]
+    private ?ResponseReason $responseReason = null;
+
+    #[ORM\Column(name: 'response_comment', type: Types::TEXT, nullable: true)]
+    private ?string $responseComment = null;
+
+    #[ORM\Column(name: 'responded_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $respondedAt = null;
 
     /**
      * The VAT the supplier charged, as the invoice states it (BT-110) — what
@@ -299,6 +313,34 @@ class ElectronicInvoiceReceipt
         $this->statusCode = $statusCode;
 
         return $this;
+    }
+
+    /**
+     * What was answered to the supplier, once the platform took it.
+     */
+    public function recordResponse(ReceiptResponse $response, ?ResponseReason $reason, ?string $comment, DateTimeImmutable $respondedAt): self
+    {
+        $this->statusCode = $response->value;
+        $this->responseReason = $reason;
+        $this->responseComment = $comment;
+        $this->respondedAt = $respondedAt;
+
+        return $this;
+    }
+
+    public function getResponseReason(): ?ResponseReason
+    {
+        return $this->responseReason;
+    }
+
+    public function getResponseComment(): ?string
+    {
+        return $this->responseComment;
+    }
+
+    public function getRespondedAt(): ?DateTimeImmutable
+    {
+        return $this->respondedAt;
     }
 
     public function getDocumentPath(): ?string
