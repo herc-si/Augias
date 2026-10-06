@@ -44,6 +44,8 @@ final class TemplatePreviewActionTest extends KernelTestCase
             self::assertStringContainsString('Acme Studios', (string) $response->getContent(), $slug);
             // The sample carries units, as a real invoice's lines do.
             self::assertStringContainsString('2 d', (string) $response->getContent(), $slug);
+            // And a discount: choosing a design shows where it puts one (06/10/2026).
+            self::assertStringContainsString('Discount', (string) $response->getContent(), $slug);
         }
     }
 
