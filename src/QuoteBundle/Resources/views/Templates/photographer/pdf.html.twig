@@ -68,8 +68,7 @@
                 {% endfor %}
             </table>
 
-            {{ q.totals_block(quote, currency, {totalBg: '#a2492b', totalColor: '#faf3e6', totalLabelColor: '#faf3e6', mono: 'Georgia, serif', discountColor: '#a2492b'}) }}
-            {{ q.terms_block(quote, {labelColor: '#a2492b', borderColor: '#e8d7b8'}) }}
+            {{ q.closing_block(quote, currency, {totalBg: '#a2492b', totalColor: '#faf3e6', totalLabelColor: '#faf3e6', mono: 'Georgia, serif', discountColor: '#a2492b'}, {labelColor: '#a2492b', borderColor: '#e8d7b8'}) }}
         </td>
     </tr>
 </table>

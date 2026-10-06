@@ -16,7 +16,8 @@
 {% block body_attrs %} style="background-color: #fffaf3;"{% endblock %}
 
 {% block body %}
-<div style="padding: 16px 0;">
+{# No padding below: with a page just full, it made an empty second one. #}
+<div style="padding: 16px 0 0;">
     <table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
         <tr>
             <td style="vertical-align: middle;">
@@ -89,12 +90,7 @@
         </tbody>
     </table>
 
-    {{ inv.totals_block(invoice, currency, {totalBg: '#ecf7ee', totalColor: '#166534', balanceBg: '#fff1e0', balanceColor: '#94704a'}) }}
-    {{ inv.terms_block(invoice, {labelColor: '#94704a', borderColor: '#e8d7b8'}) }}
-
-    <div style="margin-top: 24px; font-family: Georgia, serif; font-size: 11pt; color: #475569; font-style: italic;">
-        {{ 'invoice.template.friendly.signoff'|trans }}
-    </div>
+    {{ inv.closing_block(invoice, currency, {totalBg: '#ecf7ee', totalColor: '#166534', balanceBg: '#fff1e0', balanceColor: '#94704a'}, {labelColor: '#94704a', borderColor: '#e8d7b8'}, 'invoice.template.friendly.signoff'|trans) }}
     {{ inv.payment_cta(invoice) }}
 </div>
 {% endblock %}

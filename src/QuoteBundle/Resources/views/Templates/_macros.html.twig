@@ -238,13 +238,45 @@
     {% if quote.terms is not empty %}
         {% set p = {labelColor: '#64748b', textColor: '#475569', borderColor: '#e2e8f0'}|merge(palette) %}
         {% if brand_color() %}{% set p = p|merge({labelColor: brand_color()}) %}{% endif %}
-        <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid {{ p.borderColor }};">
-            <div style="font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: {{ p.labelColor }}; margin-bottom: 8px;">
+        {# Small print, in two columns: terms run long, and at full size they
+           spilled alone onto a second page (06/10/2026). Split by line, so that
+           a clause stays whole. #}
+        {% set clauses = quote.terms|replace({"\r\n": "\n"})|split("\n") %}
+        {% set half = (clauses|length / 2)|round(0, 'ceil') %}
+        <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid {{ p.borderColor }};">
+            <div style="font-size: 7.5pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: {{ p.labelColor }}; margin-bottom: 4px;">
                 {{ 'quote.terms'|trans }}
             </div>
-            <div style="font-size: 9pt; color: {{ p.textColor }}; line-height: 1.6;">
-                {{ quote.terms|nl2br }}
-            </div>
+            {% if clauses|length > 3 %}
+                <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="width: 50%; padding-right: 10px; vertical-align: top; font-size: 7pt; color: {{ p.textColor }}; line-height: 1.35;">{{ clauses|slice(0, half)|join("\n")|nl2br }}</td>
+                        <td style="width: 50%; padding-left: 10px; vertical-align: top; font-size: 7pt; color: {{ p.textColor }}; line-height: 1.35;">{{ clauses|slice(half)|join("\n")|nl2br }}</td>
+                    </tr>
+                </table>
+            {% else %}
+                <div style="font-size: 7.5pt; color: {{ p.textColor }}; line-height: 1.4;">{{ quote.terms|nl2br }}</div>
+            {% endif %}
         </div>
     {% endif %}
+{% endmacro %}
+
+{# The end of the document, kept on one page: the totals and the terms that
+   go with them. Apart, the terms were left alone on the next page, or the
+   totals cut in two (06/10/2026). Too tall for what is left of the page, the
+   whole moves to the next one. #}
+{% macro closing_block(quote, currency, totalsPalette={}, termsPalette={}, signoff='') %}
+    {% import _self as self %}
+    <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; page-break-inside: avoid;">
+        <tr>
+            <td style="padding: 0;">
+                {{ self.totals_block(quote, currency, totalsPalette) }}
+                {{ self.terms_block(quote, termsPalette) }}
+                {# A design's own closing words stay with what they close. #}
+                {% if signoff %}
+                    <div style="margin-top: 16px; font-family: Georgia, serif; font-size: 11pt; color: #475569; font-style: italic;">{{ signoff }}</div>
+                {% endif %}
+            </td>
+        </tr>
+    </table>
 {% endmacro %}

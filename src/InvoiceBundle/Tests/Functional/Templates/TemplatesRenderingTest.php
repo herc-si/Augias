@@ -107,6 +107,30 @@ final class TemplatesRenderingTest extends KernelTestCase
     }
 
     /**
+     * Long terms in small print, two columns, kept with the totals: at full
+     * size they spilled alone onto a second page (06/10/2026). Monochrome
+     * lays its end out in a table cell of its own, and stays one page.
+     */
+    #[DataProvider('pdfTemplateProvider')]
+    public function testLongTermsStayWithTheTotals(string $slug): void
+    {
+        $invoice = $this->createFixtureInvoice();
+        $invoice->setTerms(implode("\n", array_map(static fn (int $i): string => sprintf('Clause %d.', $i), range(1, 10))));
+
+        $twig = self::getContainer()->get('twig');
+        self::assertInstanceOf(Environment::class, $twig);
+
+        $html = $twig->render(sprintf('@AugiasInvoice/Templates/%s/pdf.html.twig', $slug), ['invoice' => $invoice]);
+
+        if ('monochrome' !== $slug) {
+            self::assertStringContainsString('page-break-inside: avoid', $html);
+        }
+
+        // Split in two halves: the first clause in one column, the last in the other.
+        self::assertMatchesRegularExpression('#Clause 1\.<br />.*?Clause 5\.</td>\s*<td[^>]*>Clause 6\.#s', $html);
+    }
+
+    /**
      * @param list<string> $needles
      */
     private function assertChannelContains(string $output, array $needles): void

@@ -61,7 +61,6 @@
 </table>
 
 <div class="editorial-marker" style="margin-bottom: 12px; text-align: right;">IV. {{ 'invoice.total'|trans }}</div>
-{{ inv.totals_block(invoice, currency, {totalBg: '#f5ebd9', totalColor: '#1a1a1a', balanceBg: '#f5ebd9', balanceColor: '#94704a', mono: 'Georgia, serif'}) }}
-{{ inv.terms_block(invoice, {labelColor: '#94704a', borderColor: '#e8dcc4'}) }}
+{{ inv.closing_block(invoice, currency, {totalBg: '#f5ebd9', totalColor: '#1a1a1a', balanceBg: '#f5ebd9', balanceColor: '#94704a', mono: 'Georgia, serif'}, {labelColor: '#94704a', borderColor: '#e8dcc4'}) }}
 {{ inv.payment_cta(invoice, '#94704a') }}
 {% endblock %}

@@ -6,6 +6,7 @@
  # This source file is subject to the MIT license that is bundled
  # with this source code in the file LICENSE.
  #}
+{% import '@AugiasQuote/Templates/_macros.html.twig' as q %}
 
 {% set currency = quote.client.currency %}
 
@@ -265,6 +266,9 @@
 {# ============================================================================
    TOTALS SUMMARY
 ============================================================================ #}
+{# The end of the document kept on one page, as in every design: apart, the
+   terms were left alone on the next page, or the totals cut (06/10/2026). #}
+<table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; page-break-inside: avoid;"><tr><td style="padding: 0;">
 <div class="totals-wrapper">
     <table class="totals-table" cellpadding="0" cellspacing="0" style="width: 280px; border-collapse: collapse; margin-left: auto;">
         {# Subtotal #}
@@ -375,16 +379,8 @@
     <div style="margin-top: 12px; font-size: 9pt; color: #64748b;">{{ vatMention }}</div>
 {% endif %}
 
-{% if quote.terms is not empty %}
-    <div class="terms-section" style="margin-top: 24px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-        <div class="terms-title" style="font-size: 9pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; margin-bottom: 8px;">
-            {{ 'quote.terms'|trans }}
-        </div>
-        <div class="terms-content" style="font-size: 9pt; color: #475569; line-height: 1.6;">
-            {{ quote.terms|nl2br }}
-        </div>
-    </div>
-{% endif %}
+{{ q.terms_block(quote) }}
+</td></tr></table>
 
 </body>
 </html>

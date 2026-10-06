@@ -29,9 +29,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Twig\Environment;
+use function array_map;
 use function basename;
 use function dirname;
 use function glob;
+use function implode;
+use function range;
 use function sort;
 use function sprintf;
 use function str_starts_with;
@@ -108,6 +111,30 @@ final class TemplatesRenderingTest extends KernelTestCase
             'email' => $this->assertChannelContains($output, ['schema.org', '$1,500.00']),
             default => self::fail('Unknown channel: ' . $channel),
         };
+    }
+
+    /**
+     * Long terms in small print, two columns, kept with the totals: at full
+     * size they spilled alone onto a second page (06/10/2026). Monochrome
+     * lays its end out in a table cell of its own, and stays one page.
+     */
+    #[DataProvider('pdfTemplateProvider')]
+    public function testLongTermsStayWithTheTotals(string $slug): void
+    {
+        $quote = $this->createFixtureQuote();
+        $quote->setTerms(implode("\n", array_map(static fn (int $i): string => sprintf('Clause %d.', $i), range(1, 10))));
+
+        $twig = self::getContainer()->get('twig');
+        self::assertInstanceOf(Environment::class, $twig);
+
+        $html = $twig->render(sprintf('@AugiasQuote/Templates/%s/pdf.html.twig', $slug), ['quote' => $quote]);
+
+        if ('monochrome' !== $slug) {
+            self::assertStringContainsString('page-break-inside: avoid', $html);
+        }
+
+        // Split in two halves: the first clause in one column, the last in the other.
+        self::assertMatchesRegularExpression('#Clause 1\.<br />.*?Clause 5\.</td>\s*<td[^>]*>Clause 6\.#s', $html);
     }
 
     /**
