@@ -14,11 +14,13 @@ declare(strict_types=1);
 namespace Augias\CoreBundle\Generator\BillingIdGenerator;
 
 use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
 use function assert;
+use function ctype_digit;
+use function max;
+use function strlen;
+use function substr;
 
 /**
  * @see \Augias\CoreBundle\Tests\Generator\BillingIdGenerator\AutoIncrementIdGeneratorTest
@@ -51,32 +53,37 @@ final readonly class AutoIncrementIdGenerator implements SequentialIdGeneratorIn
         $filters->disable('archivable');
 
         try {
-            $field = 'e.' . $options['field'];
-            $prefix = $options['prefix'] ?? '';
-            $suffix = $options['suffix'] ?? '';
-            $prefixLength = strlen((string) $prefix);
-            $suffixLength = strlen($suffix);
+            $prefix = (string) ($options['prefix'] ?? '');
+            $suffix = (string) ($options['suffix'] ?? '');
+            $affixes = strlen($prefix) + strlen($suffix);
 
-            if ($prefixLength > 0 || $suffixLength > 0) {
-                $field = sprintf(
-                    'SUBSTRING(%s, %d, LENGTH(%s) - %d)',
-                    $field,
-                    $prefixLength + 1,
-                    $field,
-                    $prefixLength + $suffixLength
-                );
-            }
-
-            $lastId = $this->registry
+            /** @var list<string|null> $ids */
+            $ids = $this->registry
                 ->getRepository($entity::class)
                 ->createQueryBuilder('e')
-                ->select(sprintf('MAX(ABS(TO_NUMBER(%s)))', $field))
+                ->select('e.' . $options['field'])
                 ->getQuery()
-                ->getSingleScalarResult();
-        } catch (NonUniqueResultException | NoResultException) {
-            $lastId = 0;
+                ->getSingleColumnResult();
         } finally {
             $filters->enable('archivable');
+        }
+
+        // Read here rather than cut and cast in SQL: a number from before the
+        // prefix was set, shorter than it or not a number once cut, made
+        // PostgreSQL refuse the whole query (negative substring length,
+        // invalid numeric input) and creating a quote a 500 — preprod,
+        // 06/10/2026. Such a number says nothing about the next one.
+        $lastId = 0;
+
+        foreach ($ids as $id) {
+            $id = (string) $id;
+            $number = substr($id, strlen($prefix), strlen($id) - $affixes);
+
+            if (strlen($id) <= $affixes || '' === $number || ! ctype_digit($number)) {
+                continue;
+            }
+
+            $lastId = max($lastId, (int) $number);
         }
 
         return (string) ($lastId + 1);
