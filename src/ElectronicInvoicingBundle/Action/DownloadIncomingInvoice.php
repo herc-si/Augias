@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Action;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceReceiptManagerInterface;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceReceiptRepository;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -24,11 +25,10 @@ use Symfony\Component\Uid\Ulid;
 use function sprintf;
 
 /**
- * Serves the locally-stored document for a received electronic invoice — the
- * inbound counterpart of {@see \Augias\CoreBundle\Export\Action\DownloadExport},
- * whose realpath traversal guard is mirrored here for the same reason: the
- * stored path always comes from {@see \Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceReceiptManager},
- * but a malformed value must never be able to serve an arbitrary file.
+ * Serves the stored document for a received electronic invoice — fetched
+ * again from the platform when it is missing, see
+ * {@see ElectronicInvoiceReceiptManagerInterface::documentFile()}, which also
+ * refuses a stored path that would climb out of its directory.
  *
  * Tenant isolation is enforced by ElectronicInvoiceReceiptRepository::find()
  * going through the global company Doctrine filter, the same as every other
@@ -40,7 +40,7 @@ final readonly class DownloadIncomingInvoice
 {
     public function __construct(
         private ElectronicInvoiceReceiptRepository $receiptRepository,
-        private string $projectDir,
+        private ElectronicInvoiceReceiptManagerInterface $receiptManager,
     ) {
     }
 
@@ -52,13 +52,9 @@ final readonly class DownloadIncomingInvoice
             throw new NotFoundHttpException();
         }
 
-        $documentPath = (string) $receipt->getDocumentPath();
-        $absolutePath = $this->projectDir . '/' . $documentPath;
+        $absolutePath = $this->receiptManager->documentFile($receipt);
 
-        $storageRoot = realpath($this->projectDir . '/var/einvoicing/incoming');
-        $resolved = realpath($absolutePath);
-
-        if ($storageRoot === false || $resolved === false || ! str_starts_with($resolved, $storageRoot . DIRECTORY_SEPARATOR)) {
+        if (null === $absolutePath) {
             throw new NotFoundHttpException();
         }
 
