@@ -62,6 +62,8 @@ final class ReceiptResponseType extends AbstractType
             'help' => 'einvoicing.response.form.reason_help',
             'choice_label' => static fn (ResponseReason $reason): string => $reason->translationKey(),
             'group_by' => static fn (ResponseReason $reason): string => $reason->isRefusal() ? 'einvoicing.response.form.reason_group.any' : 'einvoicing.response.form.reason_group.dispute',
+            // What the page offers for a refusal, see assets/controllers/receipt-response-controller.ts.
+            'choice_attr' => static fn (ResponseReason $reason): array => ['data-refusal' => $reason->isRefusal() ? '1' : '0'],
             'placeholder' => 'einvoicing.response.form.reason_placeholder',
             'required' => false,
         ]);

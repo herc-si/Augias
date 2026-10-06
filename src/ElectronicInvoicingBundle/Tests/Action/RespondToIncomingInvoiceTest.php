@@ -207,6 +207,19 @@ final class RespondToIncomingInvoiceTest extends WebTestCase
         self::assertNotSame(BillStatus::Cancelled, $this->bill($receipt)->getStatus());
     }
 
+    /**
+     * The page offers, for each answer, the reasons it can carry: a refusal
+     * only a refusal reason. Marked here, filtered in the browser.
+     */
+    public function testEachReasonSaysWhetherItCanJustifyARefusal(): void
+    {
+        $crawler = $this->client->request('GET', '/electronic-invoicing/incoming/respond/' . $this->receipt()->getId());
+
+        self::assertSelectorExists('form[data-controller="receipt-response"]');
+        self::assertSame('1', $crawler->filter('option[value="' . ResponseReason::Duplicate->value . '"]')->attr('data-refusal'));
+        self::assertSame('0', $crawler->filter('option[value="' . ResponseReason::Quantity->value . '"]')->attr('data-refusal'));
+    }
+
     public function testAnAnswerNeverSendsBackOutsideTheApplication(): void
     {
         $receipt = $this->receipt();
