@@ -97,8 +97,8 @@ final class TemplatesRenderingTest extends KernelTestCase
             // PDF and preview render every line item and the company logo —
             // assert both surface so a regression that drops
             // `{% for line in invoice.lines %}` or the logo block is caught.
-            'pdf' => $this->assertChannelContains($output, ['</html>', 'Sample line item', 'data:image/png;base64']),
-            'preview' => $this->assertChannelContains($output, ['Sample line item', 'data:image/png;base64']),
+            'pdf' => $this->assertChannelContains($output, ['</html>', 'Sample line item', 'data:image/png;base64', 'Discount', '-$150.00']),
+            'preview' => $this->assertChannelContains($output, ['Sample line item', 'data:image/png;base64', 'Discount', '-$150.00']),
             // Email is a summary (totals only, no per-line breakdown), so we
             // verify the schema.org payload + the displayed total instead.
             'email' => $this->assertChannelContains($output, ['schema.org', '$1,500.00']),
@@ -197,8 +197,10 @@ final class TemplatesRenderingTest extends KernelTestCase
             'total' => BigInteger::of(150000),
             'baseTotal' => BigInteger::of(150000),
             'tax' => BigInteger::of(0),
+            // Every design shows a discount (06/10/2026: four previews had no row for it).
             'discount' => new Discount()
-                ->setType(null),
+                ->setType(Discount::TYPE_PERCENTAGE)
+                ->setValuePercentage(10.0),
             'lines' => [
                 new Line()
                     ->setDescription('Sample line item')

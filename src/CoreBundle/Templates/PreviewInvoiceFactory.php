@@ -78,7 +78,8 @@ final readonly class PreviewInvoiceFactory
         $invoice->setInvoiceDate(CarbonImmutable::parse('first day of this month'));
         $invoice->setDue(CarbonImmutable::now()->addDays(14));
         $invoice->setTerms($this->sample('terms'));
-        $invoice->setDiscount(new Discount()->setType(null));
+        // A discount, so that choosing a design shows where it puts one.
+        $invoice->setDiscount(new Discount()->setType(Discount::TYPE_PERCENTAGE)->setValuePercentage(10.0));
 
         foreach ([
             ['line_identity', 120000, 1, QuantityUnit::FlatRate],
@@ -97,8 +98,8 @@ final readonly class PreviewInvoiceFactory
 
         $invoice->setBaseTotal(250000);
         $invoice->setTax(0);
-        $invoice->setTotal(250000);
-        $invoice->setBalance(250000);
+        $invoice->setTotal(225000);
+        $invoice->setBalance(225000);
 
         // Some render paths (e.g. the custom-fields component) require a
         // non-null id; the invoice is never persisted so any Ulid will do.

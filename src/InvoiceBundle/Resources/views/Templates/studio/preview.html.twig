@@ -66,6 +66,7 @@
                     <div>
                         <div class="small text-uppercase" style="letter-spacing: 2px; opacity: 0.85;">{% if hasOutstandingBalance %}{{ 'invoice.balance_due'|trans }}{% else %}{{ 'invoice.total_due'|trans }}{% endif %}</div>
                         <div class="display-5 fw-bold">{{ (hasOutstandingBalance ? invoice.feesBalance : invoice.feesTotal)|formatCurrency(currency) }}</div>
+                        {% if invoice.discount.type is not empty and discount(invoice).positive %}<div class="small" style="opacity: 0.85;">{{ 'invoice.discount'|trans }} -{{ discount(invoice)|formatCurrency(currency) }}</div>{% endif %}
                     </div>
                 </div>
                 {% if invoice.hasDisbursements %}
