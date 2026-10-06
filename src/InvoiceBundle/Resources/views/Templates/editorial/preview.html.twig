@@ -55,7 +55,7 @@
                 <div class="col-md-5">
                     <div style="color: #94704a; font-style: italic;" class="text-end mb-2">IV. {{ 'invoice.total'|trans }}</div>
                     <div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.subtotal'|trans }}</span><span>{{ invoice.baseTotal|formatCurrency(currency) }}</span></div>
-                    {% if invoice.discount.type is not empty and discount(invoice).positive %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.discount'|trans }}</span><span>-{{ discount(invoice)|formatCurrency(currency) }}</span></div>{% endif %}
+                    {% if invoice.discount.type is not empty and discount(invoice).positive %}<div class="d-flex justify-content-between mb-2"><span>{{ discount_label(invoice) }}</span><span>-{{ discount(invoice)|formatCurrency(currency) }}</span></div>{% endif %}
                     {% if invoice.tax.positive %}<div class="d-flex justify-content-between mb-2"><span>{{ 'invoice.tax'|trans }}</span><span>{{ invoice.tax|formatCurrency(currency) }}</span></div>{% endif %}
                     {% if invoice.hasDisbursements %}<div class="text-muted small mb-2" style="line-height: 1.4;">{{ disbursement_note_reference(invoice) }}</div>{% endif %}
                     <div class="d-flex justify-content-between p-3 rounded" style="background: #f5ebd9;">

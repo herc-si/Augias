@@ -68,7 +68,7 @@
 
     {% if quote.discount.type is not empty %}
         {{ email.spacer('xs') }}
-        {{ email.info_row('quote.discount'|trans({}, 'email'), '-' ~ discount(quote)|formatCurrency(quote.client.currency)) }}
+        {{ email.info_row(discount_label(quote, 'email'), '-' ~ discount(quote)|formatCurrency(quote.client.currency)) }}
     {% endif %}
 
     {% if quote.tax.positive %}
