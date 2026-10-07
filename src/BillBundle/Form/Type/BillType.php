@@ -46,6 +46,7 @@ final class BillType extends AbstractType
     public function __construct(
         private readonly SystemConfig $systemConfig,
         private readonly TranslatorInterface $translator,
+        private readonly CategoryRepository $categoryRepository,
     ) {
     }
 
@@ -105,7 +106,7 @@ final class BillType extends AbstractType
                 // Categories are one shared list now, so this has to ask for
                 // the purchase side only — otherwise the dropdown would offer
                 // the things you sell.
-                'query_builder' => static fn (CategoryRepository $repository) => $repository->forUsage(CategoryUsage::Purchase),
+                'choices' => $this->categoryRepository->sortedForUsage(CategoryUsage::Purchase),
             ])
             ->add('notes', TextareaType::class, ['label' => 'bill.form.notes.label', 'required' => false]);
 

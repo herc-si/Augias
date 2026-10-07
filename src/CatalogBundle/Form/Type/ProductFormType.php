@@ -38,6 +38,7 @@ final class ProductFormType extends AbstractType
 {
     public function __construct(
         private readonly SystemConfig $systemConfig,
+        private readonly CategoryRepository $categoryRepository,
     ) {
     }
 
@@ -93,7 +94,7 @@ final class ProductFormType extends AbstractType
                 'required' => false,
                 // The catalogue side of the shared category list — see the
                 // matching filter in BillType.
-                'query_builder' => static fn (CategoryRepository $repository) => $repository->forUsage(CategoryUsage::Catalog),
+                'choices' => $this->categoryRepository->sortedForUsage(CategoryUsage::Catalog),
             ])
             ->add('active', CheckboxType::class, [
                 'label' => 'catalog.form.active.label',
