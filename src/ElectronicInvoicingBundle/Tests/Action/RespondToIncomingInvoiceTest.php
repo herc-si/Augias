@@ -31,6 +31,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use function json_encode;
+use function urlencode;
 
 #[CoversClass(RespondToIncomingInvoice::class)]
 final class RespondToIncomingInvoiceTest extends WebTestCase
@@ -132,6 +133,44 @@ final class RespondToIncomingInvoiceTest extends WebTestCase
         self::assertCount(1, $crawler->filter('input[name="einvoicing_receipt_response[response]"][value="fr:205"]'));
         self::assertCount(1, $crawler->filter('input[name="einvoicing_receipt_response[response]"][value="fr:210"]'));
         self::assertCount(0, $crawler->filter('input[name="einvoicing_receipt_response[response]"][value="fr:207"]'));
+    }
+
+    /**
+     * A received invoice becomes a purchase on its own, and nobody found the
+     * inbox's "…" menu: the purchase offers the answer, and comes back to it.
+     */
+    public function testAPurchaseReceivedElectronicallyIsAnsweredFromItsPage(): void
+    {
+        $receipt = $this->receipt();
+
+        $this->client->request('GET', '/bills/create-from-receipt/' . $receipt->getId());
+        $purchase = (string) $this->client->getResponse()->headers->get('Location');
+        self::assertStringStartsWith('/bills/view/', $purchase);
+
+        $crawler = $this->client->request('GET', $purchase);
+        self::assertSelectorTextContains('body', 'No answer');
+        $this->client->click($crawler->selectLink('Answer the supplier')->link());
+
+        $form = $this->client->getCrawler()->filter('form[name="einvoicing_receipt_response"]')->form([
+            'einvoicing_receipt_response[response]' => ReceiptResponse::Accepted->value,
+        ]);
+        $this->client->submit($form);
+
+        self::assertResponseRedirects($purchase);
+        self::assertSame(ReceiptResponse::Accepted, $this->reload($receipt)->getResponse());
+    }
+
+    public function testAnAnswerNeverSendsBackOutsideTheApplication(): void
+    {
+        $receipt = $this->receipt();
+
+        $crawler = $this->client->request('GET', '/electronic-invoicing/incoming/respond/' . $receipt->getId() . '?back=' . urlencode('https://evil.example/'));
+        $form = $crawler->filter('form[name="einvoicing_receipt_response"]')->form([
+            'einvoicing_receipt_response[response]' => ReceiptResponse::Accepted->value,
+        ]);
+        $this->client->submit($form);
+
+        self::assertResponseRedirects('/electronic-invoicing/incoming');
     }
 
     private function receipt(): ElectronicInvoiceReceipt

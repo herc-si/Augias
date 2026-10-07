@@ -10,12 +10,19 @@
 {% set pending = this.count %}
 
 {# Rendered even at zero: this panel is the only remaining route to the received
- # invoices list now that it has no sidebar entry of its own. #}
+ # invoices list now that it has no sidebar entry of its own. Not a link as a
+ # whole any more: it holds a form, "Synchroniser maintenant". #}
 <twig:Ui:Alert
     type="{{ pending > 0 ? 'info' : 'secondary' }}"
-    icon="tabler:inbox"
-    title="{{ 'einvoicing.incoming.title'|trans }}"
-    link="{{ path('_einvoicing_incoming') }}"
+    icon="tabler:building-broadcast-tower"
+    title="{{ 'einvoicing.incoming.panel_title'|trans }}"
 >
-    {{ 'einvoicing.incoming.pending'|trans({'%count%': pending}) }}
+    <p class="mb-2">{{ 'einvoicing.incoming.pending'|trans({'%count%': pending}) }}</p>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm" href="{{ path('_einvoicing_incoming') }}">
+            {{ ux_icon('tabler:inbox', {width: 18, height: 18}) }}
+            {{ 'einvoicing.incoming.open'|trans }}
+        </a>
+        {{ include('@AugiasElectronicInvoicing/_sync_button.html.twig', {class: 'btn-sm'}) }}
+    </div>
 </twig:Ui:Alert>

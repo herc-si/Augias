@@ -86,10 +86,11 @@ final class IncomingElectronicInvoiceGrid extends Grid
             Action::new('_einvoicing_incoming_download', ['id' => 'id'])
                 ->icon('download')
                 ->label('Download'),
+            // In view, not in the "…" menu: accepting or refusing is what a
+            // received invoice is for, and nobody found it there.
             Action::new('_einvoicing_incoming_respond', ['id' => 'id'])
                 ->icon('file-check')
-                ->label('einvoicing.response.action')
-                ->inMenu(),
+                ->label('einvoicing.response.action'),
             // Idempotent: opens the existing Bill if this receipt was already
             // converted, otherwise creates one — see BillBundle\Action\CreateFromReceipt.
             Action::new('_bills_create_from_receipt', ['id' => 'id'])

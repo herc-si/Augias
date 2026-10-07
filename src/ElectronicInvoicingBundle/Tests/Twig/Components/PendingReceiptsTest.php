@@ -17,6 +17,9 @@ use Augias\ElectronicInvoicingBundle\Twig\Components\PendingReceipts;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
+use Symfony\Component\HttpFoundation\Session\Storage\MockArraySessionStorage;
 use Symfony\UX\TwigComponent\Test\InteractsWithTwigComponents;
 
 #[CoversClass(PendingReceipts::class)]
@@ -32,8 +35,15 @@ final class PendingReceiptsTest extends KernelTestCase
      */
     public function testRendersLinkToReceivedInvoicesWhenNothingIsPending(): void
     {
+        // A real page has one: the "Synchroniser maintenant" form's token lives in it.
+        $request = Request::create('/bills');
+        $request->setSession(new Session(new MockArraySessionStorage()));
+        self::getContainer()->get('request_stack')->push($request);
+
         $rendered = $this->renderTwigComponent('PendingReceipts')->toString();
 
         self::assertStringContainsString('/electronic-invoicing/incoming', $rendered);
+        self::assertStringContainsString('/electronic-invoicing/sync', $rendered);
+        self::assertStringContainsString('Electronic invoicing', $rendered);
     }
 }

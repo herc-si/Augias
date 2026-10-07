@@ -33,6 +33,9 @@ use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use function assert;
+use function is_string;
+use function parse_url;
+use function str_starts_with;
 
 /**
  * Accept a received invoice, dispute it or refuse it with a reason — sent back through
@@ -58,9 +61,10 @@ final readonly class RespondToIncomingInvoice
     public function __invoke(string $id, Request $request): array | RedirectResponse
     {
         $receipt = $this->receipt($id);
+        $back = $this->back($request);
 
         if (! $this->receiptManager->canRespond($receipt)) {
-            return ['receipt' => $receipt, 'form' => null];
+            return ['receipt' => $receipt, 'form' => null, 'back' => $back];
         }
 
         $form = $this->formFactory->create(ReceiptResponseType::class, null, ['previous' => $receipt->getResponse()]);
@@ -75,7 +79,7 @@ final readonly class RespondToIncomingInvoice
             } catch (RuntimeException $e) {
                 $form->addError(new FormError($this->translator->trans($e->getMessage())));
 
-                return ['receipt' => $receipt, 'form' => $form->createView()];
+                return ['receipt' => $receipt, 'form' => $form->createView(), 'back' => $back];
             }
 
             $session = $request->getSession();
@@ -86,10 +90,25 @@ final readonly class RespondToIncomingInvoice
                 ReceiptResponse::Refused => 'einvoicing.response.flash.refused',
             });
 
-            return new RedirectResponse($this->router->generate('_einvoicing_incoming'));
+            return new RedirectResponse($back);
         }
 
-        return ['receipt' => $receipt, 'form' => $form->createView()];
+        return ['receipt' => $receipt, 'form' => $form->createView(), 'back' => $back];
+    }
+
+    /**
+     * Where the answer was asked from — the purchase it became, or the inbox
+     * — within the application only.
+     */
+    private function back(Request $request): string
+    {
+        $path = $request->query->get('back');
+
+        if (is_string($path) && str_starts_with($path, '/') && ! str_starts_with($path, '//') && null === parse_url($path, PHP_URL_HOST)) {
+            return $path;
+        }
+
+        return $this->router->generate('_einvoicing_incoming');
     }
 
     private function receipt(string $id): ElectronicInvoiceReceipt
