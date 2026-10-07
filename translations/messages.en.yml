@@ -568,6 +568,7 @@ catalog:
     list:
         title: "Catalogue"
     menu:
+        list: "Services and products"
         main: "Catalogue"
     picker:
         label: "Add from the catalogue"
