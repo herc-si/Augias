@@ -29,10 +29,14 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Throwable;
+use function is_file;
 use function sprintf;
+use function str_contains;
+use function str_starts_with;
 use function trim;
 
 /**
@@ -46,6 +50,12 @@ use function trim;
  */
 final readonly class ElectronicInvoiceReceiptManager implements ElectronicInvoiceReceiptManagerInterface
 {
+    /**
+     * Where documents went before 06/10/2026, relative to the project: inside
+     * whichever container imported them.
+     */
+    private const string LEGACY_DIRECTORY = 'var/einvoicing/incoming';
+
     public function __construct(
         private ElectronicInvoiceProviderRegistry $registry,
         private ElectronicInvoiceProviderSettingRepository $settingRepository,
@@ -55,6 +65,8 @@ final readonly class ElectronicInvoiceReceiptManager implements ElectronicInvoic
         private LoggerInterface $logger,
         private EventDispatcherInterface $eventDispatcher,
         private string $projectDir,
+        #[Autowire(env: 'AUGIAS_ATTACHMENTS_DIR')]
+        private string $attachmentsDir,
     ) {
     }
 
@@ -223,18 +235,68 @@ final readonly class ElectronicInvoiceReceiptManager implements ElectronicInvoic
     }
 
     /**
-     * @return string the path relative to $projectDir, stored on the entity
+     * The document of a received invoice on disk, fetched again from the
+     * platform when it is not there — null when it cannot be had.
+     *
+     * Not there: imported by the cron container into a directory of its own,
+     * which the web container never saw and a redeploy wiped (test instance,
+     * 06/10/2026). Fetched again, it goes where both containers look.
+     */
+    public function documentFile(ElectronicInvoiceReceipt $receipt): ?string
+    {
+        $stored = $receipt->getDocumentPath();
+
+        if (null !== $stored && ! str_contains($stored, '..')) {
+            $absolute = str_starts_with($stored, self::LEGACY_DIRECTORY . '/')
+                ? $this->projectDir . '/' . $stored
+                : $this->attachmentsDir . '/' . $stored;
+
+            if (is_file($absolute)) {
+                return $absolute;
+            }
+        }
+
+        $company = $receipt->getCompany();
+        $setting = $this->activeReceiverSetting($company);
+        $receiver = null === $setting ? null : $this->registry->getReceiver($setting->getProvider());
+
+        if (null === $setting || null === $receiver || $setting->getProvider() !== $receipt->getProvider()) {
+            return null;
+        }
+
+        try {
+            $document = $receiver->downloadIncomingDocument($setting->getSettings(), $receipt->getExternalReference());
+        } catch (Throwable $e) {
+            $this->logger->error('Failed to download incoming electronic invoice document again', [
+                'receipt_id' => (string) $receipt->getId(),
+                'exception' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        $receipt->setDocumentPath($this->storeDocument($company, $receipt, $document->content, $document->fileExtension));
+        $receipt->setDocumentMimeType($document->mimeType);
+        $this->entityManager->flush();
+
+        return $this->attachmentsDir . '/' . $receipt->getDocumentPath();
+    }
+
+    /**
+     * @return string the path relative to the attachments directory, stored on the entity
      */
     private function storeDocument(Company $company, ElectronicInvoiceReceipt $receipt, string $content, string $fileExtension): string
     {
+        // With the supporting documents: on the volume every container shares,
+        // and that outlives them.
         $relativePath = sprintf(
-            'var/einvoicing/incoming/%s/%s.%s',
+            'einvoicing/incoming/%s/%s.%s',
             $company->getId()->toBase58(),
             $receipt->getExternalReference(),
             $fileExtension,
         );
 
-        $this->filesystem->dumpFile($this->projectDir . '/' . $relativePath, $content);
+        $this->filesystem->dumpFile($this->attachmentsDir . '/' . $relativePath, $content);
 
         return $relativePath;
     }

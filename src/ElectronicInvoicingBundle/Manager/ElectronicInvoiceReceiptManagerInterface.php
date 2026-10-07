@@ -53,4 +53,10 @@ interface ElectronicInvoiceReceiptManagerInterface
      *                          translation key or the platform's own words
      */
     public function respond(ElectronicInvoiceReceipt $receipt, ReceiptResponse $response, ?ResponseReason $reason = null, ?string $comment = null): void;
+
+    /**
+     * The received invoice's document on disk, fetched again from the
+     * platform when missing; null when it cannot be had.
+     */
+    public function documentFile(ElectronicInvoiceReceipt $receipt): ?string;
 }

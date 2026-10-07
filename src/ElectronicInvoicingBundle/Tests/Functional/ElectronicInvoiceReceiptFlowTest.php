@@ -35,11 +35,9 @@ final class ElectronicInvoiceReceiptFlowTest extends KernelTestCase
 
     protected function tearDown(): void
     {
-        // The manager writes real files under var/einvoicing/incoming — clean up
-        // after each test so runs don't accumulate stray fixtures on disk.
-        new Filesystem()->remove(
-            self::getContainer()->getParameter('kernel.project_dir') . '/var/einvoicing/incoming/' . $this->company->getId()->toBase58(),
-        );
+        // The manager writes real files with the attachments — clean up after
+        // each test so runs don't accumulate stray fixtures on disk.
+        new Filesystem()->remove(self::attachmentsDir() . '/einvoicing/incoming/' . $this->company->getId()->toBase58());
 
         parent::tearDown();
     }
@@ -74,11 +72,40 @@ final class ElectronicInvoiceReceiptFlowTest extends KernelTestCase
         self::assertSame('EUR', $receipt->getCurrencyCode());
         self::assertTrue($receipt->hasDocument());
 
-        $projectDir = self::getContainer()->getParameter('kernel.project_dir');
-        self::assertIsString($projectDir);
-        $absolutePath = $projectDir . '/' . $receipt->getDocumentPath();
+        // With the attachments, on the volume every container shares.
+        $absolutePath = self::attachmentsDir() . '/' . $receipt->getDocumentPath();
         self::assertFileExists($absolutePath);
         self::assertStringContainsString($receipt->getExternalReference(), (string) file_get_contents($absolutePath));
+        self::assertSame($absolutePath, $manager->documentFile($receipt));
+    }
+
+    /**
+     * Imported by the cron container into a directory of its own, the
+     * document was never there for the page that serves it — a 404 (test
+     * instance, 06/10/2026). Missing, it is fetched again from the platform.
+     */
+    public function testAMissingDocumentIsFetchedAgain(): void
+    {
+        $this->configureActiveTestProvider();
+        $manager = self::getContainer()->get(ElectronicInvoiceReceiptManager::class);
+        $receipt = $manager->importNew($this->company)[0];
+
+        $receipt->setDocumentPath('var/einvoicing/incoming/elsewhere/' . $receipt->getExternalReference() . '.pdf');
+
+        $path = $manager->documentFile($receipt);
+
+        self::assertNotNull($path);
+        self::assertFileExists($path);
+        self::assertStringStartsWith(self::attachmentsDir() . '/einvoicing/incoming/', $path);
+        self::assertStringStartsWith('einvoicing/incoming/', (string) $receipt->getDocumentPath());
+    }
+
+    private static function attachmentsDir(): string
+    {
+        $directory = self::getContainer()->getParameter('kernel.project_dir') . '/var/cache/test/attachments';
+        self::assertIsString($directory);
+
+        return $directory;
     }
 
     public function testImportingTwiceDoesNotDuplicateTheSameReceipt(): void
