@@ -34,6 +34,9 @@ enum ElectronicInvoiceProcessingStatus: string implements HasStatusLabel
     /** The client disputes part of it (fr:207): up to the company to settle. */
     case Disputed = 'disputed';
 
+    /** The client's platform waits for something missing (fr:208): up to the company to provide it. */
+    case Suspended = 'suspended';
+
     public function getLabel(): string
     {
         return match ($this) {
@@ -41,6 +44,7 @@ enum ElectronicInvoiceProcessingStatus: string implements HasStatusLabel
             self::Accepted => 'Accepted',
             self::Rejected => 'Rejected',
             self::Disputed => 'Disputed',
+            self::Suspended => 'Suspended',
         };
     }
 
@@ -51,6 +55,7 @@ enum ElectronicInvoiceProcessingStatus: string implements HasStatusLabel
             self::Accepted => 'green',
             self::Rejected => 'red',
             self::Disputed => 'orange',
+            self::Suspended => 'orange',
         };
     }
 }

@@ -32,6 +32,7 @@ use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\QuoteBundle\Enum\QuoteStatus;
 use Carbon\CarbonImmutable;
+use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Log\NullLogger;
 use Spatie\Snapshots\MatchesSnapshots;
@@ -254,6 +255,9 @@ final class ViewTest extends KernelTestCase
             ->setSuccess(true)
             ->setExternalReference('TEST-abc123')
             ->setCreated(CarbonImmutable::parse('2021-09-02T11:00:00'));
+        $successfulSubmission->setCompany($this->company);
+        $successfulSubmission->recordEvent('1', 'fr:203', new DateTimeImmutable('2021-09-02 11:05'));
+        $successfulSubmission->recordEvent('2', 'fr:208', new DateTimeImmutable('2021-09-03 09:00'), note: 'Numéro de commande manquant');
         $invoice->getElectronicInvoiceSubmissions()->add($successfulSubmission);
 
         $uuid = Ulid::fromString(self::INVOICE_ID);
@@ -271,6 +275,11 @@ final class ViewTest extends KernelTestCase
         self::assertStringContainsString('Pending', $response);
         self::assertStringContainsString('TEST-abc123', $response);
         self::assertStringContainsString('Simulated failure (test provider)', $response);
+
+        // Every step the platform dated, in words, with what came with it.
+        self::assertStringContainsString('Made available to the client', $response);
+        self::assertStringContainsString('On hold', $response);
+        self::assertStringContainsString('Numéro de commande manquant', $response);
     }
 
     /**

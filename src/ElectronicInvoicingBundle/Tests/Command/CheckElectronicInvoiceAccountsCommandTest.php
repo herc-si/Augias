@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Tests\Command;
 
+use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Test\Traits\ConsoleTesterTrait;
 use Augias\ElectronicInvoicingBundle\Command\CheckElectronicInvoiceAccountsCommand;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
@@ -21,6 +22,8 @@ use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceAccountMonitor;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Enum\CompanyRole;
 use DateTimeImmutable;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -33,7 +36,10 @@ use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Tester\Constraint\CommandIsSuccessful;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
+use Symfony\Component\Mime\Email;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use function array_filter;
+use function array_values;
 use function json_encode;
 use function rewind;
 use function stream_get_contents;
@@ -61,6 +67,38 @@ final class CheckElectronicInvoiceAccountsCommandTest extends KernelTestCase
 
         self::assertSame(AccountVerification::NeedsReview, $this->reload($setting)->getAccountVerification());
         self::assertFalse(self::getContainer()->get(ElectronicInvoiceProviderRegistry::class)->hasActiveProvider());
+    }
+
+    /**
+     * Stopped without anyone opening the settings, electronic invoicing would
+     * stay stopped unnoticed: whoever can bill is told — once, not hourly.
+     */
+    public function testAnAccountNoLongerVerifiedIsToldOnce(): void
+    {
+        $token = static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token']));
+        $failed = static fn (): MockResponse => new MockResponse((string) json_encode(['created_at' => '2026-09-25T09:58:15Z', 'company_verification_status' => 'failed']));
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([$token, $failed, $token, $failed]));
+
+        $entityManager = self::getContainer()->get('doctrine.orm.entity_manager');
+        $company = $entityManager->find(Company::class, $this->company->getId());
+        self::assertInstanceOf(Company::class, $company);
+        $owner = new User()->setEmail('owner@example.com')->setPassword('password');
+        $owner->addCompany($company, CompanyRole::Owner);
+        $entityManager->persist($owner);
+        $entityManager->flush();
+
+        $this->superPdp(AccountVerification::Verified);
+
+        $this->runCheck();
+        $this->runCheck();
+
+        $told = array_filter(
+            self::getMailerMessages(),
+            static fn (mixed $message): bool => $message instanceof Email && 'Electronic invoicing account not verified' === $message->getSubject(),
+        );
+
+        self::assertCount(1, $told);
+        self::assertSame('owner@example.com', array_values($told)[0]->getTo()[0]->getAddress());
     }
 
     /**

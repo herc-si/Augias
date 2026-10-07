@@ -15,7 +15,9 @@ namespace Augias\ElectronicInvoicingBundle\Command;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
+use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
 use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoicingAlerts;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceDisputedNotification;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceRejectedNotification;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpAccessTokens;
@@ -25,14 +27,21 @@ use Augias\ElectronicInvoicingBundle\Provider\SuperPdpProvider;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceSubmissionRepository;
 use Augias\NotificationBundle\Notification\NotificationManager;
+use DateTimeImmutable;
+use DateTimeZone;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use Exception;
+use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use SolidWorx\Platform\PlatformBundle\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 use Throwable;
+use function array_diff;
+use function array_values;
 use function assert;
+use function date_default_timezone_get;
 use function in_array;
 use function is_array;
 use function is_string;
@@ -55,15 +64,22 @@ use function sprintf;
 final class PollSuperPdpInvoiceStatusCommand extends Command
 {
     /**
-     * A submission stops being polled once it reaches one of these — the union
-     * of {@see SuperPdpProvider::ACCEPTED_STATUS_CODES} and
-     * {@see SuperPdpProvider::REJECTED_STATUS_CODES}, SuperPdpProvider being the
+     * A submission stops being polled once it reaches one of these: rejected,
+     * or paid — nothing comes after either. {@see SuperPdpProvider} is the
      * single source of truth for what each status code means.
      */
-    private const array TERMINAL_STATUS_CODES = [
-        ...SuperPdpProvider::ACCEPTED_STATUS_CODES,
+    private const array FINAL_STATUS_CODES = [
         ...SuperPdpProvider::REJECTED_STATUS_CODES,
+        SuperPdpProvider::PAID_STATUS_CODE,
     ];
+
+    /**
+     * Accepted, with only the payment left to come: followed for so long
+     * after it was sent, so the history shows when it was paid, then left —
+     * not every invoice is paid through the platform, and those would be
+     * asked about forever.
+     */
+    private const string FOLLOWED_FOR = '-90 days';
 
     public function __construct(
         private readonly ManagerRegistry $registry,
@@ -73,6 +89,8 @@ final class PollSuperPdpInvoiceStatusCommand extends Command
         private readonly SuperPdpAccessTokens $tokens,
         private readonly NotificationManager $notificationManager,
         private readonly LoggerInterface $logger,
+        private readonly ElectronicInvoicingAlerts $alerts,
+        private readonly ClockInterface $clock,
     ) {
         parent::__construct();
     }
@@ -93,7 +111,12 @@ final class PollSuperPdpInvoiceStatusCommand extends Command
         $errors = 0;
 
         try {
-            $submissions = $this->submissionRepository->findPendingByProvider(SuperPdpProvider::getName(), self::TERMINAL_STATUS_CODES);
+            $submissions = $this->submissionRepository->findPendingByProvider(
+                SuperPdpProvider::getName(),
+                self::FINAL_STATUS_CODES,
+                array_values(array_diff(SuperPdpProvider::ACCEPTED_STATUS_CODES, [SuperPdpProvider::PAID_STATUS_CODE])),
+                $this->clock->now()->modify(self::FOLLOWED_FOR),
+            );
 
             foreach ($submissions as $submission) {
                 try {
@@ -142,11 +165,13 @@ final class PollSuperPdpInvoiceStatusCommand extends Command
         $accessToken = $this->tokens->accessToken($setting->getSettings());
         $invoice = $this->client->getInvoice($accessToken, $externalReference);
 
+        $recorded = $this->recordEvents($submission, $invoice['events'] ?? null);
+
         $event = SuperPdpProvider::latestEvent($invoice['events'] ?? null);
         $statusCode = SuperPdpProvider::latestStatusCode($invoice['events'] ?? null);
 
         if ($statusCode === null || $statusCode === $submission->getStatusCode()) {
-            return false;
+            return $recorded;
         }
 
         $submission->setStatusCode($statusCode);
@@ -159,7 +184,61 @@ final class PollSuperPdpInvoiceStatusCommand extends Command
             $this->notifyDispute($submission, $event ?? []);
         }
 
+        if (SuperPdpProvider::SUSPENDED_STATUS_CODE === $statusCode) {
+            [$reason, $note] = self::detailOf($event ?? []);
+            $this->alerts->raise($submission->getCompany(), ElectronicInvoicingProblem::Suspended, $submission->getInvoice(), $note ?? $reason);
+        }
+
         return true;
+    }
+
+    /**
+     * Every step the platform has dated, not just the latest: what the
+     * invoice page shows as its history. True when one was new.
+     */
+    private function recordEvents(ElectronicInvoiceSubmission $submission, mixed $events): bool
+    {
+        if (! is_array($events)) {
+            return false;
+        }
+
+        $recorded = false;
+        $zone = new DateTimeZone(date_default_timezone_get());
+
+        foreach ($events as $event) {
+            if (! is_array($event) || ! isset($event['id']) || ! is_string($event['status_code'] ?? null)) {
+                continue;
+            }
+
+            try {
+                // The column keeps no zone and is read back in the application's.
+                $occurredAt = new DateTimeImmutable(is_string($event['created_at'] ?? null) ? $event['created_at'] : 'now')->setTimezone($zone);
+            } catch (Exception) {
+                continue;
+            }
+
+            [$reason, $note] = self::detailOf($event);
+
+            $recorded = $submission->recordEvent((string) $event['id'], $event['status_code'], $occurredAt, $reason, $note) || $recorded;
+        }
+
+        return $recorded;
+    }
+
+    /**
+     * The reason code (MDT-113) and the first note an event came with.
+     *
+     * @param array<mixed> $event
+     *
+     * @return array{?string, ?string}
+     */
+    private static function detailOf(array $event): array
+    {
+        $detail = is_array($event['details'][0] ?? null) ? $event['details'][0] : [];
+        $reason = is_string($detail['reason'] ?? null) && '' !== $detail['reason'] ? $detail['reason'] : null;
+        $note = $detail['notes'][0]['contents'][0]['content'] ?? null;
+
+        return [$reason, is_string($note) && '' !== $note ? $note : null];
     }
 
     /**
@@ -171,17 +250,16 @@ final class PollSuperPdpInvoiceStatusCommand extends Command
      */
     private function notifyDispute(ElectronicInvoiceSubmission $submission, array $event): void
     {
-        $detail = is_array($event['details'][0] ?? null) ? $event['details'][0] : [];
-        $reason = ResponseReason::tryFrom(is_string($detail['reason'] ?? null) ? $detail['reason'] : '');
-        $note = $detail['notes'][0]['contents'][0]['content'] ?? null;
+        [$code, $note] = self::detailOf($event);
+        $reason = ResponseReason::tryFrom($code ?? '');
 
         try {
             $this->notificationManager->sendNotification(
                 new ElectronicInvoiceDisputedNotification([
                     'invoice' => $submission->getInvoice(),
                     'client' => $submission->getInvoice()->getClient(),
-                    'reason' => $reason?->translationKey() ?? (is_string($detail['reason'] ?? null) ? $detail['reason'] : null),
-                    'note' => is_string($note) && '' !== $note ? $note : null,
+                    'reason' => $reason?->translationKey() ?? $code,
+                    'note' => $note,
                 ])
             );
         } catch (Throwable $e) {

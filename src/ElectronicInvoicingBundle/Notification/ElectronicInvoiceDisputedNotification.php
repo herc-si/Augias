@@ -33,6 +33,7 @@ use Twig\Environment;
     description: 'When a client disputes an invoice sent electronically',
     icon: 'tabler:building-broadcast-tower',
     category: NotificationCategory::INVOICE,
+    defaultOn: true,
 )]
 class ElectronicInvoiceDisputedNotification extends NotificationMessage
 {
@@ -50,7 +51,7 @@ class ElectronicInvoiceDisputedNotification extends NotificationMessage
     #[Override]
     public function getSubject(): string
     {
-        return 'Electronic Invoice Disputed';
+        return 'einvoicing.notification_disputed.heading';
     }
 
     #[Override]

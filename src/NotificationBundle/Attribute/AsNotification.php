@@ -28,6 +28,12 @@ final class AsNotification
         public string $description = '',
         public string $icon = 'tabler:bell',
         public NotificationCategory $category = NotificationCategory::OTHER,
+        /**
+         * Sent by e-mail to the members who can bill until they say otherwise,
+         * rather than to no one until they ask: for what goes wrong and needs
+         * someone to act. Only a notification that carries its company can be.
+         */
+        public bool $defaultOn = false,
     ) {
     }
 }

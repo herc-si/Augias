@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Tests\Functional;
 
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Response\FlashResponse;
 use Augias\ElectronicInvoicingBundle\Action\SendElectronicInvoice;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
@@ -27,9 +28,12 @@ use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Test\Factory\TaxIdentifierFactory;
+use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Enum\CompanyRole;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mime\Email;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[CoversClass(SendElectronicInvoice::class)]
@@ -70,6 +74,47 @@ final class ElectronicInvoicingFlowTest extends KernelTestCase
         self::assertFalse($submissions[0]->isSuccess());
         self::assertNull($submissions[0]->getExternalReference());
         self::assertSame('einvoicing.provider.test.simulated_failure', $submissions[0]->getMessage());
+    }
+
+    /**
+     * Sent from cron for a recurring invoice, nobody sees the page say it
+     * failed: whoever can bill is told by e-mail, without having asked to be.
+     */
+    public function testAFailedSendIsToldToWhoeverCanBill(): void
+    {
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $company = $entityManager->find(Company::class, $this->company->getId());
+        self::assertInstanceOf(Company::class, $company);
+
+        foreach (['billing@example.com' => CompanyRole::Billing, 'accountant@example.com' => CompanyRole::Accountant] as $email => $role) {
+            $user = new User()->setEmail($email)->setPassword('password');
+            $user->addCompany($company, $role);
+            $entityManager->persist($user);
+        }
+
+        $entityManager->flush();
+
+        $invoice = $this->createInvoiceForClientWithSiret();
+        $this->configureActiveTestProvider(['reference_prefix' => 'E2E', 'simulate_failure' => true]);
+
+        $this->sendElectronicInvoice($invoice);
+
+        $recipients = [];
+
+        foreach (self::getMailerMessages() as $message) {
+            self::assertInstanceOf(Email::class, $message);
+
+            // Creating the users sent them their own e-mails, about their address.
+            if ('Electronic invoice not sent' !== $message->getSubject()) {
+                continue;
+            }
+
+            foreach ($message->getTo() as $address) {
+                $recipients[] = $address->getAddress();
+            }
+        }
+
+        self::assertSame(['billing@example.com'], $recipients);
     }
 
     public function testSendingElectronicInvoiceWithoutActiveProviderCreatesNoSubmission(): void

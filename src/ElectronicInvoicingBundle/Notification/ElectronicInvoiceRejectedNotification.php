@@ -35,6 +35,7 @@ use Twig\Environment;
     description: 'When an electronic-invoicing platform rejects a submitted invoice',
     icon: 'tabler:building-broadcast-tower',
     category: NotificationCategory::INVOICE,
+    defaultOn: true,
 )]
 class ElectronicInvoiceRejectedNotification extends NotificationMessage
 {
@@ -52,7 +53,7 @@ class ElectronicInvoiceRejectedNotification extends NotificationMessage
     #[Override]
     public function getSubject(): string
     {
-        return 'Electronic Invoice Rejected';
+        return 'einvoicing.notification_rejected.heading';
     }
 
     #[Override]

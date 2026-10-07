@@ -87,6 +87,16 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      */
     public const string DISPUTED_STATUS_CODE = 'fr:207';
 
+    /**
+     * fr:208 Suspended — the client's platform waits for something missing
+     * (an order reference, an attachment); the invoice is completed (fr:209)
+     * or refused once it comes.
+     */
+    public const string SUSPENDED_STATUS_CODE = 'fr:208';
+
+    /** fr:212 Payment received: the last thing that happens to an invoice. */
+    public const string PAID_STATUS_CODE = 'fr:212';
+
     public function __construct(
         private FacturXInvoiceBuilder $documentBuilder,
         private SuperPdpClient $client,
@@ -204,6 +214,14 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      */
     private function forbiddenReason(array $config, SuperPdpApiException $e): string
     {
+        // The Peppol network has no one at the client's address for an
+        // e-invoice: "pre-check: receiver address <0225:000000001> does not
+        // accept this document <busdox-docid-qns::…>" (test instance,
+        // 06/10/2026) — a bare SIREN the directory does not know.
+        if (str_contains($e->getMessage(), 'does not accept this document')) {
+            return 'einvoicing.provider.super_pdp.receiver_unreachable';
+        }
+
         if (! $e->isForbidden()) {
             return $e->getMessage();
         }
@@ -278,6 +296,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
             in_array($statusCode, self::REJECTED_STATUS_CODES, true) => ElectronicInvoiceProcessingStatus::Rejected,
             in_array($statusCode, self::ACCEPTED_STATUS_CODES, true) => ElectronicInvoiceProcessingStatus::Accepted,
             self::DISPUTED_STATUS_CODE === $statusCode => ElectronicInvoiceProcessingStatus::Disputed,
+            self::SUSPENDED_STATUS_CODE === $statusCode => ElectronicInvoiceProcessingStatus::Suspended,
             default => ElectronicInvoiceProcessingStatus::Pending,
         };
     }

@@ -1554,6 +1554,7 @@ einvoicing:
             disconnected: "SUPER PDP ne reconnaît plus l'accès donné à Augias : l'accord a été retiré, ou le compte est resté inutilisé un an. Reconnectez le compte pour reprendre l'envoi."
             display_name: 'SUPER PDP'
             needs_review: "SUPER PDP n'a pas encore vérifié l'identité de l'entreprise : son support examine le compte. Aucune facture ne peut partir d'ici là."
+            receiver_unreachable: "Le client n'est pas joignable par la facturation électronique à l'adresse de sa fiche : personne n'y reçoit de facture. Vérifiez son SIREN et son « Adresse électronique » (celle de l'annuaire, par exemple 0225:123456789_12345), puis renvoyez la facture."
             verification_failed: "SUPER PDP a refusé de lier ces identifiants à l'entreprise : aucune facture ne peut partir. Contactez son support."
             missing_credentials: "L'identifiant client et la clé secrète SUPER PDP doivent être configurés."
             tagline: 'Envoyez des factures Factur-X via SUPER PDP, une Plateforme Agréée (PA/PDP) française.'
@@ -1564,6 +1565,30 @@ einvoicing:
             simulate_failure: 'Simuler un échec de soumission'
             simulated_failure: 'Échec simulé (fournisseur de test)'
             tagline: "Simule l'envoi de factures électroniques sans appel externe réel, pour les tests."
+    status_code:
+        api_accepted: 'Acceptée par la plateforme du client'
+        api_acknowledged: 'Accusé de réception de la plateforme du client'
+        api_invalid: 'Invalide'
+        api_received: 'Reçue'
+        api_rejected: 'Rejetée par la plateforme du client'
+        api_sent: 'Transmise'
+        api_uploaded: 'Déposée sur la plateforme'
+        api_validated: 'Contrôlée'
+        fr_200: 'Déposée'
+        fr_201: 'Émise par la plateforme'
+        fr_202: 'Reçue par la plateforme du client'
+        fr_203: 'Mise à disposition du client'
+        fr_204: 'Prise en charge'
+        fr_205: 'Approuvée'
+        fr_206: 'Approuvée partiellement'
+        fr_207: 'En litige'
+        fr_208: 'Suspendue'
+        fr_209: 'Complétée'
+        fr_210: 'Refusée'
+        fr_211: 'Paiement transmis'
+        fr_212: 'Encaissée'
+        fr_213: 'Rejetée'
+        fr_501: 'Irrecevable'
     super_pdp:
         connect:
             connected: 'Compte SUPER PDP connecté.'
@@ -1586,6 +1611,7 @@ einvoicing:
         no_active_provider: "Aucun fournisseur de facturation électronique actif n'est configuré."
         success: "La facture électronique a été envoyée avec succès."
     view:
+        history: 'Historique'
         title: 'Facturation électronique'
 email: E-mail
 email_verification:
@@ -4336,6 +4362,7 @@ website: 'Site web'
 'Daily, weekly, monthly or custom schedules': 'Chaque jour, semaine, mois, ou à votre rythme'
 'Electronic Invoice Disputed': 'Facture électronique contestée'
 'Electronic Invoice Rejected': 'Facture électronique rejetée'
+'Electronic Invoicing Problem': 'Problème de facturation électronique'
 'Full REST API (JSON-LD, HAL, JSON, XML)': 'API REST complète (JSON-LD, HAL, JSON, XML)'
 'Get paid online': 'Soyez payé en ligne'
 'Give Claude, Cursor or any MCP-aware agent secure access to your Augias data so they can quote, invoice and report on your behalf.': 'Donnez à Claude, Cursor ou tout agent compatible MCP un accès sécurisé à vos données Augias, pour qu''il établisse devis, factures et rapports à votre place.'
@@ -4396,6 +4423,7 @@ website: 'Site web'
 'When a payment is received for an invoice': 'Quand un paiement est reçu pour une facture'
 'When a quote status changes (draft, sent, accepted, etc.)': 'Quand le statut d''un devis change (brouillon, envoyé, accepté…)'
 'When an electronic-invoicing platform rejects a submitted invoice': 'Quand une plateforme de facturation électronique rejette une facture'
+'When an invoice cannot be sent electronically, is suspended, or the platform account needs attention': "Quand une facture ne peut pas partir par voie électronique, qu'elle est suspendue, ou que le compte de la plateforme demande votre attention"
 'When an invoice becomes overdue (past due date while still pending)': 'Quand une facture dépasse son échéance sans être réglée'
 'When an invoice status changes (draft, sent, paid, etc.)': 'Quand le statut d''une facture change (brouillon, envoyée, payée…)'
 'When turnover approaches or passes a limit set by your tax regime': 'Quand le chiffre d''affaires approche ou dépasse un plafond de votre régime fiscal'

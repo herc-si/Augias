@@ -16,6 +16,7 @@ namespace Augias\ElectronicInvoicingBundle\Manager;
 use Augias\CoreBundle\Entity\Company;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicReport;
+use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
 use Augias\ElectronicInvoicingBundle\Enum\ReportKind;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicReporterInterface;
@@ -61,6 +62,7 @@ final readonly class ElectronicReportManager
         private ElectronicReportRepository $reports,
         private ReportDataBuilder $builder,
         private EntityManagerInterface $entityManager,
+        private ElectronicInvoicingAlerts $alerts,
     ) {
     }
 
@@ -86,7 +88,7 @@ final readonly class ElectronicReportManager
                 continue;
             }
 
-            $this->file($company, $setting, ReportKind::Transaction, $invoice->getId(), $stats, static fn (): array => $reporter->reportTransactions($setting->getSettings(), $transactions));
+            $this->file($company, $setting, ReportKind::Transaction, $invoice->getId(), $stats, static fn (): array => $reporter->reportTransactions($setting->getSettings(), $transactions), $invoice);
         }
 
         foreach ($this->paymentsToReport($company, $since) as $payment) {
@@ -96,7 +98,7 @@ final readonly class ElectronicReportManager
                 continue;
             }
 
-            $this->file($company, $setting, ReportKind::Payment, $payment->getId(), $stats, static fn (): array => $reporter->reportPayments($setting->getSettings(), [$data]));
+            $this->file($company, $setting, ReportKind::Payment, $payment->getId(), $stats, static fn (): array => $reporter->reportPayments($setting->getSettings(), [$data]), $payment->getInvoice());
         }
 
         foreach ($this->creditNotesToReport($company, $since) as $creditNote) {
@@ -126,7 +128,7 @@ final readonly class ElectronicReportManager
                 continue;
             }
 
-            $this->file($company, $setting, ReportKind::PaymentReceived, $payment->getId(), $stats, static fn (): array => $reporter->reportPaymentReceived($setting->getSettings(), $invoiceReference, $data));
+            $this->file($company, $setting, ReportKind::PaymentReceived, $payment->getId(), $stats, static fn (): array => $reporter->reportPaymentReceived($setting->getSettings(), $invoiceReference, $data), $payment->getInvoice());
         }
 
         $this->entityManager->flush();
@@ -138,7 +140,7 @@ final readonly class ElectronicReportManager
      * @param array{reported: int, failed: int} $stats
      * @param callable(): list<string>          $send
      */
-    private function file(Company $company, ElectronicInvoiceProviderSetting $setting, ReportKind $kind, ?Ulid $sourceId, array &$stats, callable $send): void
+    private function file(Company $company, ElectronicInvoiceProviderSetting $setting, ReportKind $kind, ?Ulid $sourceId, array &$stats, callable $send, ?Invoice $invoice = null): void
     {
         if (! $sourceId instanceof Ulid) {
             return;
@@ -149,6 +151,8 @@ final readonly class ElectronicReportManager
         if ($report instanceof ElectronicReport && $report->isSuccess()) {
             return;
         }
+
+        $first = ! $report instanceof ElectronicReport;
 
         if (! $report instanceof ElectronicReport) {
             $report = new ElectronicReport($kind, $sourceId, $setting->getProvider());
@@ -162,6 +166,16 @@ final readonly class ElectronicReportManager
         } catch (RuntimeException $e) {
             $report->failed($e->getMessage());
             ++$stats['failed'];
+
+            // Tried again every hour: told the first time, not each time.
+            if ($first) {
+                $this->alerts->raise(
+                    $company,
+                    ReportKind::PaymentReceived === $kind ? ElectronicInvoicingProblem::PaymentStatusFailed : ElectronicInvoicingProblem::ReportFailed,
+                    $invoice,
+                    $e->getMessage(),
+                );
+            }
         }
     }
 

@@ -14,10 +14,13 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Manager;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
+use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
+use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceAccountCheckerInterface;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceAccountStatus;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Psr\Clock\ClockInterface;
+use function in_array;
 
 /**
  * Asks a platform where it stands on the account, and writes the answer onto
@@ -35,6 +38,7 @@ final readonly class ElectronicInvoiceAccountMonitor
     public function __construct(
         private ElectronicInvoiceProviderRegistry $providers,
         private ClockInterface $clock,
+        private ElectronicInvoicingAlerts $alerts,
     ) {
     }
 
@@ -52,7 +56,13 @@ final readonly class ElectronicInvoiceAccountMonitor
         $status = $provider->checkAccount($setting->getSettings());
 
         if ($status->answered) {
+            $before = $setting->getAccountVerification();
             $setting->recordAccountCheck($status->verification, $this->clock->now());
+
+            // Told once, when it happens: the hourly check finds it every time after.
+            if ($status->verification !== $before && in_array($status->verification, [AccountVerification::NeedsReview, AccountVerification::Failed], true)) {
+                $this->alerts->raise($setting->getCompany(), ElectronicInvoicingProblem::AccountNotVerified, detail: $status->verification->translationKey());
+            }
         }
 
         return $status;

@@ -17,8 +17,15 @@ use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicReport;
+use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoicingAlerts;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicReportManager;
+use Augias\ElectronicInvoicingBundle\Manager\ReportDataBuilder;
+use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoicingProblemNotification;
+use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
+use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
+use Augias\ElectronicInvoicingBundle\Repository\ElectronicReportRepository;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
@@ -26,11 +33,15 @@ use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
+use Augias\NotificationBundle\Notification\NotificationManager;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
 use Augias\SettingsBundle\SystemConfig;
 use DateTimeImmutable;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Mockery as M;
 use PHPUnit\Framework\Attributes\CoversClass;
+use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -42,6 +53,7 @@ use function str_contains;
 final class ElectronicReportManagerTest extends KernelTestCase
 {
     use EnsureApplicationInstalled;
+    use MockeryPHPUnitIntegration;
 
     private int $transactionsPosted = 0;
 
@@ -126,6 +138,34 @@ final class ElectronicReportManagerTest extends KernelTestCase
      * invoice sent electronically goes back on that invoice, as fr:212 with
      * the amount by rate — once per payment.
      */
+    /**
+     * Tried again every hour, a failure is told once — not every hour.
+     */
+    public function testAFailedReportIsToldOnce(): void
+    {
+        $this->invoice(private: true, date: 'today');
+        $this->platformUp = false;
+
+        $notifications = M::mock(NotificationManager::class);
+        $notifications->shouldReceive('sendNotification')
+            ->once()
+            ->with(M::on(fn (mixed $notification): bool => $notification instanceof ElectronicInvoicingProblemNotification
+                && ElectronicInvoicingProblem::ReportFailed === $notification->getParameters()['problem']
+                && $this->company->getId()->equals($notification->getParameters()['company']->getId())));
+
+        $manager = new ElectronicReportManager(
+            self::getContainer()->get(ElectronicInvoiceProviderSettingRepository::class),
+            self::getContainer()->get(ElectronicInvoiceProviderRegistry::class),
+            self::getContainer()->get(ElectronicReportRepository::class),
+            self::getContainer()->get(ReportDataBuilder::class),
+            self::getContainer()->get('doctrine.orm.entity_manager'),
+            new ElectronicInvoicingAlerts($notifications, new NullLogger()),
+        );
+
+        self::assertSame(['reported' => 0, 'failed' => 1], $manager->reportPending($this->company));
+        self::assertSame(['reported' => 0, 'failed' => 1], $manager->reportPending($this->company));
+    }
+
     public function testAPaymentOnAnInvoiceSentElectronicallyMarksItPaid(): void
     {
         self::getContainer()->get(SystemConfig::class)->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, '0');

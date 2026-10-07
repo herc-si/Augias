@@ -94,6 +94,17 @@ final class UserNotification extends AbstractController
             }
         }
 
+        // Sent by e-mail until the user says otherwise: shown ticked, so that
+        // saving the page without touching it keeps it that way.
+        foreach ($this->notificationList as $event) {
+            if (! isset($formData[$event]) && $this->getNotificationAttribute($event)?->defaultOn === true) {
+                $formData[$event] = [
+                    'event' => $event,
+                    'transports' => [NotificationSettingType::EMAIL_NOTIFICATION],
+                ];
+            }
+        }
+
         return $this->createForm(NotificationType::class, $formData);
     }
 

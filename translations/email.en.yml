@@ -32,6 +32,31 @@ einvoicing:
         note: "Client's details"
         reason: Reason
         view_invoice: 'View Invoice'
+    notification_problem:
+        account_not_verified:
+            heading: 'Electronic invoicing account not verified'
+            message: 'The electronic invoicing platform no longer recognises your company: no invoice is sent or received through it until this is resolved. Check the account in the settings, and contact the platform if needed.'
+        client: Client
+        company: Company
+        detail: Details
+        disconnected:
+            heading: 'Electronic invoicing platform disconnected'
+            message: 'The connection to the electronic invoicing platform was lost: no invoice is sent or received until the account is connected again. Reconnect it in the settings.'
+        invoice_number: 'Invoice number'
+        payment_status_failed:
+            heading: 'Payment not passed on'
+            message: 'The payment of an invoice sent electronically could not be reported to the platform ("payment received" status). Augias tries again every hour; if it goes on, check the account in the settings.'
+        report_failed:
+            heading: 'E-reporting not sent'
+            message: 'A sale to a private individual, or its payment, could not be reported to the tax administration through the platform. Augias tries again every hour; if it goes on, check the account in the settings.'
+        send_failed:
+            heading: 'Electronic invoice not sent'
+            message: 'An invoice could not be submitted to the electronic invoicing platform. Fix what is reported below, then send it again from the invoice page.'
+        suspended:
+            heading: 'Electronic invoice on hold'
+            message: "Your client's platform put an invoice on hold: something is missing, such as an order reference or an attachment. Ask your client what they need."
+        view_invoice: 'View the invoice'
+        view_settings: 'View the settings'
     notification_rejected:
         alert: 'Electronic Invoice Rejected'
         client: Client

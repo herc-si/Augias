@@ -32,6 +32,31 @@ einvoicing:
         note: 'Précisions du client'
         reason: Motif
         view_invoice: 'Voir la facture'
+    notification_problem:
+        account_not_verified:
+            heading: 'Compte de facturation électronique non vérifié'
+            message: "La plateforme de facturation électronique ne reconnaît plus votre entreprise : aucune facture ne part ni n'arrive par elle tant que ce n'est pas réglé. Vérifiez le compte dans les réglages, et contactez la plateforme si besoin."
+        client: Client
+        company: Entreprise
+        detail: Précisions
+        disconnected:
+            heading: 'Plateforme de facturation électronique déconnectée'
+            message: "La connexion à la plateforme de facturation électronique a été perdue : aucune facture ne part ni n'arrive tant que le compte n'est pas reconnecté. Reconnectez-le dans les réglages."
+        invoice_number: 'Numéro de facture'
+        payment_status_failed:
+            heading: "Encaissement non transmis"
+            message: "Le paiement d'une facture envoyée par voie électronique n'a pas pu être signalé à la plateforme (statut « encaissée »). Augias réessaie toutes les heures ; si cela dure, vérifiez le compte dans les réglages."
+        report_failed:
+            heading: "E-reporting non transmis"
+            message: "Une vente à un particulier, ou son paiement, n'a pas pu être déclaré à l'administration par la plateforme. Augias réessaie toutes les heures ; si cela dure, vérifiez le compte dans les réglages."
+        send_failed:
+            heading: "Facture électronique non envoyée"
+            message: "Une facture n'a pas pu être déposée sur la plateforme de facturation électronique. Corrigez ce qui est signalé ci-dessous, puis renvoyez-la depuis la fiche de la facture."
+        suspended:
+            heading: 'Facture électronique suspendue'
+            message: "La plateforme de votre client a suspendu une facture : il lui manque quelque chose, une référence de commande ou une pièce jointe par exemple. Voyez avec votre client ce qu'il attend."
+        view_invoice: 'Voir la facture'
+        view_settings: 'Voir les réglages'
     notification_rejected:
         alert: 'Facture électronique rejetée'
         client: Client
