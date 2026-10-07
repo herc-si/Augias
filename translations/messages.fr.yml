@@ -383,7 +383,7 @@ action:
     submit: Valider
     update: Mettre à jour
 active_clients: 'Clients actifs'
-add_client: 'Ajouter un tiers'
+add_client: 'Ajouter un client'
 add_info: 'Ajouter des informations'
 address: Adresse
 all_clients: 'Tous les clients'
@@ -719,7 +719,7 @@ client:
             generic: 'Cette fonctionnalité nécessite un plan supérieur. Passez à un plan supérieur pour la débloquer.'
             upgrade: 'Passer à un plan supérieur'
             with_plan: 'Cette fonctionnalité est disponible avec le plan %plan%. Passez à un plan supérieur pour la débloquer.'
-        info_description: 'Informations de base sur ce tiers'
+        info_description: 'Les informations de base de la fiche'
         is_client:
             label: Client
         is_supplier:
@@ -729,9 +729,9 @@ client:
             label: Nom
             placeholder: 'Acme Corporation'
         role_description: 'Cochez l''une ou les deux, vous pourrez changer plus tard.'
-        role_title: 'Qu''est-ce que ce tiers ?'
-        subtitle: 'Ajoutez un nouveau tiers, puis définissez-le comme client, fournisseur, ou les deux.'
-        fiscal_identifiers_description: "Ils figurent sur les factures et devis émis à ce tiers, et servent à lui adresser ses factures électroniques. Laissez vide pour un particulier."
+        role_title: 'Client, fournisseur, ou les deux ?'
+        subtitle: 'Renseignez la fiche, puis indiquez s''il s''agit d''un client, d''un fournisseur, ou des deux.'
+        fiscal_identifiers_description: "Ils figurent sur les factures et devis qui lui sont adressés, et servent à lui adresser ses factures électroniques. Laissez vide pour un particulier."
         fiscal_identifiers_title: 'Identifiants fiscaux'
         other_identifiers_title: 'Autres identifiants'
         siren: 'SIREN'
@@ -771,7 +771,7 @@ client:
             invoice: 'Créer une facture'
             quote: 'Créer un devis'
         list: 'Liste des clients'
-        main: Tiers
+        main: Clients
         view: 'Voir le client'
     modal:
         action:
@@ -844,8 +844,8 @@ client:
             invoices: Factures
             payments: Paiements
             quotes: Devis
-client_create: 'Créer un tiers'
-clients: Tiers
+client_create: 'Ajouter un client'
+clients: Clients
 close: Fermer
 company:
     closing:
@@ -1436,7 +1436,7 @@ document_line:
     move_down: 'Descendre la ligne'
     move_up: 'Monter la ligne'
     note_placeholder: 'Note ou intertitre, par exemple « Phase 2 — Développement »'
-edit_client: 'Modifier le tiers'
+edit_client: 'Modifier la fiche'
 einvoicing:
     account:
         held: "Enregistré, mais la plateforme n'a pas vérifié l'identité de l'entreprise : la facturation électronique reste à l'arrêt jusqu'à ce qu'elle le fasse."

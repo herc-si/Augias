@@ -58,6 +58,24 @@ class ClientForm extends AbstractController
     }
 
     /**
+     * Whether an existing record is being edited. Not "has an id": a new
+     * record is handed its ULID on construction, and the supplier add page
+     * passes one in already marked as a supplier.
+     */
+    public function isEditing(): bool
+    {
+        return $this->client instanceof Client && $this->manager->contains($this->client);
+    }
+
+    /**
+     * Whether the record being added is a supplier only, to title the page.
+     */
+    public function isAddingASupplier(): bool
+    {
+        return ! $this->isEditing() && $this->client instanceof Client && $this->client->isSupplier() && ! $this->client->isClient();
+    }
+
+    /**
      * The companies of the French register matching the search.
      *
      * @return list<RegistryCompany>
