@@ -619,6 +619,11 @@ category:
         name: Name
     menu:
         list: Categories
+    quick_add:
+        button: "New category"
+        failed: "The category could not be created."
+        placeholder: "Category name"
+        submit: "Add"
     usage:
         catalog: Catalogue
         purchase: Purchases

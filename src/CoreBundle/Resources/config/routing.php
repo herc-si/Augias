@@ -16,6 +16,7 @@ use Augias\CoreBundle\Action\CancelCompanyClosure;
 use Augias\CoreBundle\Action\Category\Add as CategoryAdd;
 use Augias\CoreBundle\Action\Category\Edit as CategoryEdit;
 use Augias\CoreBundle\Action\Category\Index as CategoryIndex;
+use Augias\CoreBundle\Action\Category\QuickAdd as CategoryQuickAdd;
 use Augias\CoreBundle\Action\CreateCompany;
 use Augias\CoreBundle\Action\DeleteCompany;
 use Augias\CoreBundle\Action\Search;
@@ -137,6 +138,12 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_categories_edit', '/categories/edit/{id}')
         ->controller(CategoryEdit::class);
+
+    // The "+" beside a category dropdown, answered in JSON.
+    $routingConfigurator
+        ->add('_categories_quick_add', '/categories/quick-add')
+        ->controller(CategoryQuickAdd::class)
+        ->methods(['POST']);
 
     // A design template rendered with sample data, for the settings gallery.
     $routingConfigurator

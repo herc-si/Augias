@@ -31,5 +31,16 @@ final class CatalogMenu
                 ],
             ],
         );
+
+        // Right under the catalogue, where they are mostly looked for, rather
+        // than among the system settings. Still the one list purchases share -
+        // see CoreBundle\Entity\Category.
+        $menu->addChild(
+            'menu.top.categories',
+            [
+                'route' => '_categories_index',
+                'extras' => ['icon' => 'category'],
+            ],
+        );
     }
 }

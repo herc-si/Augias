@@ -45,6 +45,8 @@ final class SidebarMenuTest extends KernelTestCase
                 'client.menu.main',
                 PrestationMenu::SECTION,
                 'catalog.menu.main',
+                // Right under the catalogue, not among the system settings.
+                'menu.top.categories',
                 'payment.menu.main',
                 'accounting.menu.main',
                 'menu.top.system',

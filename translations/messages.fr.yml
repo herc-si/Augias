@@ -619,6 +619,11 @@ category:
         name: Nom
     menu:
         list: Catégories
+    quick_add:
+        button: "Nouvelle catégorie"
+        failed: "La catégorie n'a pas pu être créée."
+        placeholder: "Nom de la catégorie"
+        submit: "Ajouter"
     usage:
         catalog: Catalogue
         purchase: Achats

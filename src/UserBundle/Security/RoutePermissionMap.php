@@ -132,6 +132,7 @@ final class RoutePermissionMap
         '_catalog_edit' => CompanyPermission::BillingWrite,
         '_categories_add' => CompanyPermission::BillingWrite,
         '_categories_edit' => CompanyPermission::BillingWrite,
+        '_categories_quick_add' => CompanyPermission::BillingWrite,
         '_clients_add' => CompanyPermission::BillingWrite,
         '_clients_delete' => CompanyPermission::BillingWrite,
         '_clients_edit' => CompanyPermission::BillingWrite,
