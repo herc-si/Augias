@@ -195,6 +195,8 @@ final class ViewTest extends KernelTestCase
     public function testViewWithElectronicInvoiceSubmissions(): void
     {
         $request = Request::createFromGlobals();
+        // A real page has one, and the "Synchroniser maintenant" form's token lives in it.
+        $request->setSession(new Session(new MockArraySessionStorage()));
         $requestStack = self::getContainer()->get('request_stack');
         $requestStack->push($request);
 
@@ -280,6 +282,7 @@ final class ViewTest extends KernelTestCase
         self::assertStringContainsString('Made available to the client', $response);
         self::assertStringContainsString('On hold', $response);
         self::assertStringContainsString('Numéro de commande manquant', $response);
+        self::assertStringContainsString('Synchronise now', $response);
     }
 
     /**

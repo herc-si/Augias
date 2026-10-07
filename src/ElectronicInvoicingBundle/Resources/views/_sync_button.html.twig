@@ -1,0 +1,20 @@
+{#
+# This file is part of Augias package.
+#
+# (c) HERC SI <opensource@herc-si.fr>
+#
+# This source file is subject to the MIT license that is bundled
+# with this source code in the file LICENSE.
+#}
+
+{# "Synchroniser maintenant": back to this page once done. #}
+{% if route_allowed('_einvoicing_sync') %}
+    <form method="post" action="{{ path('_einvoicing_sync') }}" class="d-inline">
+        <input type="hidden" name="_token" value="{{ csrf_token('einvoicing_sync') }}">
+        <input type="hidden" name="_back" value="{{ app.request.requestUri }}">
+        <button type="submit" class="btn {{ class|default('') }}">
+            {{ ux_icon('tabler:refresh', {width: 18, height: 18}) }}
+            {{ 'einvoicing.sync.button'|trans }}
+        </button>
+    </form>
+{% endif %}

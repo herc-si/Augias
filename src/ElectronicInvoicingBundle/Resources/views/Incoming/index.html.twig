@@ -11,6 +11,10 @@
 
 {% block title %}{{ ux_icon('tabler:inbox', {width: 24, height: 24, class: 'me-2'}) }}{{ 'einvoicing.incoming.title'|trans }}{% endblock %}
 
+{% block heading %}
+    {{ include('@AugiasElectronicInvoicing/_sync_button.html.twig') }}
+{% endblock %}
+
 {% block content %}
     <twig:Ui:Card>
         <twig:DataGrid name="einvoicing_incoming_grid" />

@@ -21,6 +21,7 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmissionEvent;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoicingAlerts;
+use Augias\ElectronicInvoicingBundle\Manager\SuperPdpStatusRefresher;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceDisputedNotification;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoiceRejectedNotification;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoicingProblemNotification;
@@ -56,6 +57,7 @@ use function stream_get_contents;
 
 #[Group('functional')]
 #[CoversClass(PollSuperPdpInvoiceStatusCommand::class)]
+#[CoversClass(SuperPdpStatusRefresher::class)]
 final class PollSuperPdpInvoiceStatusCommandTest extends KernelTestCase
 {
     use EnsureApplicationInstalled;
@@ -154,14 +156,17 @@ final class PollSuperPdpInvoiceStatusCommandTest extends KernelTestCase
 
         $command = new PollSuperPdpInvoiceStatusCommand(
             self::getContainer()->get('doctrine'),
-            self::getContainer()->get(ElectronicInvoiceSubmissionRepository::class),
-            self::getContainer()->get(ElectronicInvoiceProviderSettingRepository::class),
-            self::getContainer()->get(SuperPdpClient::class),
-            self::getContainer()->get(SuperPdpAccessTokens::class),
-            $notificationManager,
-            new NullLogger(),
-            new ElectronicInvoicingAlerts($notificationManager, new NullLogger()),
-            new MockClock('2026-10-06 12:00:00 UTC'),
+            new SuperPdpStatusRefresher(
+                self::getContainer()->get('doctrine.orm.entity_manager'),
+                self::getContainer()->get(ElectronicInvoiceSubmissionRepository::class),
+                self::getContainer()->get(ElectronicInvoiceProviderSettingRepository::class),
+                self::getContainer()->get(SuperPdpClient::class),
+                self::getContainer()->get(SuperPdpAccessTokens::class),
+                $notificationManager,
+                new NullLogger(),
+                new ElectronicInvoicingAlerts($notificationManager, new NullLogger()),
+                new MockClock('2026-10-06 12:00:00 UTC'),
+            ),
         );
 
         $this->initOutput([]);
@@ -232,14 +237,17 @@ final class PollSuperPdpInvoiceStatusCommandTest extends KernelTestCase
 
         $command = new PollSuperPdpInvoiceStatusCommand(
             self::getContainer()->get('doctrine'),
-            self::getContainer()->get(ElectronicInvoiceSubmissionRepository::class),
-            self::getContainer()->get(ElectronicInvoiceProviderSettingRepository::class),
-            self::getContainer()->get(SuperPdpClient::class),
-            self::getContainer()->get(SuperPdpAccessTokens::class),
-            $notificationManager,
-            new NullLogger(),
-            new ElectronicInvoicingAlerts($notificationManager, new NullLogger()),
-            new MockClock('2026-10-06 12:00:00 UTC'),
+            new SuperPdpStatusRefresher(
+                self::getContainer()->get('doctrine.orm.entity_manager'),
+                self::getContainer()->get(ElectronicInvoiceSubmissionRepository::class),
+                self::getContainer()->get(ElectronicInvoiceProviderSettingRepository::class),
+                self::getContainer()->get(SuperPdpClient::class),
+                self::getContainer()->get(SuperPdpAccessTokens::class),
+                $notificationManager,
+                new NullLogger(),
+                new ElectronicInvoicingAlerts($notificationManager, new NullLogger()),
+                new MockClock('2026-10-06 12:00:00 UTC'),
+            ),
         );
 
         $this->initOutput([]);
@@ -384,14 +392,17 @@ final class PollSuperPdpInvoiceStatusCommandTest extends KernelTestCase
     {
         $command = new PollSuperPdpInvoiceStatusCommand(
             self::getContainer()->get('doctrine'),
-            self::getContainer()->get(ElectronicInvoiceSubmissionRepository::class),
-            self::getContainer()->get(ElectronicInvoiceProviderSettingRepository::class),
-            self::getContainer()->get(SuperPdpClient::class),
-            self::getContainer()->get(SuperPdpAccessTokens::class),
-            $notificationManager,
-            new NullLogger(),
-            new ElectronicInvoicingAlerts($notificationManager, new NullLogger()),
-            new MockClock('2026-10-06 12:00:00 UTC'),
+            new SuperPdpStatusRefresher(
+                self::getContainer()->get('doctrine.orm.entity_manager'),
+                self::getContainer()->get(ElectronicInvoiceSubmissionRepository::class),
+                self::getContainer()->get(ElectronicInvoiceProviderSettingRepository::class),
+                self::getContainer()->get(SuperPdpClient::class),
+                self::getContainer()->get(SuperPdpAccessTokens::class),
+                $notificationManager,
+                new NullLogger(),
+                new ElectronicInvoicingAlerts($notificationManager, new NullLogger()),
+                new MockClock('2026-10-06 12:00:00 UTC'),
+            ),
         );
 
         $this->initOutput([]);

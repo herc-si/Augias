@@ -1610,6 +1610,11 @@ einvoicing:
         only_disbursements: "Electronic invoice not sent: it carries nothing but disbursements. They are on the disbursement note, which is not an invoice and does not go through the platform."
         no_active_provider: 'No active electronic-invoicing provider is configured.'
         success: 'The electronic invoice was sent successfully.'
+    sync:
+        button: 'Synchronise now'
+        done: 'Synchronised: %received% invoice(s) received, %refreshed% status(es) updated, %failed% error(s).'
+        invalid_token: 'The page has expired: reload it, then synchronise again.'
+        too_soon: 'Already synchronised less than a minute ago: try again in a moment.'
     view:
         history: 'History'
         title: 'Electronic Invoicing'

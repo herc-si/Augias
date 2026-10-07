@@ -18,6 +18,7 @@ use Augias\ElectronicInvoicingBundle\Action\RespondToIncomingInvoice;
 use Augias\ElectronicInvoicingBundle\Action\SendElectronicInvoice;
 use Augias\ElectronicInvoicingBundle\Action\SuperPdp\Callback;
 use Augias\ElectronicInvoicingBundle\Action\SuperPdp\Connect;
+use Augias\ElectronicInvoicingBundle\Action\SyncNow;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpConnector;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
@@ -45,6 +46,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->add('_einvoicing_incoming_respond', '/incoming/respond/{id}')
         ->controller(RespondToIncomingInvoice::class)
         ->methods(['GET', 'POST']);
+
+    $routingConfigurator
+        ->add('_einvoicing_sync', '/sync')
+        ->controller(SyncNow::class)
+        ->methods(['POST']);
 
     $routingConfigurator
         ->add('_einvoicing_super_pdp_connect', '/super-pdp/connect/{id}')
