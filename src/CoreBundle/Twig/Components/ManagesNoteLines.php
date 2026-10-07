@@ -19,9 +19,9 @@ use Symfony\UX\LiveComponent\Attribute\LiveArg;
 use Symfony\UX\LiveComponent\Attribute\PreReRender;
 use function array_keys;
 use function ctype_digit;
-use function in_array;
 use function is_array;
 use function max;
+use function preg_match;
 use function trim;
 
 /**
@@ -77,7 +77,10 @@ trait ManagesNoteLines
         $description = trim((string) ($line['description'] ?? ''));
         $price = trim((string) ($line['price'] ?? ''));
 
-        return $description === '' && in_array($price, ['', '0', '0.00'], true) ? (int) $index : null;
+        // The price comes back formatted for the user's locale: "0,00" in
+        // French, which a comparison with "0.00" missed, leaving the opening
+        // line blank above every catalogue entry.
+        return $description === '' && preg_match('/^[0.,\s\x{00A0}\x{202F}]*$/u', $price) === 1 ? (int) $index : null;
     }
 
     #[LiveAction]
