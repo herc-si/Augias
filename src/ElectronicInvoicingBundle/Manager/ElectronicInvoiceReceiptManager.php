@@ -18,12 +18,14 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
+use Augias\ElectronicInvoicingBundle\Event\ElectronicInvoiceReceiptAnsweredEvent;
 use Augias\ElectronicInvoicingBundle\Event\ElectronicInvoiceReceiptImportedEvent;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceResponderInterface;
 use Augias\ElectronicInvoicingBundle\Provider\ReceivedElectronicInvoiceData;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceReceiptRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
@@ -172,8 +174,10 @@ final readonly class ElectronicInvoiceReceiptManager implements ElectronicInvoic
 
         // Recorded only once the platform took it: an answer the supplier
         // never received is not an answer.
-        $receipt->setStatusCode($response->value);
+        $receipt->recordResponse($response, $reason, '' === $comment ? null : $comment, new DateTimeImmutable());
         $this->entityManager->flush();
+
+        $this->eventDispatcher->dispatch(new ElectronicInvoiceReceiptAnsweredEvent($receipt, $response));
     }
 
     /**

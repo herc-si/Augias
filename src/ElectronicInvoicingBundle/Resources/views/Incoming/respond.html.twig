@@ -29,6 +29,8 @@
             {% if receipt.response %}
                 <twig:Ui:Alert type="info" icon="tabler:info-circle">
                     {{ 'einvoicing.response.already_answered_as'|trans({'%response%': receipt.response.translationKey|trans}) }}
+                    {% if receipt.responseReason %}<br>{{ 'einvoicing.response.form.reason'|trans }} : {{ receipt.responseReason.translationKey|trans }}{% endif %}
+                    {% if receipt.responseComment %}<br><em>« {{ receipt.responseComment }} »</em>{% endif %}
                 </twig:Ui:Alert>
             {% else %}
                 <twig:Ui:Alert type="warning" icon="tabler:alert-triangle">{{ 'einvoicing.response.unavailable'|trans }}</twig:Ui:Alert>
@@ -40,10 +42,12 @@
                 <twig:Ui:Alert type="warning" icon="tabler:alert-triangle">{{ 'einvoicing.response.disputed_help'|trans }}</twig:Ui:Alert>
             {% endif %}
             <p class="text-secondary">{{ 'einvoicing.response.help'|trans }}</p>
-            {{ form_start(form) }}
+            {{ form_start(form, {attr: {'data-controller': 'receipt-response', 'data-action': 'change->receipt-response#update'}}) }}
                 {{ form_errors(form) }}
                 {{ form_row(form.response) }}
-                {{ form_row(form.reason) }}
+                <div {{ stimulus_target('receipt-response', 'reason') }}>
+                    {{ form_row(form.reason) }}
+                </div>
                 {{ form_row(form.comment) }}
                 <div class="d-flex justify-content-between">
                     <a href="{{ back }}" class="btn btn-ghost">{{ 'action.cancel'|trans }}</a>

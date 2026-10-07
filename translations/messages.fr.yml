@@ -491,6 +491,10 @@ bill:
             pay: "La facture ne peut pas être payée"
             reopen: "La facture ne peut pas être réouverte"
     view:
+        answer:
+            '205': 'Accepter la facture'
+            '207': 'Contester la facture'
+            '210': 'Refuser la facture (annule l''achat)'
         answer_supplier: 'Répondre au fournisseur'
         document: 'Voir la facture du fournisseur'
         balance: Solde

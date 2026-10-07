@@ -32,6 +32,13 @@ enum ReportKind: string
      */
     case PaymentReceived = 'payment_received';
 
+    /**
+     * A purchase received electronically, paid: the "payment sent" status
+     * (fr:211) on that invoice, so the supplier sees it. Optional in the
+     * reform, sent once the invoice was accepted.
+     */
+    case PaymentSent = 'payment_sent';
+
     /** A credit note to a private individual: the sale, going the other way. */
     case CreditNote = 'credit_note';
 

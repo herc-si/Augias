@@ -43,6 +43,9 @@ einvoicing:
             heading: 'Plateforme de facturation électronique déconnectée'
             message: "La connexion à la plateforme de facturation électronique a été perdue : aucune facture ne part ni n'arrive tant que le compte n'est pas reconnecté. Reconnectez-le dans les réglages."
         invoice_number: 'Numéro de facture'
+        payment_sent_failed:
+            heading: 'Paiement non signalé au fournisseur'
+            message: "Le paiement d'un achat reçu par la facturation électronique n'a pas pu être signalé au fournisseur (statut « paiement transmis »). Augias réessaie toutes les heures ; si cela dure, vérifiez le compte dans les réglages."
         payment_status_failed:
             heading: "Encaissement non transmis"
             message: "Le paiement d'une facture envoyée par voie électronique n'a pas pu être signalé à la plateforme (statut « encaissée »). Augias réessaie toutes les heures ; si cela dure, vérifiez le compte dans les réglages."

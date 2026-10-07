@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Manager;
 
+use Augias\BillBundle\Entity\BillPayment;
 use Augias\CoreBundle\Entity\Company;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicReport;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
+use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Augias\ElectronicInvoicingBundle\Enum\ReportKind;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicReporterInterface;
@@ -30,7 +32,9 @@ use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
+use Brick\Math\RoundingMode;
 use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -131,6 +135,18 @@ final readonly class ElectronicReportManager
             $this->file($company, $setting, ReportKind::PaymentReceived, $payment->getId(), $stats, static fn (): array => $reporter->reportPaymentReceived($setting->getSettings(), $invoiceReference, $data), $payment->getInvoice());
         }
 
+        foreach ($this->billPaymentsOnReceivedInvoices($company, $since, $setting->getProvider()) as [$billPayment, $invoiceReference]) {
+            $amount = $billPayment->getAmount()->toBigDecimal()->dividedBy(100, 2, RoundingMode::HalfEven)->__toString();
+
+            $this->file($company, $setting, ReportKind::PaymentSent, $billPayment->getId(), $stats, static fn (): array => $reporter->reportPaymentSent(
+                $setting->getSettings(),
+                $invoiceReference,
+                $billPayment->getPaidDate(),
+                $billPayment->getCurrencyCode(),
+                $amount,
+            ));
+        }
+
         $this->entityManager->flush();
 
         return $stats;
@@ -171,7 +187,11 @@ final readonly class ElectronicReportManager
             if ($first) {
                 $this->alerts->raise(
                     $company,
-                    ReportKind::PaymentReceived === $kind ? ElectronicInvoicingProblem::PaymentStatusFailed : ElectronicInvoicingProblem::ReportFailed,
+                    match ($kind) {
+                        ReportKind::PaymentReceived => ElectronicInvoicingProblem::PaymentStatusFailed,
+                        ReportKind::PaymentSent => ElectronicInvoicingProblem::PaymentSentFailed,
+                        default => ElectronicInvoicingProblem::ReportFailed,
+                    },
                     $invoice,
                     $e->getMessage(),
                 );
@@ -290,6 +310,39 @@ final readonly class ElectronicReportManager
 
             if (null !== $reference) {
                 yield [$payment, $reference];
+            }
+        }
+    }
+
+    /**
+     * Payments of purchases received through $provider and accepted there:
+     * what the supplier is told was paid (fr:211). Not a refused or disputed
+     * one — nothing is owed on the first, nothing settled on the second.
+     *
+     * @return iterable<array{BillPayment, string}>
+     */
+    private function billPaymentsOnReceivedInvoices(Company $company, DateTimeImmutable $since, string $provider): iterable
+    {
+        /** @var list<BillPayment> $payments */
+        $payments = $this->entityManager->getRepository(BillPayment::class)->createQueryBuilder('p')
+            ->innerJoin('p.bill', 'b')
+            ->innerJoin('b.electronicInvoiceReceipt', 'r')
+            ->andWhere('b.company = :company')
+            ->andWhere('r.provider = :provider')
+            ->andWhere('r.statusCode = :accepted')
+            ->andWhere('p.paidDate >= :since')
+            ->setParameter('company', $company->getId(), UlidType::NAME)
+            ->setParameter('provider', $provider)
+            ->setParameter('accepted', ReceiptResponse::Accepted->value)
+            ->setParameter('since', $since->setTime(0, 0), Types::DATE_IMMUTABLE)
+            ->getQuery()
+            ->getResult();
+
+        foreach ($payments as $payment) {
+            $receipt = $payment->getBill()->getElectronicInvoiceReceipt();
+
+            if (null !== $receipt) {
+                yield [$payment, $receipt->getExternalReference()];
             }
         }
     }
