@@ -332,7 +332,13 @@
                             >
                                 <option value="">{{ 'catalog.picker.placeholder'|trans }}</option>
                                 {% for product in catalogProducts %}
-                                    <option value="{{ product.id }}">{{ product.name }}</option>
+                                    {# Reference, price and unit too: the name alone does not
+                                     # tell two variants of a service apart. #}
+                                    <option value="{{ product.id }}">
+                                        {%- if product.reference is not empty %}{{ product.reference }} · {% endif -%}
+                                        {{ product.name }}
+                                        {%- if product.salePrice is not null %} — {{ product.salePrice|formatCurrency }} / {{ product.unit.label|trans|lower }}{% endif -%}
+                                    </option>
                                 {% endfor %}
                             </select>
                         {% endif %}
