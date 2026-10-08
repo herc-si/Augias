@@ -15,12 +15,14 @@ namespace Augias\AccountingBundle\Tests\Functional;
 
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\CoreBundle\Company\CompanyBankDetails;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\PaymentBundle\Entity\PaymentMethod;
+use Augias\SettingsBundle\SystemConfig;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Test\Factory\UserFactory;
@@ -77,6 +79,63 @@ final class BankPageTest extends WebTestCase
         $invoice = $this->em->find(Invoice::class, $invoice->getId());
         self::assertInstanceOf(Invoice::class, $invoice);
         self::assertSame(InvoiceStatus::Paid, $invoice->getStatus());
+    }
+
+    /**
+     * The bank details of the invoices and the accounts of the bank page are
+     * entered once: the first fills the form for the second, an account can
+     * become the one the invoices print, and the page says which one it is.
+     */
+    public function testTheInvoicesAccountIsOfferedMarkedAndChosen(): void
+    {
+        $config = self::getContainer()->get(SystemConfig::class);
+        $config->set(CompanyBankDetails::BANK_NAME, 'Crédit Agricole');
+        $config->set(CompanyBankDetails::IBAN, 'FR76 3000 6000 0112 3456 7890 189');
+        $config->set(CompanyBankDetails::BIC, 'AGRIFRPP');
+        $owner = $this->member(CompanyRole::Owner);
+
+        $browser = $this->browser()->actingAs($owner)->visit('/accounting/bank')->assertSuccessful();
+        $form = $browser->crawler()->filter('form[action="/accounting/bank-accounts"]');
+        self::assertSame('Crédit Agricole', $form->filter('input[name=name]')->attr('value'));
+        self::assertSame('FR76 3000 6000 0112 3456 7890 189', $form->filter('input[name=iban]')->attr('value'));
+        $token = $form->filter('input[name=_token]')->attr('value');
+
+        $browser->post('/accounting/bank-accounts', ['body' => ['_token' => $token, 'name' => 'Crédit Agricole', 'iban' => 'FR76 3000 6000 0112 3456 7890 189', 'currency' => 'EUR']])
+            ->assertSuccessful()
+            ->assertSee('Sur vos factures')
+            // Known now: the form is empty again, and no offer to put it on the invoices.
+            ->assertElementCount('form[action$="/on-invoices"]', 0);
+        self::assertSame('', (string) $browser->crawler()->filter('form[action="/accounting/bank-accounts"] input[name=iban]')->attr('value'));
+
+        $browser->post('/accounting/bank-accounts', ['body' => ['_token' => $token, 'name' => 'Qonto', 'iban' => 'FR59 1695 8000 0100 0000 0000 058', 'currency' => 'EUR']])
+            ->assertSuccessful()
+            ->assertSee('Vos factures portent un autre IBAN.');
+
+        $action = (string) $browser->crawler()->filter('form[action$="/on-invoices"]')->attr('action');
+        $browser->post($action, ['body' => ['_token' => $token]])
+            ->assertSuccessful()
+            ->assertSee('Ce compte figure désormais sur vos factures. Vérifiez le BIC.');
+
+        $bank = self::getContainer()->get(CompanyBankDetails::class)->get();
+        self::assertNotNull($bank);
+        self::assertSame('FR5916958000010000000000058', $bank->iban);
+        self::assertSame('Qonto', $bank->bankName);
+        // Another bank's: the BIC of the old one would be wrong.
+        self::assertNull($bank->bic);
+    }
+
+    /**
+     * Adding an account is billing work; choosing what the invoices print is
+     * a setting.
+     */
+    public function testOnlyWhoMayChangeTheSettingsChoosesTheInvoicesAccount(): void
+    {
+        $billing = $this->member(CompanyRole::Billing);
+
+        $this->browser()
+            ->actingAs($billing)
+            ->post('/accounting/bank-accounts/01K00000000000000000000000/on-invoices', ['body' => []])
+            ->assertStatus(403);
     }
 
     public function testAnAccountantSeesTheBankButRecordsNothing(): void

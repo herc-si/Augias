@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Config;
 
+use Augias\CoreBundle\Company\CompanyBankDetails;
+use Augias\CoreBundle\Form\Type\BicType;
+use Augias\CoreBundle\Form\Type\IbanType;
 use Augias\CoreBundle\Form\Type\ImageUploadType;
 use Augias\CoreBundle\Form\Type\LocaleType;
 use Augias\MoneyBundle\Form\Type\CurrencyType;
@@ -37,6 +40,9 @@ final class SystemConfigProvider implements ProviderInterface
             new Config('system/company/contact_details/phone_number', null, null, TextType::class),
             new Config('system/company/currency', $data['currency'] ?? null, null, CurrencyType::class),
             new Config('system/company/locale', $data['locale'] ?? 'en', null, LocaleType::class),
+            new Config(CompanyBankDetails::BANK_NAME, null, null, TextType::class, ['attr' => ['maxlength' => 100]]),
+            new Config(CompanyBankDetails::IBAN, null, null, IbanType::class),
+            new Config(CompanyBankDetails::BIC, null, null, BicType::class),
         ];
     }
 }

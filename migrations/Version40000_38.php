@@ -64,8 +64,8 @@ final class Version40000_38 extends AbstractMigration
             BillingTemplateResolver::TEMPLATE_SETTING_KEY => [BillingTemplateRegistry::DEFAULT_SLUG, 'settings.page.design.template.description', InvoiceTemplateType::class, ['feature_gated' => 'custom_templates']],
             DesignConfigProvider::ACCENT_COLOR => [null, 'settings.page.design.accent_color.description', TextType::class, ['label' => 'settings.page.design.accent_color.label', 'attr' => ['placeholder' => '#1e4976', 'maxlength' => 7]]],
             DesignConfigProvider::FOOTER_TEXT => [null, 'settings.page.design.footer_text.description', TextareaType::class, ['label' => 'settings.page.design.footer_text.label', 'attr' => ['rows' => 3, 'maxlength' => 400]]],
-            DesignConfigProvider::IBAN => [null, 'settings.page.design.iban.description', TextType::class, ['label' => 'settings.page.design.iban.label', 'attr' => ['placeholder' => 'FR76 3000 6000 0112 3456 7890 189', 'maxlength' => 42]]],
-            DesignConfigProvider::BIC => [null, 'settings.page.design.bic.description', TextType::class, ['label' => 'settings.page.design.bic.label', 'attr' => ['maxlength' => 11]]],
+            'design/iban' => [null, 'settings.page.design.iban.description', TextType::class, ['label' => 'settings.page.design.iban.label', 'attr' => ['placeholder' => 'FR76 3000 6000 0112 3456 7890 189', 'maxlength' => 42]]],
+            'design/bic' => [null, 'settings.page.design.bic.description', TextType::class, ['label' => 'settings.page.design.bic.label', 'attr' => ['maxlength' => 11]]],
         ];
 
         foreach ($this->connection->fetchFirstColumn('SELECT id FROM companies') as $company) {
@@ -95,7 +95,7 @@ final class Version40000_38 extends AbstractMigration
      */
     public function postDown(Schema $schema): void
     {
-        foreach ([DesignConfigProvider::ACCENT_COLOR, DesignConfigProvider::FOOTER_TEXT, DesignConfigProvider::IBAN, DesignConfigProvider::BIC] as $key) {
+        foreach ([DesignConfigProvider::ACCENT_COLOR, DesignConfigProvider::FOOTER_TEXT, 'design/iban', 'design/bic'] as $key) {
             $this->connection->delete('app_config', ['setting_key' => $key]);
         }
 

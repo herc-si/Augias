@@ -70,12 +70,20 @@ accounting:
             help: "CAMT.053 (XML), OFX ou CSV. Réimporter un relevé déjà importé n'ajoute rien en double."
             submit: Importer
         account:
+            prefilled: 'Rempli avec les coordonnées bancaires de vos factures (Paramètres › Société).'
             title: 'Ajouter un compte bancaire'
             name: 'Nom du compte'
             currency: Devise
             submit: 'Ajouter le compte'
+        on_invoices:
+            badge: 'Sur vos factures'
+            help: 'Le compte dont l''IBAN est imprimé sur vos factures (Paramètres › Société).'
+            none: 'Aucun IBAN ne figure encore sur vos factures. Celui de ce compte peut y être imprimé, pour que vos clients vous paient par virement.'
+            replace: 'Vos factures portent un autre IBAN. Celui de ce compte peut le remplacer.'
+            submit: 'Mettre sur mes factures'
         flash:
             account_added: 'Le compte bancaire a été ajouté.'
+            on_invoices: 'Ce compte figure désormais sur vos factures. Vérifiez le BIC.'
             imported: 'Relevé %format% importé : %imported% opération(s) ajoutée(s), %duplicates% déjà connue(s).'
             no_file: 'Choisissez un fichier de relevé (5 Mo au plus).'
             match: 'Opération rapprochée.'
@@ -2037,6 +2045,10 @@ installation:
         locale_placeholder: 'Veuillez sélectionner une langue'
 invalid_file: 'Fichier invalide'
 invoice:
+    payment_details:
+        bank: Banque
+        reference: 'Référence à indiquer'
+        title: 'Règlement par virement'
     delete:
         issued: "Une facture émise doit être conservée et ne peut pas être supprimée (%number%). Seuls les brouillons se suppriment ; pour corriger une facture émise, établissez un avoir."
     action:
@@ -3778,6 +3790,12 @@ settings:
         help: 'Choisissez comment les identifiants %type% sont générés.'
     page:
         company:
+            bank_details:
+                bank_name: 'Banque'
+                bank_name_placeholder: 'Ex. : Crédit Agricole, Qonto…'
+                bic_help: 'Recommandé pour un virement depuis l''étranger.'
+                help: 'Imprimées sur les factures que vos clients ont encore à régler, avec le numéro de facture à indiquer en référence, et transmises dans la facture électronique (Factur-X) pour que leur logiciel prépare le virement. Laissez l''IBAN vide pour ne rien afficher.'
+                title: 'Coordonnées bancaires'
             business_address: 'Adresse professionnelle'
             business_details: 'Informations professionnelles'
             contact_details: 'Coordonnées'
@@ -3810,18 +3828,12 @@ settings:
             accent_color:
                 description: "Code couleur hexadécimal (#1e4976). Il colore les totaux, le libellé des conditions et le bouton de paiement de vos documents. Laissez vide pour garder les couleurs du modèle."
                 label: "Couleur de marque"
-            bic:
-                description: "Imprimé à côté de l'IBAN."
-                label: BIC
             branding:
-                subtitle: "Votre couleur, et ce que chaque page de vos factures, devis et avoirs porte en pied de page."
+                subtitle: "Votre couleur, et le texte que chaque page de vos factures, devis et avoirs porte en pied de page. Vos coordonnées bancaires sont dans l'onglet Société."
                 title: "Couleur et pied de page"
             footer_text:
                 description: "Mentions à répéter en bas de chaque page : forme juridique et capital, RCS, pénalités de retard, escompte… 400 caractères au plus."
                 label: "Pied de page"
-            iban:
-                description: "Imprimé en pied de page pour que vos clients vous paient par virement. Laissez vide pour ne pas l'afficher."
-                label: IBAN
             template:
                 description: "Le modèle utilisé pour vos factures et devis : PDF, e-mails et portail client."
                 preview: Aperçu

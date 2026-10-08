@@ -16,6 +16,7 @@ namespace Augias\ElectronicInvoicingBundle\Provider\SuperPdp;
 use const JSON_THROW_ON_ERROR;
 use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Entity\Client;
+use Augias\CoreBundle\Company\CompanyBankDetails;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\CoreBundle\Pdf\Generator;
@@ -105,6 +106,7 @@ final readonly class FacturXInvoiceBuilder
         private Environment $twig,
         private BillingTemplateResolver $templateResolver,
         private Generator $pdfGenerator,
+        private CompanyBankDetails $bankDetails,
     ) {
     }
 
@@ -167,6 +169,15 @@ final readonly class FacturXInvoiceBuilder
 
         if ($client instanceof Client) {
             $this->setBuyer($documentBuilder, $client);
+        }
+
+        // BG-16: a SEPA credit transfer (BT-81 "58") to the company's account,
+        // with the invoice number as the reference to quote (BT-83) — what lets
+        // the client's software prepare the transfer on its own.
+        $bank = $this->bankDetails->get($invoice->getCompany());
+
+        if (null !== $bank) {
+            $documentBuilder->addDocumentPaymentMeanToCreditTransfer($bank->iban, payeeBic: $bank->bic, paymentReference: $invoice->getInvoiceId());
         }
 
         $result = $this->taxCalculator->calculate($invoice);

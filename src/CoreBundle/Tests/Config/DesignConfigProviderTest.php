@@ -42,7 +42,7 @@ final class DesignConfigProviderTest extends TestCase
 
     public function testTheBrandingSettingsStartEmpty(): void
     {
-        foreach ([DesignConfigProvider::ACCENT_COLOR, DesignConfigProvider::FOOTER_TEXT, DesignConfigProvider::IBAN, DesignConfigProvider::BIC] as $key) {
+        foreach ([DesignConfigProvider::ACCENT_COLOR, DesignConfigProvider::FOOTER_TEXT] as $key) {
             self::assertNull($this->config($key)->value, $key . ' leaves the documents as they were until set.');
         }
     }

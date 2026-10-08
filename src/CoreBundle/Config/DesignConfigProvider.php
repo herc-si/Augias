@@ -24,8 +24,8 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 
 /**
  * How a company's documents look: the design template, its accent colour,
- * and what every page carries at its foot — free text, and the bank details
- * clients pay to.
+ * and the free text every page carries at its foot. The bank details are the
+ * company's own, under Settings › Company (CompanyBankDetails).
  *
  * Offered on every install. The template choice is a paid option on the
  * hosted service (`feature_gated`, a no-op elsewhere); self-hosted, it is
@@ -41,10 +41,6 @@ final class DesignConfigProvider implements ProviderInterface
     public const string ACCENT_COLOR = 'design/accent_color';
 
     public const string FOOTER_TEXT = 'design/footer_text';
-
-    public const string IBAN = 'design/iban';
-
-    public const string BIC = 'design/bic';
 
     /**
      * @return Config[]
@@ -66,14 +62,6 @@ final class DesignConfigProvider implements ProviderInterface
             new Config(self::FOOTER_TEXT, null, 'settings.page.design.footer_text.description', TextareaType::class, [
                 'label' => 'settings.page.design.footer_text.label',
                 'attr' => ['rows' => 3, 'maxlength' => 400],
-            ]),
-            new Config(self::IBAN, null, 'settings.page.design.iban.description', TextType::class, [
-                'label' => 'settings.page.design.iban.label',
-                'attr' => ['placeholder' => 'FR76 3000 6000 0112 3456 7890 189', 'maxlength' => 42],
-            ]),
-            new Config(self::BIC, null, 'settings.page.design.bic.description', TextType::class, [
-                'label' => 'settings.page.design.bic.label',
-                'attr' => ['maxlength' => 11],
             ]),
         ];
     }

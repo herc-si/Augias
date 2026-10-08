@@ -15,6 +15,7 @@ use Augias\AccountingBundle\Action\Bank\AddAccount as BankAddAccount;
 use Augias\AccountingBundle\Action\Bank\Import as BankImport;
 use Augias\AccountingBundle\Action\Bank\Index as BankIndex;
 use Augias\AccountingBundle\Action\Bank\Reconcile as BankReconcile;
+use Augias\AccountingBundle\Action\Bank\UseOnInvoices as BankUseOnInvoices;
 use Augias\AccountingBundle\Action\Book;
 use Augias\AccountingBundle\Action\CatchUp;
 use Augias\AccountingBundle\Action\ClosePeriod;
@@ -119,6 +120,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_accounting_bank_account_add', '/bank-accounts')
         ->controller(BankAddAccount::class)
+        ->methods(['POST']);
+
+    $routingConfigurator
+        ->add('_accounting_bank_account_on_invoices', '/bank-accounts/{id}/on-invoices')
+        ->controller(BankUseOnInvoices::class)
         ->methods(['POST']);
 
     $routingConfigurator

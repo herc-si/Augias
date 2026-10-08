@@ -18,6 +18,8 @@ use Augias\AccountingBundle\Entity\BankAccount;
 use Augias\AccountingBundle\Enum\BankTransactionStatus;
 use Augias\AccountingBundle\Repository\BankAccountRepository;
 use Augias\AccountingBundle\Repository\BankTransactionRepository;
+use Augias\CoreBundle\Company\BankDetails;
+use Augias\CoreBundle\Company\CompanyBankDetails;
 use Augias\SettingsBundle\SystemConfig;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,6 +39,7 @@ final readonly class Index
         private BankTransactionRepository $transactions,
         private ReconciliationSuggester $suggester,
         private SystemConfig $systemConfig,
+        private CompanyBankDetails $bankDetails,
     ) {
     }
 
@@ -71,7 +74,20 @@ final readonly class Index
             }
         }
 
+        // The account the invoices print: marked among the accounts, or offered
+        // to fill the form with when none of them has its IBAN yet.
+        $onInvoices = $this->bankDetails->get();
+        $onInvoicesKnown = false;
+
+        foreach ($accounts as $candidate) {
+            if (null !== $onInvoices && BankDetails::compact($candidate->getIban()) === $onInvoices->iban) {
+                $onInvoicesKnown = true;
+            }
+        }
+
         return [
+            'onInvoices' => $onInvoices,
+            'prefill' => $onInvoicesKnown ? null : $onInvoices,
             'accounts' => $accounts,
             'account' => $current,
             'status' => $status,

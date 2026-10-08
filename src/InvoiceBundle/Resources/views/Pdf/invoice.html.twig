@@ -473,6 +473,7 @@
     <div style="margin-top: 12px; font-size: 8pt; color: #64748b; line-height: 1.5;">{{ disbursement_note_reference(invoice) }}</div>
 {% endif %}
 
+{{ inv.payment_details_block(invoice) }}
 {{ inv.terms_block(invoice) }}
 </td></tr></table>
 
