@@ -19,8 +19,10 @@ use Augias\CoreBundle\Entity\DocumentActivity;
 use Augias\CoreBundle\Enum\DocumentActivityType;
 use Augias\CoreBundle\Enum\RecordKind;
 use Augias\CoreBundle\Repository\DocumentActivityRepository;
+use Augias\CoreBundle\Storage\DocumentStorage;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\QuoteBundle\Action\ClientAnswer;
+use Augias\QuoteBundle\Email\QuoteAcceptedEmail;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\QuoteBundle\Enum\QuoteStatus;
 use Augias\QuoteBundle\Test\Factory\QuoteFactory;
@@ -29,6 +31,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Mailer\Event\MessageEvent;
 use function array_filter;
 use function array_values;
 
@@ -70,6 +73,30 @@ final class ClientAnswerTest extends WebTestCase
         self::assertSame('Paul Martin', $answers[0]->getDetail());
         self::assertSame('127.0.0.1', $answers[0]->getIpAddress());
         self::assertNull($answers[0]->getUser());
+
+        // The quote as it stood is kept beside the answer, and its fingerprint
+        // is that of the file kept.
+        $sha256 = $answers[0]->getProofSha256();
+        self::assertNotNull($sha256);
+        self::assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $sha256);
+        $storage = self::getContainer()->get(DocumentStorage::class);
+        self::assertInstanceOf(DocumentStorage::class, $storage);
+        self::assertSame($sha256, hash_file('sha256', $storage->path((string) $answers[0]->getProofPath())));
+
+        // The client is sent their copy, with the quote attached, and the
+        // history says so.
+        // Sent, not merely queued: the mailer logs both.
+        $confirmations = array_values(array_filter(
+            array_map(static fn (MessageEvent $event): object => $event->getMessage(), array_filter(self::getMailerEvents(), static fn (MessageEvent $event): bool => ! $event->isQueued())),
+            static fn (object $message): bool => $message instanceof QuoteAcceptedEmail,
+        ));
+        self::assertCount(1, $confirmations);
+        self::assertSame('client@example.org', $confirmations[0]->getTo()[0]->getAddress());
+        self::assertCount(1, $confirmations[0]->getAttachments());
+        self::assertSame(['acceptance_confirmation'], array_map(
+            static fn (DocumentActivity $a): ?string => $a->getDetail(),
+            $this->history($quote, DocumentActivityType::Sent),
+        ));
 
         // The answer stands for the step: no second, nameless "accepted".
         self::assertSame([], $this->history($quote, DocumentActivityType::Status, 'accept'));

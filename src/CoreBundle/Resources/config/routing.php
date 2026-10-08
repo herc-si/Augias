@@ -19,6 +19,7 @@ use Augias\CoreBundle\Action\Category\Index as CategoryIndex;
 use Augias\CoreBundle\Action\Category\QuickAdd as CategoryQuickAdd;
 use Augias\CoreBundle\Action\CreateCompany;
 use Augias\CoreBundle\Action\DeleteCompany;
+use Augias\CoreBundle\Action\DownloadActivityProof;
 use Augias\CoreBundle\Action\Search;
 use Augias\CoreBundle\Action\SearchSuggestions;
 use Augias\CoreBundle\Action\SelectCompany;
@@ -129,6 +130,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
 
     // Where you have been. Every install has it: it answers a question a
     // person asks about their own work, not one about a deployment.
+    $routingConfigurator
+        ->add('_document_activity_proof', '/activity/{id}/proof')
+        ->controller(DownloadActivityProof::class)
+        ->methods(['GET']);
+
     $routingConfigurator
         ->add('_access_log', '/access-log')
         ->controller(AccessLog::class)

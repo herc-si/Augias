@@ -17,6 +17,7 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\DocumentActivity;
 use Augias\CoreBundle\Enum\DocumentActivityType;
 use Augias\CoreBundle\Journal\Journalled;
+use Augias\CoreBundle\Storage\StoredDocument;
 use Augias\UserBundle\Entity\User;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\EntityManagerInterface;
@@ -61,6 +62,7 @@ final readonly class DocumentActivityRecorder
         array $recipients = [],
         ?string $userAgent = null,
         ?string $ipAddress = null,
+        ?StoredDocument $proof = null,
     ): void {
         $recordId = $document->getId();
 
@@ -92,6 +94,8 @@ final readonly class DocumentActivityRecorder
                 'recipients' => [] === $recipients ? null : $recipients,
                 'user_agent' => null === $userAgent || '' === $userAgent ? null : mb_substr($userAgent, 0, 255),
                 'ip_address' => null === $ipAddress || '' === $ipAddress ? null : mb_substr($ipAddress, 0, 45),
+                'proof_path' => $proof?->storagePath,
+                'proof_sha256' => $proof?->checksum,
             ],
             [
                 'id' => UlidType::NAME,
@@ -105,6 +109,8 @@ final readonly class DocumentActivityRecorder
                 'recipients' => Types::JSON,
                 'user_agent' => Types::STRING,
                 'ip_address' => Types::STRING,
+                'proof_path' => Types::STRING,
+                'proof_sha256' => Types::STRING,
             ],
         );
     }

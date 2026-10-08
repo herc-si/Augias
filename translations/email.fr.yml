@@ -359,6 +359,14 @@ payment:
     view_invoice: 'Voir la facture'
 powered_by: 'Propulsé par'
 quote:
+    accepted_confirmation:
+        at: 'Accepté le'
+        attached: 'Le devis tel que vous l''avez accepté est joint à ce message. Conservez-le : il fait foi de votre accord.'
+        fingerprint: 'Empreinte SHA-256 du devis accepté : %sha256%'
+        intro: 'Nous avons bien reçu votre accord sur le devis %id% de %company%. Voici le récapitulatif.'
+        signer: 'Au nom de'
+        subject: 'Votre accord sur le devis %id% – %company%'
+        title: 'Accord sur le devis %id%'
     amount_payable: 'Montant à payer'
     created: Créé
     discount: Remise

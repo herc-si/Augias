@@ -82,6 +82,7 @@ final class RoutePermissionMap
 
         // Seeing the company's documents and books: every member.
         '_accounting_attachment_download' => CompanyPermission::BillingRead,
+        '_document_activity_proof' => CompanyPermission::BillingRead,
         '_accounting_bank' => CompanyPermission::BillingRead,
         '_accounting_book' => CompanyPermission::BillingRead,
         '_accounting_declaration_view' => CompanyPermission::BillingRead,

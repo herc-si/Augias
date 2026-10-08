@@ -17,20 +17,33 @@ use Augias\CoreBundle\Activity\DocumentActivityRecorder;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Contracts\EmailVerificationGateInterface;
 use Augias\CoreBundle\Enum\DocumentActivityType;
+use Augias\CoreBundle\Pdf\Generator;
+use Augias\CoreBundle\Storage\DocumentStorage;
+use Augias\CoreBundle\Templates\BillingTemplateChannel;
+use Augias\CoreBundle\Templates\BillingTemplateResolver;
+use Augias\QuoteBundle\Email\QuoteAcceptedEmail;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\QuoteBundle\Model\Graph;
+use Augias\SettingsBundle\SystemConfig;
 use Doctrine\Persistence\ManagerRegistry;
 use Psr\Clock\ClockInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Twig\Environment;
 use function mb_strlen;
 use function mb_substr;
+use function sprintf;
 use function trim;
 
 /**
@@ -39,9 +52,10 @@ use function trim;
  * their reason if they give one.
  *
  * What is kept as their word goes in the quote's history: the name, the time,
- * the browser and the address the answer came from. Accepting then does what
- * accepting from inside the app does: the company is told, and the quote waits
- * for "Create the invoice".
+ * the browser and the address the answer came from, and for an acceptance the
+ * quote itself as a PDF with its fingerprint. The client is sent a copy. Then
+ * accepting does what accepting from inside the app does: the company is
+ * told, and the quote waits for "Create the invoice".
  */
 final readonly class ClientAnswer
 {
@@ -62,6 +76,14 @@ final readonly class ClientAnswer
         private CsrfTokenManagerInterface $csrfTokenManager,
         private UrlGeneratorInterface $urlGenerator,
         private ClockInterface $clock,
+        private Generator $pdfGenerator,
+        private Environment $twig,
+        private BillingTemplateResolver $templateResolver,
+        private DocumentStorage $documentStorage,
+        private MailerInterface $mailer,
+        private TranslatorInterface $translator,
+        private SystemConfig $config,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -116,8 +138,19 @@ final readonly class ClientAnswer
             $type = DocumentActivityType::ClientDeclined;
         }
 
+        // The quote as the client sees it at this moment, kept with their
+        // answer: the PDF and its fingerprint are the proof of what was
+        // accepted, whatever happens to the quote afterwards.
+        $proof = null;
+        $pdf = null;
+
+        if (self::ACCEPT === $answer && $this->pdfGenerator->canPrintPdf()) {
+            $pdf = $this->pdfGenerator->generate($this->twig->render($this->templateResolver->resolve($quote, BillingTemplateChannel::Pdf), ['quote' => $quote]));
+            $proof = $this->documentStorage->storeGenerated($pdf, sprintf('devis-%s-accepte.pdf', $quote->getQuoteId()), $quote->getCompany());
+        }
+
         // The word first, then what follows from it: the history keeps the
-        // answer even if turning the quote into an invoice were to fail.
+        // answer even if what follows were to fail.
         $this->activity->record(
             $quote,
             $quote->getCompany(),
@@ -125,11 +158,46 @@ final readonly class ClientAnswer
             $detail,
             userAgent: $request->headers->get('User-Agent'),
             ipAddress: $request->getClientIp(),
+            proof: $proof,
         );
 
         $this->quoteStateMachine->apply($quote, $transition);
 
+        if (null !== $proof && null !== $pdf) {
+            $this->confirm($quote, $name, $proof->checksum, $pdf);
+        }
+
         return $this->flash($request, $back, 'success', self::ACCEPT === $answer ? 'quote.client_answer.flash.accepted' : 'quote.client_answer.flash.declined');
+    }
+
+    /**
+     * The client's copy of what they accepted, sent to the quote's contacts.
+     * Its leaving or failing goes in the history like any document's email;
+     * a failure does not undo the acceptance, which is already recorded.
+     */
+    private function confirm(Quote $quote, string $name, string $sha256, string $pdf): void
+    {
+        $recipients = [];
+
+        foreach ($quote->getUsers() as $contact) {
+            if ('' !== (string) $contact->getEmail()) {
+                $recipients[] = new Address((string) $contact->getEmail(), trim(sprintf('%s %s', $contact->getFirstName(), $contact->getLastName())));
+            }
+        }
+
+        if ([] === $recipients) {
+            return;
+        }
+
+        $email = new QuoteAcceptedEmail($quote, $name, $this->clock->now(), $sha256, $pdf);
+        $email->to(...$recipients);
+        $email->subject($this->translator->trans('quote.accepted_confirmation.subject', ['%id%' => $quote->getQuoteId(), '%company%' => (string) $this->config->get('system/company/company_name')], 'email'));
+
+        try {
+            $this->mailer->send($email);
+        } catch (TransportExceptionInterface $exception) {
+            $this->logger->warning('The confirmation of an accepted quote could not be sent.', ['quote' => (string) $quote->getId(), 'exception' => $exception]);
+        }
     }
 
     private function flash(Request $request, RedirectResponse $response, string $type, string $message): RedirectResponse

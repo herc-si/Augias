@@ -17,6 +17,7 @@ use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\ClientBundle\Test\Factory\ContactFactory;
 use Augias\CoreBundle\Activity\DocumentActivityRecorder;
 use Augias\CoreBundle\Enum\DocumentActivityType;
+use Augias\CoreBundle\Storage\DocumentStorage;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\QuoteBundle\Enum\QuoteStatus;
@@ -26,6 +27,7 @@ use Augias\UserBundle\Test\Factory\UserFactory;
 use PHPUnit\Framework\Attributes\CoversNothing;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use function file_put_contents;
 use function getenv;
 
@@ -122,6 +124,33 @@ final class DocumentActivityCardTest extends WebTestCase
         $crawler = $this->client->request('GET', '/quotes/view/' . $quote->getId());
 
         self::assertCount(0, $crawler->filter('[data-test="not-sent-banner"]'));
+    }
+
+    /**
+     * The quote as the client accepted it can be downloaded from the card.
+     */
+    public function testTheAcceptedQuoteIsKeptAndCanBeDownloaded(): void
+    {
+        $quote = $this->createQuote();
+        $storage = self::getContainer()->get(DocumentStorage::class);
+        self::assertInstanceOf(DocumentStorage::class, $storage);
+        $recorder = self::getContainer()->get(DocumentActivityRecorder::class);
+        self::assertInstanceOf(DocumentActivityRecorder::class, $recorder);
+
+        $proof = $storage->storeGenerated('%PDF-accepted', 'devis.pdf', $quote->getCompany());
+        $recorder->record($quote, $quote->getCompany(), DocumentActivityType::ClientAccepted, 'Paul Martin', proof: $proof);
+
+        $crawler = $this->client->request('GET', '/quotes/view/' . $quote->getId());
+        $link = $crawler->filter('[data-test="document-activity"] a[href^="/activity/"]');
+        self::assertCount(1, $link);
+        self::assertStringContainsString(substr($proof->checksum, 0, 16), $crawler->filter('[data-test="document-activity"]')->text());
+
+        $this->client->request('GET', (string) $link->attr('href'));
+
+        self::assertResponseIsSuccessful();
+        $response = $this->client->getResponse();
+        self::assertInstanceOf(BinaryFileResponse::class, $response);
+        self::assertSame('%PDF-accepted', file_get_contents($response->getFile()->getPathname()));
     }
 
     private function createQuote(QuoteStatus $status = QuoteStatus::Pending): Quote

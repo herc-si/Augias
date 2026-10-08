@@ -21,10 +21,12 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Uid\Ulid;
 use function basename;
 use function dirname;
+use function hash;
 use function hash_file;
 use function is_file;
 use function sprintf;
 use function str_contains;
+use function strlen;
 
 /**
  * Where a supporting document is written, and how it is found again — the
@@ -113,6 +115,24 @@ final readonly class DocumentStorage
         $file->move($this->root . '/' . dirname($path), basename($path));
 
         return new StoredDocument($file->getClientOriginalName(), $mimeType, $size, $checksum, $path);
+    }
+
+    /**
+     * Writes a PDF the application produced itself — the quote as it stood
+     * when the client accepted it — in the same layout as an upload.
+     */
+    public function storeGenerated(string $pdf, string $filename, Company $company): StoredDocument
+    {
+        $path = sprintf(
+            '%s/%s/%s.pdf',
+            (string) $company->getId(),
+            new DateTimeImmutable('today')->format('Y'),
+            new Ulid(),
+        );
+
+        $this->filesystem->dumpFile($this->root . '/' . $path, $pdf);
+
+        return new StoredDocument($filename, 'application/pdf', strlen($pdf), hash('sha256', $pdf), $path);
     }
 
     /**

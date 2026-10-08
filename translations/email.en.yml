@@ -359,6 +359,14 @@ payment:
     view_invoice: 'View Invoice'
 powered_by: 'Powered by'
 quote:
+    accepted_confirmation:
+        at: 'Accepted on'
+        attached: 'The quote as you accepted it is attached. Keep it: it records your agreement.'
+        fingerprint: 'SHA-256 fingerprint of the accepted quote: %sha256%'
+        intro: 'We have received your agreement to quote %id% from %company%. Here is the summary.'
+        signer: 'In the name of'
+        subject: 'Your agreement to quote %id% - %company%'
+        title: 'Agreement to quote %id%'
     amount_payable: 'Amount payable'
     created: Created
     discount: Discount
