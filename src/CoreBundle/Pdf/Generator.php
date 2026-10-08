@@ -49,6 +49,12 @@ class Generator
             'margin_header' => 10,
             'margin_footer' => 10,
             'default_font' => 'helvetica',
+            // A table kept in one piece (the totals and terms at the end of a
+            // document) that does not fit what is left of the page moves to
+            // the next one. By default mPDF first tries shrinking it, up to
+            // 1.4 times: the totals came out in small print, or cut from
+            // their terms (08/10/2026).
+            'shrink_tables_to_fit' => 0,
         ]);
 
         $mpdf->allow_charset_conversion = false;

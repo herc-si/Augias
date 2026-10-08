@@ -2301,7 +2301,7 @@ invoice:
         bcc_address:
             description: 'Every invoice email is copied here, blind to the client.'
         email_subject:
-            description: 'Subject of the email an invoice is sent with. {id} is replaced by the invoice number.'
+            description: 'Subject of the email an invoice is sent with. {id} is replaced by the invoice number. Left empty: "Invoice number - company name", in the language of the app.'
         id_generation:
             id_prefix:
                 description: 'Printed before the number. Example: FACT-'
@@ -3254,7 +3254,7 @@ quote:
         bcc_address:
             description: 'Every quote email is copied here, blind to the client.'
         email_subject:
-            description: 'Subject of the email a quote is sent with. {id} is replaced by the quote number.'
+            description: 'Subject of the email a quote is sent with. {id} is replaced by the quote number. Left empty: "Quote number - company name", in the language of the app.'
         id_generation:
             id_prefix:
                 description: 'Printed before the number. Example: DEV-'

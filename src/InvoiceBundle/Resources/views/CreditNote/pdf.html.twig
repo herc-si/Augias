@@ -22,7 +22,7 @@
 {% set accentText = brand_color() ? brand_text_color() : '#ffffff' %}
 
 {% block body %}
-<table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
+<table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 14px;">
     <tr>
         <td style="vertical-align: top; width: 50%;">
             {% if setting('system/company/logo') is not empty %}
@@ -39,7 +39,7 @@
     </tr>
 </table>
 
-<table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
+<table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 14px;">
     <tr>
         <td style="width: 33%; vertical-align: top; padding-right: 16px;">
             {{ inv.from_block() }}
@@ -78,13 +78,13 @@
     <p style="font-size: 9pt; color: #475569; margin-bottom: 16px;">{{ 'credit_note.pdf.credits_invoice'|trans({'%invoice%': invoice_number(creditNote.creditedInvoice)}) }}</p>
 {% endif %}
 
-<table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+<table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 14px;">
     <thead>
         <tr>
-            <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: left; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.description'|trans }}</th>
-            <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.price'|trans }}</th>
-            <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.qty'|trans }}</th>
-            <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.total'|trans }}</th>
+            <th style="padding: 6px 10px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: left; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.description'|trans }}</th>
+            <th style="padding: 6px 10px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.price'|trans }}</th>
+            <th style="padding: 6px 10px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.qty'|trans }}</th>
+            <th style="padding: 6px 10px; font-size: 8pt; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid {{ accent }};">{{ 'invoice.item.heading.total'|trans }}</th>
         </tr>
     </thead>
     <tbody>
@@ -92,14 +92,14 @@
             {% if line.note|default(false) %}
                 {# A line of text only: a heading over the lines that follow. #}
                 <tr>
-                    <td style="padding: 10px 12px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9;" colspan="4"><strong>{{ line.description|nl2br }}</strong></td>
+                    <td style="padding: 6px 10px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9;" colspan="4"><strong>{{ line.description|nl2br }}</strong></td>
                 </tr>
             {% else %}
                 <tr>
-                    <td style="padding: 10px 12px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9;">{{ line.description|nl2br }}</td>
-                    <td style="padding: 10px 12px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right;">{{ line.price|formatCurrency(currency) }}</td>
-                    <td style="padding: 10px 12px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right;">{{ line|line_quantity }}</td>
-                    <td style="padding: 10px 12px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right;">{{ line.total|formatCurrency(currency) }}</td>
+                    <td style="padding: 6px 10px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9;">{{ line.description|nl2br }}</td>
+                    <td style="padding: 6px 10px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right;">{{ line.price|formatCurrency(currency) }}</td>
+                    <td style="padding: 6px 10px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right;">{{ line|line_quantity }}</td>
+                    <td style="padding: 6px 10px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right;">{{ line.total|formatCurrency(currency) }}</td>
                 </tr>
             {% endif %}
         {% endfor %}
@@ -116,8 +116,8 @@
         <td style="padding: 8px 12px; font-size: 9pt; text-align: right; color: #1e293b;">{{ creditNote.tax|formatCurrency(currency) }}</td>
     </tr>
     <tr style="background-color: {{ accent }};">
-        <td style="padding: 12px; font-size: 10pt; font-weight: bold; text-align: right; color: {{ accentText }};">{{ 'credit_note.totals.credited'|trans }}</td>
-        <td style="padding: 12px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ accentText }};">{{ creditNote.total|formatCurrency(currency) }}</td>
+        <td style="padding: 8px; font-size: 10pt; font-weight: bold; text-align: right; color: {{ accentText }};">{{ 'credit_note.totals.credited'|trans }}</td>
+        <td style="padding: 8px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ accentText }};">{{ creditNote.total|formatCurrency(currency) }}</td>
     </tr>
 </table>
 

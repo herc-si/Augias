@@ -176,7 +176,7 @@
 {# ============================================================================
    BILL TO SECTION (Simplified - removed website and extra contact details)
 ============================================================================ #}
-<div class="bill-to-section" style="margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
+<div class="bill-to-section" style="margin-bottom: 14px; padding-bottom: 20px; border-bottom: 1px solid #e2e8f0;">
     {# Section Label #}
     <div class="section-label" style="font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid {{ brand_color() ?: '#2e963a' }}; display: inline-block;">
         {{ 'invoice.to'|trans }}
@@ -210,24 +210,24 @@
 {# ============================================================================
    LINE ITEMS TABLE
 ============================================================================ #}
-<table class="items-table" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 24px; border: 1px solid #e2e8f0;">
+<table class="items-table" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 14px; border: 1px solid #e2e8f0;">
     <thead>
         <tr style="background-color: #f8fafc;">
-            <th class="col-description" style="padding: 12px 16px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: left; border-bottom: 2px solid #e2e8f0;">
+            <th class="col-description" style="padding: 6px 10px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: left; border-bottom: 2px solid #e2e8f0;">
                 {{ 'invoice.item.heading.description'|trans }}
             </th>
-            <th class="col-price" style="padding: 12px 16px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid #e2e8f0;">
+            <th class="col-price" style="padding: 6px 10px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid #e2e8f0;">
                 {{ 'invoice.item.heading.price'|trans }}
             </th>
-            <th class="col-qty" style="padding: 12px 16px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid #e2e8f0;">
+            <th class="col-qty" style="padding: 6px 10px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid #e2e8f0;">
                 {{ 'invoice.item.heading.qty'|trans }}
             </th>
             {% if invoice.tax.positive %}
-                <th class="col-tax" style="padding: 12px 16px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid #e2e8f0;">
+                <th class="col-tax" style="padding: 6px 10px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid #e2e8f0;">
                     {{ 'invoice.item.heading.tax'|trans }}
                 </th>
             {% endif %}
-            <th class="col-total" style="padding: 12px 16px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid #e2e8f0;">
+            <th class="col-total" style="padding: 6px 10px; font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; text-align: right; border-bottom: 2px solid #e2e8f0;">
                 {{ 'invoice.item.heading.total'|trans }}
             </th>
         </tr>
@@ -237,25 +237,25 @@
             {% if line.note|default(false) %}
                 {# A line of text only: a heading over the lines that follow. #}
                 <tr{% if loop.index is even %} style="background-color: #fafbfc;"{% endif %}>
-                    <td class="col-description" style="padding: 12px 16px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: top;" colspan="{{ 4 + (invoice.tax.positive ? 1 : 0) }}"><strong>{{ line.description|nl2br }}</strong></td>
+                    <td class="col-description" style="padding: 6px 10px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: top;" colspan="{{ 4 + (invoice.tax.positive ? 1 : 0) }}"><strong>{{ line.description|nl2br }}</strong></td>
                 </tr>
             {% else %}
                 <tr{% if loop.index is even %} style="background-color: #fafbfc;"{% endif %}>
-                    <td class="col-description" style="padding: 12px 16px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: top;">
+                    <td class="col-description" style="padding: 6px 10px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; vertical-align: top;">
                         {{ line.description|nl2br }}{{ inv.disbursement_tag(line) }}
                     </td>
-                    <td class="col-price" style="padding: 12px 16px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right; font-family: 'Courier New', monospace;">
+                    <td class="col-price" style="padding: 6px 10px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right; font-family: 'Courier New', monospace;">
                         {{ line.price|formatCurrency(currency) }}
                     </td>
-                    <td class="col-qty" style="padding: 12px 16px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right; font-family: 'Courier New', monospace;">
+                    <td class="col-qty" style="padding: 6px 10px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right; font-family: 'Courier New', monospace;">
                         {{ line|line_quantity }}
                     </td>
                     {% if invoice.tax.positive %}
-                        <td class="col-tax" style="padding: 12px 16px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right;">
+                        <td class="col-tax" style="padding: 6px 10px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right;">
                             {% for lineTax in line.taxes %}{{ lineTax.nameSnapshot }} ({{ lineTax.typeSnapshot.value == 'Flat Rate' ? lineTax.rateSnapshot : lineTax.rateSnapshot ~ '%' }}){% if not loop.last %}, {% endif %}{% endfor %}
                         </td>
                     {% endif %}
-                    <td class="col-total" style="padding: 12px 16px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right; font-family: 'Courier New', monospace; font-weight: 600;">
+                    <td class="col-total" style="padding: 6px 10px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9; text-align: right; font-family: 'Courier New', monospace; font-weight: 600;">
                         {{ line.total|formatCurrency(currency) }}
                     </td>
                 </tr>
@@ -283,10 +283,10 @@
     <table class="totals-table" cellpadding="0" cellspacing="0" style="width: 280px; border-collapse: collapse; margin-left: auto;">
         {# Subtotal #}
         <tr class="subtotal-row">
-            <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; font-weight: 600; color: #1e293b;">
+            <td class="label-cell" style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; font-weight: 600; color: #1e293b;">
                 {{ 'invoice.subtotal'|trans }}
             </td>
-            <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #1e293b;">
+            <td class="value-cell" style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #1e293b;">
                 {{ invoice.baseTotal|formatCurrency(currency) }}
             </td>
         </tr>
@@ -295,10 +295,10 @@
         {# Discount #}
         {% if invoice.discount.type is not empty %}
             <tr class="discount-row">
-                <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
+                <td class="label-cell" style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: #475569;">
                     {{ discount_label(invoice) }}
                 </td>
-                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #ef4444;">
+                <td class="value-cell" style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #ef4444;">
                     -{{ discount(invoice)|formatCurrency(currency) }}
                 </td>
             </tr>
@@ -307,19 +307,19 @@
         {% set _tb = tax_breakdown(invoice) %}
         {% if invoice.tax.positive %}
             <tr class="tax-row">
-                <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
+                <td class="label-cell" style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: #475569;">
                     {{ 'invoice.line_tax'|trans }}
                 </td>
-                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #1e293b;">
+                <td class="value-cell" style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #1e293b;">
                     {{ invoice.tax|formatCurrency(currency) }}
                 </td>
             </tr>
             {% for row in _tb.lineTaxRows %}
                 <tr class="tax-breakdown-row">
-                    <td class="label-cell" style="padding: 4px 20px 4px 24px; font-size: 8pt; text-align: right; color: #64748b;">
+                    <td class="label-cell" style="padding: 2px 14px 2px 20px; font-size: 8pt; text-align: right; color: #64748b;">
                         {{ row.name }} ({{ row.type.value == 'Flat Rate' ? row.rate : row.rate ~ '%' }})
                     </td>
-                    <td class="value-cell" style="padding: 4px 12px; font-size: 8pt; text-align: right; font-family: 'Courier New', monospace; color: #475569;">
+                    <td class="value-cell" style="padding: 2px 10px; font-size: 8pt; text-align: right; font-family: 'Courier New', monospace; color: #475569;">
                         {{ row.amount|formatCurrency(currency) }}
                     </td>
                 </tr>
@@ -327,20 +327,20 @@
         {% endif %}
         {% for row in _tb.additiveRows %}
             <tr class="invoice-tax-row">
-                <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
+                <td class="label-cell" style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: #475569;">
                     {{ row.name }} ({{ row.type.value == 'Flat Rate' ? row.rate : row.rate ~ '%' }})
                 </td>
-                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #1e293b;">
+                <td class="value-cell" style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #1e293b;">
                     {{ row.amount|formatCurrency(currency) }}
                 </td>
             </tr>
         {% endfor %}
         {% for row in _tb.informationalRows %}
             <tr class="invoice-tax-row">
-                <td class="label-cell" style="padding: 4px 20px 4px 24px; font-size: 8pt; text-align: right; color: #64748b;">
+                <td class="label-cell" style="padding: 2px 14px 2px 20px; font-size: 8pt; text-align: right; color: #64748b;">
                     {{ row.name }} ({{ row.type.value == 'Flat Rate' ? row.rate : row.rate ~ '%' }}){% if row.note %} — {{ row.note }}{% endif %}
                 </td>
-                <td class="value-cell" style="padding: 4px 12px; font-size: 8pt; text-align: right; font-family: 'Courier New', monospace; color: #64748b;">
+                <td class="value-cell" style="padding: 2px 10px; font-size: 8pt; text-align: right; font-family: 'Courier New', monospace; color: #64748b;">
                     {{ 'invoice.invoice_taxes.informational'|trans }}
                 </td>
             </tr>
@@ -351,20 +351,20 @@
            disbursements only the part that went to the fees is shown. #}
         {% if invoice.payments|length > 0 and not invoice.feesBalance.isZero and invoice.hasDisbursements %}
             <tr class="payment-row">
-                <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
+                <td class="label-cell" style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: #475569;">
                     {{ 'invoice.disbursement.note.fees_paid'|trans }}
                 </td>
-                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #10b981;">
+                <td class="value-cell" style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #10b981;">
                     -{{ invoice.feesPaid|formatCurrency(currency) }}
                 </td>
             </tr>
         {% elseif invoice.payments|length > 0 and not invoice.feesBalance.isZero %}
             {% for payment in invoice.payments|filter((v) => v.status == enum('Augias\\PaymentBundle\\Enum\\PaymentStatus').Captured) %}
                 <tr class="payment-row">
-                    <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
+                    <td class="label-cell" style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: #475569;">
                         {{ 'invoice.payment.label'|trans }}: {{ payment.method ? payment.method.name : 'payment.method.none'|trans }}
                     </td>
-                    <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #10b981;">
+                    <td class="value-cell" style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #10b981;">
                         -{{ payment.totalAmount|formatCurrency(currency) }}
                     </td>
                 </tr>
@@ -373,43 +373,43 @@
 
         {# Divider #}
         <tr class="divider-row">
-            <td colspan="2" style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"></td>
+            <td colspan="2" style="padding: 3px 0; border-bottom: 1px solid #e2e8f0;"></td>
         </tr>
 
         {# Total or Balance #}
         {% if hasOutstandingBalance %}
             <tr class="balance-row" style="background-color: {{ brand_color() ?: '#fef3c7' }};">
-                <td class="label-cell" style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ brand_color() ? brand_text_color() : '#1e293b' }};">
+                <td class="label-cell" style="padding: 8px 14px 8px 10px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ brand_color() ? brand_text_color() : '#1e293b' }};">
                     {{ 'invoice.balance'|trans }}
                 </td>
-                <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: {{ brand_color() ? brand_text_color() : '#92400e' }};">
+                <td class="value-cell" style="padding: 8px 10px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: {{ brand_color() ? brand_text_color() : '#92400e' }};">
                     {{ invoice.feesBalance|formatCurrency(currency) }}
                 </td>
             </tr>
         {% else %}
             <tr class="total-row" style="background-color: {{ brand_color() ?: '#f0fdf4' }};">
-                <td class="label-cell" style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ brand_color() ? brand_text_color() : '#1e293b' }};">
+                <td class="label-cell" style="padding: 8px 14px 8px 10px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ brand_color() ? brand_text_color() : '#1e293b' }};">
                     {{ 'invoice.total'|trans }}
                 </td>
-                <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: {{ brand_color() ? brand_text_color() : '#166534' }};">
+                <td class="value-cell" style="padding: 8px 10px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: {{ brand_color() ? brand_text_color() : '#166534' }};">
                     {{ invoice.feesTotal|formatCurrency(currency) }}
                 </td>
             </tr>
         {% endif %}
         {% if invoice.withholdingAmount.positive %}
             <tr class="withholding-row">
-                <td class="label-cell" style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: #475569;">
+                <td class="label-cell" style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: #475569;">
                     {{ 'invoice.withholding'|trans }}
                 </td>
-                <td class="value-cell" style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #ef4444;">
+                <td class="value-cell" style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: 'Courier New', monospace; color: #ef4444;">
                     -{{ invoice.withholdingAmount|formatCurrency(currency) }}
                 </td>
             </tr>
             <tr class="payable-row" style="background-color: {{ brand_color() ?: '#f0fdf4' }};">
-                <td class="label-cell" style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ brand_color() ? brand_text_color() : '#1e293b' }};">
+                <td class="label-cell" style="padding: 8px 14px 8px 10px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ brand_color() ? brand_text_color() : '#1e293b' }};">
                     {{ 'invoice.amount_payable'|trans }}
                 </td>
-                <td class="value-cell" style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: {{ brand_color() ? brand_text_color() : '#166534' }};">
+                <td class="value-cell" style="padding: 8px 10px; font-size: 14pt; font-weight: bold; text-align: right; font-family: 'Courier New', monospace; color: {{ brand_color() ? brand_text_color() : '#166534' }};">
                     {{ invoice.feesPayableAmount|formatCurrency(currency) }}
                 </td>
             </tr>

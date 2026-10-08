@@ -22,6 +22,8 @@ client:
         message: 'A new client has been added.'
         subject: 'A new client has been created'
         view_client: 'View Client'
+credit_note:
+    subject: 'Credit note %id% - %company%'
 einvoicing:
     notification_disputed:
         alert: 'Electronic Invoice Disputed'
@@ -77,6 +79,8 @@ email:
         security: "If you didn't create an account, you can safely ignore this email."
         subject: 'Confirm your email address'
         title: 'Please confirm your email address'
+export:
+    ready_subject: 'Your data export is ready'
 invitation:
     accept: 'Accept Invitation'
     alternative: "If the button above doesn't work, copy and paste this link into your browser:"
@@ -127,6 +131,12 @@ invoice:
         view_and_pay: 'View Invoice & Make Payment'
     pay_now: 'Pay Now'
     payment_method: 'Payment (%method%)'
+    reminder_subject:
+        manual: 'Payment Reminder: Invoice %id%'
+        overdue_1: 'Payment Reminder: Invoice %id%'
+        overdue_14: 'URGENT: Invoice %id% - Immediate Action Required'
+        overdue_7: 'Payment Overdue: Invoice %id%'
+        pre_due: 'Upcoming Payment Due: Invoice %id%'
     status:
         subject: 'Invoice Status Change'
     status_change:
@@ -138,6 +148,7 @@ invoice:
         old_status: 'Original Status'
         status: Status
         view_invoice: 'View Invoice'
+    subject: 'Invoice %id% - %company%'
     subtotal: Subtotal
     tax: Tax
     terms: 'Terms & Conditions'
@@ -365,12 +376,14 @@ quote:
         old_status: 'Original Status'
         status: Status
         view_quote: 'View Quote'
+    subject: 'Quote %id% - %company%'
     subtotal: Subtotal
     tax: Tax
     terms: 'Terms & Conditions'
     title: 'Quote %id%'
     total: Total
     view: 'View Quote'
+    view_online: 'View this quote online at %url%'
     withholding: Withholding
 reset_password:
     alternative: "If the button above doesn't work, copy and paste this link into your browser:"
