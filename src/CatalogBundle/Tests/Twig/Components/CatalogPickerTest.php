@@ -15,6 +15,7 @@ namespace Augias\CatalogBundle\Tests\Twig\Components;
 
 use Augias\CatalogBundle\Entity\Product;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Test\LiveComponentTest;
 use Augias\InvoiceBundle\DTO\InvoiceFormDTO;
 use Augias\InvoiceBundle\Twig\Components\CreateInvoice;
@@ -87,6 +88,38 @@ final class CatalogPickerTest extends LiveComponentTest
         // its own formatting.
         self::assertSame(900.0, (float) $line['price']);
         self::assertCount(1, $line['taxes']);
+    }
+
+    /**
+     * The name alone does not tell two variants of a service apart: the
+     * reference, the price and what it is sold by are shown with it.
+     *
+     * @param class-string                                $componentClass
+     * @param class-string<InvoiceFormDTO|QuoteFormDTO> $dtoClass
+     */
+    #[DataProvider('componentProvider')]
+    public function testAnEntryIsOfferedWithItsReferencePriceAndUnit(string $componentClass, string $dtoClass): void
+    {
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+
+        $product = new Product();
+        $product->setCompany($this->company)
+            ->setName('Formation utilisateur')
+            ->setReference('FORM-H')
+            ->setUnit(QuantityUnit::Hour)
+            ->setSalePrice(BigInteger::of(9000));
+        $entityManager->persist($product);
+        $entityManager->flush();
+
+        $dto = new $dtoClass();
+        $dto->client = ClientFactory::createOne(['name' => 'Acme Corp', 'currencyCode' => 'EUR']);
+
+        $html = (string) $this->createLiveComponent(name: $componentClass, data: ['dto' => $dto], client: $this->client)
+            ->actingAs($this->getUser())
+            ->render();
+
+        // In the company's currency, which the catalogue is priced in.
+        self::assertStringContainsString('<option value="' . $product->getId() . '">FORM-H · Formation utilisateur — $90.00 / hour</option>', $html);
     }
 
     public function testAnUnknownEntryAddsNothing(): void

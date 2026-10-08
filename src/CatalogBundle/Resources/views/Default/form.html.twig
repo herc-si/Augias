@@ -33,28 +33,72 @@
         </div>
 
         <div class="form-page-sections">
-            <section class="form-page-section">
-                <h2 class="section-title">{{ 'catalog.form.section.identity'|trans }}</h2>
+            {# The category dropdown opens below its block: the section must
+             # not clip it, see .form-page-section--open. #}
+            <section class="form-page-section form-page-section--open">
+                <div class="section-header">
+                    <div class="section-icon">{{ ux_icon('tabler:id', {width: 20, height: 20}) }}</div>
+                    <div class="section-header-text">
+                        <h2 class="section-title">{{ 'catalog.form.section.identity'|trans }}</h2>
+                    </div>
+                </div>
                 <div class="section-content">
                     <div class="form-grid">
                         <div class="form-field">{{ form_row(form.name) }}</div>
                         <div class="form-field">{{ form_row(form.reference) }}</div>
                         <div class="form-field">{{ form_row(form.type) }}</div>
-                        <div class="form-field">{{ form_row(form.category) }}</div>
-                        <div class="form-field form-field--full">{{ form_row(form.description) }}</div>
+                        {% if route_allowed('_categories_quick_add') %}
+                            <div class="form-field category-quick-add" {{ stimulus_controller('category-quick-add', {
+                                url: path('_categories_quick_add'),
+                                usage: 'catalog',
+                                token: csrf_token('category_quick_add'),
+                            }) }}>
+                                <div class="category-quick-add-row">
+                                    {{ form_row(form.category) }}
+                                    <button type="button"
+                                            class="btn btn-icon btn-outline-primary category-quick-add-toggle"
+                                            {{ stimulus_action('category-quick-add', 'toggle') }}
+                                            title="{{ 'category.quick_add.button'|trans }}"
+                                            aria-label="{{ 'category.quick_add.button'|trans }}">
+                                        {{ ux_icon('tabler:plus', {width: 18, height: 18}) }}
+                                    </button>
+                                </div>
+                                <div class="input-group d-none" {{ stimulus_target('category-quick-add', 'panel') }}>
+                                    <input type="text"
+                                           class="form-control"
+                                           maxlength="125"
+                                           placeholder="{{ 'category.quick_add.placeholder'|trans }}"
+                                           aria-label="{{ 'category.quick_add.placeholder'|trans }}"
+                                           {{ stimulus_target('category-quick-add', 'name') }}
+                                           {{ stimulus_action('category-quick-add', 'keydown', 'keydown') }}>
+                                    <button type="button" class="btn btn-primary" {{ stimulus_action('category-quick-add', 'add') }}>
+                                        {{ 'category.quick_add.submit'|trans }}
+                                    </button>
+                                </div>
+                                <div class="text-danger small mt-1 d-none" {{ stimulus_target('category-quick-add', 'error') }}></div>
+                            </div>
+                        {% else %}
+                            <div class="form-field">{{ form_row(form.category) }}</div>
+                        {% endif %}
+                        <div class="form-field form-field-wide">{{ form_row(form.description) }}</div>
                     </div>
                 </div>
             </section>
 
             <section class="form-page-section">
-                <h2 class="section-title">{{ 'catalog.form.section.pricing'|trans }}</h2>
+                <div class="section-header">
+                    <div class="section-icon">{{ ux_icon('tabler:tag', {width: 20, height: 20}) }}</div>
+                    <div class="section-header-text">
+                        <h2 class="section-title">{{ 'catalog.form.section.pricing'|trans }}</h2>
+                    </div>
+                </div>
                 <div class="section-content">
                     <div class="form-grid">
                         <div class="form-field">{{ form_row(form.salePrice) }}</div>
                         <div class="form-field">{{ form_row(form.unit) }}</div>
                         <div class="form-field">{{ form_row(form.purchasePrice) }}</div>
                         <div class="form-field">{{ form_row(form.tax) }}</div>
-                        <div class="form-field form-field--full">{{ form_row(form.active) }}</div>
+                        <div class="form-field form-field-wide">{{ form_row(form.active) }}</div>
                     </div>
                 </div>
             </section>

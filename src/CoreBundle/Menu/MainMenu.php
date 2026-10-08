@@ -46,7 +46,6 @@ class MainMenu
         self::integrations($section);
         $this->tax($section);
         self::paymentMethods($section);
-        self::categories($section);
         self::einvoicing($section);
         self::api($section);
         self::users($section);
@@ -166,22 +165,6 @@ class MainMenu
             [
                 'route' => '_tax_rates',
                 'extras' => ['icon' => 'tax'],
-            ],
-        );
-    }
-
-    /**
-     * Purchases and the catalogue used to have a category screen each, sitting
-     * side by side here with the same icon and near-identical labels. They are
-     * one list now - see CoreBundle\\Entity\\Category.
-     */
-    public static function categories(ItemInterface $item): ItemInterface
-    {
-        return $item->addChild(
-            'menu.top.categories',
-            [
-                'route' => '_categories_index',
-                'extras' => ['icon' => 'category'],
             ],
         );
     }

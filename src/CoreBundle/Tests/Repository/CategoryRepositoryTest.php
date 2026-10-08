@@ -55,6 +55,24 @@ final class CategoryRepositoryTest extends KernelTestCase
         self::assertSame(['Abeille', 'Marmotte', 'Zèbre'], $this->namesFor(CategoryUsage::Purchase));
     }
 
+    /**
+     * What the dropdowns use: the database's byte order put "Câblage" after
+     * "Conseil" and lowercase or accented names after "Z".
+     */
+    public function testSortedForUsageOrdersAsADictionaryWould(): void
+    {
+        foreach (['Zinguerie', 'Électricité', 'Conseil', 'audit', 'Câblage'] as $name) {
+            $this->persist($name, purchases: false, catalog: true);
+        }
+
+        $repository = self::getContainer()->get(CategoryRepository::class);
+
+        self::assertSame(
+            ['audit', 'Câblage', 'Conseil', 'Électricité', 'Zinguerie'],
+            array_map(static fn (Category $category): string => (string) $category->getName(), $repository->sortedForUsage(CategoryUsage::Catalog)),
+        );
+    }
+
     public function testACategoryUsedNowhereIsOfferedNowhere(): void
     {
         $this->persist('Orpheline', purchases: false, catalog: false);

@@ -18,6 +18,7 @@ use Augias\CatalogBundle\Enum\ProductType;
 use Augias\CatalogBundle\Form\Type\ProductFormType;
 use Augias\CoreBundle\Entity\Category;
 use Augias\CoreBundle\Enum\QuantityUnit;
+use Augias\CoreBundle\Repository\CategoryRepository;
 use Augias\CoreBundle\Tests\FormTestCase;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\SettingsBundle\SystemConfig;
@@ -213,6 +214,9 @@ final class ProductFormTypeTest extends FormTestCase
      */
     protected function getTypes(): array
     {
-        return [...parent::getTypes(), new ProductFormType(self::getContainer()->get(SystemConfig::class))];
+        return [...parent::getTypes(), new ProductFormType(
+            self::getContainer()->get(SystemConfig::class),
+            self::getContainer()->get(CategoryRepository::class),
+        )];
     }
 }

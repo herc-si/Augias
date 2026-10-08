@@ -383,7 +383,7 @@ action:
     submit: Submit
     update: Update
 active_clients: 'Active Clients'
-add_client: 'Add Party'
+add_client: 'Add Client'
 add_info: 'Add Info'
 address: Address
 all_clients: 'All Clients'
@@ -568,6 +568,7 @@ catalog:
     list:
         title: "Catalogue"
     menu:
+        list: "Services and products"
         main: "Catalogue"
     picker:
         label: "Add from the catalogue"
@@ -619,6 +620,11 @@ category:
         name: Name
     menu:
         list: Categories
+    quick_add:
+        button: "New category"
+        failed: "The category could not be created."
+        placeholder: "Category name"
+        submit: "Add"
     usage:
         catalog: Catalogue
         purchase: Purchases
@@ -713,7 +719,7 @@ client:
             generic: 'This feature requires a higher plan. Upgrade now to unlock it.'
             upgrade: 'Upgrade Now'
             with_plan: 'This feature is available on the %plan% plan. Upgrade to unlock it.'
-        info_description: 'Basic information about this party'
+        info_description: 'The basic details of this record'
         is_client:
             label: Client
         is_supplier:
@@ -723,9 +729,9 @@ client:
             label: Name
             placeholder: 'Acme Corporation'
         role_description: 'Check either or both, you can change this later.'
-        role_title: 'What is this party?'
-        subtitle: 'Add a new party, then mark them as a client, a supplier, or both.'
-        fiscal_identifiers_description: 'They appear on invoices and quotes issued to this party, and route its e-invoices. Leave empty for a private individual.'
+        role_title: 'Client, supplier, or both?'
+        subtitle: 'Fill in the record, then say whether it is a client, a supplier, or both.'
+        fiscal_identifiers_description: 'They appear on invoices and quotes addressed to them, and route its e-invoices. Leave empty for a private individual.'
         fiscal_identifiers_title: 'Tax identifiers'
         other_identifiers_title: 'Other identifiers'
         siren: 'SIREN'
@@ -765,7 +771,7 @@ client:
             invoice: 'Create Invoice'
             quote: 'Create Quote'
         list: 'List Clients'
-        main: Parties
+        main: Clients
         view: 'View Client'
     modal:
         action:
@@ -838,8 +844,8 @@ client:
             invoices: Invoices
             payments: Payments
             quotes: Quotes
-client_create: 'Create Party'
-clients: Parties
+client_create: 'Add Client'
+clients: Clients
 close: Close
 company:
     closing:
@@ -1430,7 +1436,7 @@ document_line:
     move_down: 'Move the line down'
     move_up: 'Move the line up'
     note_placeholder: 'Note or heading, such as “Phase 2 — Development”'
-edit_client: 'Edit Party'
+edit_client: 'Edit Record'
 einvoicing:
     account:
         held: 'Saved, but the platform has not verified the company''s identity: electronic invoicing stays stopped until it does.'

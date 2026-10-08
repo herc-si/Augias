@@ -116,6 +116,38 @@
     }
 }
 
+// A section whose dropdown opens past its bottom edge (the autocomplete
+// widget's list): clipping would hide the list, so the header keeps the
+// rounded corners instead.
+
+.form-page-section--open {
+    overflow: visible;
+
+    > .section-header {
+        border-radius: var(--swp-radius-lg) var(--swp-radius-lg) 0 0;
+    }
+}
+
+// The "+" beside a dropdown, creating an entry without leaving the form
+// (category-quick-add controller). The button lines up with the field, not
+// with its label.
+
+.category-quick-add-row {
+    display: flex;
+    align-items: flex-end;
+    gap: var(--swp-space-2);
+
+    > :first-child {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .category-quick-add-toggle {
+        flex-shrink: 0;
+        margin-bottom: var(--swp-space-4);
+    }
+}
+
 // ============================================================================
 // SHARED SECTION HEADER (used inside form-page-section)
 // ============================================================================

@@ -43,6 +43,7 @@ final class SidebarMenuTest extends KernelTestCase
             [
                 'dashboard.title',
                 'client.menu.main',
+                'supplier.menu.main',
                 PrestationMenu::SECTION,
                 'catalog.menu.main',
                 'payment.menu.main',
@@ -88,6 +89,23 @@ final class SidebarMenuTest extends KernelTestCase
         self::assertInstanceOf(ItemInterface::class, $section);
         self::assertNull($section->getUri());
         self::assertTrue($section->hasChildren());
+    }
+
+    /**
+     * The categories are reached from the catalogue they file, not from the
+     * system settings.
+     */
+    public function testCatalogueGroupsItsEntriesAndTheCategories(): void
+    {
+        $section = $this->sidebar()->getChild('catalog.menu.main');
+
+        self::assertInstanceOf(ItemInterface::class, $section);
+        self::assertNull($section->getUri());
+        self::assertSame(['catalog.menu.list', 'menu.top.categories'], $this->names($section));
+
+        $system = $this->sidebar()->getChild('menu.top.system');
+        self::assertInstanceOf(ItemInterface::class, $system);
+        self::assertNotContains('menu.top.categories', $this->names($system));
     }
 
     private function sidebar(): ItemInterface

@@ -16,6 +16,9 @@ namespace Augias\ClientBundle\DataGrid;
 use Augias\ClientBundle\Repository\ClientRepository;
 use Augias\DataGridBundle\Attributes\AsDataGrid;
 use Augias\DataGridBundle\GridBuilder\Batch\BatchAction;
+use Augias\DataGridBundle\GridBuilder\Query;
+use Augias\DataGridBundle\Source\ORMSource;
+use Doctrine\ORM\EntityManagerInterface;
 use Override;
 use Symfony\Component\Translation\TranslatableMessage;
 
@@ -33,6 +36,21 @@ final class ClientGrid extends BaseClientGrid
             ->action(static function (ClientRepository $repository, array $selectedItems): void {
                 $repository->archiveClients($selectedItems);
             });
+    }
+
+    /**
+     * Clients only: a pure supplier is listed under Fournisseurs, see
+     * SupplierBundle\DataGrid\SupplierGrid.
+     */
+    #[Override]
+    public function query(EntityManagerInterface $entityManager, Query $query): Query
+    {
+        $query = parent::query($entityManager, $query);
+
+        $query->getQueryBuilder()
+            ->andWhere(ORMSource::ALIAS . '.isClient = true');
+
+        return $query;
     }
 
     public function getCreateRoute(): ?string

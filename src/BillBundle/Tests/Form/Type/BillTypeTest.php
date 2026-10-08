@@ -16,6 +16,7 @@ namespace Augias\BillBundle\Tests\Form\Type;
 use Augias\BillBundle\Entity\Bill;
 use Augias\BillBundle\Form\Type\BillType;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\CoreBundle\Repository\CategoryRepository;
 use Augias\CoreBundle\Tests\FormTestCase;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\SettingsBundle\SystemConfig;
@@ -107,6 +108,7 @@ final class BillTypeTest extends FormTestCase
         return [...parent::getTypes(), new BillType(
             self::getContainer()->get(SystemConfig::class),
             self::getContainer()->get(TranslatorInterface::class),
+            self::getContainer()->get(CategoryRepository::class),
         )];
     }
 }
