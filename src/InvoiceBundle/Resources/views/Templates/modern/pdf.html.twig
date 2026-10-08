@@ -17,7 +17,7 @@
         <div style="margin-bottom: 16px;">{{ app_logo(50) }}</div>
     {% endif %}
     <div style="font-size: 9pt; color: #94a3b8; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 8px;">
-        {{ 'invoice.pdf.title'|trans }} · #{{ invoice.invoiceId }}
+        {{ 'invoice.pdf.title'|trans }} · {{ invoice_number(invoice, '#') }}
     </div>
     <div style="font-size: 11pt; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px;">
         {% if hasOutstandingBalance %}{{ 'invoice.balance_due'|trans }}{% else %}{{ 'invoice.total_due'|trans }}{% endif %}

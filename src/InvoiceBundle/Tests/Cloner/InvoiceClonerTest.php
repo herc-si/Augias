@@ -15,8 +15,6 @@ namespace Augias\InvoiceBundle\Tests\Cloner;
 
 use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Entity\Discount;
-use Augias\CoreBundle\Generator\BillingIdGenerator;
-use Augias\CoreBundle\Generator\BillingIdGenerator\RandomNumberGenerator;
 use Augias\CronBundle\Enum\ScheduleEndType;
 use Augias\CronBundle\Enum\ScheduleRecurringType;
 use Augias\InvoiceBundle\Cloner\InvoiceCloner;
@@ -25,7 +23,6 @@ use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
 use Augias\InvoiceBundle\Entity\RecurringInvoiceLine;
 use Augias\InvoiceBundle\Manager\InvoiceManager;
-use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\LineTax;
 use Augias\TaxBundle\Entity\Tax;
 use Brick\Math\Exception\MathException;
@@ -34,7 +31,6 @@ use DateTimeImmutable;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery as M;
 use PHPUnit\Framework\TestCase;
-use Symfony\Component\DependencyInjection\ServiceLocator;
 
 final class InvoiceClonerTest extends TestCase
 {
@@ -84,26 +80,7 @@ final class InvoiceClonerTest extends TestCase
         $invoiceManager = M::mock(InvoiceManager::class);
         $invoiceManager->shouldReceive('create');
 
-        $systemConfig = M::mock(SystemConfig::class);
-
-        $systemConfig->shouldReceive('get')
-            ->once()
-            ->with('invoice/id_generation/strategy')
-            ->andReturn('random_number');
-
-        $systemConfig->shouldReceive('get')
-            ->once()
-            ->with('invoice/id_generation/id_prefix')
-            ->andReturn('');
-
-        $systemConfig->shouldReceive('get')
-            ->once()
-            ->with('invoice/id_generation/id_suffix')
-            ->andReturn('');
-
-        $invoiceCloner = new InvoiceCloner($invoiceManager, new BillingIdGenerator(new ServiceLocator([
-            'random_number' => fn () => new RandomNumberGenerator(),
-        ]), $systemConfig));
+        $invoiceCloner = new InvoiceCloner($invoiceManager);
 
         $newInvoice = $invoiceCloner->clone($invoice);
 
@@ -120,7 +97,8 @@ final class InvoiceClonerTest extends TestCase
 
         self::assertNotSame($invoice->getUuid(), $newInvoice->getUuid());
         self::assertNull($newInvoice->getId());
-        self::assertNotSame($invoice->getInvoiceId(), $newInvoice->getInvoiceId());
+        // A copy is a draft: it takes its number when it is finalised.
+        self::assertSame('', $newInvoice->getInvoiceId());
 
         self::assertCount(1, $newInvoice->getLines());
 
@@ -182,7 +160,7 @@ final class InvoiceClonerTest extends TestCase
         $invoiceManager = M::mock(InvoiceManager::class);
         $invoiceManager->shouldReceive('create');
 
-        $invoiceCloner = new InvoiceCloner($invoiceManager, new BillingIdGenerator(new ServiceLocator([]), $this->createStub(SystemConfig::class)));
+        $invoiceCloner = new InvoiceCloner($invoiceManager);
 
         /** @var RecurringInvoice $newInvoice */
         $newInvoice = $invoiceCloner->clone($invoice);

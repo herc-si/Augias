@@ -54,7 +54,10 @@ final class InvoiceFormDTO
     public ?string $newContactEmail = null;
 
     // Invoice entity fields
-    #[Assert\NotBlank]
+    /**
+     * Empty for a new document or a draft: the number is taken when it is
+     * finalised, not in the form.
+     */
     #[Assert\Length(max: 255)]
     public string $invoiceId = '';
 

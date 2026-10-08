@@ -34,7 +34,7 @@
             <div style="font-size: 9pt; color: #64748b; text-transform: uppercase; letter-spacing: 2px;">
                 {{ 'credit_note.pdf.heading'|trans }}
             </div>
-            <div style="font-size: 22pt; font-weight: bold; color: {{ accent }};">{{ creditNote.creditNoteId }}</div>
+            <div style="font-size: 22pt; font-weight: bold; color: {{ accent }};">{{ credit_note_number(creditNote) }}</div>
         </td>
     </tr>
 </table>
@@ -65,7 +65,7 @@
              # credit note has to say which invoice it corrects, and why.
              #}
             {% if creditNote.creditedInvoice %}
-                {{ inv.meta_pair('credit_note.field.credited_invoice'|trans, creditNote.creditedInvoice.invoiceId) }}
+                {{ inv.meta_pair('credit_note.field.credited_invoice'|trans, invoice_number(creditNote.creditedInvoice)) }}
             {% endif %}
             {% if creditNote.reason %}
                 {{ inv.meta_pair('credit_note.field.reason'|trans, creditNote.reason.translationKey|trans) }}
@@ -75,7 +75,7 @@
 </table>
 
 {% if creditNote.creditedInvoice %}
-    <p style="font-size: 9pt; color: #475569; margin-bottom: 16px;">{{ 'credit_note.pdf.credits_invoice'|trans({'%invoice%': creditNote.creditedInvoice.invoiceId}) }}</p>
+    <p style="font-size: 9pt; color: #475569; margin-bottom: 16px;">{{ 'credit_note.pdf.credits_invoice'|trans({'%invoice%': invoice_number(creditNote.creditedInvoice)}) }}</p>
 {% endif %}
 
 <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">

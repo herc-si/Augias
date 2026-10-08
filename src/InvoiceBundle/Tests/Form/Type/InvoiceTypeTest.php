@@ -17,7 +17,6 @@ use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Form\Type\CustomFieldValueCollectionType;
 use Augias\CoreBundle\Form\Type\DiscountType;
-use Augias\CoreBundle\Generator\BillingIdGenerator;
 use Augias\CoreBundle\Repository\CustomFieldRepository;
 use Augias\CoreBundle\Repository\CustomFieldValueRepository;
 use Augias\CoreBundle\Service\CustomField\CustomFieldTypeResolver;
@@ -35,7 +34,6 @@ use Mockery as M;
 use Money\Currency;
 use Override;
 use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
-use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\FormExtensionInterface;
 use Symfony\Component\Form\PreloadedExtension;
@@ -62,7 +60,6 @@ final class InvoiceTypeTest extends FormTestCase
                 'type' => Discount::TYPE_PERCENTAGE,
             ],
             'lines' => [],
-            'invoiceId' => '10',
             'notes' => $notes,
             'terms' => $terms,
             'total' => '0',
@@ -75,7 +72,6 @@ final class InvoiceTypeTest extends FormTestCase
         $dto = new InvoiceFormDTO();
         $dto->clientMode = InvoiceClientMode::Existing;
         $dto->client = $client;
-        $dto->invoiceId = '10';
         $dto->terms = $terms;
         $dto->notes = $notes;
 
@@ -110,7 +106,6 @@ final class InvoiceTypeTest extends FormTestCase
                 'type' => Discount::TYPE_PERCENTAGE,
             ],
             'lines' => [],
-            'invoiceId' => '10',
             'notes' => $notes,
             'terms' => $terms,
             'total' => '0',
@@ -125,7 +120,6 @@ final class InvoiceTypeTest extends FormTestCase
         $dto->newContactFirstName = 'John';
         $dto->newContactLastName = 'Doe';
         $dto->newContactEmail = 'john@example.com';
-        $dto->invoiceId = '10';
         $dto->terms = $terms;
         $dto->notes = $notes;
 
@@ -165,12 +159,7 @@ final class InvoiceTypeTest extends FormTestCase
         $featureGate->method('isEnabled')
             ->willReturn(true);
 
-        $invoiceType = new InvoiceType($systemConfig, new BillingIdGenerator(new ServiceLocator(['random_number' => static fn () => new class() {
-            public function generate(): string
-            {
-                return '10';
-            }
-        }]), $systemConfig), $featureGate, $this->taxAvailability());
+        $invoiceType = new InvoiceType($systemConfig, $featureGate, $this->taxAvailability());
         $itemType = new ItemType($this->taxAvailability());
 
         $customFieldsType = new CustomFieldValueCollectionType(

@@ -16,7 +16,7 @@
 
 {{ 'einvoicing.notification_problem.company'|trans({}, 'email') }}: {{ company.name }}
 {% if invoice -%}
-{{ 'einvoicing.notification_problem.invoice_number'|trans({}, 'email') }}: {{ invoice.invoiceId ?? invoice.id }}
+{{ 'einvoicing.notification_problem.invoice_number'|trans({}, 'email') }}: {{ invoice_number(invoice) ?? invoice.id }}
 {{ 'einvoicing.notification_problem.client'|trans({}, 'email') }}: {{ invoice.client.name }}
 {% endif -%}
 {% if detail -%}

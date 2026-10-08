@@ -28,7 +28,7 @@
     {{ email.spacer('sm') }}
 
     {# Invoice details #}
-    {{ email.info_row('invoice.status_change.id'|trans({}, 'email'), invoice.invoiceId ?? invoice.id) }}
+    {{ email.info_row('invoice.status_change.id'|trans({}, 'email'), invoice_number(invoice) ?? invoice.id) }}
 
     {% if invoice.client %}
         {{ email.spacer('xs') }}

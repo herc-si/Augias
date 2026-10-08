@@ -15,7 +15,7 @@
 {{ 'payment.details.amount'|trans({}, 'email') }}: {{ payment.totalAmount|formatCurrency(payment.currencyCode) }}
 
 {% if payment.invoice is not empty %}
-{{ 'payment.details.invoice'|trans({}, 'email') }}: {{ payment.invoice.invoiceId }}
+{{ 'payment.details.invoice'|trans({}, 'email') }}: {{ invoice_number(payment.invoice) }}
 {% endif %}
 
 {% if payment.client is not empty %}

@@ -31,7 +31,7 @@
     {{ email.spacer('sm') }}
 
     {# Invoice details #}
-    {{ email.info_row('einvoicing.notification_rejected.invoice_number'|trans({}, 'email'), invoice.invoiceId ?? invoice.id) }}
+    {{ email.info_row('einvoicing.notification_rejected.invoice_number'|trans({}, 'email'), invoice_number(invoice) ?? invoice.id) }}
 
     {% if client %}
         {{ email.spacer('xs') }}

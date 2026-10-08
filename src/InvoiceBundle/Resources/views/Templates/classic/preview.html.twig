@@ -12,7 +12,7 @@
                 </div>
                 <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
                     <div class="text-uppercase small text-muted" style="letter-spacing: 2px;">{{ 'invoice.pdf.title'|trans }}</div>
-                    <div class="display-6 fw-bold">#{{ invoice.invoiceId }}</div>
+                    <div class="display-6 fw-bold">{{ invoice_number(invoice, '#') }}</div>
                 </div>
             </div>
 

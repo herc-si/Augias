@@ -12,7 +12,7 @@
                                 {{ 'invoice.pdf.title'|trans }}
                             </p>
                             <p style="color: #f5f1e8; font-family: Georgia, serif; font-size: 36px; line-height: 1.0; margin: 0; Margin: 0;">
-                                {{ invoice.invoiceId }}
+                                {{ invoice_number(invoice) }}
                             </p>
                             <p style="color: #d4a94a; font-family: Georgia, serif; font-size: 22px; margin: 12px 0 0 0; Margin: 12px 0 0 0;">
                                 {{ (invoice_has_outstanding_balance(invoice) ? invoice.balance : invoice.total)|formatCurrency(invoice.client.currency) }}

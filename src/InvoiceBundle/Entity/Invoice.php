@@ -67,6 +67,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use function array_values;
 
 #[ORM\Table(name: Invoice::TABLE_NAME)]
+#[ORM\UniqueConstraint(name: Invoice::NUMBER_INDEX, columns: ['company_id', 'invoice_id'])]
 #[ORM\Index(columns: ['quote_id'])]
 #[ORM\Index(name: 'idx_invoice_reminder_scan', columns: ['due', 'status'])]
 #[ORM\Entity(repositoryClass: InvoiceRepository::class)]
@@ -117,6 +118,12 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
 {
     final public const string TABLE_NAME = 'invoices';
 
+    /**
+     * One number per invoice in a company. A draft has none (NULL), which a
+     * unique index lets any number of rows share.
+     */
+    final public const string NUMBER_INDEX = 'invoice_number_unique';
+
     use Archivable;
     use InvoiceStatusTrait {
         Archivable::isArchived insteadof InvoiceStatusTrait;
@@ -135,9 +142,15 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
     #[Groups(['invoice_api:read', 'searchable'])]
     private ?Ulid $id = null;
 
-    #[ORM\Column(name: 'invoice_id', type: Types::STRING, length: 255)]
+    /**
+     * The invoice's number, taken when it is finalised, not before: a draft
+     * that took one and was then dropped left a gap in the series, or used a
+     * number older than invoices issued meanwhile (08/10/2026). Null while a
+     * draft.
+     */
+    #[ORM\Column(name: 'invoice_id', type: Types::STRING, length: 255, nullable: true)]
     #[Groups(['invoice_api:read', 'invoice_api:write', 'searchable'])]
-    private string $invoiceId = '';
+    private ?string $invoiceId = null;
 
     #[ORM\Column(name: 'uuid', type: Types::STRING, length: 36)]
     #[Groups(['invoice_api:read'])]
@@ -676,16 +689,24 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
         $this->setUuid(Uuid::v7());
     }
 
+    /**
+     * Empty while the invoice is a draft.
+     */
     public function getInvoiceId(): string
     {
-        return $this->invoiceId;
+        return $this->invoiceId ?? '';
     }
 
     public function setInvoiceId(string $invoiceId): self
     {
-        $this->invoiceId = $invoiceId;
+        $this->invoiceId = '' === $invoiceId ? null : $invoiceId;
 
         return $this;
+    }
+
+    public function isNumbered(): bool
+    {
+        return null !== $this->invoiceId;
     }
 
     public function setId(Ulid $id): self
@@ -761,7 +782,7 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
 
     public function __toString(): string
     {
-        return $this->invoiceId;
+        return $this->invoiceId ?? '';
     }
 
     public function getRecurringInvoice(): ?RecurringInvoice

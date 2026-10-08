@@ -10,7 +10,7 @@
                 <div>
                     {% if setting('system/company/logo') is not empty %}<div class="mb-2">{{ app_logo(48) }}</div>{% endif %}
                     <div class="text-uppercase mb-1" style="color: #94704a; letter-spacing: 4px; font-size: 12px;">{{ 'invoice.template.editorial.heading'|trans }}</div>
-                    <div class="doc-title" style="font-size: 56px; font-style: italic; line-height: 1;">{{ 'invoice.number_prefix'|trans }} {{ invoice.invoiceId }}</div>
+                    <div class="doc-title" style="font-size: 56px; font-style: italic; line-height: 1;">{{ 'invoice.number_prefix'|trans }} {{ invoice_number(invoice) }}</div>
                 </div>
                 <div class="text-end">
                     <div class="fst-italic fs-4">{{ company_name() }}</div>

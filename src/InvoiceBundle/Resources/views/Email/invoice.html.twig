@@ -12,7 +12,7 @@
 {% set invoicePath = url("_view_invoice_external", {"uuid" : invoice.uuid}) %}
 
 {%- block title -%}
-    {{ "invoice.title"|trans({"%id%" : invoice.invoiceId}, 'email') }}
+    {{ "invoice.title"|trans({"%id%" : invoice_number(invoice)}, 'email') }}
 {%- endblock -%}
 
 {%- block header -%}
@@ -25,7 +25,7 @@
             {
                 "@context": "http://schema.org",
                 "@type": "Invoice",
-                "accountId": "{{ invoice.invoiceId }}",
+                "accountId": "{{ invoice_number(invoice) }}",
                 "minimumPaymentDue": {
                     "@type": "PriceSpecification",
                     "price": "{{ invoice.total|formatCurrency(invoice.client.currency) }}"
@@ -71,7 +71,7 @@
     {{ email.spacer('sm') }}
 
     {# Invoice details section #}
-    {{ email.info_row('invoice.number'|trans({}, 'email'), invoice.invoiceId) }}
+    {{ email.info_row('invoice.number'|trans({}, 'email'), invoice_number(invoice)) }}
     {{ email.spacer('xs') }}
     {{ email.info_row('invoice.created'|trans({}, 'email'), invoice.created|date) }}
 

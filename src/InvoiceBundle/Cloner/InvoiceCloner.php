@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Cloner;
 
-use Augias\CoreBundle\Generator\BillingIdGenerator;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
@@ -36,7 +35,6 @@ final readonly class InvoiceCloner
 {
     public function __construct(
         private InvoiceManager $invoiceManager,
-        private BillingIdGenerator $billingIdGenerator,
         private TaxSnapshotCopier $taxSnapshotCopier = new TaxSnapshotCopier(),
     ) {
     }
@@ -89,7 +87,7 @@ final readonly class InvoiceCloner
             }
         } else {
             $newInvoice->setDue($invoice->getDue());
-            $newInvoice->setInvoiceId($this->billingIdGenerator->generate($newInvoice, ['field' => 'invoiceId']));
+            // A copy is a draft: numbered when it is finalised.
         }
 
         $newInvoice->setTax($invoice->getTax());

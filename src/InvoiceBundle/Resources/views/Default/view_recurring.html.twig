@@ -461,7 +461,7 @@
                                 <div class="generated-invoice-item">
                                     <a href="{{ path('_invoices_view', {id: generatedInvoice.id}) }}" class="generated-invoice-link">
                                         {{ ux_icon('tabler:file-invoice', {width: 14, height: 14}) }}
-                                        <span class="generated-invoice-id">{{ generatedInvoice.invoiceId }}</span>
+                                        <span class="generated-invoice-id">{{ invoice_number(generatedInvoice) }}</span>
                                     </a>
                                     <div class="generated-invoice-meta">
                                         <span class="generated-invoice-amount">{{ generatedInvoice.total|formatCurrency(currency) }}</span>

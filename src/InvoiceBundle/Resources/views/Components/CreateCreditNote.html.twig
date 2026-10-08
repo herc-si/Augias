@@ -41,8 +41,14 @@
                         {% endif %}
                     </div>
 
-                    <div class="mt-3">
-                        {{ form_row(form.creditNoteId) }}
+                    {# Numbered when issued, like an invoice when finalised. #}
+                    <div class="mt-3 billing-id-display" data-test="credit-note-number">
+                        <span class="billing-id-label">{{ 'credit_note.field.number'|trans }}</span>
+                        {% if creditNote is not null and creditNote.numbered %}
+                            <span class="billing-id-value">{{ credit_note_number(creditNote) }}</span>
+                        {% else %}
+                            <span class="billing-id-value text-muted">{{ 'credit_note.number.on_issue'|trans }}</span>
+                        {% endif %}
                     </div>
                 </div>
 

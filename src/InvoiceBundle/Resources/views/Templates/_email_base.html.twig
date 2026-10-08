@@ -23,7 +23,7 @@
 {% set jsonFlags = constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_APOS') b-or constant('JSON_HEX_QUOT') %}
 
 {%- block title -%}
-    {{ "invoice.title"|trans({"%id%" : invoice.invoiceId}, 'email') }}
+    {{ "invoice.title"|trans({"%id%" : invoice_number(invoice)}, 'email') }}
 {%- endblock -%}
 
 {%- block header -%}
@@ -36,7 +36,7 @@
             {
                 "@context": "https://schema.org",
                 "@type": "Invoice",
-                "accountId": {{ invoice.invoiceId|json_encode(jsonFlags)|raw }},
+                "accountId": {{ invoice_number(invoice)|json_encode(jsonFlags)|raw }},
                 "minimumPaymentDue": {
                     "@type": "PriceSpecification",
                     "price": {{ invoice.total|formatCurrency(invoice.client.currency)|json_encode(jsonFlags)|raw }}
@@ -87,7 +87,7 @@
 
     {{ email.spacer('sm') }}
 
-    {{ email.info_row('invoice.number'|trans({}, 'email'), invoice.invoiceId) }}
+    {{ email.info_row('invoice.number'|trans({}, 'email'), invoice_number(invoice)) }}
     {{ email.spacer('xs') }}
     {{ email.info_row('invoice.created'|trans({}, 'email'), invoice.created|date) }}
     {% if invoice.due %}

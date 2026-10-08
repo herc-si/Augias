@@ -26,7 +26,7 @@
             </td>
             <td style="vertical-align: middle; text-align: right;">
                 <div style="font-size: 9pt; color: #94704a; letter-spacing: 2px; text-transform: uppercase;">{{ 'invoice.pdf.title'|trans }}</div>
-                <div style="font-size: 18pt; font-weight: bold; color: #1e293b;">#{{ invoice.invoiceId }}</div>
+                <div style="font-size: 18pt; font-weight: bold; color: #1e293b;">{{ invoice_number(invoice, '#') }}</div>
             </td>
         </tr>
     </table>

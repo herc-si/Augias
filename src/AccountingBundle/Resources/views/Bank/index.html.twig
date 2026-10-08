@@ -99,7 +99,7 @@
                                                 {% else %}
                                                     <span class="badge {{ line.status.value == 'matched' ? 'bg-green-lt' : 'bg-secondary-lt' }}">{{ ('accounting.bank.status.' ~ line.status.value)|trans }}</span>
                                                     {% if line.payment and line.payment.invoice %}
-                                                        <a href="{{ path('_invoices_view', {'id': line.payment.invoice.id}) }}" class="small">{{ line.payment.invoice.invoiceId }}</a>
+                                                        <a href="{{ path('_invoices_view', {'id': line.payment.invoice.id}) }}" class="small">{{ invoice_number(line.payment.invoice) }}</a>
                                                     {% elseif line.billPayment %}
                                                         <a href="{{ path('_bills_view', {'id': line.billPayment.bill.id}) }}" class="small">{{ line.billPayment.bill.billNumber }}</a>
                                                     {% endif %}

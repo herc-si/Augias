@@ -10,16 +10,16 @@
 {% extends "@AugiasCore/Layout/Email/base.html.twig" %}
 
 {%- block title -%}
-    {{ 'credit_note.title'|trans({'%id%': creditNote.creditNoteId}, 'email') }}
+    {{ 'credit_note.title'|trans({'%id%': credit_note_number(creditNote)}, 'email') }}
 {%- endblock -%}
 
 {% block content %}
     {% set currency = creditNote.client.currency %}
 
-    <p>{{ 'credit_note.email.intro'|trans({'%id%': creditNote.creditNoteId}) }}</p>
+    <p>{{ 'credit_note.email.intro'|trans({'%id%': credit_note_number(creditNote)}) }}</p>
 
     {% if creditNote.creditedInvoice %}
-        <p>{{ 'credit_note.email.credits_invoice'|trans({'%invoice%': creditNote.creditedInvoice.invoiceId}) }}</p>
+        <p>{{ 'credit_note.email.credits_invoice'|trans({'%invoice%': invoice_number(creditNote.creditedInvoice)}) }}</p>
     {% endif %}
 
     <table role="presentation" width="100%">

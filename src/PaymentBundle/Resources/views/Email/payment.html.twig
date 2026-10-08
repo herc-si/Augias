@@ -34,7 +34,7 @@
 
     {# Payment details #}
     {% if payment.invoice is not empty %}
-        {{ email.info_row('payment.details.invoice'|trans({}, 'email'), payment.invoice.invoiceId) }}
+        {{ email.info_row('payment.details.invoice'|trans({}, 'email'), invoice_number(payment.invoice)) }}
         {{ email.spacer('xs') }}
     {% endif %}
 

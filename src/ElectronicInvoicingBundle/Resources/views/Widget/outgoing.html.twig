@@ -50,8 +50,8 @@
                          # in practice nothing is transmitted before that — but a
                          # bare "#" is worse than no number at all if it happens.
                          #}
-                        {% if submission.invoice.invoiceId %}
-                            <span class="attention-item-id">#{{ submission.invoice.invoiceId }}</span>
+                        {% if submission.invoice.numbered %}
+                            <span class="attention-item-id">{{ invoice_number(submission.invoice, '#') }}</span>
                         {% endif %}
                         {#
                          # The provider's own message, when it left one. A rejection

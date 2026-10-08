@@ -65,7 +65,7 @@
                 {{ 'invoice.disbursement.note.label'|trans }}
             </div>
             <div style="font-size: 20pt; font-weight: bold; color: #1e293b; margin-bottom: 12px;">{{ invoice.disbursementNoteId }}</div>
-            <div style="font-size: 9pt; color: #475569;">{{ 'invoice.disbursement.note.attached_to'|trans({'%invoice%': invoice.invoiceId}) }}</div>
+            <div style="font-size: 9pt; color: #475569;">{{ 'invoice.disbursement.note.attached_to'|trans({'%invoice%': invoice_number(invoice)}) }}</div>
             <div style="font-size: 9pt; color: #475569;">{{ invoice.invoiceDate|format_date('long') }}</div>
         </td>
     </tr>

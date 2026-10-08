@@ -91,7 +91,7 @@
 
             {# Invoice Number #}
             <div class="invoice-number" style="font-size: 24pt; font-weight: bold; color: #1e293b; margin-bottom: 16px;">
-                #{{ invoice.invoiceId }}
+                {{ invoice_number(invoice, '#') }}
             </div>
 
             {# Invoice Dates #}
