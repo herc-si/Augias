@@ -35,6 +35,12 @@ enum DocumentActivityType: string
     /** Someone downloaded its PDF from the client's link. */
     case Downloaded = 'downloaded';
 
+    /** The client accepted the quote from their link, under the name they gave. */
+    case ClientAccepted = 'client_accepted';
+
+    /** The client declined the quote from their link, with their reason if any. */
+    case ClientDeclined = 'client_declined';
+
     public function translationKey(): string
     {
         return 'document_activity.type.' . $this->value;
@@ -48,6 +54,8 @@ enum DocumentActivityType: string
             self::SendFailed => 'tabler:alert-triangle',
             self::Viewed => 'tabler:eye',
             self::Downloaded => 'tabler:download',
+            self::ClientAccepted => 'tabler:circle-check',
+            self::ClientDeclined => 'tabler:circle-x',
         };
     }
 
@@ -55,6 +63,18 @@ enum DocumentActivityType: string
      * Something the client did, as opposed to something done on our side.
      */
     public function byClient(): bool
+    {
+        return match ($this) {
+            self::Viewed, self::Downloaded, self::ClientAccepted, self::ClientDeclined => true,
+            default => false,
+        };
+    }
+
+    /**
+     * Only opening a link can be done by a program: a mail filter checks
+     * every link it sees, but does not fill in a name and tick a box.
+     */
+    public function canBeAutomated(): bool
     {
         return self::Viewed === $this || self::Downloaded === $this;
     }

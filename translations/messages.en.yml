@@ -1436,10 +1436,12 @@ document_activity:
     detail:
         reminder: 'Reminder sent by email'
     empty: 'Nothing yet.'
+    from_ip: 'from %ip%'
     not_sent:
         invoice: 'This invoice is finalised, but no sending to the client is recorded.'
         quote: 'This quote is finalised, but no sending to the client is recorded.'
         send: 'Send to the client'
+    signed_by: 'Agreed in the name of %name%'
     summary:
         last_seen: 'Viewed by the client on %date%'
         last_sent: 'Sent to the client on %date%'
@@ -1461,6 +1463,8 @@ document_activity:
         reopen: Reopened
         settle: Settled
     type:
+        client_accepted: 'Accepted by the client'
+        client_declined: 'Declined by the client'
         downloaded: 'PDF downloaded'
         send_failed: 'Email could not be sent'
         sent: 'Sent by email'
@@ -3112,6 +3116,30 @@ quote:
             existing: 'Select existing client'
             new: 'Create new client'
         title: Client
+    client_answer:
+        accept: 'Accept the quote'
+        accepted: 'This quote has been accepted.'
+        accepted_by: 'Quote accepted on %date%, in the name of %name%. Thank you!'
+        agree: 'I accept quote %id% for %total% and its terms.'
+        answer: 'Answer the quote'
+        decline: 'Decline the quote'
+        decline_toggle: 'Decline this quote'
+        declined: 'This quote has been declined.'
+        declined_on: 'Quote declined on %date%.'
+        expired: 'This quote is no longer valid since %date%. Contact %company% for a new one.'
+        flash:
+            accepted: 'Thank you, your agreement is recorded. The supplier has been told.'
+            already_answered: 'This quote can no longer be answered: it was already accepted, declined or cancelled.'
+            declined: 'Your refusal is recorded. The supplier has been told.'
+            expired: 'This quote is no longer valid: it can no longer be accepted.'
+            expired_page: 'The page has expired. Reload it and try again.'
+            incomplete: 'To accept, give your full name and tick the box.'
+        name: 'Your full name'
+        proof: 'Your name, the date and time, your browser and your IP address are kept as proof of your agreement.'
+        reason: 'A reason? (optional)'
+        summary: 'Quote %id%, %total%.'
+        title: 'Your answer'
+        valid_until: 'Valid until %date%.'
     clone:
         success: 'Quote cloned successfully'
     create:

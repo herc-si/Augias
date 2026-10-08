@@ -579,6 +579,17 @@ class Quote implements Journalled
         return $this;
     }
 
+    /**
+     * Past its "valid until" date on that day. Like an invoice that becomes
+     * overdue, a quote valid until the 10th can still be accepted on the
+     * 10th, and no longer on the 11th. Compared as dates: the time of day the
+     * date was stored with says nothing.
+     */
+    public function isExpiredOn(DateTimeInterface $day): bool
+    {
+        return $this->due instanceof DateTimeInterface && $this->due->format('Y-m-d') < $day->format('Y-m-d');
+    }
+
     public function isValid(): bool
     {
         // We need to handle cases where a quote is archived, but the corresponding invoice is still available.

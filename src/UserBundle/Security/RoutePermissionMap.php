@@ -76,6 +76,7 @@ final class RoutePermissionMap
         '_view_invoice_disbursement_note_external' => null,
         '_view_invoice_external' => null,
         '_view_invoice_receipt_external' => null,
+        '_view_quote_answer' => null,
         '_view_quote_external' => null,
         '_webhook_controller' => null,
 

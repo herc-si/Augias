@@ -67,6 +67,13 @@ class DocumentActivity
     private ?string $userAgent;
 
     /**
+     * Where an acceptance or a refusal came from: with the name typed and the
+     * time, what is kept as the client's word. Not kept for a mere visit.
+     */
+    #[ORM\Column(name: 'ip_address', type: Types::STRING, length: 45, nullable: true)]
+    private ?string $ipAddress;
+
+    /**
      * @param list<string> $recipients
      */
     public function __construct(
@@ -86,10 +93,12 @@ class DocumentActivity
         #[ORM\Column(name: 'recipients', type: Types::JSON, nullable: true)]
         private readonly ?array $recipients = null,
         ?string $userAgent = null,
+        ?string $ipAddress = null,
     ) {
         $this->company = $company;
         $this->detail = null === $detail ? null : mb_substr($detail, 0, self::TEXT_LENGTH);
         $this->userAgent = null === $userAgent ? null : mb_substr($userAgent, 0, self::TEXT_LENGTH);
+        $this->ipAddress = $ipAddress;
     }
 
     public function getId(): Ulid
@@ -140,6 +149,11 @@ class DocumentActivity
         return $this->userAgent;
     }
 
+    public function getIpAddress(): ?string
+    {
+        return $this->ipAddress;
+    }
+
     /**
      * A visit that was most likely a program and not a person: no browser
      * named, or one that says it is a robot, a link checker or a preview.
@@ -148,7 +162,7 @@ class DocumentActivity
      */
     public function isLikelyAutomated(): bool
     {
-        if (! $this->type->byClient()) {
+        if (! $this->type->canBeAutomated()) {
             return false;
         }
 

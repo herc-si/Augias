@@ -48,6 +48,12 @@
                                     </a>
                                 {% endif %}
                             </div>
+                            {% if workflow_can(quote, 'accept') and not (quote.due and quote.due|date('Y-m-d') < 'now'|date('Y-m-d')) %}
+                                <a href="#answer" class="btn btn-success">
+                                    {{ ux_icon('tabler:check', {width: 18, height: 18}) }}
+                                    {{ 'quote.client_answer.answer'|trans }}
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -269,6 +275,9 @@
                     </div>
                 </div>
                 {% endif %}
+
+                {# The client's answer: accept ("bon pour accord") or decline. #}
+                {{ include('@AugiasQuote/_client_answer.html.twig') }}
 
                 {% if not hide_powered_by() %}
                     {# Footer #}
