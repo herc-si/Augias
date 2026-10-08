@@ -108,9 +108,15 @@ final class TemplatesRenderingTest extends KernelTestCase
             // Email is a summary addressed to the client (totals only, no
             // per-line breakdown or client block), so we verify the schema.org
             // payload + the displayed total instead.
-            'email' => $this->assertChannelContains($output, ['schema.org', '$1,500.00']),
+            // A quote's email speaks of a quote (it said "view this invoice
+            // online" until 08/10/2026).
+            'email' => $this->assertChannelContains($output, ['schema.org', '$1,500.00', 'View this quote online']),
             default => self::fail('Unknown channel: ' . $channel),
         };
+
+        if ('email' === $channel) {
+            self::assertStringNotContainsString('invoice online', $output);
+        }
     }
 
     /**

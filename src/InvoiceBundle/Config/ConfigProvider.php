@@ -42,7 +42,7 @@ final class ConfigProvider implements ProviderInterface
                 ['label' => 'tax.electronic_invoicing.label'],
             ),
             new Config('invoice/bcc_address', null, 'invoice.settings.bcc_address.description', EmailType::class),
-            new Config('invoice/email_subject', 'New Invoice - #{id}', 'invoice.settings.email_subject.description', TextType::class),
+            new Config('invoice/email_subject', null, 'invoice.settings.email_subject.description', TextType::class),
             new Config('invoice/id_generation/strategy', 'auto_increment', '', BillingIdConfigurationType::class),
             new Config('invoice/id_generation/id_prefix', 'FACT-', 'invoice.settings.id_generation.id_prefix.description', TextType::class),
             // The year is a placeholder, not a literal: written out as -2026 it

@@ -39,7 +39,8 @@ final class InvoiceReminderNotificationTest extends TestCase
 
         $subject = $notification->getSubject();
 
-        self::assertSame('Upcoming Payment Due: Invoice INV-123', $subject);
+        self::assertSame('invoice.reminder_subject.pre_due', $subject);
+        self::assertSame(['%id%' => 'INV-123'], $notification->getSubjectParameters());
     }
 
     public function testGetSubjectForOverdue1DayReminder(): void
@@ -53,7 +54,8 @@ final class InvoiceReminderNotificationTest extends TestCase
 
         $subject = $notification->getSubject();
 
-        self::assertSame('Payment Reminder: Invoice INV-456', $subject);
+        self::assertSame('invoice.reminder_subject.overdue_1', $subject);
+        self::assertSame(['%id%' => 'INV-456'], $notification->getSubjectParameters());
     }
 
     public function testGetSubjectForOverdue7DayReminder(): void
@@ -67,7 +69,8 @@ final class InvoiceReminderNotificationTest extends TestCase
 
         $subject = $notification->getSubject();
 
-        self::assertSame('Payment Overdue: Invoice INV-789', $subject);
+        self::assertSame('invoice.reminder_subject.overdue_7', $subject);
+        self::assertSame(['%id%' => 'INV-789'], $notification->getSubjectParameters());
     }
 
     public function testGetSubjectForOverdue14DayReminder(): void
@@ -81,7 +84,8 @@ final class InvoiceReminderNotificationTest extends TestCase
 
         $subject = $notification->getSubject();
 
-        self::assertSame('URGENT: Invoice INV-999 - Immediate Action Required', $subject);
+        self::assertSame('invoice.reminder_subject.overdue_14', $subject);
+        self::assertSame(['%id%' => 'INV-999'], $notification->getSubjectParameters());
     }
 
     public function testGetParametersIncludesInvoiceAndReminderType(): void

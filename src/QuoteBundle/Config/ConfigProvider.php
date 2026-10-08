@@ -30,7 +30,7 @@ final class ConfigProvider implements ProviderInterface
         return [
             new Config('quote/watermark', '1', 'quote.settings.watermark.description', CheckboxType::class),
             new Config('quote/bcc_address', null, 'quote.settings.bcc_address.description', EmailType::class),
-            new Config('quote/email_subject', 'New Quotation - #{id}', 'quote.settings.email_subject.description', TextType::class),
+            new Config('quote/email_subject', null, 'quote.settings.email_subject.description', TextType::class),
             new Config('quote/id_generation/strategy', 'auto_increment', '', BillingIdConfigurationType::class),
             new Config('quote/id_generation/id_prefix', '', 'quote.settings.id_generation.id_prefix.description', TextType::class),
             new Config('quote/id_generation/id_suffix', '', 'quote.settings.id_generation.id_suffix.description', TextType::class),
