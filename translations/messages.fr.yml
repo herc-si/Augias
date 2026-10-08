@@ -2252,7 +2252,7 @@ invoice:
         bcc_address:
             description: 'Chaque e-mail de facture est copié ici, en copie cachée pour le client.'
         email_subject:
-            description: "Objet de l'e-mail d'envoi d'une facture. {id} est remplacé par le numéro de la facture."
+            description: "Objet de l'e-mail d'envoi d'une facture. {id} est remplacé par le numéro de la facture. Laissé vide : « Facture n° – nom de l'entreprise », dans la langue de l'application."
         id_generation:
             id_prefix:
                 description: 'Imprimé avant le numéro. Exemple : FACT-'
@@ -3176,7 +3176,7 @@ quote:
         bcc_address:
             description: 'Chaque e-mail de devis est copié ici, en copie cachée pour le client.'
         email_subject:
-            description: "Objet de l'e-mail d'envoi d'un devis. {id} est remplacé par le numéro du devis."
+            description: "Objet de l'e-mail d'envoi d'un devis. {id} est remplacé par le numéro du devis. Laissé vide : « Devis n° – nom de l'entreprise », dans la langue de l'application."
         id_generation:
             id_prefix:
                 description: 'Imprimé avant le numéro. Exemple : DEV-'

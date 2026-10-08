@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\NotificationBundle\EventListener;
 
+use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\QuoteBundle\Entity\Quote;
 use Symfony\Bridge\Twig\Mime\NotificationEmail;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Mailer\Event\MessageEvent;
@@ -47,8 +49,10 @@ final readonly class NotificationEmailSubjectTranslator
             return;
         }
 
+        $parameters = $this->parameters($email);
+
         foreach (['email', 'messages'] as $domain) {
-            $translated = $this->translator->trans($subject, [], $domain);
+            $translated = $this->translator->trans($subject, $parameters, $domain);
 
             if ($translated !== $subject) {
                 $email->subject($translated);
@@ -56,5 +60,22 @@ final readonly class NotificationEmailSubjectTranslator
                 return;
             }
         }
+    }
+
+    /**
+     * The document the email is about, for a subject that names it by its
+     * number (`%id%`).
+     *
+     * @return array<string, string>
+     */
+    private function parameters(NotificationEmail $email): array
+    {
+        $context = $email->getContext();
+
+        return match (true) {
+            ($context['invoice'] ?? null) instanceof Invoice => ['%id%' => (string) $context['invoice']->getInvoiceId()],
+            ($context['quote'] ?? null) instanceof Quote => ['%id%' => (string) $context['quote']->getQuoteId()],
+            default => [],
+        };
     }
 }

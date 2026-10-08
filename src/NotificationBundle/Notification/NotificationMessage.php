@@ -56,6 +56,17 @@ abstract class NotificationMessage extends Notification implements EmailNotifica
 
     abstract public function getTextContent(Environment $twig): string;
 
+    /**
+     * Placeholders for a subject that is a translation key, such as the
+     * number of the document it is about.
+     *
+     * @return array<string, string>
+     */
+    public function getSubjectParameters(): array
+    {
+        return [];
+    }
+
     public function asEmailMessage(EmailRecipientInterface $recipient, ?string $transport = null): EmailMessage
     {
         $message = EmailMessage::fromNotification($this, $recipient);

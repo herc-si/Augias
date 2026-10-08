@@ -55,7 +55,8 @@ final class ManualInvoiceReminderEmailTest extends KernelTestCase
 
         $email = new ManualInvoiceReminderEmail($invoice);
 
-        self::assertSame('Payment Reminder: Invoice INV-2024-001', $email->getSubject());
+        // Set on the way out, in the language of the app (ReminderSubjectListener).
+        self::assertNull($email->getSubject());
     }
 
     public function testEmailHasCorrectTemplates(): void

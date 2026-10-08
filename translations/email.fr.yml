@@ -22,6 +22,8 @@ client:
         message: 'Un nouveau client a été ajouté.'
         subject: 'Un nouveau client a été créé'
         view_client: 'Voir le client'
+credit_note:
+    subject: 'Avoir %id% – %company%'
 einvoicing:
     notification_disputed:
         alert: 'Facture électronique en litige'
@@ -77,6 +79,8 @@ email:
         security: "Si vous n'avez pas créé de compte, vous pouvez ignorer cet e-mail en toute sécurité."
         subject: 'Confirmez votre adresse e-mail'
         title: 'Veuillez confirmer votre adresse e-mail'
+export:
+    ready_subject: 'Votre export de données est prêt'
 invitation:
     accept: 'Accepter l''invitation'
     alternative: "Si le bouton ci-dessus ne fonctionne pas, copiez-collez ce lien dans votre navigateur :"
@@ -127,6 +131,12 @@ invoice:
         view_and_pay: 'Voir la facture et payer'
     pay_now: 'Payer maintenant'
     payment_method: 'Paiement (%method%)'
+    reminder_subject:
+        manual: 'Rappel de paiement : facture %id%'
+        overdue_1: 'Rappel de paiement : facture %id%'
+        overdue_14: 'URGENT : facture %id%, règlement immédiat demandé'
+        overdue_7: 'Paiement en retard : facture %id%'
+        pre_due: 'Échéance prochaine : facture %id%'
     status:
         subject: 'Changement de statut de la facture'
     status_change:
@@ -138,6 +148,7 @@ invoice:
         old_status: 'Statut d''origine'
         status: Statut
         view_invoice: 'Voir la facture'
+    subject: 'Facture %id% – %company%'
     subtotal: Sous-total
     tax: Taxe
     terms: 'Conditions générales'
@@ -365,12 +376,14 @@ quote:
         old_status: 'Statut d''origine'
         status: Statut
         view_quote: 'Voir le devis'
+    subject: 'Devis %id% – %company%'
     subtotal: Sous-total
     tax: Taxe
     terms: 'Conditions générales'
     title: 'Devis %id%'
     total: Total
     view: 'Voir le devis'
+    view_online: 'Voir ce devis en ligne sur %url%'
     withholding: Retenue
 reset_password:
     alternative: "Si le bouton ci-dessus ne fonctionne pas, copiez-collez ce lien dans votre navigateur :"

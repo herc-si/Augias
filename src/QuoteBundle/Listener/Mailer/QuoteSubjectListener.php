@@ -17,11 +17,13 @@ use Augias\QuoteBundle\Email\QuoteEmail;
 use Augias\SettingsBundle\SystemConfig;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mailer\Event\MessageEvent;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 class QuoteSubjectListener implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly SystemConfig $config
+        private readonly SystemConfig $config,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -31,7 +33,16 @@ class QuoteSubjectListener implements EventSubscriberInterface
         $message = $event->getMessage();
 
         if ($message instanceof QuoteEmail && null === $message->getSubject()) {
-            $message->subject(\str_replace('{id}', (string) $message->getQuote()->getQuoteId(), $this->config->get('quote/email_subject')));
+            $id = (string) $message->getQuote()->getQuoteId();
+
+            // The company's own wording when it wrote one; otherwise the one
+            // that goes with the language of the app. The stored default used
+            // to be English for everyone (08/10/2026).
+            $custom = (string) $this->config->get('quote/email_subject');
+
+            $message->subject('' !== $custom
+                ? \str_replace('{id}', $id, $custom)
+                : $this->translator->trans('quote.subject', ['%id%' => $id, '%company%' => (string) $this->config->get('system/company/company_name')], 'email'));
         }
     }
 

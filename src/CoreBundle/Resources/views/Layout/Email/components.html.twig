@@ -356,12 +356,14 @@
  # Example:
  #   {{ email.view_online_link(invoice_url) }}
  #}
-{% macro view_online_link(url, text='') %}
+{# `key`: the sentence around the link. The quote's emails said "view this
+   invoice online" until they passed their own (08/10/2026). #}
+{% macro view_online_link(url, text='', key='invoice.view.online') %}
     {% if not text %}
         {% set url_attr = url|e('html_attr') %}
         {% set url_text = url|e %}
         {% set link_html = '<a rel="external" target="_blank" href="' ~ url_attr ~ '" style="color: #2e963a; text-decoration: none;">' ~ url_text ~ '</a>' %}
-        {% set text = 'invoice.view.online'|trans({'%url%': link_html}, 'email') %}
+        {% set text = key|trans({'%url%': link_html}, 'email') %}
     {% endif %}
 
     <div style="text-align: center; padding: 12px 0;" class="text-center">

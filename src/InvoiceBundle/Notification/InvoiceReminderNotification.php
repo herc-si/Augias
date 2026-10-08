@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Notification;
 
+use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\NotificationBundle\Attribute\AsNotification;
 use Augias\NotificationBundle\Enum\NotificationCategory;
 use Augias\NotificationBundle\Notification\NotificationMessage;
@@ -71,13 +72,21 @@ class InvoiceReminderNotification extends NotificationMessage
         $reminderType = $parameters['reminder_type'] ?? '';
         $invoiceId = $parameters['invoice']?->getInvoiceId() ?? '';
 
+        // A key, translated with the invoice's number on the way out
+        // (NotificationEmailSubjectTranslator): the subject used to be
+        // English whatever the language of the app (08/10/2026).
         return match ($reminderType) {
-            'pre_due' => 'Upcoming Payment Due: Invoice ' . $invoiceId,
-            'overdue_1' => 'Payment Reminder: Invoice ' . $invoiceId,
-            'overdue_7' => 'Payment Overdue: Invoice ' . $invoiceId,
-            'overdue_14' => sprintf('URGENT: Invoice %s - Immediate Action Required', $invoiceId),
-            default => 'Invoice Payment Reminder: ' . $invoiceId,
+            'pre_due', 'overdue_1', 'overdue_7', 'overdue_14' => 'invoice.reminder_subject.' . $reminderType,
+            default => 'invoice.reminder_subject.manual',
         };
+    }
+
+    #[Override]
+    public function getSubjectParameters(): array
+    {
+        $invoice = $this->getParameters()['invoice'] ?? null;
+
+        return ['%id%' => $invoice instanceof Invoice ? (string) $invoice->getInvoiceId() : ''];
     }
 
     #[Override]

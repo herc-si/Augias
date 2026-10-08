@@ -50,15 +50,16 @@ class NotificationOptionConfigurator
             return;
         }
 
-        $message->subject($this->translator->trans($message->getSubject(), [], 'email'));
-
         $notification = $message->getNotification();
+        $parameters = $notification instanceof NotificationMessage ? $notification->getSubjectParameters() : [];
+
+        $message->subject($this->translator->trans($message->getSubject(), $parameters, 'email'));
 
         if (! $notification instanceof NotificationMessage) {
             return;
         }
 
-        $notification->subject($this->translator->trans($notification->getSubject(), [], 'email'));
+        $notification->subject($this->translator->trans($notification->getSubject(), $parameters, 'email'));
 
         $notification->content($notification->getTextContent($this->twig));
 
