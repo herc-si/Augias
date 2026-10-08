@@ -108,8 +108,7 @@ final class TemplatesRenderingTest extends KernelTestCase
 
     /**
      * Long terms in small print, two columns, kept with the totals: at full
-     * size they spilled alone onto a second page (06/10/2026). Monochrome
-     * lays its end out in a table cell of its own, and stays one page.
+     * size they spilled alone onto a second page (06/10/2026).
      */
     #[DataProvider('pdfTemplateProvider')]
     public function testLongTermsStayWithTheTotals(string $slug): void
@@ -122,9 +121,7 @@ final class TemplatesRenderingTest extends KernelTestCase
 
         $html = $twig->render(sprintf('@AugiasInvoice/Templates/%s/pdf.html.twig', $slug), ['invoice' => $invoice]);
 
-        if ('monochrome' !== $slug) {
-            self::assertStringContainsString('page-break-inside: avoid', $html);
-        }
+        self::assertStringContainsString('page-break-inside: avoid', $html);
 
         // Split in two halves: the first clause in one column, the last in the other.
         self::assertMatchesRegularExpression('#Clause 1\.<br />.*?Clause 5\.</td>\s*<td[^>]*>Clause 6\.#s', $html);
@@ -165,6 +162,35 @@ final class TemplatesRenderingTest extends KernelTestCase
     }
 
     /**
+     * Too many lines for one page: the document runs onto a second one. Two
+     * designs laid the whole page out in a table, whose cell cannot break, and
+     * mPDF shrank everything onto one page in tiny print (08/10/2026).
+     */
+    #[DataProvider('pdfTemplateProvider')]
+    public function testManyLinesRunOntoASecondPage(string $slug): void
+    {
+        $generator = self::getContainer()->get(Generator::class);
+        self::assertInstanceOf(Generator::class, $generator);
+
+        if (! $generator->canPrintPdf()) {
+            self::markTestSkipped('PDF generation requires mbstring + gd extensions.');
+        }
+
+        $twig = self::getContainer()->get('twig');
+        self::assertInstanceOf(Environment::class, $twig);
+
+        $html = $twig->render(
+            sprintf('@AugiasInvoice/Templates/%s/pdf.html.twig', $slug),
+            ['invoice' => $this->createFixtureInvoice(40)]
+        );
+
+        // Unprotected, so the page objects can be counted in the file.
+        $pdf = $generator->generate($html, false);
+
+        self::assertGreaterThanOrEqual(2, preg_match_all('#/Type /Page\b(?!s)#', $pdf));
+    }
+
+    /**
      * @return iterable<string, array{string}>
      */
     public static function pdfTemplateProvider(): iterable
@@ -189,7 +215,7 @@ final class TemplatesRenderingTest extends KernelTestCase
         $em->flush();
     }
 
-    private function createFixtureInvoice(): Invoice
+    private function createFixtureInvoice(int $lineCount = 1): Invoice
     {
         $this->seedCompanyLogo();
 
@@ -225,13 +251,14 @@ final class TemplatesRenderingTest extends KernelTestCase
             'discount' => new Discount()
                 ->setType(Discount::TYPE_PERCENTAGE)
                 ->setValuePercentage(10.0),
-            'lines' => [
-                new Line()
+            'lines' => array_map(
+                static fn (): Line => new Line()
                     ->setDescription('Sample line item')
                     ->setPrice(BigInteger::of(75000))
                     ->setQty(2)
                     ->setTotal(BigInteger::of(150000)),
-            ],
+                range(1, $lineCount),
+            ),
             'users' => [$contact],
         ]);
     }
