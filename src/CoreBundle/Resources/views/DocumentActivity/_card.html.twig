@@ -78,9 +78,15 @@
                         {% if entry.type.value == 'send_failed' and entry.detail %}
                             <div class="text-danger text-break">{{ entry.detail }}</div>
                         {% endif %}
+                        {% if entry.type.value == 'client_accepted' %}
+                            <div class="text-muted text-break">{{ 'document_activity.signed_by'|trans({'%name%': entry.detail}) }}</div>
+                        {% elseif entry.type.value == 'client_declined' and entry.detail %}
+                            <div class="text-muted text-break">« {{ entry.detail }} »</div>
+                        {% endif %}
                         {% if entry.type.byClient %}
                             <div class="text-muted">
                                 {{ entry.likelyAutomated ? 'document_activity.automated'|trans : 'document_activity.by_client'|trans }}
+                                {% if entry.ipAddress %}<span class="text-nowrap">({{ 'document_activity.from_ip'|trans({'%ip%': entry.ipAddress}) }})</span>{% endif %}
                             </div>
                         {% elseif entry.user %}
                             <div class="text-muted">{{ 'document_activity.by'|trans({'%name%': entry.user}) }}</div>

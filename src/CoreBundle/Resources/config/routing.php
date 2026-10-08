@@ -29,6 +29,7 @@ use Augias\CoreBundle\Export\Action\ListExports;
 use Augias\CoreBundle\Export\Action\RequestExport;
 use Augias\InvoiceBundle\Action\DisbursementNote\ClientView as DisbursementNoteClientView;
 use Augias\InvoiceBundle\Action\DisbursementReceipt\ClientDownload;
+use Augias\QuoteBundle\Action\ClientAnswer;
 use Symfony\Bundle\FrameworkBundle\Controller\RedirectController;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
@@ -48,6 +49,14 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->controller([ViewBilling::class, 'quoteAction'])
         ->defaults(['_format' => 'html'])
         ->requirements(['uuid' => '[a-zA-Z0-9-]{36}', '_format' => 'html|pdf']);
+
+    // Under the client's link, so the public path that opens the quote takes
+    // the answer too.
+    $routingConfigurator
+        ->add('_view_quote_answer', '/view/quote/{uuid}/answer')
+        ->controller(ClientAnswer::class)
+        ->methods(['POST'])
+        ->requirements(['uuid' => '[a-zA-Z0-9-]{36}']);
 
     $routingConfigurator
         ->add('_view_invoice_external', '/view/invoice/{uuid}.{_format}')

@@ -60,6 +60,7 @@ final readonly class DocumentActivityRecorder
         ?string $detail = null,
         array $recipients = [],
         ?string $userAgent = null,
+        ?string $ipAddress = null,
     ): void {
         $recordId = $document->getId();
 
@@ -69,7 +70,7 @@ final readonly class DocumentActivityRecorder
 
         $now = $this->clock->now();
 
-        if ($type->byClient() && $this->entityManager->getRepository(DocumentActivity::class)->hasSince($document->journalKind(), $recordId, $type, $now->modify(self::REPEAT_WINDOW))) {
+        if ($type->canBeAutomated() && $this->entityManager->getRepository(DocumentActivity::class)->hasSince($document->journalKind(), $recordId, $type, $now->modify(self::REPEAT_WINDOW))) {
             return;
         }
 
@@ -90,6 +91,7 @@ final readonly class DocumentActivityRecorder
                 'detail' => null === $detail ? null : mb_substr($detail, 0, 255),
                 'recipients' => [] === $recipients ? null : $recipients,
                 'user_agent' => null === $userAgent || '' === $userAgent ? null : mb_substr($userAgent, 0, 255),
+                'ip_address' => null === $ipAddress || '' === $ipAddress ? null : mb_substr($ipAddress, 0, 45),
             ],
             [
                 'id' => UlidType::NAME,
@@ -102,6 +104,7 @@ final readonly class DocumentActivityRecorder
                 'detail' => Types::STRING,
                 'recipients' => Types::JSON,
                 'user_agent' => Types::STRING,
+                'ip_address' => Types::STRING,
             ],
         );
     }

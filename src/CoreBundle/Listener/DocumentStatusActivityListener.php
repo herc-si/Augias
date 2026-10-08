@@ -18,6 +18,7 @@ use Augias\CoreBundle\Enum\DocumentActivityType;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\QuoteBundle\Entity\Quote;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Workflow\Event\CompletedEvent;
 use function in_array;
@@ -35,8 +36,15 @@ final readonly class DocumentStatusActivityListener
      */
     private const array SILENT = ['send', 'edit'];
 
+    /**
+     * Answers a client gives from their link: recorded there, with their name
+     * or their reason, rather than here as a step nobody took.
+     */
+    private const array ANSWERED_BY_CLIENT = ['accept', 'decline'];
+
     public function __construct(
         private DocumentActivityRecorder $recorder,
+        private Security $security,
     ) {
     }
 
@@ -52,6 +60,10 @@ final readonly class DocumentStatusActivityListener
         $transition = $event->getTransition()?->getName();
 
         if (null === $transition || in_array($transition, self::SILENT, true)) {
+            return;
+        }
+
+        if (null === $this->security->getUser() && in_array($transition, self::ANSWERED_BY_CLIENT, true)) {
             return;
         }
 

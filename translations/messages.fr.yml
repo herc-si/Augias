@@ -1436,10 +1436,12 @@ document_activity:
     detail:
         reminder: 'Relance envoyée par e-mail'
     empty: 'Rien pour le moment.'
+    from_ip: 'depuis %ip%'
     not_sent:
         invoice: "Cette facture est finalisée, mais aucun envoi au client n'est enregistré."
         quote: "Ce devis est finalisé, mais aucun envoi au client n'est enregistré."
         send: 'Envoyer au client'
+    signed_by: 'Bon pour accord au nom de %name%'
     summary:
         last_seen: 'Consulté par le client le %date%'
         last_sent: 'Envoyé au client le %date%'
@@ -1461,6 +1463,8 @@ document_activity:
         reopen: Rouvert
         settle: Soldé
     type:
+        client_accepted: 'Accepté par le client'
+        client_declined: 'Refusé par le client'
         downloaded: 'PDF téléchargé'
         send_failed: "Échec de l'envoi par e-mail"
         sent: 'Envoyé par e-mail'
@@ -3112,6 +3116,30 @@ quote:
             existing: 'Sélectionner un client existant'
             new: 'Créer un nouveau client'
         title: Client
+    client_answer:
+        accept: 'Accepter le devis'
+        accepted: 'Ce devis a été accepté.'
+        accepted_by: 'Devis accepté le %date%, au nom de %name%. Merci !'
+        agree: 'Bon pour accord : j''accepte le devis %id% d''un montant de %total% et ses conditions.'
+        answer: 'Répondre au devis'
+        decline: 'Refuser le devis'
+        decline_toggle: 'Refuser ce devis'
+        declined: 'Ce devis a été refusé.'
+        declined_on: 'Devis refusé le %date%.'
+        expired: 'Ce devis n''est plus valable depuis le %date%. Contactez %company% pour en obtenir un nouveau.'
+        flash:
+            accepted: 'Merci, votre accord est enregistré. Le prestataire en est informé.'
+            already_answered: 'Ce devis ne peut plus recevoir de réponse : il a déjà été accepté, refusé ou annulé.'
+            declined: 'Votre refus est enregistré. Le prestataire en est informé.'
+            expired: 'Ce devis n''est plus valable : il ne peut plus être accepté.'
+            expired_page: 'La page a expiré. Rechargez-la et recommencez.'
+            incomplete: 'Pour accepter, indiquez vos nom et prénom et cochez la case « Bon pour accord ».'
+        name: 'Vos nom et prénom'
+        proof: 'Votre nom, la date et l''heure, votre navigateur et votre adresse IP sont conservés comme preuve de votre accord.'
+        reason: 'Une raison ? (facultatif)'
+        summary: 'Devis %id%, %total%.'
+        title: 'Votre réponse'
+        valid_until: 'Valable jusqu''au %date%.'
     clone:
         success: 'Devis dupliqué avec succès'
     create:
