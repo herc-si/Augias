@@ -3790,6 +3790,8 @@ settings:
         help: 'Choisissez comment les identifiants %type% sont générés.'
     page:
         default_terms:
+            credit_note_help: "Comment le montant de l'avoir revient au client. Un seul texte, que le client soit une entreprise ou un particulier : pas de pénalités ni de délai de paiement sur un avoir. Laissez vide pour ne rien reprendre."
+            credit_note_label: 'Texte des avoirs'
             business: 'Client professionnel'
             business_help: 'Délai de paiement, escompte, pénalités de retard et indemnité forfaitaire de 40 € : obligatoires entre professionnels (art. L441-9 et L441-10 du Code de commerce).'
             individual: 'Client particulier'
@@ -4155,6 +4157,7 @@ tax:
     vat_number: 'Numéro de TVA :'
 terms:
     suggested:
+        credit_note: 'Montant à déduire de vos prochaines factures.'
         invoice:
             business: |-
                 Paiement à 30 jours à compter de la date de facture.

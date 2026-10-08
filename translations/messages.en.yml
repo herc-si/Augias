@@ -3790,6 +3790,8 @@ settings:
         help: 'Choose how %type% IDs are generated.'
     page:
         default_terms:
+            credit_note_help: 'How the amount of the credit note comes back to the client. One text, whether the client is a business or a private individual: no penalties or payment term on a credit note. Leave empty to put nothing.'
+            credit_note_label: 'Credit note text'
             business: 'Business client'
             business_help: 'Payment term, early payment discount, late payment penalties and the €40 fixed compensation: required between businesses in France (Commercial Code, art. L441-9 and L441-10).'
             individual: 'Private individual'
@@ -4155,6 +4157,7 @@ tax:
     vat_number: 'Vat Number:'
 terms:
     suggested:
+        credit_note: 'Amount to be deducted from your next invoices.'
         invoice:
             business: |-
                 Payment due within 30 days of the invoice date.

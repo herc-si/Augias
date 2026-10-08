@@ -1,6 +1,6 @@
 ---
 title: Default terms
-description: Set the terms new invoices and quotes open with, one text for business clients and one for private individuals.
+description: Set the terms new invoices and quotes open with, one text for business clients and one for private individuals, and the text of credit notes.
 sidebar_position: 7
 ---
 
@@ -26,6 +26,12 @@ Whether a client is a business or a private individual is set on the client's re
 Both texts start with a suggested wording in your company's language. Adapt the payment term to yours, and when you sell to private individuals, add your consumer mediator: naming one is required.
 
 Leave a text empty for documents to open without terms.
+
+## Credit notes
+
+A credit note gives money back: no payment term or penalties on it. It has a single text, whoever the client, saying how the amount comes back, by default "Amount to be deducted from your next invoices". Change it under `Settings`, `Credit notes` tab, `Default terms`; leave it empty for credit notes to open without terms.
+
+A credit note that cancels an invoice opens with this text, not with the invoice's terms.
 
 ## On a new document
 

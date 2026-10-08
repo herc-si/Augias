@@ -63,7 +63,7 @@ final readonly class DefaultTerms
             return false;
         }
 
-        return $terms === $this->for($document, true) || $terms === $this->for($document, false);
+        return $terms === $this->for($document, true) || ($document->perClientType() && $terms === $this->for($document, false));
     }
 
     /**

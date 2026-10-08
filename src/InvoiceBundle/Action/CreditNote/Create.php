@@ -16,7 +16,6 @@ namespace Augias\InvoiceBundle\Action\CreditNote;
 use Augias\InvoiceBundle\DTO\CreditNoteFormDTO;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Manager\CreditNoteFormManager;
-use Carbon\CarbonImmutable;
 use Symfony\Bridge\Twig\Attribute\Template;
 
 /**
@@ -43,8 +42,7 @@ final readonly class Create
         if ($invoice instanceof Invoice) {
             $dto = $this->formManager->cancellationOf($invoice);
         } else {
-            $dto = new CreditNoteFormDTO();
-            $dto->creditNoteDate = CarbonImmutable::now();
+            $dto = $this->formManager->blank();
             // No line yet: the first one opens once the client is chosen,
             // see ManagesNoteLines::openTheFirstLineOnceTheClientIsKnown().
         }

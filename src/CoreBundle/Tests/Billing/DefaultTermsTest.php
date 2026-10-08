@@ -21,6 +21,7 @@ use Augias\CoreBundle\Billing\TermsDocument;
 use Augias\CoreBundle\Test\LiveComponentTest;
 use Augias\InvoiceBundle\DTO\InvoiceFormDTO;
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\InvoiceBundle\Manager\CreditNoteFormManager;
 use Augias\InvoiceBundle\Manager\InvoiceManager;
 use Augias\InvoiceBundle\Twig\Components\CreateInvoice;
 use Augias\QuoteBundle\DTO\QuoteFormDTO;
@@ -52,6 +53,8 @@ final class DefaultTermsTest extends LiveComponentTest
 
     private const string QUOTE_BUSINESS = "Devis valable 30 jours.\nIndemnité de 40 €.";
 
+    private const string CREDIT_NOTE = 'Montant à déduire de vos prochaines factures.';
+
     private const string QUOTE_INDIVIDUAL = "Devis valable 30 jours.\nDélai de rétractation de 14 jours.";
 
     protected function setUp(): void
@@ -63,6 +66,7 @@ final class DefaultTermsTest extends LiveComponentTest
         $config->set(TermsDocument::Invoice->settingKey(false), self::INVOICE_INDIVIDUAL);
         $config->set(TermsDocument::Quote->settingKey(true), self::QUOTE_BUSINESS);
         $config->set(TermsDocument::Quote->settingKey(false), self::QUOTE_INDIVIDUAL);
+        $config->set(TermsDocument::CreditNote->settingKey(), self::CREDIT_NOTE);
     }
 
     public function testEachClientTypeHasItsOwnTerms(): void
@@ -117,7 +121,10 @@ final class DefaultTermsTest extends LiveComponentTest
             self::assertStringContainsString('name="settings[default_terms][individual]"', $html);
         }
 
-        self::assertStringNotContainsString('default_terms', (string) $settings->set('section', 'credit_note')->render());
+        // A credit note's: one text, whoever the client.
+        $creditNotes = (string) $settings->set('section', 'credit_note')->render();
+        self::assertStringContainsString('name="settings[default_terms]"', $creditNotes);
+        self::assertStringNotContainsString('settings[default_terms][business]', $creditNotes);
     }
 
     public function testANewInvoiceFollowsItsClientUntilTheTermsAreEdited(): void
@@ -175,6 +182,25 @@ final class DefaultTermsTest extends LiveComponentTest
 
         $withOwn = $manager->draftFromQuote($this->quote('Acompte de 30 % à la commande.', $this->individual()));
         self::assertSame('Acompte de 30 % à la commande.', $withOwn->getTerms());
+    }
+
+    /**
+     * A credit note gives money back: the invoice's payment term and late
+     * payment penalties are not copied onto it, the credit notes' own text is.
+     */
+    public function testACreditNoteTakesItsOwnTextNotTheInvoices(): void
+    {
+        $forms = self::getContainer()->get(CreditNoteFormManager::class);
+
+        self::assertSame(self::CREDIT_NOTE, $forms->blank()->terms);
+
+        $invoice = self::getContainer()->get(InvoiceManager::class)->draftFromQuote($this->quote(self::QUOTE_BUSINESS, $this->business()));
+        self::assertSame(self::INVOICE_BUSINESS, $invoice->getTerms());
+        self::assertSame(self::CREDIT_NOTE, $forms->cancellationOf($invoice)->terms);
+
+        self::assertSame('credit_note/default_terms', TermsDocument::CreditNote->settingKey(false));
+        self::assertTrue(self::getContainer()->get(DefaultTerms::class)->isDefault(TermsDocument::CreditNote, self::CREDIT_NOTE));
+        self::assertStringContainsString('déduire', self::getContainer()->get('translator')->trans(TermsDocument::CreditNote->suggestionKey(), [], null, 'fr'));
     }
 
     /**

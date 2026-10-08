@@ -67,6 +67,14 @@ final class ConfigProvider implements ProviderInterface
             new Config('credit_note/id_generation/strategy', 'auto_increment', '', BillingIdConfigurationType::class, ['sequential_only' => true]),
             new Config('credit_note/id_generation/id_prefix', 'AV-', 'credit_note.settings.id_generation.id_prefix.description', TextType::class),
             new Config('credit_note/id_generation/id_suffix', '-{year}', 'credit_note.settings.id_generation.id_suffix.description', TextType::class),
+            // How a credit note's amount comes back: one text, whoever the client.
+            new Config(
+                TermsDocument::CreditNote->settingKey(),
+                $this->translator->trans(TermsDocument::CreditNote->suggestionKey(), [], null, $data['locale'] ?? null),
+                null,
+                TextareaType::class,
+                ['attr' => ['rows' => 3]],
+            ),
             new Config(
                 'invoice/reminder/enabled',
                 '1',
