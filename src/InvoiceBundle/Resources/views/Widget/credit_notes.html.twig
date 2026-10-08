@@ -69,7 +69,7 @@
             {% for creditNote in creditNotes %}
                 <a href="{{ path('_credit_notes_view', {id: creditNote.id}) }}" class="attention-item">
                     <span class="attention-item-main">
-                        <span class="attention-item-id">{{ creditNote.creditNoteId }}</span>
+                        <span class="attention-item-id">{{ credit_note_number(creditNote) }}</span>
                         <span class="attention-item-client">{{ creditNote.client.name }}</span>
                     </span>
                     <span class="attention-item-meta">

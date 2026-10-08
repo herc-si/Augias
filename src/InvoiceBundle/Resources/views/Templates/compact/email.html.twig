@@ -8,7 +8,7 @@
                 <table role="presentation" style="width: 100%; background: #0f172a; border-radius: 6px; padding: 16px;">
                     <tr>
                         <td style="color: #ffffff; font-size: 13px; font-family: 'Courier New', monospace;">
-                            <strong>{{ 'invoice.template.compact.label'|trans }}</strong> · #{{ invoice.invoiceId }} · {{ invoice.invoiceDate|date('Y-m-d') }}
+                            <strong>{{ 'invoice.template.compact.label'|trans }}</strong> · {{ invoice_number(invoice, '#') }} · {{ invoice.invoiceDate|date('Y-m-d') }}
                         </td>
                     </tr>
                 </table>

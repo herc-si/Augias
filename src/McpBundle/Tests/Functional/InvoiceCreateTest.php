@@ -62,7 +62,8 @@ final class InvoiceCreateTest extends KernelTestCase
 
         self::assertArrayHasKey('id', $result);
         self::assertArrayHasKey('invoice_number', $result);
-        self::assertNotEmpty($result['invoice_number']);
+        // A draft: numbered when it is finalised (apply_invoice_transition).
+        self::assertSame('', $result['invoice_number']);
         self::assertSame('105000', $result['total']);
         self::assertSame('Net 30', $result['terms']);
         self::assertSame('Thanks for your business', $result['notes']);

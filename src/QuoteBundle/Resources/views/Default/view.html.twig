@@ -494,7 +494,7 @@
                     <div class="doc-sidebar-card-body">
                         <a href="{{ path('_invoices_view', {'id' : quote.invoice.id}) }}" class="related-invoice-link">
                             {{ ux_icon('tabler:external-link', {width: 14, height: 14}) }}
-                            {{ 'invoice.title'|trans({'%id%': quote.invoice.invoiceId}) }}
+                            {{ 'invoice.title'|trans({'%id%': invoice_number(quote.invoice)}) }}
                         </a>
                         <div class="related-invoice-status">
                             {{ invoice_label(quote.invoice.status) }}

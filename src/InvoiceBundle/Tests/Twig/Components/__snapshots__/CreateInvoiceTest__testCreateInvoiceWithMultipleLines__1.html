@@ -1,5 +1,5 @@
 <html><body>
-<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateInvoice" data-live-url-value="/_components/CreateInvoice" data-live-props-value='{"isEdit":false,"invoiceEntity":null,"fromQuote":null,"previousClientId":null,"catalogProductId":null,"formName":"invoice","invoice":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"0","disbursement":null},{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"1","disbursement":null}],"invoiceId":"1","terms":"","notes":"","total":0,"baseTotal":0,"tax":0,"invoiceDate":"2021-01-01","deliveryDate":"","due":"","customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateInvoice" data-live-url-value="/_components/CreateInvoice" data-live-props-value='{"isEdit":false,"invoiceEntity":null,"fromQuote":null,"previousClientId":null,"catalogProductId":null,"formName":"invoice","invoice":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"0","disbursement":null},{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"1","disbursement":null}],"terms":"","notes":"","total":0,"baseTotal":0,"tax":0,"invoiceDate":"2021-01-01","deliveryDate":"","due":"","customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
     
     <form name="invoice" method="post" data-model="on(change)|*">
 
@@ -44,31 +44,10 @@
                                                             </div>
                                                                         </div>
 
-                                        <div data-controller="billing-id">
-                        <span data-billing-id-target="info">
-                            <div class="billing-id-display">
-                                <span class="billing-id-label">Invoice #</span>
-                                <span class="billing-id-value" data-billing-id-target="value">1</span>
-                                                                    <button type="button" class="billing-id-edit" data-action="billing-id#edit" aria-label="Edit invoice ID" title="Edit">
-                                        <svg viewbox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 20h4L18.5 9.5a2.828 2.828 0 1 0-4-4L4 16zm9.5-13.5l4 4"></path></svg>
-                                    </button>
-                                                            </div>
-                        </span>
-
-                        <div class="d-none billing-id-form" data-billing-id-target="form">
-                                
-                                <label class="control-label required form-label required" for="invoice_invoiceId">Invoice #</label>
-                            <div class="input-group">
-                                <input type="text" id="invoice_invoiceId" name="invoice[invoiceId]" data-required="required" maxlength="255" class="form-control form-control" value="1">
-                                <button class="btn btn-outline-primary" type="button" data-action="billing-id#save" aria-label="Save invoice ID" title="Save">
-                                    <svg viewbox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m5 12l5 5L20 7"></path></svg>
-                                </button>
-                                <button class="btn btn-outline-secondary" type="button" data-action="billing-id#cancel" aria-label="Cancel editing invoice ID" title="Cancel">
-                                    <svg viewbox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 6L6 18M6 6l12 12"></path></svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                                        <div class="billing-id-display" data-test="invoice-number">
+                        <span class="billing-id-label">Invoice #</span>
+                                                    <span class="billing-id-value text-muted">Numbered when finalised</span>
+                                            </div>
                 </div>
 
                                 <div class="billing-details-right">

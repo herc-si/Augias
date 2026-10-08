@@ -20,7 +20,6 @@ use Augias\CoreBundle\Enum\CustomFieldTarget;
 use Augias\CoreBundle\Form\LineOrderFields;
 use Augias\CoreBundle\Form\Type\CustomFieldValueCollectionType;
 use Augias\CoreBundle\Form\Type\DiscountType;
-use Augias\CoreBundle\Generator\BillingIdGenerator;
 use Augias\InvoiceBundle\DTO\InvoiceFormDTO;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Enum\InvoiceClientMode;
@@ -60,7 +59,6 @@ class InvoiceType extends AbstractType
 {
     public function __construct(
         private readonly SystemConfig $systemConfig,
-        private readonly BillingIdGenerator $billingIdGenerator,
         private readonly FeatureGate $featureGate,
         private readonly TaxAvailability $taxAvailability,
     ) {
@@ -191,13 +189,8 @@ class InvoiceType extends AbstractType
             );
         }
 
-        $dto = $options['data'] ?? new InvoiceFormDTO();
-
-        // Generate invoice ID if not set (for new invoices)
-        $data = $dto->invoiceId !== '' ? $dto->invoiceId : $this->billingIdGenerator->generate(new Invoice(), ['field' => 'invoiceId']);
-
-        $builder->add('invoiceId', null, [
-                'label' => 'form.field.invoice_id', 'data' => $data, 'empty_data' => '', 'attr' => ['maxlength' => 255]]);
+        // No number field: an invoice is numbered when it is finalised
+        // (NumberOnFinaliseListener), and one typed or taken here left gaps.
 
         $builder->add('terms', null, ['label' => 'form.field.terms']);
         $builder->add('notes', null, ['help' => 'billing.notes_help']);

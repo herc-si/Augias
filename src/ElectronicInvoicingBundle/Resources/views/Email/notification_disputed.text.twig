@@ -16,7 +16,7 @@
 
 {{ 'einvoicing.notification_disputed.message'|trans({}, 'email') }}
 
-{{ 'einvoicing.notification_disputed.invoice_number'|trans({}, 'email') }}: {{ invoice.invoiceId ?? invoice.id }}
+{{ 'einvoicing.notification_disputed.invoice_number'|trans({}, 'email') }}: {{ invoice_number(invoice) ?? invoice.id }}
 {% if client -%}
 {{ 'einvoicing.notification_disputed.client'|trans({}, 'email') }}: {{ client.name }}
 {% endif -%}

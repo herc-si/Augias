@@ -9,11 +9,11 @@
 
 INVOICE PAYMENT REMINDER
 
-This is a friendly reminder about invoice {{ invoice.invoiceId }}. We kindly ask you to review the invoice details below and arrange payment at your earliest convenience.
+This is a friendly reminder about invoice {{ invoice_number(invoice) }}. We kindly ask you to review the invoice details below and arrange payment at your earliest convenience.
 
 Invoice Details:
 ----------------
-Invoice Number: {{ invoice.invoiceId }}
+Invoice Number: {{ invoice_number(invoice) }}
 {% if invoice.invoiceDate %}
 Invoice Date: {{ invoice.invoiceDate|date('Y-m-d') }}
 {% endif %}

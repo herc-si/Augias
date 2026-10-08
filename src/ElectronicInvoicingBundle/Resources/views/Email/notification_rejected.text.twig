@@ -16,7 +16,7 @@
 
 {{ 'einvoicing.notification_rejected.message'|trans({}, 'email') }}
 
-{{ 'einvoicing.notification_rejected.invoice_number'|trans({}, 'email') }}: {{ invoice.invoiceId ?? invoice.id }}
+{{ 'einvoicing.notification_rejected.invoice_number'|trans({}, 'email') }}: {{ invoice_number(invoice) ?? invoice.id }}
 {% if client -%}
 {{ 'einvoicing.notification_rejected.client'|trans({}, 'email') }}: {{ client.name }}
 {% elseif invoice.client -%}

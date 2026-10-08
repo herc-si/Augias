@@ -58,7 +58,6 @@ final class CreateFromQuoteTest extends LiveComponentTest
         self::assertInstanceOf(InvoiceFormManager::class, $formManager);
 
         $draft = $invoiceManager->draftFromQuote($quote);
-        self::assertSame('', $draft->getInvoiceId(), 'No number before the form is saved.');
 
         $component = $this->createLiveComponent(
             name: CreateInvoice::class,
@@ -73,7 +72,8 @@ final class CreateFromQuoteTest extends LiveComponentTest
         $fresh = $entityManager->find(Quote::class, $quote->getId());
         self::assertInstanceOf(Quote::class, $fresh);
         self::assertInstanceOf(Invoice::class, $fresh->getInvoice());
-        self::assertNotSame('', $fresh->getInvoice()->getInvoiceId());
+        // Saved as a draft: numbered when finalised, not before.
+        self::assertSame('', $fresh->getInvoice()->getInvoiceId());
     }
 
     public function testAQuoteThatIsNotAcceptedIsNotInvoiced(): void

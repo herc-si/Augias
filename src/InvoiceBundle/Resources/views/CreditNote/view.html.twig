@@ -9,7 +9,7 @@
 
 {% extends "@AugiasCore/Layout/default.html.twig" %}
 
-{% block page_title %}{{ 'credit_note.title'|trans({'%id%': creditNote.creditNoteId}) }}{% endblock %}
+{% block page_title %}{{ (creditNote.numbered ? 'credit_note.title'|trans({'%id%': creditNote.creditNoteId}) : 'credit_note.title_draft'|trans) }}{% endblock %}
 
 {% block content %}
     {% set currency = creditNote.client.currency %}
@@ -20,7 +20,7 @@
                 {{ ux_icon('tabler:receipt-refund', {width: 32, height: 32}) }}
             </div>
             <div class="doc-view-title-group">
-                <h1 class="doc-view-title">{{ 'credit_note.title'|trans({'%id%': creditNote.creditNoteId}) }}</h1>
+                <h1 class="doc-view-title">{{ (creditNote.numbered ? 'credit_note.title'|trans({'%id%': creditNote.creditNoteId}) : 'credit_note.title_draft'|trans) }}</h1>
                 <div class="doc-view-meta">
                     {{ credit_note_label(creditNote.status) }}
                     <span class="doc-view-meta-item">
@@ -93,7 +93,7 @@
                         <span>
                             {{ 'credit_note.credits_invoice'|trans }}
                             <a href="{{ path('_invoices_view', {'id': creditNote.creditedInvoice.id}) }}">
-                                {{ creditNote.creditedInvoice.invoiceId }}
+                                {{ invoice_number(creditNote.creditedInvoice) }}
                             </a>
                         </span>
                     </div>
@@ -183,7 +183,7 @@
                                         {% if allocation.invoice %}
                                             —
                                             <a href="{{ path('_invoices_view', {'id': allocation.invoice.id}) }}">
-                                                {{ allocation.invoice.invoiceId }}
+                                                {{ invoice_number(allocation.invoice) }}
                                             </a>
                                         {% endif %}
                                         <br />

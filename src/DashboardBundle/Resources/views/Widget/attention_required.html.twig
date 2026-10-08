@@ -43,7 +43,7 @@
                         {% for invoice in overdueInvoices %}
                             <a href="{{ path('_invoices_view', {id: invoice.id}) }}" class="attention-item attention-item--danger">
                                 <div class="attention-item-main">
-                                    <span class="attention-item-id">#{{ invoice.invoiceId }}</span>
+                                    <span class="attention-item-id">{{ invoice_number(invoice, '#') }}</span>
                                     <span class="attention-item-client">{{ invoice.client.name }}</span>
                                 </div>
                                 <div class="attention-item-meta">
@@ -83,8 +83,8 @@
                                      # point: it is a state, not an identifier.
                                      #}
                                     <span class="attention-item-id">
-                                        {%- if invoice.invoiceId -%}
-                                            #{{ invoice.invoiceId }}
+                                        {%- if invoice.numbered -%}
+                                            {{ invoice_number(invoice, '#') }}
                                         {%- else -%}
                                             {{ 'dashboard.attention.draft_label'|trans }}
                                         {%- endif -%}

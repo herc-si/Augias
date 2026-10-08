@@ -21,7 +21,7 @@
                         {{ ux_icon('tabler:credit-card', {width: 28, height: 28}) }}
                     </div>
                     <div>
-                        <h1 class="payment-header-title">{{ 'payment.create.title'|trans({"%id%" : invoice.invoiceId}) }}</h1>
+                        <h1 class="payment-header-title">{{ 'payment.create.title'|trans({"%id%" : invoice_number(invoice)}) }}</h1>
                         <p class="payment-header-subtitle">{{ 'payment.create.subtitle'|trans }}</p>
                     </div>
                 </div>
@@ -77,11 +77,11 @@
                                         <span class="detail-value">
                                             {% if app.user is not empty %}
                                                 <a href="{{ path('_invoices_view', {id: invoice.id}) }}" class="invoice-id-link">
-                                                    {{ invoice.invoiceId }}
+                                                    {{ invoice_number(invoice) }}
                                                     {{ ux_icon('tabler:external-link', {width: 12, height: 12}) }}
                                                 </a>
                                             {% else %}
-                                                {{ invoice.invoiceId }}
+                                                {{ invoice_number(invoice) }}
                                             {% endif %}
                                         </span>
                                     </div>

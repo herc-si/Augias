@@ -79,7 +79,7 @@
                         </div>
                         <div class="col-sm-6 text-sm-end mt-3 mt-sm-0">
                             <div class="ext-doc-number-label text-uppercase small mb-1">{{ 'invoice.title'|trans({'%id%': ''}) }}</div>
-                            <h1 class="ext-doc-number mb-3">#{{ invoice.invoiceId }}</h1>
+                            <h1 class="ext-doc-number mb-3">{{ invoice_number(invoice, '#') }}</h1>
                             {{ invoice_label(invoice.status) }}
                         </div>
                     </div>
@@ -341,7 +341,7 @@
                             <div class="d-flex justify-content-between align-items-start gap-2 mb-3">
                                 <div>
                                     <strong class="d-block">{{ 'invoice.disbursement.note.title'|trans({'%note%': invoice.disbursementNoteId}) }}</strong>
-                                    <span class="text-muted small">{{ 'invoice.disbursement.note.attached_to'|trans({'%invoice%': invoice.invoiceId}) }}</span>
+                                    <span class="text-muted small">{{ 'invoice.disbursement.note.attached_to'|trans({'%invoice%': invoice_number(invoice)}) }}</span>
                                 </div>
                                 {% if can_print_pdf() %}
                                     <a href="{{ path('_view_invoice_disbursement_note_external', {'uuid': invoice.uuid}) }}" target="_blank" class="btn btn-outline-secondary btn-sm no-print">

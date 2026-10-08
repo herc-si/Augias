@@ -940,6 +940,9 @@ credit_note:
         main: 'Avoirs'
     list:
         title: 'Avoirs'
+    number:
+        draft: 'Brouillon'
+        on_issue: 'Numéro attribué à l''émission'
     settings:
         id_generation:
             id_prefix:
@@ -1000,6 +1003,7 @@ credit_note:
     item:
         description:
             placeholder: "Ce qui est crédité"
+    title_draft: 'Avoir (brouillon)'
     totals:
         title: 'Totaux'
         credited: 'Montant de l''avoir'
@@ -2194,6 +2198,9 @@ invoice:
             recipients: 'L''e-mail sera envoyé à :'
             title: 'Envoyer le rappel de paiement'
     notes: Notes
+    number:
+        draft: 'Brouillon'
+        on_finalise: 'Numéro attribué à la finalisation'
     number_prefix: N°
     paid_date: 'Date de paiement'
     payment:
@@ -2368,6 +2375,7 @@ invoice:
         title: 'Conditions & Notes'
         toggle: 'Basculer la section conditions et notes'
     title: 'Facture n°%id%'
+    title_draft: 'Facture (brouillon)'
     to: À
     total: Total
     total_due: 'Total dû'

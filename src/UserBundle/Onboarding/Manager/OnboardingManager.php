@@ -215,7 +215,7 @@ final readonly class OnboardingManager
         $invoice = new Invoice();
         $invoice->setClient($client);
         $invoice->setCompany($company);
-        $invoice->setInvoiceId('1');
+        // A draft: numbered when it is finalised, like any other.
         $invoice->setStatus(InvoiceStatus::Draft);
 
         // Create a single line item

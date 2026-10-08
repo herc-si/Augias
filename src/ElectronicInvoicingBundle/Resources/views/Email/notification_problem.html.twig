@@ -34,7 +34,7 @@
 
     {% if invoice %}
         {{ email.spacer('xs') }}
-        {{ email.info_row('einvoicing.notification_problem.invoice_number'|trans({}, 'email'), invoice.invoiceId ?? invoice.id) }}
+        {{ email.info_row('einvoicing.notification_problem.invoice_number'|trans({}, 'email'), invoice_number(invoice) ?? invoice.id) }}
         {{ email.spacer('xs') }}
         {{ email.info_row('einvoicing.notification_problem.client'|trans({}, 'email'), invoice.client.name) }}
     {% endif %}

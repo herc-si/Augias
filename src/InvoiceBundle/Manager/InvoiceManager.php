@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Augias\InvoiceBundle\Manager;
 
 use Augias\CoreBundle\Enum\CustomFieldTarget;
-use Augias\CoreBundle\Generator\BillingIdGenerator;
 use Augias\CoreBundle\Service\CustomField\CustomFieldValueCopier;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
@@ -51,7 +50,6 @@ class InvoiceManager
         private readonly EventDispatcherInterface $dispatcher,
         private readonly WorkflowInterface $invoiceStateMachine,
         private readonly NotificationManager $notification,
-        private readonly BillingIdGenerator $billingIdGenerator,
         private readonly ClockInterface $clock,
         private readonly CustomFieldValueCopier $customFieldValueCopier,
         private readonly TaxSnapshotCopier $taxSnapshotCopier = new TaxSnapshotCopier(),
@@ -69,13 +67,12 @@ class InvoiceManager
     }
 
     /**
-     * The quote's content, to open the invoice form with: not numbered and
-     * not tied to the quote yet. Both happen when the form is saved, so an
-     * invoice that is never saved takes no number.
+     * The quote's content, to open the invoice form with: not tied to the
+     * quote yet, which happens when the form is saved.
      */
     public function draftFromQuote(Quote $quote): Invoice
     {
-        $invoice = $this->createFromObject($quote, freezeSnapshots: false, numbered: false);
+        $invoice = $this->createFromObject($quote, freezeSnapshots: false);
 
         // The contacts are the client's, already saved: holding this unsaved
         // invoice in their list would make any flush of the request fail on
@@ -126,7 +123,7 @@ class InvoiceManager
     /**
      * @throws MathException|ContainerExceptionInterface
      */
-    private function createFromObject(RecurringInvoice | Quote $object, bool $freezeSnapshots = false, bool $numbered = true): Invoice
+    private function createFromObject(RecurringInvoice | Quote $object, bool $freezeSnapshots = false): Invoice
     {
         /** @var RecurringInvoice|Quote $object */
         $invoice = new Invoice();
@@ -144,9 +141,9 @@ class InvoiceManager
         $invoice->setTerms($object->getTerms());
         $invoice->setBalance($invoice->getTotal());
         $invoice->setCompany($object->getCompany());
-        if ($numbered) {
-            $invoice->setInvoiceId($this->billingIdGenerator->generate($invoice, ['field' => 'invoiceId']));
-        }
+        // No number: the invoice takes one when it is finalised
+        // (NumberOnFinaliseListener), whether it comes from a quote or a
+        // recurring schedule.
 
         foreach ($object->getUsers() as $user) {
             $invoice->addUser($user);

@@ -10,28 +10,28 @@
 {%- if reminder_type == 'pre_due' -%}
 UPCOMING PAYMENT DUE
 
-This is a friendly reminder that invoice {{ invoice.invoiceId }} is due in {{ days_until_due }} {{ days_until_due == 1 ? 'day' : 'days' }}. We wanted to give you advance notice to make payment arrangements convenient.
+This is a friendly reminder that invoice {{ invoice_number(invoice) }} is due in {{ days_until_due }} {{ days_until_due == 1 ? 'day' : 'days' }}. We wanted to give you advance notice to make payment arrangements convenient.
 {%- elseif reminder_type == 'overdue_1' -%}
 PAYMENT REMINDER
 
-Invoice {{ invoice.invoiceId }} became overdue yesterday. If you've already sent payment, please disregard this reminder. Otherwise, we'd appreciate your prompt attention to settle this invoice.
+Invoice {{ invoice_number(invoice) }} became overdue yesterday. If you've already sent payment, please disregard this reminder. Otherwise, we'd appreciate your prompt attention to settle this invoice.
 {%- elseif reminder_type == 'overdue_7' -%}
 PAYMENT OVERDUE
 
-Invoice {{ invoice.invoiceId }} is now 7 days overdue. Please arrange payment at your earliest convenience. If there are any issues preventing payment, please contact us so we can help resolve them.
+Invoice {{ invoice_number(invoice) }} is now 7 days overdue. Please arrange payment at your earliest convenience. If there are any issues preventing payment, please contact us so we can help resolve them.
 {%- elseif reminder_type == 'overdue_14' -%}
 URGENT: IMMEDIATE ACTION REQUIRED
 
-Invoice {{ invoice.invoiceId }} remains unpaid after 14 days. This is our final automated reminder. Immediate payment is required to avoid service interruption. Please contact us if you need to discuss payment arrangements.
+Invoice {{ invoice_number(invoice) }} remains unpaid after 14 days. This is our final automated reminder. Immediate payment is required to avoid service interruption. Please contact us if you need to discuss payment arrangements.
 {%- else -%}
 INVOICE REMINDER
 
-This is a reminder about invoice {{ invoice.invoiceId }}.
+This is a reminder about invoice {{ invoice_number(invoice) }}.
 {%- endif -%}
 
 Invoice Details:
 ----------------
-Invoice Number: {{ invoice.invoiceId }}
+Invoice Number: {{ invoice_number(invoice) }}
 {% if invoice.invoiceDate %}
 Invoice Date: {{ invoice.invoiceDate|date('Y-m-d') }}
 {% endif %}

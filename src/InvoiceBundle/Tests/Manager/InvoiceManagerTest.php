@@ -17,8 +17,6 @@ use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Enum\QuantityUnit;
-use Augias\CoreBundle\Generator\BillingIdGenerator;
-use Augias\CoreBundle\Generator\BillingIdGenerator\IdGeneratorInterface;
 use Augias\CoreBundle\Repository\CustomFieldRepository;
 use Augias\CoreBundle\Repository\CustomFieldValueRepository;
 use Augias\CoreBundle\Service\CustomField\CustomFieldValueCopier;
@@ -49,7 +47,6 @@ use Mockery as M;
 use Money\Currency;
 use Psr\Clock\ClockInterface;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
-use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Workflow\Definition;
 use Symfony\Component\Workflow\MarkingStore\MethodMarkingStore;
@@ -102,10 +99,6 @@ final class InvoiceManagerTest extends KernelTestCase
             new EventDispatcher(),
             $stateMachine,
             $notification,
-            new BillingIdGenerator(
-                new ServiceLocator(['generator' => fn () => $this->createStub(IdGeneratorInterface::class)]),
-                $config
-            ),
             $clock,
             new CustomFieldValueCopier(
                 M::mock(CustomFieldRepository::class, ['findByTargetOrdered' => []]),

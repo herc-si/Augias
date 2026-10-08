@@ -9,11 +9,11 @@
 
 FINAL REMINDER SENT - MANUAL FOLLOW-UP REQUIRED
 
-The final automated payment reminder has been sent for invoice {{ invoice.invoiceId }}{% if days_overdue is defined and days_overdue is not null %}, which is now {{ days_overdue }} days overdue{% endif %}. All scheduled reminders are complete. Manual follow-up is recommended to resolve this outstanding payment.
+The final automated payment reminder has been sent for invoice {{ invoice_number(invoice) }}{% if days_overdue is defined and days_overdue is not null %}, which is now {{ days_overdue }} days overdue{% endif %}. All scheduled reminders are complete. Manual follow-up is recommended to resolve this outstanding payment.
 
 Invoice Details:
 ----------------
-Invoice Number: {{ invoice.invoiceId }}
+Invoice Number: {{ invoice_number(invoice) }}
 {% if invoice.client %}
 Client: {{ invoice.client.name }}
 {% endif %}

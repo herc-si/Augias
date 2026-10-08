@@ -30,7 +30,7 @@
 
     {{ email.spacer('sm') }}
 
-    {{ email.info_row('einvoicing.notification_disputed.invoice_number'|trans({}, 'email'), invoice.invoiceId ?? invoice.id) }}
+    {{ email.info_row('einvoicing.notification_disputed.invoice_number'|trans({}, 'email'), invoice_number(invoice) ?? invoice.id) }}
 
     {% if client %}
         {{ email.spacer('xs') }}

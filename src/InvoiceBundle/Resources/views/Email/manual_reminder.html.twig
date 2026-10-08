@@ -22,7 +22,7 @@
                     📋 Invoice Payment Reminder
                 </p>
                 <p style="color: #1e293b; font-size: 16px; line-height: 1.5; margin: 0 0 24px 0; Margin: 0 0 24px 0;">
-                    This is a friendly reminder about invoice <strong>{{ invoice.invoiceId }}</strong>. We kindly ask you to review the invoice details below and arrange payment at your earliest convenience.
+                    This is a friendly reminder about invoice <strong>{{ invoice_number(invoice) }}</strong>. We kindly ask you to review the invoice details below and arrange payment at your earliest convenience.
                 </p>
             </columns>
         </row>
@@ -31,7 +31,7 @@
     {{ email.spacer('sm') }}
 
     {# Invoice details #}
-    {{ email.info_row('Invoice Number', invoice.invoiceId) }}
+    {{ email.info_row('Invoice Number', invoice_number(invoice)) }}
 
     {% if invoice.invoiceDate %}
         {{ email.spacer('xs') }}

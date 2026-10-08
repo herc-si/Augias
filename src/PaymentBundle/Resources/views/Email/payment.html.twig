@@ -33,8 +33,8 @@
     {{ email.spacer('sm') }}
 
     {# Payment details #}
-    {% if payment.invoice is not empty %}
-        {{ email.info_row('payment.details.invoice'|trans({}, 'email'), payment.invoice.invoiceId) }}
+    {% if payment.invoice is not null %}
+        {{ email.info_row('payment.details.invoice'|trans({}, 'email'), invoice_number(payment.invoice)) }}
         {{ email.spacer('xs') }}
     {% endif %}
 
@@ -63,7 +63,7 @@
         </row>
     {% endapply %}
 
-    {% if payment.invoice is not empty %}
+    {% if payment.invoice is not null %}
         {{ email.divider('md') }}
 
         {# View invoice button #}

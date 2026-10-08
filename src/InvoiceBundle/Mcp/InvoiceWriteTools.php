@@ -17,7 +17,6 @@ use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\ClientBundle\Repository\ClientRepository;
 use Augias\CoreBundle\Billing\TotalCalculator;
-use Augias\CoreBundle\Generator\BillingIdGenerator;
 use Augias\InvoiceBundle\Cloner\InvoiceCloner;
 use Augias\InvoiceBundle\Email\ManualInvoiceReminderEmail;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -55,7 +54,6 @@ final readonly class InvoiceWriteTools
         private LineItemBuilder $lineItemBuilder,
         private InvoiceTaxBuilder $invoiceTaxBuilder,
         private TotalCalculator $totalCalculator,
-        private BillingIdGenerator $billingIdGenerator,
         private EntityManagerInterface $entityManager,
         private EntityNormalizer $normalizer,
         #[Autowire(service: 'state_machine.invoice')]
@@ -86,7 +84,7 @@ final readonly class InvoiceWriteTools
      * @param string|null                     $terms          Optional terms text
      * @param string|null                     $notes          Optional notes text
      * @param list<string>                    $contact_ids    Client contact ULIDs to attach to the invoice (optional)
-     * @param string|null                     $invoice_id     Explicit invoice number (generated if omitted)
+     * @param string|null                     $invoice_id     Explicit invoice number; if omitted, the draft is numbered when finalised
      * @param list<array<string, mixed>>      $invoice_taxes  Invoice-level taxes (withholding/surcharge/informational):
      *                                                        [{tax_id, direction: Additive|Deductive|Informational, sequence?, note?}].
      *                                                        Deductive (TDS) reduces payable; Additive grows total; Informational records amount=0.
@@ -154,11 +152,9 @@ final readonly class InvoiceWriteTools
             $invoice->addUser($contact);
         }
 
-        $invoice->setInvoiceId(
-            $invoice_id !== null && $invoice_id !== ''
-                ? $invoice_id
-                : $this->billingIdGenerator->generate($invoice, ['field' => 'invoiceId']),
-        );
+        // A number given explicitly is kept; otherwise the draft takes one
+        // when it is finalised.
+        $invoice->setInvoiceId($invoice_id ?? '');
 
         $this->invoiceTaxBuilder->attach($invoice, $invoice_taxes);
 

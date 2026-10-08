@@ -54,12 +54,18 @@ use Symfony\Component\Validator\Constraints as Assert;
  * refer to, so it is never hidden.
  */
 #[ORM\Table(name: CreditNote::TABLE_NAME)]
+#[ORM\UniqueConstraint(name: CreditNote::NUMBER_INDEX, columns: ['company_id', 'credit_note_id'])]
 #[ORM\Index(name: 'idx_credit_note_credited', columns: ['credited_invoice_id'])]
 #[ORM\Entity(repositoryClass: CreditNoteRepository::class)]
 #[ORM\AssociationOverrides([new ORM\AssociationOverride(name: 'company', inversedBy: 'creditNotes')])]
 class CreditNote extends BaseInvoice implements Stringable, Journalled
 {
     final public const string TABLE_NAME = 'credit_notes';
+
+    /**
+     * One number per credit note in a company; a draft has none (NULL).
+     */
+    final public const string NUMBER_INDEX = 'credit_note_number_unique';
 
     use TimeStampable;
 
@@ -71,10 +77,11 @@ class CreditNote extends BaseInvoice implements Stringable, Journalled
 
     /**
      * The number printed on the document, drawn from the credit note's own
-     * series — never the invoice series.
+     * series — never the invoice series — when it is issued, not before, as
+     * for invoices. Null while a draft.
      */
-    #[ORM\Column(name: 'credit_note_id', type: Types::STRING, length: 255)]
-    private string $creditNoteId = '';
+    #[ORM\Column(name: 'credit_note_id', type: Types::STRING, length: 255, nullable: true)]
+    private ?string $creditNoteId = null;
 
     #[ORM\Column(name: 'uuid', type: Types::STRING, length: 36)]
     private string $uuid = '';
@@ -180,16 +187,24 @@ class CreditNote extends BaseInvoice implements Stringable, Journalled
         return $this;
     }
 
+    /**
+     * Empty while the credit note is a draft.
+     */
     public function getCreditNoteId(): string
     {
-        return $this->creditNoteId;
+        return $this->creditNoteId ?? '';
     }
 
     public function setCreditNoteId(string $creditNoteId): self
     {
-        $this->creditNoteId = $creditNoteId;
+        $this->creditNoteId = '' === $creditNoteId ? null : $creditNoteId;
 
         return $this;
+    }
+
+    public function isNumbered(): bool
+    {
+        return null !== $this->creditNoteId;
     }
 
     public function getUuid(): Uuid
@@ -368,7 +383,7 @@ class CreditNote extends BaseInvoice implements Stringable, Journalled
 
     public function __toString(): string
     {
-        return $this->creditNoteId;
+        return $this->creditNoteId ?? '';
     }
 
     public function journalKind(): RecordKind

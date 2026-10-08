@@ -14,7 +14,7 @@
 
 {{ 'invoice.notification_overdue.message'|trans({}, 'email') }}
 
-{{ 'invoice.notification_overdue.invoice_number'|trans({}, 'email') }}: {{ invoice.invoiceId ?? invoice.id }}
+{{ 'invoice.notification_overdue.invoice_number'|trans({}, 'email') }}: {{ invoice_number(invoice) ?? invoice.id }}
 {% if client -%}
 {{ 'invoice.notification_overdue.client'|trans({}, 'email') }}: {{ client.name }}
 {% elseif invoice.client -%}

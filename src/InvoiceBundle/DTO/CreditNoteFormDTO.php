@@ -45,7 +45,10 @@ final class CreditNoteFormDTO
     #[Assert\NotNull]
     public ?CreditReason $reason = null;
 
-    #[Assert\NotBlank]
+    /**
+     * Empty for a new document or a draft: the number is taken when it is
+     * finalised, not in the form.
+     */
     #[Assert\Length(max: 255)]
     public string $creditNoteId = '';
 

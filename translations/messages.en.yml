@@ -940,6 +940,9 @@ credit_note:
         main: 'Credit Notes'
     list:
         title: 'Credit Notes'
+    number:
+        draft: 'Draft'
+        on_issue: 'Numbered when issued'
     settings:
         id_generation:
             id_prefix:
@@ -1000,6 +1003,7 @@ credit_note:
     item:
         description:
             placeholder: 'What is being credited'
+    title_draft: 'Credit note (draft)'
     totals:
         title: 'Totals'
         credited: 'Credited'
@@ -2194,6 +2198,9 @@ invoice:
             recipients: 'Email will be sent to:'
             title: 'Send Payment Reminder'
     notes: Notes
+    number:
+        draft: 'Draft'
+        on_finalise: 'Numbered when finalised'
     number_prefix: No.
     paid_date: 'Paid Date'
     payment:
@@ -2368,6 +2375,7 @@ invoice:
         title: 'Terms & Notes'
         toggle: 'Toggle terms and notes section'
     title: 'Invoice #%id%'
+    title_draft: 'Invoice (draft)'
     to: To
     total: Total
     total_due: 'Total Due'

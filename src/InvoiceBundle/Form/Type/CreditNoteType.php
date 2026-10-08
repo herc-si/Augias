@@ -18,9 +18,7 @@ use Augias\ClientBundle\Entity\Contact;
 use Augias\ClientBundle\Form\ClientAutocompleteType;
 use Augias\CoreBundle\Form\LineOrderFields;
 use Augias\CoreBundle\Form\Type\DiscountType;
-use Augias\CoreBundle\Generator\BillingIdGenerator;
 use Augias\InvoiceBundle\DTO\CreditNoteFormDTO;
-use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Enum\CreditReason;
@@ -53,7 +51,6 @@ class CreditNoteType extends AbstractType
 {
     public function __construct(
         private readonly SystemConfig $systemConfig,
-        private readonly BillingIdGenerator $billingIdGenerator,
     ) {
     }
 
@@ -150,18 +147,8 @@ class CreditNoteType extends AbstractType
             ],
         ]);
 
-        $dto = $options['data'] ?? new CreditNoteFormDTO();
-
-        $number = '' !== $dto->creditNoteId
-            ? $dto->creditNoteId
-            : $this->billingIdGenerator->generate(new CreditNote(), ['field' => 'creditNoteId']);
-
-        $builder->add('creditNoteId', null, [
-            'label' => 'credit_note.field.number',
-            'data' => $number,
-            'empty_data' => '',
-            'attr' => ['maxlength' => 255],
-        ]);
+        // No number field: a credit note is numbered when it is issued
+        // (NumberOnFinaliseListener), as an invoice when it is finalised.
 
         $builder->add('creditNoteDate', DateType::class, [
             'widget' => 'single_text',

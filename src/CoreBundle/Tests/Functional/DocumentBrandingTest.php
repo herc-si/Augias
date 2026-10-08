@@ -172,13 +172,17 @@ final class DocumentBrandingTest extends WebTestCase
             ->assertSuccessful();
     }
 
+    private int $invoices = 0;
+
     private function invoice(): Invoice
     {
         $invoice = new Invoice();
         $invoice->setCompany($this->companyRef());
         $invoice->setClient($this->client());
         $invoice->setStatus(InvoiceStatus::Pending);
-        $invoice->setInvoiceId('FACT-BRAND');
+        // One number per invoice in a company: the credit note's own invoice
+        // is a second one.
+        $invoice->setInvoiceId('FACT-BRAND-' . ++$this->invoices);
         $invoice->setInvoiceDate(new DateTimeImmutable('2026-09-01'));
         $invoice->addLine(new Line()->setDescription('Consulting')->setPrice(12000)->setQty(1));
         $this->em->persist($invoice);

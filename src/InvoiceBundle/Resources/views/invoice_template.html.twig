@@ -17,7 +17,7 @@
                 <div class="col-12">
                     {% block title %}
                         <h2 class="page-header">
-                            {{ "invoice.title"|trans({"%id%" : invoice.invoiceId}) }} {{ invoice_label(invoice.status) }}
+                            {{ (invoice.numbered ? "invoice.title"|trans({"%id%" : invoice.invoiceId}) : "invoice.title_draft"|trans) }} {{ invoice_label(invoice.status) }}
                         </h2>
                     {% endblock %}
                     <div class="row invoice-info">
@@ -86,7 +86,7 @@
                         <div class="col-sm-2 invoice-col">
                             <dl class="dl-horizontal">
                                 <dt>{{ "invoice.title"|trans({"%id%" : ''}) }}</dt>
-                                <dd>{{ invoice.invoiceId ?? invoice.id }}</dd>
+                                <dd>{{ invoice_number(invoice) ?? invoice.id }}</dd>
                                 <dt>{{ "invoice.total"|trans }}</dt>
                                 <dd>{{ invoice.feesTotal|formatCurrency(invoice.client.currency) }}</dd>
                             </dl>
