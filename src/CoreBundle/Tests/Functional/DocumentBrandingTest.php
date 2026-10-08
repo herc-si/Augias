@@ -15,6 +15,7 @@ namespace Augias\CoreBundle\Tests\Functional;
 
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\CoreBundle\Company\CompanyBankDetails;
 use Augias\CoreBundle\Config\DesignConfigProvider;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Pdf\Generator;
@@ -40,9 +41,9 @@ use Twig\Environment;
 use Zenstruck\Browser\Test\HasBrowser;
 
 /**
- * What a company makes its documents carry: its colour, its footer and bank
- * details on every PDF — credit notes included — and, self-hosted too, the
- * design it chose.
+ * What a company makes its documents carry: its colour, its footer on every
+ * PDF — credit notes included — and, self-hosted too, the design it chose.
+ * The bank details have their own test: BankDetailsTest.
  */
 #[CoversClass(BrandExtension::class)]
 #[CoversClass(DesignConfigProvider::class)]
@@ -53,11 +54,9 @@ final class DocumentBrandingTest extends WebTestCase
     use HasBrowser;
     use DoctrineTestTrait;
 
-    public function testEveryPdfCarriesTheFooterAndTheBankDetails(): void
+    public function testEveryPdfCarriesTheFooter(): void
     {
         $this->config()->set(DesignConfigProvider::FOOTER_TEXT, "SARL au capital de 1 000 €\nRCS Paris 123 456 789");
-        $this->config()->set(DesignConfigProvider::IBAN, 'fr7630006000011234567890189');
-        $this->config()->set(DesignConfigProvider::BIC, 'agrifrpp');
 
         $invoice = $this->twig()->render('@AugiasInvoice/Pdf/invoice.html.twig', ['invoice' => $this->invoice()]);
         $creditNote = $this->twig()->render('@AugiasInvoice/CreditNote/pdf.html.twig', ['creditNote' => $this->creditNote()]);
@@ -65,11 +64,9 @@ final class DocumentBrandingTest extends WebTestCase
         foreach ([$invoice, $creditNote] as $html) {
             self::assertStringContainsString('<htmlpagefooter name="footer">', $html);
             self::assertStringContainsString('RCS Paris 123 456 789', $html);
-            // Grouped by four, as on a RIB, and upper-cased.
-            self::assertStringContainsString('IBAN FR76 3000 6000 0112 3456 7890 189 · BIC AGRIFRPP', $html);
             self::assertStringContainsString('footer: html_footer;', $html);
-            // Three lines of the company's own: the page keeps room for them.
-            self::assertStringContainsString('margin-bottom: 37mm;', $html);
+            // Two lines of the company's own: the page keeps room for them.
+            self::assertStringContainsString('margin-bottom: 33mm;', $html);
         }
     }
 
@@ -80,7 +77,7 @@ final class DocumentBrandingTest extends WebTestCase
     public function testThePdfsAreGeneratedWithTheFooter(): void
     {
         $this->config()->set(DesignConfigProvider::FOOTER_TEXT, 'RCS Paris 123 456 789');
-        $this->config()->set(DesignConfigProvider::IBAN, 'FR7630006000011234567890189');
+        $this->config()->set(CompanyBankDetails::IBAN, 'FR7630006000011234567890189');
         $this->config()->set(DesignConfigProvider::ACCENT_COLOR, '#1e4976');
         $generator = self::getContainer()->get(Generator::class);
 
@@ -92,7 +89,7 @@ final class DocumentBrandingTest extends WebTestCase
         }
     }
 
-    public function testWithoutBankDetailsNothingIsPrinted(): void
+    public function testWithoutAFooterNothingIsPrinted(): void
     {
         $html = $this->twig()->render('@AugiasInvoice/Pdf/invoice.html.twig', ['invoice' => $this->invoice()]);
 
@@ -167,7 +164,6 @@ final class DocumentBrandingTest extends WebTestCase
             ->assertSeeElement('input[name="settings[template]"][value="classic"]')
             ->assertSeeElement('input[name="settings[accent_color]"]')
             ->assertSeeElement('textarea[name="settings[footer_text]"]')
-            ->assertSeeElement('input[name="settings[iban]"]')
             ->visit('/settings/templates/preview/classic')
             ->assertSuccessful();
     }

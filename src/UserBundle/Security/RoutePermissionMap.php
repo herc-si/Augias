@@ -118,6 +118,8 @@ final class RoutePermissionMap
         // Changing them.
         // Matching a bank line records the payment it proves: a billing act.
         '_accounting_bank_account_add' => CompanyPermission::BillingWrite,
+        // Changes the bank details under Settings › Company.
+        '_accounting_bank_account_on_invoices' => CompanyPermission::Settings,
         '_accounting_bank_import' => CompanyPermission::BillingWrite,
         '_accounting_bank_reconcile' => CompanyPermission::BillingWrite,
         '_action_credit_note' => CompanyPermission::BillingWrite,

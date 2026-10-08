@@ -29,6 +29,9 @@
                 <li class="nav-item">
                     <a class="nav-link{{ account and candidate.id.equals(account.id) ? ' active' }}" href="{{ path('_accounting_bank', {'account': candidate.id}) }}">
                         {{ candidate.name }}
+                        {% if onInvoices and candidate.iban == onInvoices.iban %}
+                            <span class="badge bg-green-lt ms-2" title="{{ 'accounting.bank.on_invoices.help'|trans }}">{{ 'accounting.bank.on_invoices.badge'|trans }}</span>
+                        {% endif %}
                     </a>
                 </li>
             {% endfor %}
@@ -124,6 +127,20 @@
 
         <div class="{{ account ? 'col-lg-4' : 'col-lg-6' }}">
             {% if account and canWrite %}
+                {% if account.iban and (onInvoices is null or account.iban != onInvoices.iban) and route_allowed('_accounting_bank_account_on_invoices') %}
+                    <twig:Ui:Card class="mb-3">
+                        <form method="post" action="{{ path('_accounting_bank_account_on_invoices', {'id': account.id}) }}">
+                            <input type="hidden" name="_token" value="{{ token }}">
+                            <p class="small text-secondary">
+                                {{ (onInvoices ? 'accounting.bank.on_invoices.replace' : 'accounting.bank.on_invoices.none')|trans }}
+                            </p>
+                            <button class="btn w-100">
+                                {{ ux_icon('tabler:file-invoice', {width: 18, height: 18}) }} {{ 'accounting.bank.on_invoices.submit'|trans }}
+                            </button>
+                        </form>
+                    </twig:Ui:Card>
+                {% endif %}
+
                 <twig:Ui:Card title="{{ 'accounting.bank.import.title'|trans }}" class="mb-3">
                     <form method="post" action="{{ path('_accounting_bank_import', {'id': account.id}) }}" enctype="multipart/form-data">
                         <input type="hidden" name="_token" value="{{ token }}">
@@ -140,13 +157,16 @@
                 <twig:Ui:Card title="{{ 'accounting.bank.account.title'|trans }}">
                     <form method="post" action="{{ path('_accounting_bank_account_add') }}">
                         <input type="hidden" name="_token" value="{{ token }}">
+                        {% if prefill %}
+                            <p class="small text-secondary">{{ 'accounting.bank.account.prefilled'|trans }}</p>
+                        {% endif %}
                         <div class="mb-2">
                             <label class="form-label" for="bank-name">{{ 'accounting.bank.account.name'|trans }}</label>
-                            <input id="bank-name" name="name" class="form-control" required maxlength="100">
+                            <input id="bank-name" name="name" class="form-control" required maxlength="100" value="{{ prefill.bankName ?? '' }}">
                         </div>
                         <div class="mb-2">
                             <label class="form-label" for="bank-iban">IBAN</label>
-                            <input id="bank-iban" name="iban" class="form-control" maxlength="42">
+                            <input id="bank-iban" name="iban" class="form-control" maxlength="42" value="{{ prefill ? prefill.groupedIban : '' }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label" for="bank-currency">{{ 'accounting.bank.account.currency'|trans }}</label>

@@ -14,6 +14,8 @@ Click `Accounting` in the sidebar, then `Bank`.
 
 In the `Add a bank account` card, give the account a name, optionally its IBAN, and its currency, then click `Add the account`. Each account gets a tab at the top of the page.
 
+If your invoices already carry bank details, the form starts filled in with them. The account your invoices print is marked `On your invoices`, and another one can take its place with `Put on my invoices`: see [Bank details](../companies/bank-details.md).
+
 ## Import a statement
 
 1. On your bank's website, download a statement in one of these formats:

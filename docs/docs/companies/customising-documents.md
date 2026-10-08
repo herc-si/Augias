@@ -1,6 +1,6 @@
 ---
 title: Customising your documents
-description: Choose a design for your invoices and quotes, set your brand colour, and add a footer with your bank details.
+description: Choose a design for your invoices and quotes, set your brand colour, and add a footer to every page.
 sidebar_position: 5
 ---
 
@@ -28,12 +28,13 @@ Enter your colour as a hexadecimal code, such as `#1e4976`, in `Brand colour`. I
 
 Leave the field empty to keep each design's own colours.
 
-## Footer and bank details
+## Footer
 
-- `Footer`: text repeated at the foot of every page, up to 400 characters. It is the place for what French law asks invoices to carry beyond the basics: legal form and share capital, registration number, late payment penalties, the fixed recovery fee.
-- `IBAN` and `BIC`: printed in the footer so clients can pay you by transfer. The IBAN is shown in groups of four, as on a bank statement. Leave the IBAN empty not to print any bank details.
+`Footer` is text repeated at the foot of every page, up to 400 characters. It is the place for what French law asks invoices to carry beyond the basics: legal form and share capital, registration number, late payment penalties, the fixed recovery fee.
 
 The page leaves room for the footer, so longer text never runs over the content.
+
+Your bank details are not in the footer: they have their own place under the `Company` tab, and are printed next to the totals of the invoices clients still have to pay. See [Bank details](./bank-details.md).
 
 ## Troubleshooting
 

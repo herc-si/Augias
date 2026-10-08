@@ -13,27 +13,25 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Twig\Extension;
 
+use Augias\CoreBundle\Company\BankDetails;
+use Augias\CoreBundle\Company\CompanyBankDetails;
 use Augias\CoreBundle\Config\DesignConfigProvider;
 use Augias\SaasBundle\Feature\Feature;
 use Augias\SettingsBundle\SystemConfig;
 use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
 use Twig\Attribute\AsTwigFunction;
 use function hexdec;
-use function implode;
 use function max;
 use function mb_substr;
 use function preg_match;
-use function preg_replace;
 use function sprintf;
-use function str_split;
-use function strtoupper;
 use function substr;
 use function substr_count;
 use function trim;
 
 /**
- * What a company's documents carry of its own: a brand colour, and a page
- * footer with free text and the bank details clients pay to.
+ * What a company's documents carry of its own: a brand colour, a page footer
+ * with free text, and on an invoice the bank details clients pay to.
  *
  * Everything is read defensively: a colour that is not one, or an empty
  * field, leaves the template exactly as it was.
@@ -53,6 +51,7 @@ final readonly class BrandExtension
     public function __construct(
         private SystemConfig $systemConfig,
         private FeatureGate $featureGate,
+        private CompanyBankDetails $bankDetails,
     ) {
     }
 
@@ -120,21 +119,26 @@ final readonly class BrandExtension
     /**
      * `document_footer()`: what the company prints at the foot of every page.
      *
-     * @return array{text: ?string, iban: ?string, bic: ?string}
+     * @return array{text: ?string}
      */
     #[AsTwigFunction('document_footer')]
     public function documentFooter(): array
     {
         $text = trim((string) $this->systemConfig->get(DesignConfigProvider::FOOTER_TEXT));
-        $iban = strtoupper((string) preg_replace('/\s+/', '', (string) $this->systemConfig->get(DesignConfigProvider::IBAN)));
-        $bic = strtoupper(trim((string) $this->systemConfig->get(DesignConfigProvider::BIC)));
 
         return [
             'text' => '' === $text ? null : mb_substr($text, 0, 400),
-            // Grouped by four, as it is printed on a RIB.
-            'iban' => '' === $iban ? null : implode(' ', str_split($iban, 4)),
-            'bic' => '' === $bic || '' === $iban ? null : $bic,
         ];
+    }
+
+    /**
+     * `bank_details()`: the account clients pay into, or null when the
+     * company gave no IBAN.
+     */
+    #[AsTwigFunction('bank_details')]
+    public function bankDetails(): ?BankDetails
+    {
+        return $this->bankDetails->get();
     }
 
     /**
@@ -150,10 +154,6 @@ final readonly class BrandExtension
         if (null !== $footer['text']) {
             // A line break, or roughly every 130 characters at this size.
             $lines += max(substr_count($footer['text'], "\n") + 1, (int) ceil(mb_strlen($footer['text']) / 130));
-        }
-
-        if (null !== $footer['iban']) {
-            ++$lines;
         }
 
         return sprintf('%dmm', self::BASE_FOOTER_MM + $lines * self::MM_PER_LINE);

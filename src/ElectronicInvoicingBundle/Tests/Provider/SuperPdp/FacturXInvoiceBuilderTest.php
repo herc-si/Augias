@@ -15,6 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdp;
 
 use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\CoreBundle\Company\CompanyBankDetails;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Enum\SupplyType;
@@ -476,6 +477,33 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         self::assertStringContainsString('<ram:TaxBasisTotalAmount>270.00</ram:TaxBasisTotalAmount>', $xml);
         self::assertStringContainsString('<ram:TaxTotalAmount currencyID="EUR">40.95</ram:TaxTotalAmount>', $xml);
         self::assertStringContainsString('<ram:GrandTotalAmount>310.95</ram:GrandTotalAmount>', $xml);
+    }
+
+    /**
+     * BG-16: the company's account, as a SEPA transfer with the invoice number
+     * to quote — what lets the client's software prepare the payment.
+     */
+    public function testTheBankDetailsAreAPaymentMeans(): void
+    {
+        $config = self::getContainer()->get(SystemConfig::class);
+        $config->set(CompanyBankDetails::BANK_NAME, 'Crédit Agricole');
+        $config->set(CompanyBankDetails::IBAN, 'fr76 3000 6000 0112 3456 7890 189');
+        $config->set(CompanyBankDetails::BIC, 'agrifrpp');
+
+        $xml = $this->xmlFor(SupplyType::Services);
+
+        self::assertStringContainsString('<ram:SpecifiedTradeSettlementPaymentMeans>', $xml);
+        self::assertStringContainsString('<ram:TypeCode>58</ram:TypeCode>', $xml);
+        self::assertStringContainsString('<ram:IBANID>FR7630006000011234567890189</ram:IBANID>', $xml);
+        self::assertStringContainsString('<ram:BICID>AGRIFRPP</ram:BICID>', $xml);
+        self::assertStringContainsString('<ram:PaymentReference>INV-BT23-1</ram:PaymentReference>', $xml);
+    }
+
+    public function testWithoutAnIbanThereIsNoPaymentMeans(): void
+    {
+        self::getContainer()->get(SystemConfig::class)->set(CompanyBankDetails::BIC, 'AGRIFRPP');
+
+        self::assertStringNotContainsString('SpecifiedTradeSettlementPaymentMeans', $this->xmlFor(SupplyType::Services));
     }
 
     private function xmlFor(SupplyType ...$types): string

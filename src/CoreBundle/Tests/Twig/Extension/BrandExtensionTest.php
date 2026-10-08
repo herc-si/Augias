@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Tests\Twig\Extension;
 
+use Augias\CoreBundle\Company\CompanyBankDetails;
 use Augias\CoreBundle\Twig\Extension\BrandExtension;
 use Augias\SaasBundle\Feature\Feature;
 use Augias\SettingsBundle\SystemConfig;
@@ -45,6 +46,6 @@ final class BrandExtensionTest extends TestCase
         $gate = $this->createStub(FeatureGate::class);
         $gate->method('isEnabled')->willReturnCallback(static fn (string $key): bool => $key === Feature::CustomBranding->value && $customBranding);
 
-        self::assertSame($hidden, new BrandExtension($config, $gate)->hidePoweredBy());
+        self::assertSame($hidden, new BrandExtension($config, $gate, new CompanyBankDetails($config))->hidePoweredBy());
     }
 }

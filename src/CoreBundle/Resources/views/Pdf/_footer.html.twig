@@ -9,8 +9,9 @@
 
 {#
  # The foot of every PDF page — invoices, quotes, credit notes, disbursement
- # notes, whatever the design: the company's own text, its bank details, then
- # "Powered by" and the page number. mPDF repeats it on each page; the @page
+ # notes, whatever the design: the company's own text, then "Powered by" and
+ # the page number. The bank details are not here: they go on the invoices
+ # clients pay, next to the totals (payment_details_block). mPDF repeats it on each page; the @page
  # rule of the including template names it (footer: html_footer) and reserves
  # its height with pdf_footer_margin().
  #
@@ -23,9 +24,6 @@
     <div style="border-top: 1px solid #e2e8f0; padding-top: 6px; font-size: 7.5pt; color: #64748b;">
         {% if footer.text %}
             <div style="text-align: center; margin-bottom: 3px;">{{ footer.text|nl2br }}</div>
-        {% endif %}
-        {% if footer.iban %}
-            <div style="text-align: center; margin-bottom: 3px;">IBAN {{ footer.iban }}{% if footer.bic %} · BIC {{ footer.bic }}{% endif %}</div>
         {% endif %}
         <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 8pt; color: #64748b;">
             <tr>

@@ -70,12 +70,20 @@ accounting:
             help: 'CAMT.053 (XML), OFX or CSV. Importing a statement again adds nothing twice.'
             submit: Import
         account:
+            prefilled: 'Filled in with the bank details of your invoices (Settings › Company).'
             title: 'Add a bank account'
             name: 'Account name'
             currency: Currency
             submit: 'Add the account'
+        on_invoices:
+            badge: 'On your invoices'
+            help: 'The account whose IBAN your invoices print (Settings › Company).'
+            none: 'No IBAN is on your invoices yet. This account''s can be printed there, so your clients can pay you by transfer.'
+            replace: 'Your invoices carry another IBAN. This account''s can replace it.'
+            submit: 'Put on my invoices'
         flash:
             account_added: 'The bank account was added.'
+            on_invoices: 'This account is now on your invoices. Check the BIC.'
             imported: '%format% statement imported: %imported% operation(s) added, %duplicates% already known.'
             no_file: 'Choose a statement file (5 MB at most).'
             match: 'Operation reconciled.'
@@ -2037,6 +2045,10 @@ installation:
         locale_placeholder: 'Please select a locale'
 invalid_file: 'Invalid File'
 invoice:
+    payment_details:
+        bank: Bank
+        reference: 'Reference to quote'
+        title: 'Payment by bank transfer'
     delete:
         issued: "An issued invoice has to be kept and cannot be deleted (%number%). Only drafts can be deleted; to correct an issued invoice, raise a credit note."
     action:
@@ -3778,6 +3790,12 @@ settings:
         help: 'Choose how %type% IDs are generated.'
     page:
         company:
+            bank_details:
+                bank_name: Bank
+                bank_name_placeholder: 'E.g. Barclays, Revolut…'
+                bic_help: 'Recommended for transfers from abroad.'
+                help: 'Printed on the invoices your clients still have to pay, with the invoice number to quote as the reference, and carried in the electronic invoice (Factur-X) so their software can prepare the transfer. Leave the IBAN empty to show nothing.'
+                title: 'Bank details'
             business_address: 'Business Address'
             business_details: 'Business Details'
             contact_details: 'Contact Details'
@@ -3810,18 +3828,12 @@ settings:
             accent_color:
                 description: 'Hexadecimal colour code (#1e4976). It colours the totals, the terms label and the payment button of your documents. Leave empty to keep the template''s colours.'
                 label: 'Brand colour'
-            bic:
-                description: 'Printed next to the IBAN.'
-                label: BIC
             branding:
-                subtitle: 'Your colour, and what every page of your invoices, quotes and credit notes carries at its foot.'
+                subtitle: 'Your colour, and the text every page of your invoices, quotes and credit notes carries at its foot. Your bank details are under the Company tab.'
                 title: 'Colour and footer'
             footer_text:
                 description: 'Text repeated at the foot of every page: legal form and capital, registration, late payment penalties, discount terms… 400 characters at most.'
                 label: Footer
-            iban:
-                description: 'Printed in the footer so your clients can pay you by transfer. Leave empty not to show it.'
-                label: IBAN
             template:
                 description: 'The design used for your invoices and quotes: PDF, emails and the client portal.'
                 preview: Preview

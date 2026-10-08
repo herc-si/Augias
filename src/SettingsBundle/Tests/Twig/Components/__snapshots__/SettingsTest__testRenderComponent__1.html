@@ -1,5 +1,5 @@
 <html><body>
-<div class="settings-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="Settings" data-live-url-value="/_components/Settings" data-live-query-mapping-value='{"section":{"name":"section"}}' data-live-props-value='{"section":"system","formName":"settings","settings":{"company":{"logo":"","company_name":"Augias","contact_details":{"address":{"street1":"","street2":"","city":"","state":"","zip":"","country":""},"email":"","phone_number":""},"currency":"USD","locale":"en"},"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="settings-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="Settings" data-live-url-value="/_components/Settings" data-live-query-mapping-value='{"section":{"name":"section"}}' data-live-props-value='{"section":"system","formName":"settings","settings":{"company":{"logo":"","company_name":"Augias","contact_details":{"address":{"street1":"","street2":"","city":"","state":"","zip":"","country":""},"email":"","phone_number":""},"currency":"USD","locale":"en","bank_details":{"bank_name":"","iban":"","bic":""}},"_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
         <ul class="nav nav-underline mb-4" role="tablist">
                                 <li class="nav-item">
                 <a href="/settings?section=system" class="nav-link active" aria-current="page">
@@ -623,6 +623,40 @@
 
                                 </div>
                                                     </div>
+                    
+                                                                <section class="card mb-4" aria-labelledby="bank-details-title">
+                            <div class="card-header">
+                                <h3 class="card-title d-flex align-items-center gap-2" id="bank-details-title">
+                                    <svg viewbox="0 0 24 24" fill="currentColor" width="22" height="22" class="text-primary" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M3 10h18M5 6l7-3l7 3M4 10v11m16-11v11M8 14v3m4-3v3m4-3v3"></path></svg>
+                                    Bank details
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small mb-3">
+                                    Printed on the invoices your clients still have to pay, with the invoice number to quote as the reference, and carried in the electronic invoice (Factur-X) so their software can prepare the transfer. Leave the IBAN empty to show nothing.
+                                </p>
+                                <div class="row g-3">
+                                                                            <div class="col-12">
+                                                            <div class="mb-3">    
+            <label class="control-label form-label" for="settings_company_bank_details_bank_name">Bank</label><input type="text" id="settings_company_bank_details_bank_name" name="settings[company][bank_details][bank_name]" maxlength="100" placeholder="E.g. Barclays, Revolut&acirc;&#128;&brvbar;" class="form-control">
+</div>
+    
+                                        </div>
+                                                                                                                <div class="col-md-8">
+                                                            <div class="mb-3">    
+            <label class="control-label form-label" for="settings_company_bank_details_iban">IBAN</label><input type="text" id="settings_company_bank_details_iban" name="settings[company][bank_details][iban]" placeholder="FR76 3000 6000 0112 3456 7890 189" maxlength="42" autocomplete="off" spellcheck="false" class="form-control">
+</div>
+    
+                                        </div>
+                                                                                                                <div class="col-md-4">
+                                                            <div class="mb-3">    
+            <label class="control-label form-label" for="settings_company_bank_details_bic">BIC</label><input type="text" id="settings_company_bank_details_bic" name="settings[company][bank_details][bic]" placeholder="AGRIFRPP" maxlength="11" autocomplete="off" spellcheck="false" aria-describedby="settings_company_bank_details_bic_help" class="form-control"><div class="form-text text-muted mb-0" id="settings_company_bank_details_bic_help">Recommended for transfers from abroad.</div>
+</div>
+    
+                                        </div>
+                                                                    </div>
+                            </div>
+                        </section>
                     
                 
                                 

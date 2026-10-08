@@ -116,6 +116,10 @@
     {% endif %}
 </table>
 
+{% if invoice.disbursementBalance.positive %}
+    {{ inv.payment_details_block(invoice, {}, invoice.disbursementNoteId) }}
+{% endif %}
+
 <div style="margin-top: 24px; font-size: 8pt; color: #64748b; line-height: 1.5;">{{ disbursement_mention(invoice) }}</div>
 
 </body>
