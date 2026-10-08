@@ -13,10 +13,13 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Email;
 
+use Augias\CoreBundle\Activity\DocumentEmail;
+use Augias\CoreBundle\Entity\Company;
+use Augias\CoreBundle\Journal\Journalled;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
-final class InvoiceEmail extends TemplatedEmail
+final class InvoiceEmail extends TemplatedEmail implements DocumentEmail
 {
     public function __construct(
         private readonly Invoice $invoice
@@ -30,5 +33,20 @@ final class InvoiceEmail extends TemplatedEmail
     public function getInvoice(): Invoice
     {
         return $this->invoice;
+    }
+
+    public function activityDocument(): Journalled
+    {
+        return $this->getInvoice();
+    }
+
+    public function activityCompany(): Company
+    {
+        return $this->getInvoice()->getCompany();
+    }
+
+    public function activityDetail(): ?string
+    {
+        return null;
     }
 }

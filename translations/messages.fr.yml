@@ -1429,6 +1429,39 @@ datagrid:
     select_row: 'Sélectionner la ligne'
     selected: sélectionné(s)
 delete_client: 'Supprimer le client'
+document_activity:
+    automated: 'Probablement une vérification automatique du lien (filtre de messagerie)'
+    by: 'par %name%'
+    by_client: 'Par le client, depuis son lien'
+    detail:
+        reminder: 'Relance envoyée par e-mail'
+    empty: 'Rien pour le moment.'
+    summary:
+        last_seen: 'Consulté par le client le %date%'
+        last_sent: 'Envoyé au client le %date%'
+        never_seen: 'Pas encore consulté par le client'
+        never_sent: 'Jamais envoyé au client par e-mail'
+    title: Suivi
+    to: 'à %recipients%'
+    transition:
+        accept: Accepté
+        activate: Activé
+        archive: Archivé
+        cancel: Annulé
+        decline: Refusé
+        issue: Émis
+        new: Créé
+        overdue: 'Passé en retard'
+        pay: Payé
+        publish: 'Publié (sans envoi)'
+        reopen: Rouvert
+        settle: Soldé
+    type:
+        downloaded: 'PDF téléchargé'
+        send_failed: "Échec de l'envoi par e-mail"
+        sent: 'Envoyé par e-mail'
+        status: 'Changement de statut'
+        viewed: 'Consulté'
 document_line:
     add_note: 'Ajouter une note'
     client_first: 'Les lignes se chiffrent dans la devise et avec les taxes du client : choisissez-le ci-dessus pour pouvoir en ajouter.'

@@ -13,10 +13,13 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Email;
 
+use Augias\CoreBundle\Activity\DocumentEmail;
+use Augias\CoreBundle\Entity\Company;
+use Augias\CoreBundle\Journal\Journalled;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 
-final class CreditNoteEmail extends TemplatedEmail
+final class CreditNoteEmail extends TemplatedEmail implements DocumentEmail
 {
     public function __construct(
         private readonly CreditNote $creditNote,
@@ -30,5 +33,20 @@ final class CreditNoteEmail extends TemplatedEmail
     public function getCreditNote(): CreditNote
     {
         return $this->creditNote;
+    }
+
+    public function activityDocument(): Journalled
+    {
+        return $this->getCreditNote();
+    }
+
+    public function activityCompany(): Company
+    {
+        return $this->getCreditNote()->getCompany();
+    }
+
+    public function activityDetail(): ?string
+    {
+        return null;
     }
 }
