@@ -18,7 +18,7 @@
 {% block body %}
 {# No padding below: with a page just full, it made an empty second one. #}
 <div style="padding: 16px 0 0;">
-    <table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
+    <table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 14px;">
         <tr>
             <td style="vertical-align: middle;">
                 {% if setting('system/company/logo') is not empty %}{{ app_logo(40) }}{% endif %}
@@ -34,42 +34,42 @@
     <div style="font-family: Georgia, serif; font-size: 16pt; color: #1e293b; margin-bottom: 8px;">
         {{ 'invoice.template.friendly.greeting'|trans({'%name%': greeting}) }}
     </div>
-    <div style="font-size: 10pt; color: #475569; line-height: 1.6; margin-bottom: 24px;">
+    <div style="font-size: 10pt; color: #475569; line-height: 1.6; margin-bottom: 14px;">
         {{ 'invoice.template.friendly.intro'|trans }}
     </div>
 
-    <table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
+    <table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 14px;">
         <tr>
-            <td style="background-color: #fff1e0; padding: 16px 18px; vertical-align: top; width: 33%;">
+            <td style="background-color: #fff1e0; padding: 10px 14px; vertical-align: top; width: 33%;">
                 <div style="font-size: 8pt; color: #94704a; text-transform: uppercase; letter-spacing: 1px;">{{ 'invoice.date'|trans }}</div>
                 <div style="font-size: 11pt; font-weight: 600; color: #1e293b;">{{ invoice.invoiceDate|format_date('long') }}</div>
             </td>
             <td style="width: 4px;"></td>
-            <td style="background-color: #fff1e0; padding: 16px 18px; vertical-align: top; width: 33%;">
+            <td style="background-color: #fff1e0; padding: 10px 14px; vertical-align: top; width: 33%;">
                 <div style="font-size: 8pt; color: #94704a; text-transform: uppercase; letter-spacing: 1px;">{{ 'invoice.due_date'|trans }}</div>
                 <div style="font-size: 11pt; font-weight: 600; color: #1e293b;">{% if invoice.due %}{{ invoice.due|format_date('long') }}{% else %}—{% endif %}</div>
             </td>
             <td style="width: 4px;"></td>
-            <td style="background-color: #ecf7ee; padding: 16px 18px; vertical-align: top; width: 34%;">
+            <td style="background-color: #ecf7ee; padding: 10px 14px; vertical-align: top; width: 34%;">
                 <div style="font-size: 8pt; color: #166534; text-transform: uppercase; letter-spacing: 1px;">{% if hasOutstandingBalance %}{{ 'invoice.balance_due'|trans }}{% else %}{{ 'invoice.total_due'|trans }}{% endif %}</div>
                 <div style="font-size: 14pt; font-weight: bold; color: #166534;">{{ (hasOutstandingBalance ? invoice.feesBalance : invoice.feesTotal)|formatCurrency(currency) }}</div>
             </td>
         </tr>
     </table>
 
-    <table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
+    <table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 14px;">
         <tr>
             <td style="width: 50%; vertical-align: top;">{{ inv.from_block() }}</td>
             <td style="width: 50%; vertical-align: top;">{{ inv.bill_to_block(invoice) }}</td>
         </tr>
     </table>
 
-    <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+    <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 14px;">
         <thead>
             <tr>
-                <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 1px; color: #94704a; text-align: left; border-bottom: 1px solid #e8d7b8;">{{ 'invoice.item.heading.description'|trans }}</th>
-                <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 1px; color: #94704a; text-align: right; border-bottom: 1px solid #e8d7b8; width: 60px;">{{ 'invoice.item.heading.qty'|trans }}</th>
-                <th style="padding: 10px 12px; font-size: 8pt; text-transform: uppercase; letter-spacing: 1px; color: #94704a; text-align: right; border-bottom: 1px solid #e8d7b8; width: 100px;">{{ 'invoice.item.heading.total'|trans }}</th>
+                <th style="padding: 6px 10px; font-size: 8pt; text-transform: uppercase; letter-spacing: 1px; color: #94704a; text-align: left; border-bottom: 1px solid #e8d7b8;">{{ 'invoice.item.heading.description'|trans }}</th>
+                <th style="padding: 6px 10px; font-size: 8pt; text-transform: uppercase; letter-spacing: 1px; color: #94704a; text-align: right; border-bottom: 1px solid #e8d7b8; width: 60px;">{{ 'invoice.item.heading.qty'|trans }}</th>
+                <th style="padding: 6px 10px; font-size: 8pt; text-transform: uppercase; letter-spacing: 1px; color: #94704a; text-align: right; border-bottom: 1px solid #e8d7b8; width: 100px;">{{ 'invoice.item.heading.total'|trans }}</th>
             </tr>
         </thead>
         <tbody>
@@ -77,13 +77,13 @@
                 {% if line.note|default(false) %}
                     {# A line of text only: a heading over the lines that follow. #}
                     <tr>
-                        <td style="padding: 12px; font-size: 10pt; color: #1e293b; border-bottom: 1px solid #f1eada;" colspan="3"><strong>{{ line.description|nl2br }}</strong></td>
+                        <td style="padding: 8px; font-size: 10pt; color: #1e293b; border-bottom: 1px solid #f1eada;" colspan="3"><strong>{{ line.description|nl2br }}</strong></td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td style="padding: 12px; font-size: 10pt; color: #1e293b; border-bottom: 1px solid #f1eada;">{{ line.description|nl2br }}{{ inv.disbursement_tag(line) }}</td>
-                        <td style="padding: 12px; font-size: 10pt; color: #475569; border-bottom: 1px solid #f1eada; text-align: right;">{{ line|line_quantity }}</td>
-                        <td style="padding: 12px; font-size: 10pt; color: #1e293b; border-bottom: 1px solid #f1eada; text-align: right; font-weight: 600;">{{ line.total|formatCurrency(currency) }}</td>
+                        <td style="padding: 8px; font-size: 10pt; color: #1e293b; border-bottom: 1px solid #f1eada;">{{ line.description|nl2br }}{{ inv.disbursement_tag(line) }}</td>
+                        <td style="padding: 8px; font-size: 10pt; color: #475569; border-bottom: 1px solid #f1eada; text-align: right;">{{ line|line_quantity }}</td>
+                        <td style="padding: 8px; font-size: 10pt; color: #1e293b; border-bottom: 1px solid #f1eada; text-align: right; font-weight: 600;">{{ line.total|formatCurrency(currency) }}</td>
                     </tr>
                 {% endif %}
             {% endfor %}

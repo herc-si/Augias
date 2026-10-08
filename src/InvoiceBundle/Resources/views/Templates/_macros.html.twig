@@ -12,13 +12,13 @@
 
 {% macro bill_to_block(invoice, label='invoice.to') %}
     <div>
-        <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px;">
+        <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 4px;">
             {{ label|trans }}
         </div>
-        <div style="font-size: 14pt; font-weight: 600; color: #1e293b; margin-bottom: 8px;">
+        <div style="font-size: 12pt; font-weight: 600; color: #1e293b; margin-bottom: 4px;">
             {{ invoice.client }}
         </div>
-        <div style="font-size: 9pt; color: #475569; line-height: 1.6;">
+        <div style="font-size: 9pt; color: #475569; line-height: 1.4;">
             {% for identifier in tax_identifiers(invoice.client) %}
                 <div><span style="font-weight: 600; color: #1e293b;">{{ identifier.label }}:</span> {{ identifier.value }}</div>
             {% endfor %}
@@ -37,13 +37,13 @@
 
 {% macro from_block(label='invoice.from') %}
     <div>
-        <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 8px;">
+        <div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 4px;">
             {{ label|trans }}
         </div>
-        <div style="font-size: 14pt; font-weight: 600; color: #1e293b; margin-bottom: 8px;">
+        <div style="font-size: 12pt; font-weight: 600; color: #1e293b; margin-bottom: 4px;">
             {{ company_name() }}
         </div>
-        <div style="font-size: 9pt; color: #475569; line-height: 1.6;">
+        <div style="font-size: 9pt; color: #475569; line-height: 1.4;">
             {% for identifier in tax_identifiers() %}
                 <div><span style="font-weight: 600; color: #1e293b;">{{ identifier.label }}:</span> {{ identifier.value }}</div>
             {% endfor %}
@@ -67,7 +67,7 @@
 {% endmacro %}
 
 {% macro meta_pair(label, value, mono=false) %}
-    <div style="margin-bottom: 6px;">
+    <div style="margin-bottom: 4px;">
         <div style="font-size: 8pt; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">{{ label }}</div>
         <div style="font-size: 10pt; color: #1e293b; font-weight: 500;{% if mono %} font-family: 'Courier New', monospace;{% endif %}">{{ value }}</div>
     </div>
@@ -114,19 +114,19 @@
 
     <table cellpadding="0" cellspacing="0" style="width: 280px; border-collapse: collapse; margin-left: auto;">
         <tr>
-            <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; font-weight: 600; color: {{ p.subtotalColor }};">
+            <td style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; font-weight: 600; color: {{ p.subtotalColor }};">
                 {{ 'invoice.subtotal'|trans }}
             </td>
-            <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: #1e293b;">
+            <td style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: #1e293b;">
                 {{ invoice.baseTotal|formatCurrency(currency) }}
             </td>
         </tr>
         {% if invoice.discount.type is not empty %}
             <tr>
-                <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
+                <td style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
                     {{ discount_label(invoice) }}
                 </td>
-                <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: {{ p.discountColor }};">
+                <td style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: {{ p.discountColor }};">
                     -{{ discount(invoice)|formatCurrency(currency) }}
                 </td>
             </tr>
@@ -135,19 +135,19 @@
         {% set _tb = tax_breakdown(invoice) %}
         {% if invoice.tax.positive %}
             <tr>
-                <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
+                <td style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
                     {{ 'invoice.line_tax'|trans }}
                 </td>
-                <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: #1e293b;">
+                <td style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: #1e293b;">
                     {{ invoice.tax|formatCurrency(currency) }}
                 </td>
             </tr>
             {% for row in _tb.lineTaxRows %}
                 <tr>
-                    <td style="padding: 4px 20px 4px 24px; font-size: 8pt; text-align: right; color: {{ p.labelColor }};">
+                    <td style="padding: 2px 14px 2px 20px; font-size: 8pt; text-align: right; color: {{ p.labelColor }};">
                         {{ row.name }} ({{ row.rate }}%)
                     </td>
-                    <td style="padding: 4px 12px; font-size: 8pt; text-align: right; font-family: {{ p.mono }}; color: #475569;">
+                    <td style="padding: 2px 10px; font-size: 8pt; text-align: right; font-family: {{ p.mono }}; color: #475569;">
                         {{ row.amount|formatCurrency(currency) }}
                     </td>
                 </tr>
@@ -155,20 +155,20 @@
         {% endif %}
         {% for row in _tb.additiveRows %}
             <tr>
-                <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
+                <td style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
                     {{ row.name }} ({{ row.rate }}%)
                 </td>
-                <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: #1e293b;">
+                <td style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: #1e293b;">
                     {{ row.amount|formatCurrency(currency) }}
                 </td>
             </tr>
         {% endfor %}
         {% for row in _tb.informationalRows %}
             <tr>
-                <td style="padding: 4px 20px 4px 24px; font-size: 8pt; text-align: right; color: {{ p.labelColor }};">
+                <td style="padding: 2px 14px 2px 20px; font-size: 8pt; text-align: right; color: {{ p.labelColor }};">
                     {{ row.name }} ({{ row.rate }}%){% if row.note %} — {{ row.note }}{% endif %}
                 </td>
-                <td style="padding: 4px 12px; font-size: 8pt; text-align: right; font-family: {{ p.mono }}; color: #64748b;">
+                <td style="padding: 2px 10px; font-size: 8pt; text-align: right; font-family: {{ p.mono }}; color: #64748b;">
                     {{ 'invoice.invoice_taxes.informational'|trans }}
                 </td>
             </tr>
@@ -180,59 +180,59 @@
          #}
         {% if hasOutstandingBalance and invoice.hasDisbursements %}
             <tr>
-                <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
+                <td style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
                     {{ 'invoice.disbursement.note.fees_paid'|trans }}
                 </td>
-                <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: {{ p.paymentColor }};">
+                <td style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: {{ p.paymentColor }};">
                     -{{ invoice.feesPaid|formatCurrency(currency) }}
                 </td>
             </tr>
         {% elseif hasOutstandingBalance %}
             {% for payment in invoice_captured_payments(invoice) %}
                 <tr>
-                    <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
+                    <td style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
                         {{ 'invoice.payment.label'|trans }}: {{ payment.method ? payment.method.name : 'payment.method.none'|trans }}
                     </td>
-                    <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: {{ p.paymentColor }};">
+                    <td style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: {{ p.paymentColor }};">
                         -{{ payment.totalAmount|formatCurrency(currency) }}
                     </td>
                 </tr>
             {% endfor %}
         {% endif %}
-        <tr><td colspan="2" style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;"></td></tr>
+        <tr><td colspan="2" style="padding: 3px 0; border-bottom: 1px solid #e2e8f0;"></td></tr>
         {% if hasOutstandingBalance %}
             <tr style="background-color: {{ p.balanceBg }};">
-                <td style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ p.balanceLabelColor }};">
+                <td style="padding: 8px 14px 8px 10px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ p.balanceLabelColor }};">
                     {{ 'invoice.balance'|trans }}
                 </td>
-                <td style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: {{ p.mono }}; color: {{ p.balanceColor }};">
+                <td style="padding: 8px 10px; font-size: 14pt; font-weight: bold; text-align: right; font-family: {{ p.mono }}; color: {{ p.balanceColor }};">
                     {{ invoice.feesBalance|formatCurrency(currency) }}
                 </td>
             </tr>
         {% else %}
             <tr style="background-color: {{ p.totalBg }};">
-                <td style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ p.totalLabelColor }};">
+                <td style="padding: 8px 14px 8px 10px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ p.totalLabelColor }};">
                     {{ 'invoice.total'|trans }}
                 </td>
-                <td style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: {{ p.mono }}; color: {{ p.totalColor }};">
+                <td style="padding: 8px 10px; font-size: 14pt; font-weight: bold; text-align: right; font-family: {{ p.mono }}; color: {{ p.totalColor }};">
                     {{ invoice.feesTotal|formatCurrency(currency) }}
                 </td>
             </tr>
         {% endif %}
         {% if invoice.withholdingAmount.positive %}
             <tr>
-                <td style="padding: 8px 20px 8px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
+                <td style="padding: 4px 14px 4px 10px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
                     {{ 'invoice.withholding'|trans }}
                 </td>
-                <td style="padding: 8px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: {{ p.discountColor }};">
+                <td style="padding: 4px 10px; font-size: 9pt; text-align: right; font-family: {{ p.mono }}; color: {{ p.discountColor }};">
                     -{{ invoice.withholdingAmount|formatCurrency(currency) }}
                 </td>
             </tr>
             <tr style="background-color: {{ p.totalBg }};">
-                <td style="padding: 14px 20px 14px 12px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ p.totalLabelColor }};">
+                <td style="padding: 8px 14px 8px 10px; font-size: 12pt; font-weight: bold; text-align: right; color: {{ p.totalLabelColor }};">
                     {{ 'invoice.amount_payable'|trans }}
                 </td>
-                <td style="padding: 14px 12px; font-size: 14pt; font-weight: bold; text-align: right; font-family: {{ p.mono }}; color: {{ p.totalColor }};">
+                <td style="padding: 8px 10px; font-size: 14pt; font-weight: bold; text-align: right; font-family: {{ p.mono }}; color: {{ p.totalColor }};">
                     {{ invoice.feesPayableAmount|formatCurrency(currency) }}
                 </td>
             </tr>
@@ -245,20 +245,20 @@
        of them, and forgetting one is a legal problem rather than a cosmetic one. #}
     {% set vatMention = vat_exempt_mention() %}
     {% if vatMention %}
-        <div style="margin-top: 12px; font-size: 9pt; color: {{ p.labelColor }};">
+        <div style="margin-top: 8px; font-size: 9pt; color: {{ p.labelColor }};">
             {{ vatMention }}
         </div>
     {% endif %}
     {# The delivery date, when it is not the invoice date (CGI ann. II, art.
        242 nonies A, I-7°). Same place, same reason as the mentions around it. #}
     {% if invoice.hasDistinctDeliveryDate is defined and invoice.hasDistinctDeliveryDate %}
-        <div style="margin-top: 12px; font-size: 9pt; color: {{ p.labelColor }};">
+        <div style="margin-top: 8px; font-size: 9pt; color: {{ p.labelColor }};">
             {{ 'invoice.delivery_date_mention'|trans({'%date%': invoice.deliveryDate|format_date('long')}) }}
         </div>
     {% endif %}
     {% set debitsMention = vat_on_debits_mention(invoice) %}
     {% if debitsMention %}
-        <div style="margin-top: 12px; font-size: 9pt; color: {{ p.labelColor }};">
+        <div style="margin-top: 8px; font-size: 9pt; color: {{ p.labelColor }};">
             {{ debitsMention }}
         </div>
     {% endif %}
@@ -266,7 +266,7 @@
     {# Same reasoning, and the same place. The disbursements are on a note of
        their own, and the invoice has to say where. #}
     {% if invoice.hasDisbursements %}
-        <div style="margin-top: 12px; font-size: 8pt; color: {{ p.labelColor }}; line-height: 1.5;">
+        <div style="margin-top: 8px; font-size: 8pt; color: {{ p.labelColor }}; line-height: 1.5;">
             {{ disbursement_note_reference(invoice) }}
         </div>
     {% endif %}
@@ -303,11 +303,15 @@
    go with them. Apart, the terms were left alone on the next page, or the
    totals cut in two (06/10/2026). Too tall for what is left of the page, the
    whole moves to the next one. #}
-{% macro closing_block(invoice, currency, totalsPalette={}, termsPalette={}, signoff='') %}
+{% macro closing_block(invoice, currency, totalsPalette={}, termsPalette={}, signoff='', heading='') %}
     {% import _self as self %}
     <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; page-break-inside: avoid;">
         <tr>
             <td style="padding: 0;">
+                {# A design's heading over its totals goes with them, not left alone at the foot of the page before. #}
+                {% if heading %}
+                    <div class="closing-heading" style="margin-bottom: 12px; text-align: right;">{{ heading }}</div>
+                {% endif %}
                 {{ self.totals_block(invoice, currency, totalsPalette) }}
                 {{ self.terms_block(invoice, termsPalette) }}
                 {# A design's own closing words stay with what they close. #}
