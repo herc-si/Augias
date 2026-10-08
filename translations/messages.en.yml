@@ -1438,6 +1438,7 @@ document_activity:
     by: 'by %name%'
     by_client: 'By the client, from their link'
     detail:
+        acceptance_confirmation: 'Agreement confirmation sent to the client'
         reminder: 'Reminder sent by email'
     empty: 'Nothing yet.'
     from_ip: 'from %ip%'
@@ -1445,6 +1446,9 @@ document_activity:
         invoice: 'This invoice is finalised, but no sending to the client is recorded.'
         quote: 'This quote is finalised, but no sending to the client is recorded.'
         send: 'Send to the client'
+    proof:
+        download: 'Accepted quote (PDF)'
+        fingerprint: 'SHA-256 fingerprint: %sha256%'
     signed_by: 'Agreed in the name of %name%'
     summary:
         last_seen: 'Viewed by the client on %date%'

@@ -80,6 +80,15 @@
                         {% endif %}
                         {% if entry.type.value == 'client_accepted' %}
                             <div class="text-muted text-break">{{ 'document_activity.signed_by'|trans({'%name%': entry.detail}) }}</div>
+                            {% if entry.proofPath %}
+                                <div>
+                                    <a href="{{ path('_document_activity_proof', {'id': entry.id}) }}" class="text-nowrap">
+                                        {{ ux_icon('tabler:file-type-pdf', {width: 14, height: 14}) }}
+                                        {{ 'document_activity.proof.download'|trans }}
+                                    </a>
+                                </div>
+                                <div class="text-muted text-break small" title="{{ entry.proofSha256 }}">{{ 'document_activity.proof.fingerprint'|trans({'%sha256%': entry.proofSha256|slice(0, 16) ~ '…'}) }}</div>
+                            {% endif %}
                         {% elseif entry.type.value == 'client_declined' and entry.detail %}
                             <div class="text-muted text-break">« {{ entry.detail }} »</div>
                         {% endif %}

@@ -1438,6 +1438,7 @@ document_activity:
     by: 'par %name%'
     by_client: 'Par le client, depuis son lien'
     detail:
+        acceptance_confirmation: 'Confirmation d''accord envoyée au client'
         reminder: 'Relance envoyée par e-mail'
     empty: 'Rien pour le moment.'
     from_ip: 'depuis %ip%'
@@ -1445,6 +1446,9 @@ document_activity:
         invoice: "Cette facture est finalisée, mais aucun envoi au client n'est enregistré."
         quote: "Ce devis est finalisé, mais aucun envoi au client n'est enregistré."
         send: 'Envoyer au client'
+    proof:
+        download: 'Devis accepté (PDF)'
+        fingerprint: 'Empreinte SHA-256 : %sha256%'
     signed_by: 'Bon pour accord au nom de %name%'
     summary:
         last_seen: 'Consulté par le client le %date%'

@@ -1,0 +1,58 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+{% extends "@AugiasCore/Layout/Email/base.html.twig" %}
+{% import "@AugiasCore/Layout/Email/components.html.twig" as email %}
+
+{% set quotePath = url("_view_quote_external", {"uuid" : quote.uuid}) %}
+
+{%- block title -%}
+    {{ 'quote.accepted_confirmation.title'|trans({'%id%': quote.quoteId}, 'email') }}
+{%- endblock -%}
+
+{%- block header -%}
+    {{ email.view_online_link(quotePath, '', 'quote.view_online') }}
+{%- endblock -%}
+
+{%- block content -%}
+    {% apply inky_to_html %}
+        <row>
+            <columns>
+                <p style="color: #1e293b; font-size: 16px; line-height: 1.5; margin: 0 0 24px 0; Margin: 0 0 24px 0;">
+                    {{ 'quote.accepted_confirmation.intro'|trans({'%company%': setting('system/company/company_name'), '%id%': quote.quoteId}, 'email') }}
+                </p>
+            </columns>
+        </row>
+    {% endapply %}
+
+    {{ email.info_row('quote.number'|trans({}, 'email'), quote.quoteId) }}
+    {{ email.spacer('xs') }}
+    {{ email.info_row('quote.total'|trans({}, 'email'), quote.total|formatCurrency(quote.client.currency), true) }}
+    {{ email.spacer('xs') }}
+    {{ email.info_row('quote.accepted_confirmation.signer'|trans({}, 'email'), signerName) }}
+    {{ email.spacer('xs') }}
+    {{ email.info_row('quote.accepted_confirmation.at'|trans({}, 'email'), acceptedAt|format_datetime('long', 'short')) }}
+
+    {{ email.spacer('sm') }}
+
+    {% apply inky_to_html %}
+        <row>
+            <columns>
+                <p style="color: #64748b; font-size: 13px; line-height: 1.5; margin: 0; Margin: 0;">
+                    {{ 'quote.accepted_confirmation.attached'|trans({}, 'email') }}
+                </p>
+                <p style="color: #64748b; font-size: 11px; line-height: 1.5; margin: 8px 0 0 0; Margin: 8px 0 0 0; word-break: break-all;">
+                    {{ 'quote.accepted_confirmation.fingerprint'|trans({'%sha256%': sha256}, 'email') }}
+                </p>
+            </columns>
+        </row>
+    {% endapply %}
+
+    {{ email.spacer('md') }}
+    {{ email.button('quote.view'|trans([], 'email'), quotePath, 'primary', 'large') }}
+{%- endblock -%}

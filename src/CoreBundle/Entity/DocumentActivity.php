@@ -74,6 +74,16 @@ class DocumentActivity
     private ?string $ipAddress;
 
     /**
+     * The document as the client accepted it, kept beside the answer: where
+     * it is stored, and its SHA-256, which says it has not changed since.
+     */
+    #[ORM\Column(name: 'proof_path', type: Types::STRING, length: 255, nullable: true)]
+    private ?string $proofPath = null;
+
+    #[ORM\Column(name: 'proof_sha256', type: Types::STRING, length: 64, nullable: true)]
+    private ?string $proofSha256 = null;
+
+    /**
      * @param list<string> $recipients
      */
     public function __construct(
@@ -152,6 +162,16 @@ class DocumentActivity
     public function getIpAddress(): ?string
     {
         return $this->ipAddress;
+    }
+
+    public function getProofPath(): ?string
+    {
+        return $this->proofPath;
+    }
+
+    public function getProofSha256(): ?string
+    {
+        return $this->proofSha256;
     }
 
     /**

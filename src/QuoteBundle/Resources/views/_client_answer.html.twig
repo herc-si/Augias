@@ -30,6 +30,9 @@
                     {% endif %}
                 </strong>
             </div>
+            {% if answer and answer.type.value == 'client_accepted' and answer.proofSha256 %}
+                <p class="small text-muted mt-2 mb-0 text-break">{{ 'quote.client_answer.proof'|trans }}<br>{{ 'document_activity.proof.fingerprint'|trans({'%sha256%': answer.proofSha256}) }}</p>
+            {% endif %}
         {% elseif quote.status == QuoteStatus.Declined %}
             <div class="d-flex align-items-center gap-2 text-muted">
                 {{ ux_icon('tabler:circle-x', {width: 24, height: 24}) }}
