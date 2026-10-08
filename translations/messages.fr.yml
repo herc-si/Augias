@@ -3789,6 +3789,13 @@ settings:
     numbering_strategy:
         help: 'Choisissez comment les identifiants %type% sont générés.'
     page:
+        default_terms:
+            business: 'Client professionnel'
+            business_help: 'Délai de paiement, escompte, pénalités de retard et indemnité forfaitaire de 40 € : obligatoires entre professionnels (art. L441-9 et L441-10 du Code de commerce).'
+            individual: 'Client particulier'
+            individual_help: "Pas d'indemnité de 40 € pour un particulier. Pensez à indiquer votre médiateur de la consommation, obligatoire dès que vous vendez à des particuliers."
+            subtitle: "Le texte repris dans « Conditions » à la création d'un document, selon que le client est une entreprise ou un particulier. Il change si vous changez de client, tant que vous ne l'avez pas modifié. Laissez vide pour ne rien reprendre."
+            title: 'Conditions par défaut'
         company:
             bank_details:
                 bank_name: 'Banque'
@@ -4146,6 +4153,27 @@ tax:
         type:
             select: Sélectionner
     vat_number: 'Numéro de TVA :'
+terms:
+    suggested:
+        invoice:
+            business: |-
+                Paiement à 30 jours à compter de la date de facture.
+                Pas d'escompte pour paiement anticipé.
+                En cas de retard de paiement, des pénalités sont exigibles au taux de 3 fois le taux d'intérêt légal en vigueur, sans qu'un rappel soit nécessaire.
+                Indemnité forfaitaire pour frais de recouvrement : 40 € (art. L441-10 et D441-5 du Code de commerce).
+            individual: |-
+                Paiement à 30 jours à compter de la date de facture.
+                En cas de retard de paiement, des intérêts au taux légal pourront être réclamés après mise en demeure.
+        quote:
+            business: |-
+                Devis valable 30 jours à compter de sa date.
+                Paiement à 30 jours à compter de la date de facture.
+                Pas d'escompte pour paiement anticipé.
+                En cas de retard de paiement, pénalités au taux de 3 fois le taux d'intérêt légal et indemnité forfaitaire pour frais de recouvrement de 40 € (art. L441-10 du Code de commerce).
+            individual: |-
+                Devis valable 30 jours à compter de sa date.
+                Paiement à 30 jours à compter de la date de facture.
+                Si ce devis est accepté à distance ou hors établissement, vous disposez d'un délai de rétractation de 14 jours à compter de son acceptation (art. L221-18 du Code de la consommation).
 title: messages
 type: Type
 user:

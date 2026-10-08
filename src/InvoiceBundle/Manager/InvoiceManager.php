@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Manager;
 
+use Augias\CoreBundle\Billing\DefaultTerms;
+use Augias\CoreBundle\Billing\TermsDocument;
 use Augias\CoreBundle\Enum\CustomFieldTarget;
 use Augias\CoreBundle\Service\CustomField\CustomFieldValueCopier;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -53,6 +55,7 @@ class InvoiceManager
         private readonly ClockInterface $clock,
         private readonly CustomFieldValueCopier $customFieldValueCopier,
         private readonly TaxSnapshotCopier $taxSnapshotCopier = new TaxSnapshotCopier(),
+        private readonly ?DefaultTerms $defaultTerms = null,
     ) {
         $this->entityManager = $doctrine->getManager();
     }
@@ -138,7 +141,7 @@ class InvoiceManager
         $invoice->setDiscount($object->getDiscount());
         $invoice->setNotes($object->getNotes());
         $invoice->setTotal($object->getTotal());
-        $invoice->setTerms($object->getTerms());
+        $invoice->setTerms($this->termsFrom($object));
         $invoice->setBalance($invoice->getTotal());
         $invoice->setCompany($object->getCompany());
         // No number: the invoice takes one when it is finalised
@@ -257,5 +260,21 @@ class InvoiceManager
         ];
 
         $this->notification->sendNotification(new InvoiceStatusNotification($parameters));
+    }
+
+    /**
+     * A quote's default terms are a quote's ("valid for 30 days"): the invoice
+     * made from it takes the invoice's own instead. Terms written for that
+     * quote, and a schedule's, come along as they are.
+     */
+    private function termsFrom(RecurringInvoice | Quote $object): ?string
+    {
+        $terms = $object->getTerms();
+
+        if ($object instanceof Quote && $this->defaultTerms?->isDefault(TermsDocument::Quote, $terms)) {
+            return $this->defaultTerms->forClient(TermsDocument::Invoice, $object->getClient());
+        }
+
+        return $terms;
     }
 }

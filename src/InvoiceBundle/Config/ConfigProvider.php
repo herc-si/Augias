@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Config;
 
+use Augias\CoreBundle\Billing\TermsDocument;
 use Augias\CoreBundle\Form\Type\BillingIdConfigurationType;
 use Augias\SaasBundle\Feature\Feature;
 use Augias\SettingsBundle\Config\ProviderInterface;
@@ -21,10 +22,17 @@ use Augias\SettingsBundle\SystemConfig;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class ConfigProvider implements ProviderInterface
 {
+    public function __construct(
+        private readonly TranslatorInterface $translator,
+    ) {
+    }
+
     /**
      * @return Config[]
      */
@@ -49,6 +57,9 @@ final class ConfigProvider implements ProviderInterface
             // would still read 2026 next January. {year} is resolved every time
             // an id is generated.
             new Config('invoice/id_generation/id_suffix', '-{year}', 'invoice.settings.id_generation.id_suffix.description', TextType::class),
+            // What a new invoice opens with, worded for a business or for a private
+            // individual: suggested in the company's language, the company's to change.
+            ...$this->defaultTerms(TermsDocument::Invoice, $data['locale'] ?? null),
             // A credit note is numbered in a series of its own, and only in an
             // unbroken run: a gap in the numbering of a book document is what
             // an audit looks for first, so the random, uuid, ulid and timestamp
@@ -78,5 +89,25 @@ final class ConfigProvider implements ProviderInterface
                 ['attr' => ['min' => 0, 'max' => 30], 'feature_gated' => Feature::AutomatedReminders->value],
             ),
         ];
+    }
+
+    /**
+     * @return list<Config>
+     */
+    private function defaultTerms(TermsDocument $document, ?string $locale): array
+    {
+        $configs = [];
+
+        foreach ([true, false] as $business) {
+            $configs[] = new Config(
+                $document->settingKey($business),
+                $this->translator->trans($document->suggestionKey($business), [], null, $locale),
+                null,
+                TextareaType::class,
+                ['attr' => ['rows' => 5]],
+            );
+        }
+
+        return $configs;
     }
 }

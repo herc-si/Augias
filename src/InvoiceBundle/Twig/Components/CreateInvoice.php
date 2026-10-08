@@ -17,6 +17,9 @@ use Augias\CatalogBundle\Entity\Product;
 use Augias\CatalogBundle\Repository\ProductRepository;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Repository\ClientRepository;
+use Augias\CoreBundle\Billing\AppliesDefaultTerms;
+use Augias\CoreBundle\Billing\DefaultTerms;
+use Augias\CoreBundle\Billing\TermsDocument;
 use Augias\CoreBundle\Billing\TotalCalculator;
 use Augias\CoreBundle\Contracts\EmailVerificationGateInterface;
 use Augias\CoreBundle\Entity\Discount;
@@ -70,6 +73,7 @@ final class CreateInvoice extends AbstractController
     use DefaultActionTrait;
     use LiveCollectionTrait;
     use ManagesNoteLines;
+    use AppliesDefaultTerms;
 
     public InvoiceFormDTO $dto;
 
@@ -111,7 +115,8 @@ final class CreateInvoice extends AbstractController
         private readonly FeatureGate $featureGate,
         private readonly ProductRepository $productRepository,
         private readonly CurrencyScale $currencyScale,
-        private readonly SystemConfig $systemConfig
+        private readonly SystemConfig $systemConfig,
+        private readonly DefaultTerms $defaultTerms,
     ) {
         $this->dto = new InvoiceFormDTO();
     }
@@ -135,6 +140,26 @@ final class CreateInvoice extends AbstractController
             // Track the client so we don't re-select on subsequent renders
             $this->previousClientId = (string) $client->getId();
         }
+    }
+
+    /**
+     * A new invoice opens with the default terms for its client's type.
+     * Before initializeForm() (priority 0), so the form starts with them.
+     */
+    #[PostMount(priority: 5)]
+    public function initializeTerms(): void
+    {
+        $this->openWithDefaultTerms($this->defaultTerms, TermsDocument::Invoice);
+    }
+
+    /**
+     * Untouched default terms follow a change of client. Before
+     * submitFormOnRender() (priority 0), like the contacts.
+     */
+    #[PreReRender(priority: 9)]
+    public function followClientWithTerms(): void
+    {
+        $this->followClientWithDefaultTerms($this->defaultTerms, TermsDocument::Invoice, $this->clientRepository);
     }
 
     /**

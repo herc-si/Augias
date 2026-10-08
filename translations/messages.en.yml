@@ -3789,6 +3789,13 @@ settings:
     numbering_strategy:
         help: 'Choose how %type% IDs are generated.'
     page:
+        default_terms:
+            business: 'Business client'
+            business_help: 'Payment term, early payment discount, late payment penalties and the €40 fixed compensation: required between businesses in France (Commercial Code, art. L441-9 and L441-10).'
+            individual: 'Private individual'
+            individual_help: 'No €40 compensation for a private individual. Remember to name your consumer mediator, required as soon as you sell to individuals in France.'
+            subtitle: 'The text put in "Terms" when a document is created, depending on whether the client is a business or a private individual. It follows a change of client as long as you have not edited it. Leave empty to put nothing.'
+            title: 'Default terms'
         company:
             bank_details:
                 bank_name: Bank
@@ -4146,6 +4153,27 @@ tax:
         type:
             select: Select
     vat_number: 'Vat Number:'
+terms:
+    suggested:
+        invoice:
+            business: |-
+                Payment due within 30 days of the invoice date.
+                No discount for early payment.
+                Late payment penalties are due without reminder, at three times the legal interest rate in force.
+                Fixed compensation for recovery costs: €40 (French Commercial Code, art. L441-10 and D441-5).
+            individual: |-
+                Payment due within 30 days of the invoice date.
+                Interest at the legal rate may be claimed on late payment after formal notice.
+        quote:
+            business: |-
+                Quote valid for 30 days from its date.
+                Payment due within 30 days of the invoice date.
+                No discount for early payment.
+                Late payment penalties at three times the legal interest rate, and fixed compensation for recovery costs of €40 (French Commercial Code, art. L441-10).
+            individual: |-
+                Quote valid for 30 days from its date.
+                Payment due within 30 days of the invoice date.
+                If this quote is accepted at a distance or off-premises, you have 14 days from its acceptance to withdraw (French Consumer Code, art. L221-18).
 title: messages
 type: Type
 user:

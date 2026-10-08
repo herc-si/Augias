@@ -17,6 +17,9 @@ use Augias\CatalogBundle\Entity\Product;
 use Augias\CatalogBundle\Repository\ProductRepository;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Repository\ClientRepository;
+use Augias\CoreBundle\Billing\AppliesDefaultTerms;
+use Augias\CoreBundle\Billing\DefaultTerms;
+use Augias\CoreBundle\Billing\TermsDocument;
 use Augias\CoreBundle\Billing\TotalCalculator;
 use Augias\CoreBundle\Contracts\EmailVerificationGateInterface;
 use Augias\CoreBundle\Entity\Discount;
@@ -66,6 +69,7 @@ final class CreateQuote extends AbstractController
     use DefaultActionTrait;
     use LiveCollectionTrait;
     use ManagesNoteLines;
+    use AppliesDefaultTerms;
 
     public QuoteFormDTO $dto;
 
@@ -99,7 +103,8 @@ final class CreateQuote extends AbstractController
         private readonly Calculator $calculator,
         private readonly EmailVerificationGateInterface $emailVerificationGate,
         private readonly CustomFieldFormWriter $customFieldFormWriter,
-        private readonly FeatureGate $featureGate
+        private readonly FeatureGate $featureGate,
+        private readonly DefaultTerms $defaultTerms,
     ) {
         $this->dto = new QuoteFormDTO();
     }
@@ -123,6 +128,26 @@ final class CreateQuote extends AbstractController
             // Track the client so we don't re-select on subsequent renders
             $this->previousClientId = (string) $client->getId();
         }
+    }
+
+    /**
+     * A new quote opens with the default terms for its client's type.
+     * Before initializeForm() (priority 0), so the form starts with them.
+     */
+    #[PostMount(priority: 5)]
+    public function initializeTerms(): void
+    {
+        $this->openWithDefaultTerms($this->defaultTerms, TermsDocument::Quote);
+    }
+
+    /**
+     * Untouched default terms follow a change of client. Before
+     * submitFormOnRender() (priority 0), like the contacts.
+     */
+    #[PreReRender(priority: 9)]
+    public function followClientWithTerms(): void
+    {
+        $this->followClientWithDefaultTerms($this->defaultTerms, TermsDocument::Quote, $this->clientRepository);
     }
 
     /**
