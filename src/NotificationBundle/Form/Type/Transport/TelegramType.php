@@ -17,7 +17,13 @@ namespace Augias\NotificationBundle\Form\Type\Transport;
 
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
+use function explode;
+use function is_string;
+use function trim;
 
 /**
  * @codeCoverageIgnore
@@ -32,6 +38,7 @@ final class TelegramType extends AbstractType
             null,
             [
                 'label' => 'form.field.token',
+                'help' => 'notification.telegram.token_help',
                 'constraints' => new NotBlank(groups: ['telegram']),
             ]
         );
@@ -41,8 +48,36 @@ final class TelegramType extends AbstractType
             null,
             [
                 'label' => 'form.field.chat_id',
-                'constraints' => new NotBlank(groups: ['telegram']),
+                // Where to find it, step by step: the chat id is the one thing
+                // here Telegram does not show anyone (preprod, 08/10/2026).
+                'help' => 'notification.telegram.chat_id_help',
+                'help_html' => true,
+                'constraints' => [
+                    new NotBlank(groups: ['telegram']),
+                    new Callback(self::notTheBot(...), groups: ['telegram']),
+                ],
             ]
         );
+    }
+
+    /**
+     * The number before the colon of the token is the bot's own id: given as
+     * the chat id, every message is refused with "the bot can't send messages
+     * to the bot" (403).
+     */
+    public static function notTheBot(mixed $chatId, ExecutionContextInterface $context): void
+    {
+        $field = $context->getObject();
+        $token = $field instanceof FormInterface ? $field->getParent()?->get('token')->getData() : null;
+
+        if (! is_string($chatId) || ! is_string($token)) {
+            return;
+        }
+
+        $botId = explode(':', trim($token), 2)[0];
+
+        if ('' !== $botId && trim($chatId) === $botId) {
+            $context->buildViolation('notification.telegram.chat_id_is_bot')->addViolation();
+        }
     }
 }

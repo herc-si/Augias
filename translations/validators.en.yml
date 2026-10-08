@@ -57,6 +57,8 @@ money:
     constraint:
         unsupported_currency: '{{ value }} is not a currency this application can work with.'
 notification:
+    telegram:
+        chat_id_is_bot: "This is the bot's id (the start of the token), not yours: Telegram would refuse every message. Follow the steps below to find your Chat ID."
     constraint:
         transport_setting:
             unique_name: 'The name is already in use'
