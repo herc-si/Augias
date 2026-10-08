@@ -203,6 +203,13 @@
                     {{ ux_icon('tabler:file-invoice', {width: 18, height: 18}) }}
                     {{ "quote.view.toolbar.view_invoice"|trans }}
                 </a>
+            {% elseif quote.status == enum('Augias\\QuoteBundle\\Enum\\QuoteStatus').Accepted and route_allowed('_invoices_create_from_quote') %}
+                {# Accepted, not invoiced yet: the invoice is made when asked
+                   for, not on acceptance (08/10/2026). #}
+                <a href="{{ path('_invoices_create_from_quote', {'id' : quote.id}) }}" class="btn btn-primary btn-hero" data-test="create-invoice">
+                    {{ ux_icon('tabler:file-invoice', {width: 18, height: 18}) }}
+                    {{ "quote.view.toolbar.create_invoice"|trans }}
+                </a>
             {% endif %}
         </div>
     </div>

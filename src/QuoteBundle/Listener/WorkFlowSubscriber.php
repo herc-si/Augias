@@ -13,8 +13,6 @@ declare(strict_types=1);
 
 namespace Augias\QuoteBundle\Listener;
 
-use Augias\InvoiceBundle\Manager\InvoiceManager;
-use Augias\InvoiceBundle\Model\Graph as InvoiceGraph;
 use Augias\NotificationBundle\Notification\NotificationManager;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\QuoteBundle\Enum\QuoteStatus;
@@ -28,7 +26,6 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Workflow\Event\Event;
 use Symfony\Component\Workflow\Transition;
-use Symfony\Component\Workflow\WorkflowInterface;
 
 /**
  * @see \Augias\QuoteBundle\Tests\Listener\WorkFlowSubscriberTest
@@ -37,8 +34,6 @@ final readonly class WorkFlowSubscriber implements EventSubscriberInterface
 {
     public function __construct(
         private ManagerRegistry $registry,
-        private InvoiceManager $invoiceManager,
-        private WorkflowInterface $invoiceStateMachine,
         private NotificationManager $notification,
         private QuoteMailer $quoteMailer
     ) {
@@ -50,23 +45,8 @@ final readonly class WorkFlowSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents(): array
     {
         return [
-            'workflow.quote.entered.accepted' => 'onQuoteAccepted',
             'workflow.quote.entered' => 'onWorkflowTransitionApplied',
         ];
-    }
-
-    /**
-     * @template TSubject of object
-     *
-     * @param Event<TSubject> $event
-     */
-    public function onQuoteAccepted(Event $event): void
-    {
-        $quote = $event->getSubject();
-        assert($quote instanceof Quote);
-        $invoice = $this->invoiceManager->createFromQuote($quote);
-
-        $this->invoiceStateMachine->apply($invoice, InvoiceGraph::TRANSITION_NEW);
     }
 
     /**

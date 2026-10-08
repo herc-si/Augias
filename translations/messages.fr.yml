@@ -3147,6 +3147,9 @@ quote:
         subtitle: 'Créez des devis professionnels pour vos clients'
         success: 'Devis créé avec succès'
         title: 'Créer un devis'
+    create_invoice:
+        already: 'Ce devis a déjà sa facture.'
+        not_accepted: 'Seul un devis accepté peut être facturé.'
     created: Créé
     custom_fields:
         title: 'Champs personnalisés'
@@ -3285,7 +3288,7 @@ quote:
         title: Résumé
     transition:
         action:
-            accept: 'Devis accepté et facture créée'
+            accept: 'Devis accepté'
             archive: 'Le devis a été archivé'
             cancel: 'Devis annulé'
             decline: 'Devis refusé'
@@ -3304,6 +3307,7 @@ quote:
             archive: Archiver
             cancel: Annuler
             clone: Dupliquer
+            create_invoice: 'Créer la facture'
             decline: Refuser
             edit: Modifier
             more_actions: 'Plus d''actions'

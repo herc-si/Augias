@@ -14,6 +14,7 @@ declare(strict_types=1);
 use Augias\InvoiceBundle\Action\CloneInvoice;
 use Augias\InvoiceBundle\Action\CloneRecurringInvoice;
 use Augias\InvoiceBundle\Action\Create;
+use Augias\InvoiceBundle\Action\CreateFromQuote;
 use Augias\InvoiceBundle\Action\CreateRecurring;
 use Augias\InvoiceBundle\Action\CreditNote\Allocate as CreditNoteAllocate;
 use Augias\InvoiceBundle\Action\CreditNote\Create as CreditNoteCreate;
@@ -52,6 +53,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->add('_invoices_create', '/create/{client}')
         ->controller(Create::class)
         ->defaults(['client' => null]);
+
+    $routingConfigurator
+        ->add('_invoices_create_from_quote', '/from-quote/{id}')
+        ->controller(CreateFromQuote::class)
+        ->methods(['GET']);
 
     $routingConfigurator
         ->add('_invoices_create_recurring', '/recurring/create/{client}')

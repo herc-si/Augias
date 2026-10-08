@@ -69,6 +69,25 @@ class InvoiceManager
     }
 
     /**
+     * The quote's content, to open the invoice form with: not numbered and
+     * not tied to the quote yet. Both happen when the form is saved, so an
+     * invoice that is never saved takes no number.
+     */
+    public function draftFromQuote(Quote $quote): Invoice
+    {
+        $invoice = $this->createFromObject($quote, freezeSnapshots: false, numbered: false);
+
+        // The contacts are the client's, already saved: holding this unsaved
+        // invoice in their list would make any flush of the request fail on
+        // it. The invoice keeps them, for the form to show.
+        foreach ($invoice->getUsers() as $contact) {
+            $contact->removeInvoice($invoice);
+        }
+
+        return $invoice;
+    }
+
+    /**
      * @throws MathException|ContainerExceptionInterface
      */
     public function createFromRecurring(RecurringInvoice $recurringInvoice): Invoice
@@ -107,7 +126,7 @@ class InvoiceManager
     /**
      * @throws MathException|ContainerExceptionInterface
      */
-    private function createFromObject(RecurringInvoice | Quote $object, bool $freezeSnapshots = false): Invoice
+    private function createFromObject(RecurringInvoice | Quote $object, bool $freezeSnapshots = false, bool $numbered = true): Invoice
     {
         /** @var RecurringInvoice|Quote $object */
         $invoice = new Invoice();
@@ -125,7 +144,9 @@ class InvoiceManager
         $invoice->setTerms($object->getTerms());
         $invoice->setBalance($invoice->getTotal());
         $invoice->setCompany($object->getCompany());
-        $invoice->setInvoiceId($this->billingIdGenerator->generate($invoice, ['field' => 'invoiceId']));
+        if ($numbered) {
+            $invoice->setInvoiceId($this->billingIdGenerator->generate($invoice, ['field' => 'invoiceId']));
+        }
 
         foreach ($object->getUsers() as $user) {
             $invoice->addUser($user);

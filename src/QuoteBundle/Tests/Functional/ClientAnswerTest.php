@@ -61,8 +61,9 @@ final class ClientAnswerTest extends WebTestCase
         self::assertResponseRedirects('/view/quote/' . $quote->getUuid());
         $quote = $this->reload($quote);
         self::assertSame(QuoteStatus::Accepted, $quote->getStatus());
-        // Accepting does what it does from inside the app.
-        self::assertNotNull($quote->getInvoice());
+        // Accepting does what it does from inside the app, which no longer
+        // includes making the invoice.
+        self::assertNull($quote->getInvoice());
 
         $answers = $this->history($quote, DocumentActivityType::ClientAccepted);
         self::assertCount(1, $answers);
