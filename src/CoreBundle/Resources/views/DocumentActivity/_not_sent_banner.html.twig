@@ -1,0 +1,36 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # Over a finalised document that no email has carried yet: finalising does
+ # not send, and two quotes sat on preprod that their clients never received
+ # (08/10/2026).
+ #
+ # "No sending recorded" rather than "never sent": the history starts with
+ # this version, and what left before it is not in it.
+ #
+ # Expects `document`, `sendRoute` (the route that sends it, taking `id`) and
+ # `message` (a translation key).
+ #}
+{% set sent = document_activity(document)|filter(entry => entry.type.value == 'sent') %}
+
+{% if sent is empty %}
+    <div class="alert alert-warning d-flex align-items-center justify-content-between gap-3 flex-wrap no-print" role="status" data-test="not-sent-banner">
+        <div class="d-flex align-items-center gap-2">
+            {{ ux_icon('tabler:mail-exclamation', {width: 20, height: 20}) }}
+            <span>{{ message|trans }}</span>
+        </div>
+        {% if not is_email_verification_gated() and route_allowed(sendRoute) %}
+            <a href="{{ path(sendRoute, {'id': document.id}) }}" class="btn btn-sm btn-primary">
+                {{ ux_icon('tabler:send', {width: 16, height: 16}) }}
+                {{ 'document_activity.not_sent.send'|trans }}
+            </a>
+        {% endif %}
+    </div>
+{% endif %}

@@ -63,7 +63,7 @@ final class DocumentActivityCardTest extends WebTestCase
         self::assertResponseIsSuccessful();
         $card = $crawler->filter('[data-test="document-activity"]');
         self::assertCount(1, $card);
-        self::assertStringContainsString('Never sent to the client by email', $card->text());
+        self::assertStringContainsString('No sending to the client by email recorded', $card->text());
         self::assertStringContainsString('Not viewed by the client yet', $card->text());
     }
 
@@ -83,7 +83,7 @@ final class DocumentActivityCardTest extends WebTestCase
         self::assertStringContainsString('Sent to the client on', $card);
         self::assertStringContainsString('Viewed by the client on', $card);
         self::assertStringContainsString('to client@example.org', $card);
-        self::assertStringContainsString('Published (not sent)', $card);
+        self::assertStringContainsString('Finalised (not sent)', $card);
 
         // A copy of the page to look at, when asked for.
         if (false !== ($path = getenv('DOCUMENT_ACTIVITY_PAGE'))) {
@@ -91,7 +91,40 @@ final class DocumentActivityCardTest extends WebTestCase
         }
     }
 
-    private function createQuote(): Quote
+    /**
+     * Finalised and never sent: the page says so above the quote, with the
+     * button that sends it. Once an email has left, it says nothing.
+     */
+    public function testAFinalisedQuoteNobodySentIsFlagged(): void
+    {
+        $quote = $this->createQuote();
+
+        $crawler = $this->client->request('GET', '/quotes/view/' . $quote->getId());
+
+        $banner = $crawler->filter('[data-test="not-sent-banner"]');
+        self::assertCount(1, $banner);
+        self::assertStringContainsString('no sending to the client is recorded', $banner->text());
+        self::assertCount(1, $banner->filter('a[href="/quotes/action/send/' . $quote->getId() . '"]'));
+
+        $recorder = self::getContainer()->get(DocumentActivityRecorder::class);
+        self::assertInstanceOf(DocumentActivityRecorder::class, $recorder);
+        $recorder->record($quote, $quote->getCompany(), DocumentActivityType::Sent, recipients: ['client@example.org']);
+
+        $crawler = $this->client->request('GET', '/quotes/view/' . $quote->getId());
+
+        self::assertCount(0, $crawler->filter('[data-test="not-sent-banner"]'));
+    }
+
+    public function testADraftIsNotFlagged(): void
+    {
+        $quote = $this->createQuote(QuoteStatus::Draft);
+
+        $crawler = $this->client->request('GET', '/quotes/view/' . $quote->getId());
+
+        self::assertCount(0, $crawler->filter('[data-test="not-sent-banner"]'));
+    }
+
+    private function createQuote(QuoteStatus $status = QuoteStatus::Pending): Quote
     {
         $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR', 'name' => 'Boulangerie Martin SARL']);
         $contact = ContactFactory::createOne(['client' => $client, 'company' => $this->company, 'email' => 'client@example.org']);
@@ -99,7 +132,7 @@ final class DocumentActivityCardTest extends WebTestCase
         return QuoteFactory::createOne([
             'company' => $this->company,
             'client' => $client,
-            'status' => QuoteStatus::Pending,
+            'status' => $status,
             'archived' => null,
             'users' => [$contact],
         ]);
