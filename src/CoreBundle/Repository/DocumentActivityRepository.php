@@ -54,12 +54,15 @@ class DocumentActivityRepository extends EntityRepository
 
     /**
      * Whether the same thing already happened to the document since then: a
-     * client who reloads the page has not read the quote twice.
+     * client who reloads the page has not read the quote twice. A visit by a
+     * mail filter and one by a person are not the same thing, though: the
+     * filter opening the link on arrival must not hide the client opening it
+     * a minute later.
      */
-    public function hasSince(RecordKind $kind, Ulid $recordId, DocumentActivityType $type, DateTimeImmutable $since): bool
+    public function hasSince(RecordKind $kind, Ulid $recordId, DocumentActivityType $type, DateTimeImmutable $since, bool $automated): bool
     {
-        return null !== $this->createQueryBuilder('a')
-            ->select('a.id')
+        /** @var list<DocumentActivity> $recent */
+        $recent = $this->createQueryBuilder('a')
             ->andWhere('a.kind = :kind')
             ->andWhere('a.recordId = :record')
             ->andWhere('a.type = :type')
@@ -68,8 +71,80 @@ class DocumentActivityRepository extends EntityRepository
             ->setParameter('record', $recordId, UlidType::NAME)
             ->setParameter('type', $type->value)
             ->setParameter('since', $since)
-            ->setMaxResults(1)
             ->getQuery()
-            ->getOneOrNullResult();
+            ->getResult();
+
+        foreach ($recent as $entry) {
+            if ($entry->isLikelyAutomated() === $automated) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * What happened between a document and its client — sent, failed, opened,
+     * answered — most recent first: what the "Activity" column of a list sums
+     * up in one badge. Status steps are left out; the list has its own column
+     * for those.
+     *
+     * @return list<DocumentActivity>
+     */
+    public function clientSideFor(RecordKind $kind, Ulid $recordId, int $limit = 30): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.kind = :kind')
+            ->andWhere('a.recordId = :record')
+            ->andWhere('a.type IN (:types)')
+            ->setParameter('kind', $kind->value)
+            ->setParameter('record', $recordId, UlidType::NAME)
+            ->setParameter('types', self::clientSideTypes())
+            ->orderBy('a.occurredAt', 'DESC')
+            ->addOrderBy('a.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * The company's latest client-side events, every document together: the
+     * dashboard's "Activity" card. The company filter keeps it to the company.
+     *
+     * @return list<DocumentActivity>
+     */
+    public function recentClientSide(int $limit): array
+    {
+        return $this->createQueryBuilder('a')
+            ->andWhere('a.type IN (:types)')
+            ->setParameter('types', self::clientSideTypes())
+            ->orderBy('a.occurredAt', 'DESC')
+            ->addOrderBy('a.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countFailedSince(DateTimeImmutable $since): int
+    {
+        return (int) $this->createQueryBuilder('a')
+            ->select('COUNT(a.id)')
+            ->andWhere('a.type = :type')
+            ->andWhere('a.occurredAt >= :since')
+            ->setParameter('type', DocumentActivityType::SendFailed->value)
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private static function clientSideTypes(): array
+    {
+        return array_map(
+            static fn (DocumentActivityType $type): string => $type->value,
+            array_values(array_filter(DocumentActivityType::cases(), static fn (DocumentActivityType $type): bool => DocumentActivityType::Status !== $type)),
+        );
     }
 }

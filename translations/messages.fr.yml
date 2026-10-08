@@ -1240,6 +1240,14 @@ dashboard:
         body: "Nous n'avons pas pu charger ces données, donc les chiffres affichés ici sont incomplets. Vos factures et paiements sont en sécurité. Réessayez dans un instant ; si le problème persiste, vos journaux serveur contiendront les détails."
         retry: 'Réessayer'
         title: "Le chargement a échoué"
+    follow_up:
+        credit_note: 'Avoir %id%'
+        empty: 'Rien pour le moment : envoyez un devis ou une facture à un client.'
+        failed_count: '{1} 1 envoi en échec (30 j)|]1,Inf] %count% envois en échec (30 j)'
+        invoice: 'Facture %id%'
+        quote: 'Devis %id%'
+        subtitle: 'Envois, consultations et réponses de vos clients'
+        title: 'Suivi des documents'
     hero:
         credit_notes: 'Avoirs émis'
         credit_notes_refunded: 'Remboursés :'
@@ -1320,6 +1328,7 @@ dashboard:
         accounting_declarations: 'Déclarations en attente'
         accounting_turnover: "Chiffre d'affaires et seuils"
         attention_required: 'Points à traiter'
+        document_follow_up: 'Suivi des documents'
         einvoicing_incoming: 'Réception électronique'
         einvoicing_outgoing: 'Envois électroniques'
         invoice_distribution: 'Statut des factures'
@@ -1435,6 +1444,13 @@ datagrid:
 delete_client: 'Supprimer le client'
 document_activity:
     automated: 'Probablement une vérification automatique du lien (filtre de messagerie)'
+    badge:
+        accepted: 'Accepté le %date%'
+        declined: 'Refusé le %date%'
+        failed: 'Échec d''envoi'
+        never_sent: 'Jamais envoyé'
+        seen: 'Vu le %date%'
+        sent: 'Envoyé le %date%'
     by: 'par %name%'
     by_client: 'Par le client, depuis son lien'
     detail:
@@ -3183,6 +3199,7 @@ quote:
             delete: Supprimer
             edit: Modifier
             view: Voir
+        activity: 'Suivi'
         client: "Client"
         created: "Créé le"
         discount: "Remise"

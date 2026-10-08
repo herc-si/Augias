@@ -186,10 +186,19 @@ class DocumentActivity
             return false;
         }
 
-        if (null === $this->userAgent || '' === $this->userAgent) {
+        return self::looksAutomated($this->userAgent);
+    }
+
+    /**
+     * Whether a visit with this browser name was most likely a program: none
+     * named, or one that says it is a robot, a link checker or a preview.
+     */
+    public static function looksAutomated(?string $userAgent): bool
+    {
+        if (null === $userAgent || '' === $userAgent) {
             return true;
         }
 
-        return 1 === preg_match('/bot|crawl|spider|preview|scan|check|fetch|python|curl|wget|headless|go-http|java\/|okhttp|libwww|safelinks|proofpoint|mimecast|barracuda/i', $this->userAgent);
+        return 1 === preg_match('/bot|crawl|spider|preview|scan|check|fetch|python|curl|wget|headless|go-http|java\/|okhttp|libwww|safelinks|proofpoint|mimecast|barracuda/i', $userAgent);
     }
 }

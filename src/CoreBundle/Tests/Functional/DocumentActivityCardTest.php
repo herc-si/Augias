@@ -153,6 +153,20 @@ final class DocumentActivityCardTest extends WebTestCase
         self::assertSame('%PDF-accepted', file_get_contents($response->getFile()->getPathname()));
     }
 
+    /**
+     * The quote list carries an "Activity" column with one badge per quote,
+     * rendered as HTML rather than escaped.
+     */
+    public function testTheQuoteListShowsWhereEachQuoteStands(): void
+    {
+        $this->createQuote();
+
+        $crawler = $this->client->request('GET', '/quotes/');
+
+        self::assertResponseIsSuccessful();
+        self::assertCount(1, $crawler->filter('[data-activity-state="never_sent"]'));
+    }
+
     private function createQuote(QuoteStatus $status = QuoteStatus::Pending): Quote
     {
         $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR', 'name' => 'Boulangerie Martin SARL']);
