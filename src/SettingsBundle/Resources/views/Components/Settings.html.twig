@@ -459,6 +459,39 @@
                     </div>
                 {% endif %}
 
+                {# Default terms: one text per client type for invoices and quotes, one for credit notes. #}
+                {% if form.default_terms is defined %}
+                    <div class="mb-4 pb-4 border-bottom">
+                        <h3 class="d-flex align-items-center gap-2 mb-3" id="default-terms-title">
+                            {{ ux_icon('tabler:file-description', {width: 22, height: 22, class: 'text-primary', 'aria-hidden': 'true'}) }}
+                            {{ 'settings.page.default_terms.title'|trans }}
+                        </h3>
+                        {% if form.default_terms.business is not defined %}
+                            {# A credit note's: one text, whoever the client. #}
+                            {{ form_row(form.default_terms, {
+                                label: 'settings.page.default_terms.credit_note_label'|trans,
+                                help: 'settings.page.default_terms.credit_note_help'|trans
+                            }) }}
+                        {% else %}
+                        <p class="text-muted small mb-3">
+                            {{ 'settings.page.default_terms.subtitle'|trans }}
+                        </p>
+                        <div class="row g-3">
+                            {% for type in ['business', 'individual'] %}
+                                {% if attribute(form.default_terms, type) is defined %}
+                                    <div class="col-lg-6">
+                                        {{ form_row(attribute(form.default_terms, type), {
+                                            label: ('settings.page.default_terms.' ~ type)|trans,
+                                            help: ('settings.page.default_terms.' ~ type ~ '_help')|trans
+                                        }) }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
                 {# Payment Reminders Section #}
                 {% if section == 'invoice' and form.reminder is defined %}
                     <div class="mt-4">

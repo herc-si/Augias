@@ -1,5 +1,5 @@
 <html><body>
-<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateQuote" data-live-url-value="/_components/CreateQuote" data-live-props-value='{"isEdit":false,"quoteEntity":null,"previousClientId":null,"catalogProductId":null,"formName":"quote","quote":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"0"},{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"1"}],"quoteId":"1","terms":"","notes":"","total":0,"baseTotal":0,"tax":0,"customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateQuote" data-live-url-value="/_components/CreateQuote" data-live-props-value='{"isEdit":false,"quoteEntity":null,"previousClientId":null,"catalogProductId":null,"formName":"quote","quote":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"0"},{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"1"}],"quoteId":"1","terms":"Quote valid for 30 days from its date.\nPayment due within 30 days of the invoice date.\nNo discount for early payment.\nLate payment penalties at three times the legal interest rate, and fixed compensation for recovery costs of \u20ac40 (French Commercial Code, art. L441-10).","notes":"","total":0,"baseTotal":0,"tax":0,"customFields":[],"__dynamic_error":"","client":"","_token":""},"isValidated":false,"validatedFields":[],"appliedTerms":"Quote valid for 30 days from its date.\nPayment due within 30 days of the invoice date.\nNo discount for early payment.\nLate payment penalties at three times the legal interest rate, and fixed compensation for recovery costs of \u20ac40 (French Commercial Code, art. L441-10).","@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
     
     <form name="quote" method="post" data-model="on(change)|*">
 
@@ -229,7 +229,7 @@
         </div>
 
                 
-                <details class="billing-terms-section">
+                <details class="billing-terms-section" open>
             <summary class="terms-summary" aria-label="Toggle terms and notes section">
                 <span class="terms-summary-icon">
                     <svg viewbox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 6l6 6l-6 6"></path></svg>
@@ -242,7 +242,10 @@
             <div class="terms-content">
                 <div class="terms-grid">
                     <div class="mb-3">    
-            <label class="control-label form-label" for="quote_terms">Terms</label><input type="text" id="quote_terms" name="quote[terms]" class="form-control">
+            <label class="control-label form-label" for="quote_terms">Terms</label><textarea id="quote_terms" name="quote[terms]" rows="4" class="form-control">Quote valid for 30 days from its date.
+Payment due within 30 days of the invoice date.
+No discount for early payment.
+Late payment penalties at three times the legal interest rate, and fixed compensation for recovery costs of &acirc;&#130;&not;40 (French Commercial Code, art. L441-10).</textarea>
 </div>
                     <div class="mb-3">                
             <label class="control-label form-label" for="quote_notes">Notes</label><input type="text" id="quote_notes" name="quote[notes]" aria-describedby="quote_notes_help" class="form-control"><div class="form-text text-muted mb-0" id="quote_notes_help">Notes will not be visible to the client</div>

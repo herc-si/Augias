@@ -58,7 +58,7 @@ Click **Terms & Notes** at the bottom of the form to expand this optional sectio
 
 ![The Terms & Notes section expanded, showing Terms and Notes text areas](/img/invoices/create-invoice-terms-notes.png)
 
-- **Terms** — payment terms or conditions. This text appears on the invoice and is visible to the client.
+- **Terms** — payment terms or conditions. This text appears on the invoice and is visible to the client. A new invoice opens with your [default terms](./default-terms.md), worded for a business client or a private individual depending on the client you choose.
 - **Notes** — internal notes for your own records. Notes are **not** visible to the client and do not appear on the invoice or PDF.
 
 ## Saving the invoice

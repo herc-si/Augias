@@ -49,7 +49,7 @@ final class DefaultDataTest extends TestCase
         $entityManager
             ->expects('persist')
             ->with(M::type(Setting::class))
-            ->times(32);
+            ->times(37);
 
         $entityManager->expects('persist')
             ->with(M::type(CustomField::class))
@@ -189,8 +189,8 @@ final class DefaultDataTest extends TestCase
             $registry,
             [
                 new SystemConfigProvider(),
-                new InvoiceConfigProvider(),
-                new QuoteConfigProvider(),
+                new InvoiceConfigProvider($this->translator()),
+                new QuoteConfigProvider($this->translator()),
                 new MailerConfigProvider(),
             ],
             $this->translator(),

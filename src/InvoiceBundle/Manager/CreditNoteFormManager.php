@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Manager;
 
+use Augias\CoreBundle\Billing\DefaultTerms;
+use Augias\CoreBundle\Billing\TermsDocument;
 use Augias\InvoiceBundle\DTO\CreditNoteFormDTO;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
@@ -30,6 +32,24 @@ use InvalidArgumentException;
  */
 final readonly class CreditNoteFormManager
 {
+    public function __construct(
+        private ?DefaultTerms $defaultTerms = null,
+    ) {
+    }
+
+    /**
+     * A credit note started from nothing: dated today, with the default terms
+     * of credit notes.
+     */
+    public function blank(): CreditNoteFormDTO
+    {
+        $dto = new CreditNoteFormDTO();
+        $dto->creditNoteDate = CarbonImmutable::now();
+        $dto->terms = $this->defaultTerms?->for(TermsDocument::CreditNote, true);
+
+        return $dto;
+    }
+
     public function createFromDTO(CreditNoteFormDTO $dto): CreditNote
     {
         $client = $dto->client;
@@ -98,7 +118,9 @@ final readonly class CreditNoteFormManager
         $dto->creditedInvoice = $invoice;
         $dto->reason = CreditReason::Cancellation;
         $dto->creditNoteDate = CarbonImmutable::now();
-        $dto->terms = $invoice->getTerms();
+        // Not the invoice's: its payment term and late payment penalties mean
+        // nothing on a document that gives money back.
+        $dto->terms = $this->defaultTerms?->for(TermsDocument::CreditNote, true);
         $dto->discount = $invoice->getDiscount();
 
         foreach ($invoice->getLines() as $line) {

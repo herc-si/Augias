@@ -35,6 +35,7 @@ use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Uid\Ulid;
@@ -156,7 +157,8 @@ class CreditNoteType extends AbstractType
             'label' => 'credit_note.field.date',
         ]);
 
-        $builder->add('terms', null, ['label' => 'form.field.terms']);
+        // Several lines: payment term, penalties, recovery fee… each kept on its own.
+        $builder->add('terms', TextareaType::class, ['label' => 'form.field.terms', 'required' => false, 'attr' => ['rows' => 4]]);
         $builder->add('notes', null, ['help' => 'billing.notes_help']);
         $builder->add('total', HiddenMoneyType::class, ['currency' => $options['currency']]);
         $builder->add('baseTotal', HiddenMoneyType::class, ['currency' => $options['currency']]);
