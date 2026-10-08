@@ -2551,6 +2551,9 @@ name: Name
 no_invoices: 'This client does not have any invoices yet.'
 no_quotes: 'This client does not have any quotes yet.'
 notification:
+    telegram:
+        chat_id_help: '<strong>To find your Chat ID:</strong><br>1. In Telegram, open your bot and tap <em>Start</em>.<br>2. In your browser, open <code>https://api.telegram.org/bot<i>TOKEN</i>/getUpdates</code>, replacing <i>TOKEN</i> with the token above.<br>3. In the text shown, find <code>"chat":{"id":</code>: the number after it is your Chat ID. For a group, add the bot to it and post a message: its id starts with a minus sign.'
+        token_help: 'Given by @BotFather when the bot is created, in the form 123456789:AAH…'
     flash:
         added: 'Integration added'
         deleted: 'Integration deleted'

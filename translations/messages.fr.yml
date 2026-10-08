@@ -2551,6 +2551,9 @@ name: Nom
 no_invoices: 'Ce client n''a encore aucune facture.'
 no_quotes: 'Ce client n''a encore aucun devis.'
 notification:
+    telegram:
+        chat_id_help: '<strong>Pour trouver votre Chat ID :</strong><br>1. Dans Telegram, ouvrez votre bot et appuyez sur <em>Démarrer</em>.<br>2. Dans votre navigateur, ouvrez <code>https://api.telegram.org/bot<i>JETON</i>/getUpdates</code> en remplaçant <i>JETON</i> par le jeton ci-dessus.<br>3. Dans le texte affiché, repérez <code>"chat":{"id":</code> : le nombre qui suit est votre Chat ID. Pour un groupe, ajoutez-y le bot et écrivez un message : son identifiant commence par un signe moins.'
+        token_help: 'Donné par @BotFather à la création du bot, de la forme 123456789:AAH…'
     flash:
         added: 'Intégration ajoutée'
         deleted: 'Intégration supprimée'
