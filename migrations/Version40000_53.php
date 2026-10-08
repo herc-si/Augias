@@ -19,6 +19,7 @@ use Augias\CoreBundle\Form\Type\IbanType;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
+use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Uid\Ulid;
 use function json_encode;
@@ -80,12 +81,14 @@ final class Version40000_53 extends AbstractMigration
                     continue;
                 }
 
+                // Through UlidType: binary on MySQL and SQLite, a uuid on PostgreSQL,
+                // which refuses the binary form.
                 $this->connection->insert('app_config', $fields + [
-                    'id' => new Ulid()->toBinary(),
+                    'id' => new Ulid(),
                     'company_id' => $company,
                     'setting_value' => null,
                     'default_value' => null,
-                ]);
+                ], ['id' => UlidType::NAME]);
             }
         }
     }
