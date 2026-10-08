@@ -40,8 +40,8 @@ use function trim;
  *
  * What is kept as their word goes in the quote's history: the name, the time,
  * the browser and the address the answer came from. Accepting then does what
- * accepting from inside the app does: the quote becomes an invoice, and the
- * company is told.
+ * accepting from inside the app does: the company is told, and the quote waits
+ * for "Create the invoice".
  */
 final readonly class ClientAnswer
 {

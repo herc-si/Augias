@@ -33,6 +33,7 @@ use Augias\InvoiceBundle\Manager\InvoiceFormManager;
 use Augias\InvoiceBundle\Model\Graph;
 use Augias\MoneyBundle\Calculator;
 use Augias\MoneyBundle\Currency\CurrencyScale;
+use Augias\QuoteBundle\Entity\Quote;
 use Augias\SaasBundle\Feature\Feature;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\Tax;
@@ -77,6 +78,13 @@ final class CreateInvoice extends AbstractController
 
     #[LiveProp(writable: false, fieldName: 'invoiceEntity')]
     public ?Invoice $invoice = null;
+
+    /**
+     * The accepted quote this invoice is made from, if any: tied to it when
+     * the form is saved, not before.
+     */
+    #[LiveProp(writable: false)]
+    public ?Quote $fromQuote = null;
 
     #[LiveProp(writable: true)]
     public ?string $previousClientId = null;
@@ -409,6 +417,12 @@ final class CreateInvoice extends AbstractController
         }
 
         $invoice = $this->formManager->createInvoiceFromDTO($dto);
+
+        // One invoice per quote: a second form opened from the same quote
+        // saves an invoice of its own, not tied to it.
+        if ($this->fromQuote instanceof Quote && ! $this->fromQuote->getInvoice() instanceof Invoice) {
+            $invoice->setQuote($this->fromQuote);
+        }
 
         // Apply state transitions
         if (! $invoice->getId() instanceof Ulid) {

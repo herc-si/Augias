@@ -15,8 +15,6 @@ namespace Augias\QuoteBundle\Tests\Listener;
 
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
-use Augias\InvoiceBundle\Entity\Invoice;
-use Augias\InvoiceBundle\Manager\InvoiceManager;
 use Augias\NotificationBundle\Notification\NotificationManager;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\QuoteBundle\Enum\QuoteStatus;
@@ -39,38 +37,13 @@ final class WorkFlowSubscriberTest extends KernelTestCase
     use DoctrineTestTrait;
     use MockeryPHPUnitIntegration;
 
-    public function testOnQuoteAccepted(): void
+    /**
+     * Accepting a quote no longer makes the invoice: it is created when asked
+     * for, and numbered then (08/10/2026).
+     */
+    public function testAcceptingDoesNotCreateAnInvoice(): void
     {
-        $quote = new Quote();
-        $invoice = new Invoice();
-
-        $invoiceManager = M::mock(InvoiceManager::class);
-
-        $invoiceManager->shouldReceive('createFromQuote')
-            ->with($quote)
-            ->andReturn($invoice);
-
-        $stateMachine = M::mock(StateMachine::class);
-
-        $stateMachine->shouldReceive('apply')
-            ->with($invoice, 'new');
-
-        $stateMachine->shouldReceive('apply')
-            ->with($invoice, 'accept');
-
-        $notification = M::mock(NotificationManager::class);
-        $notification->shouldReceive('sendNotification')
-            ->zeroOrMoreTimes();
-
-        $subscriber = new WorkFlowSubscriber(
-            $this->registry,
-            $invoiceManager,
-            $stateMachine,
-            $notification,
-            new QuoteMailer($stateMachine, M::mock(MailerInterface::class), $notification)
-        );
-
-        $subscriber->onQuoteAccepted(new Event($quote, new Marking(['pending' => 1]), new Transition('archive', 'pending', 'archived'), M::mock(WorkflowInterface::class)));
+        self::assertArrayNotHasKey('workflow.quote.entered.accepted', WorkFlowSubscriber::getSubscribedEvents());
     }
 
     public function testOnWorkflowTransitionApplied(): void
@@ -79,7 +52,6 @@ final class WorkFlowSubscriberTest extends KernelTestCase
             ->setClient(ClientFactory::createOne())
             ->setStatus(QuoteStatus::Pending);
 
-        $invoiceManager = M::mock(InvoiceManager::class);
         $stateMachine = M::mock(StateMachine::class);
 
         $notification = M::mock(NotificationManager::class);
@@ -88,8 +60,6 @@ final class WorkFlowSubscriberTest extends KernelTestCase
 
         $subscriber = new WorkFlowSubscriber(
             $this->registry,
-            $invoiceManager,
-            $stateMachine,
             $notification,
             new QuoteMailer($stateMachine, M::mock(MailerInterface::class), $notification)
         );

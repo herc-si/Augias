@@ -44,9 +44,9 @@ final readonly class Transition
 
         $route = $this->router->generate('_quotes_view', ['id' => $quote->getId()]);
 
-        if ($marking->has(QuoteStatus::Accepted->value)) {
-            $route = $this->router->generate('_invoices_view', ['id' => $quote->getInvoice()->getId()]);
-        } elseif ($marking->has(QuoteStatus::Archived->value)) {
+        // An accepted quote stays on its page, where "Create the invoice" now
+        // is: the invoice is no longer made, and numbered, on acceptance.
+        if ($marking->has(QuoteStatus::Archived->value)) {
             $route = $this->router->generate('_quotes_index');
         }
 

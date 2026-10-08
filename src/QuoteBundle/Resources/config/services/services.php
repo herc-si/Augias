@@ -23,7 +23,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->autoconfigure()
         ->autowire()
         ->private()
-        ->bind('$invoiceStateMachine', service('state_machine.invoice'))
         ->bind('$quoteStateMachine', service('state_machine.quote'))
     ;
 

@@ -3147,6 +3147,9 @@ quote:
         subtitle: 'Build professional quotes for your clients'
         success: 'Quote created successfully'
         title: 'Create Quote'
+    create_invoice:
+        already: 'This quote already has its invoice.'
+        not_accepted: 'Only an accepted quote can be invoiced.'
     created: Created
     custom_fields:
         title: 'Custom fields'
@@ -3285,7 +3288,7 @@ quote:
         title: Summary
     transition:
         action:
-            accept: 'Quote Accepted and invoice created'
+            accept: 'Quote accepted'
             archive: 'Quote has been Archived'
             cancel: 'Quote Cancelled'
             decline: 'Quote Declined'
@@ -3304,6 +3307,7 @@ quote:
             archive: Archive
             cancel: Cancel
             clone: Clone
+            create_invoice: 'Create the invoice'
             decline: Decline
             edit: Edit
             more_actions: 'More Actions'
