@@ -16,6 +16,7 @@ namespace Augias\SaasBundle\Tests\Functional;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\ClientBundle\Test\Factory\ContactFactory;
 use Augias\CoreBundle\Action\ViewBilling;
+use Augias\CoreBundle\Activity\DocumentActivityRecorder;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Contracts\EmailVerificationGateInterface;
 use Augias\CoreBundle\Pdf\Generator;
@@ -87,6 +88,7 @@ final class PublicViewLinkGateTest extends KernelTestCase
             $container->get(Environment::class),
             $gate,
             $container->get(BillingTemplateResolver::class),
+            $container->get(DocumentActivityRecorder::class),
         );
     }
 

@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Action;
 
+use Augias\CoreBundle\Activity\DocumentActivityRecorder;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Contracts\EmailVerificationGateInterface;
+use Augias\CoreBundle\Enum\DocumentActivityType;
 use Augias\CoreBundle\Pdf\Generator;
 use Augias\CoreBundle\Response\PdfResponse;
 use Augias\CoreBundle\Templates\BillingTemplateChannel;
@@ -51,6 +53,7 @@ class ViewBilling
         private readonly Environment $twig,
         private readonly EmailVerificationGateInterface $emailVerificationGate,
         private readonly BillingTemplateResolver $templateResolver,
+        private readonly DocumentActivityRecorder $activity,
     ) {
     }
 
@@ -126,8 +129,19 @@ class ViewBilling
 
         $this->companySelector->switchCompany($entity->getCompany()->getId());
 
+        $asPdf = 'pdf' === $request->getRequestFormat() && $this->pdfGenerator->canPrintPdf();
+
+        // Whoever got this far holds the client's link and is not one of the
+        // company's own users, who were sent to the page inside the app above.
+        $this->activity->record(
+            $entity,
+            $entity->getCompany(),
+            $asPdf ? DocumentActivityType::Downloaded : DocumentActivityType::Viewed,
+            userAgent: $request->headers->get('User-Agent'),
+        );
+
         // Handle PDF format
-        if ('pdf' === $request->getRequestFormat() && $this->pdfGenerator->canPrintPdf()) {
+        if ($asPdf) {
             $html = $this->twig->render($this->templateResolver->resolve($entity, BillingTemplateChannel::Pdf), [$options['entity'] => $entity]);
             $filename = sprintf('%s_%s.pdf', $options['entity'], $entityId);
 

@@ -225,6 +225,11 @@
                     </p>
                 {% endif %}
             </twig:Ui:Card>
+
+            {# Sent, status changes #}
+            <div class="mt-3">
+                {{ include('@AugiasCore/DocumentActivity/_card.html.twig', {document: creditNote}) }}
+            </div>
         </div>
     </div>
 {% endblock content %}

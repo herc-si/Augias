@@ -1,0 +1,93 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # A document's history, in the sidebar of its page: whether it went to the
+ # client, to which addresses, whether the client opened it, and each step of
+ # its life, with the date and time and who did it.
+ #
+ # Expects `document`: a quote, an invoice or a credit note.
+ #}
+{% set history = document_activity(document) %}
+{% set sent = history|filter(entry => entry.type.value == 'sent') %}
+{% set seen = history|filter(entry => entry.type.byClient and not entry.likelyAutomated) %}
+
+<div class="doc-sidebar-card" data-test="document-activity">
+    <div class="doc-sidebar-card-header">
+        <div class="doc-sidebar-card-icon">
+            {{ ux_icon('tabler:history', {width: 18, height: 18}) }}
+        </div>
+        <h3 class="doc-sidebar-card-title">{{ 'document_activity.title'|trans }}</h3>
+    </div>
+    <div class="doc-sidebar-card-body">
+        {# The two questions first, answered in a line each. The list is
+           newest first, so the first match is the latest. #}
+        <div class="d-flex flex-column gap-1 mb-3 small">
+            {% if sent is empty %}
+                <div class="text-warning d-flex align-items-center gap-2">
+                    {{ ux_icon('tabler:mail-exclamation', {width: 14, height: 14}) }}
+                    {{ 'document_activity.summary.never_sent'|trans }}
+                </div>
+            {% else %}
+                <div class="d-flex align-items-center gap-2">
+                    {{ ux_icon('tabler:send', {width: 14, height: 14}) }}
+                    {{ 'document_activity.summary.last_sent'|trans({'%date%': (sent|first).occurredAt|format_datetime('medium', 'short')}) }}
+                </div>
+            {% endif %}
+            {% if seen is empty %}
+                <div class="text-muted d-flex align-items-center gap-2">
+                    {{ ux_icon('tabler:eye-closed', {width: 14, height: 14}) }}
+                    {{ 'document_activity.summary.never_seen'|trans }}
+                </div>
+            {% else %}
+                <div class="text-success d-flex align-items-center gap-2">
+                    {{ ux_icon('tabler:mail-opened', {width: 14, height: 14}) }}
+                    {{ 'document_activity.summary.last_seen'|trans({'%date%': (seen|first).occurredAt|format_datetime('medium', 'short')}) }}
+                </div>
+            {% endif %}
+        </div>
+
+        {% if history is empty %}
+            <p class="text-muted small mb-0">{{ 'document_activity.empty'|trans }}</p>
+        {% else %}
+            <ol class="list-unstyled small border-start ps-3 ms-1 mb-0" aria-label="{{ 'document_activity.title'|trans }}">
+                {% for entry in history %}
+                    <li class="{{ loop.last ? '' : 'mb-2' }}">
+                        <div class="d-flex justify-content-between gap-2">
+                            <span class="d-flex align-items-center gap-1 {{ entry.type.value == 'send_failed' ? 'text-danger' : '' }}">
+                                {{ ux_icon(entry.type.icon, {width: 14, height: 14}) }}
+                                {% if entry.type.value == 'status' %}
+                                    {{ ('document_activity.transition.' ~ entry.detail)|trans }}
+                                {% elseif entry.type.value == 'sent' and entry.detail %}
+                                    {{ ('document_activity.detail.' ~ entry.detail)|trans }}
+                                {% else %}
+                                    {{ entry.type.translationKey|trans }}
+                                {% endif %}
+                            </span>
+                            <time class="text-muted text-nowrap" datetime="{{ entry.occurredAt|date('c') }}">{{ entry.occurredAt|format_datetime('short', 'short') }}</time>
+                        </div>
+                        {% if entry.recipients is not empty %}
+                            <div class="text-muted text-break">{{ 'document_activity.to'|trans({'%recipients%': entry.recipients|join(', ')}) }}</div>
+                        {% endif %}
+                        {% if entry.type.value == 'send_failed' and entry.detail %}
+                            <div class="text-danger text-break">{{ entry.detail }}</div>
+                        {% endif %}
+                        {% if entry.type.byClient %}
+                            <div class="text-muted">
+                                {{ entry.likelyAutomated ? 'document_activity.automated'|trans : 'document_activity.by_client'|trans }}
+                            </div>
+                        {% elseif entry.user %}
+                            <div class="text-muted">{{ 'document_activity.by'|trans({'%name%': entry.user}) }}</div>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ol>
+        {% endif %}
+    </div>
+</div>

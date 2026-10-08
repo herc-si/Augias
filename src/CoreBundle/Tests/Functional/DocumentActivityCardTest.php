@@ -1,0 +1,107 @@
+<?php
+
+declare(strict_types=1);
+
+/*
+ * This file is part of Augias project.
+ *
+ * (c) Pierre du Plessis <open-source@solidworx.co>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the file LICENSE.
+ */
+
+namespace Augias\CoreBundle\Tests\Functional;
+
+use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\ClientBundle\Test\Factory\ContactFactory;
+use Augias\CoreBundle\Activity\DocumentActivityRecorder;
+use Augias\CoreBundle\Enum\DocumentActivityType;
+use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use Augias\QuoteBundle\Entity\Quote;
+use Augias\QuoteBundle\Enum\QuoteStatus;
+use Augias\QuoteBundle\Test\Factory\QuoteFactory;
+use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Test\Factory\UserFactory;
+use PHPUnit\Framework\Attributes\CoversNothing;
+use Symfony\Bundle\FrameworkBundle\KernelBrowser;
+use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use function file_put_contents;
+use function getenv;
+
+/**
+ * The history card on a quote's page answers the two questions it is there
+ * for: was it sent, and did the client open it.
+ */
+#[CoversNothing]
+final class DocumentActivityCardTest extends WebTestCase
+{
+    use EnsureApplicationInstalled;
+
+    private KernelBrowser $client;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        self::ensureKernelShutdown();
+
+        $this->client = self::createClient();
+        $this->client->disableReboot();
+
+        $user = UserFactory::createOne(['companies' => [$this->company]]);
+        self::assertInstanceOf(User::class, $user);
+        $this->client->loginUser($user);
+    }
+
+    public function testANeverSentQuoteSaysSo(): void
+    {
+        $quote = $this->createQuote();
+
+        $crawler = $this->client->request('GET', '/quotes/view/' . $quote->getId());
+
+        self::assertResponseIsSuccessful();
+        $card = $crawler->filter('[data-test="document-activity"]');
+        self::assertCount(1, $card);
+        self::assertStringContainsString('Never sent to the client by email', $card->text());
+        self::assertStringContainsString('Not viewed by the client yet', $card->text());
+    }
+
+    public function testASentAndOpenedQuoteShowsWhenAndToWhom(): void
+    {
+        $quote = $this->createQuote();
+        $recorder = self::getContainer()->get(DocumentActivityRecorder::class);
+        self::assertInstanceOf(DocumentActivityRecorder::class, $recorder);
+        $recorder->record($quote, $quote->getCompany(), DocumentActivityType::Status, 'publish');
+        $recorder->record($quote, $quote->getCompany(), DocumentActivityType::Sent, recipients: ['client@example.org']);
+        $recorder->record($quote, $quote->getCompany(), DocumentActivityType::Viewed, userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148');
+
+        $crawler = $this->client->request('GET', '/quotes/view/' . $quote->getId());
+
+        self::assertResponseIsSuccessful();
+        $card = $crawler->filter('[data-test="document-activity"]')->text();
+        self::assertStringContainsString('Sent to the client on', $card);
+        self::assertStringContainsString('Viewed by the client on', $card);
+        self::assertStringContainsString('to client@example.org', $card);
+        self::assertStringContainsString('Published (not sent)', $card);
+
+        // A copy of the page to look at, when asked for.
+        if (false !== ($path = getenv('DOCUMENT_ACTIVITY_PAGE'))) {
+            file_put_contents($path, (string) $this->client->getResponse()->getContent());
+        }
+    }
+
+    private function createQuote(): Quote
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR', 'name' => 'Boulangerie Martin SARL']);
+        $contact = ContactFactory::createOne(['client' => $client, 'company' => $this->company, 'email' => 'client@example.org']);
+
+        return QuoteFactory::createOne([
+            'company' => $this->company,
+            'client' => $client,
+            'status' => QuoteStatus::Pending,
+            'archived' => null,
+            'users' => [$contact],
+        ]);
+    }
+}

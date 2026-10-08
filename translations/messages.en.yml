@@ -1429,6 +1429,39 @@ datagrid:
     select_row: 'Select row'
     selected: selected
 delete_client: 'Delete Client'
+document_activity:
+    automated: 'Probably an automatic link check (mail filter)'
+    by: 'by %name%'
+    by_client: 'By the client, from their link'
+    detail:
+        reminder: 'Reminder sent by email'
+    empty: 'Nothing yet.'
+    summary:
+        last_seen: 'Viewed by the client on %date%'
+        last_sent: 'Sent to the client on %date%'
+        never_seen: 'Not viewed by the client yet'
+        never_sent: 'Never sent to the client by email'
+    title: Activity
+    to: 'to %recipients%'
+    transition:
+        accept: Accepted
+        activate: Activated
+        archive: Archived
+        cancel: Cancelled
+        decline: Declined
+        issue: Issued
+        new: Created
+        overdue: 'Became overdue'
+        pay: Paid
+        publish: 'Published (not sent)'
+        reopen: Reopened
+        settle: Settled
+    type:
+        downloaded: 'PDF downloaded'
+        send_failed: 'Email could not be sent'
+        sent: 'Sent by email'
+        status: 'Status change'
+        viewed: Viewed
 document_line:
     add_note: 'Add a note'
     client_first: 'The lines are priced in the client''s currency and taxes: choose it above to add some.'

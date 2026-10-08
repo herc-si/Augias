@@ -529,6 +529,9 @@
                 </div>
             </div>
 
+            {# Sent, opened by the client, status changes #}
+            {{ include('@AugiasCore/DocumentActivity/_card.html.twig', {document: invoice}) }}
+
             {# Payments Card (if any) #}
             {% if payments|length > 0 %}
                 <div class="doc-sidebar-card">

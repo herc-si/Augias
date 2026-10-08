@@ -458,6 +458,9 @@
                 </div>
             </div>
 
+            {# Sent, opened by the client, status changes #}
+            {{ include('@AugiasCore/DocumentActivity/_card.html.twig', {document: quote}) }}
+
             {# Related Invoice Card (if accepted) #}
             {% if quote.invoice is not null %}
                 <div class="doc-sidebar-card doc-sidebar-card-success">
