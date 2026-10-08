@@ -15,7 +15,10 @@
     {% if recurring %}
         <twig:CreateRecurringInvoice :form="form" :invoice="invoice" :isEdit="isEdit" />
     {% else %}
-        <twig:CreateInvoice :form="form" :dto="dto" :isEdit="isEdit" :invoice="invoice|default(null)" :fromQuote="fromQuote|default(null)" />
+        {# "??", not "|default": a draft has no number yet, its string is empty, and
+           Twig takes an object whose string is empty for an empty value — the
+           edit form lost its invoice and every save failed (08/10/2026). #}
+        <twig:CreateInvoice :form="form" :dto="dto" :isEdit="isEdit" :invoice="invoice ?? null" :fromQuote="fromQuote ?? null" />
     {% endif %}
 {% endblock content %}
 
