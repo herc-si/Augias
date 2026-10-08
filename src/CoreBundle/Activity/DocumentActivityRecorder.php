@@ -72,7 +72,7 @@ final readonly class DocumentActivityRecorder
 
         $now = $this->clock->now();
 
-        if ($type->canBeAutomated() && $this->entityManager->getRepository(DocumentActivity::class)->hasSince($document->journalKind(), $recordId, $type, $now->modify(self::REPEAT_WINDOW))) {
+        if ($type->canBeAutomated() && $this->entityManager->getRepository(DocumentActivity::class)->hasSince($document->journalKind(), $recordId, $type, $now->modify(self::REPEAT_WINDOW), DocumentActivity::looksAutomated($userAgent))) {
             return;
         }
 

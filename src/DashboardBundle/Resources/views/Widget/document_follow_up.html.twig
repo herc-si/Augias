@@ -1,0 +1,75 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # The latest of what happened between the documents and their clients:
+ # sent, failed, opened, accepted, declined. Each line leads to its document,
+ # where the whole history is.
+ #}
+<twig:Ui:Card>
+    <twig:block name="header">
+        <div class="d-flex justify-content-between align-items-center w-100">
+            <div>
+                <h3 class="card-title mb-0">{{ 'dashboard.follow_up.title'|trans }}</h3>
+                <small class="text-muted">{{ 'dashboard.follow_up.subtitle'|trans }}</small>
+            </div>
+            {% if failedRecently > 0 %}
+                <span class="attention-badge attention-badge--danger">
+                    {{ 'dashboard.follow_up.failed_count'|trans({'%count%': failedRecently}) }}
+                </span>
+            {% endif %}
+        </div>
+    </twig:block>
+
+    {% if lines is empty %}
+        <div class="attention-empty" data-test="follow-up-empty">
+            <div class="attention-empty-icon">
+                {{ ux_icon('tabler:eye', {width: 32, height: 32}) }}
+            </div>
+            <p class="attention-empty-text">{{ 'dashboard.follow_up.empty'|trans }}</p>
+        </div>
+    {% else %}
+        <div class="attention-items" data-test="follow-up-lines">
+            {% for line in lines %}
+                {% set entry = line.entry %}
+                {% set document = line.document %}
+                {% set type = entry.type.value %}
+                <a href="{{ path(line.kind.viewRoute, {id: document.id}) }}"
+                   class="attention-item{{ type in ['send_failed', 'client_declined'] ? ' attention-item--danger' }}">
+                    <span class="attention-item-main">
+                        <span class="attention-item-id d-inline-flex align-items-center gap-1">
+                            {{ ux_icon(entry.type.icon, {width: 14, height: 14}) }}
+                            {% if line.kind.value == 'quote' %}
+                                {{ 'dashboard.follow_up.quote'|trans({'%id%': document.quoteId}) }}
+                            {% elseif line.kind.value == 'invoice' %}
+                                {{ 'dashboard.follow_up.invoice'|trans({'%id%': invoice_number(document)}) }}
+                            {% else %}
+                                {{ 'dashboard.follow_up.credit_note'|trans({'%id%': credit_note_number(document)}) }}
+                            {% endif %}
+                        </span>
+                        <span class="attention-item-client">
+                            {% if type == 'sent' and entry.detail %}
+                                {{ ('document_activity.detail.' ~ entry.detail)|trans }}
+                            {% else %}
+                                {{ entry.type.translationKey|trans }}
+                            {% endif %}
+                            · {{ document.client.name }}
+                            {% if type == 'client_accepted' and entry.detail %}
+                                · {{ 'document_activity.signed_by'|trans({'%name%': entry.detail}) }}
+                            {% endif %}
+                        </span>
+                    </span>
+                    <span class="attention-item-meta">
+                        <span class="attention-item-date">{{ entry.occurredAt|format_datetime('short', 'short') }}</span>
+                    </span>
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+</twig:Ui:Card>

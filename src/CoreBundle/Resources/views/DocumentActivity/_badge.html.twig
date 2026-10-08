@@ -1,0 +1,29 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # Where a document stands with its client, as the lists show it. See
+ # DocumentActivityExtension::badge() for the order of precedence.
+ #}
+{% set look = {
+    accepted: ['success', 'tabler:circle-check'],
+    declined: ['danger', 'tabler:circle-x'],
+    seen: ['info', 'tabler:eye'],
+    sent: ['secondary', 'tabler:send'],
+    failed: ['danger', 'tabler:alert-triangle'],
+    never_sent: ['warning', 'tabler:mail-exclamation'],
+} %}
+{%- if state -%}
+    <span class="badge bg-{{ look[state][0] }}-lt d-inline-flex align-items-center gap-1 text-nowrap" data-activity-state="{{ state }}">
+        {{- ux_icon(look[state][1], {width: 14, height: 14}) -}}
+        {{- ('document_activity.badge.' ~ state)|trans({'%date%': at ? at|format_date_skeleton('dMMM') : ''}) -}}
+    </span>
+{%- else -%}
+    <span class="text-muted">—</span>
+{%- endif -%}

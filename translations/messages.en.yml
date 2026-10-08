@@ -1240,6 +1240,14 @@ dashboard:
         body: "We couldn't load this data, so the numbers here aren't complete. Your invoices and payments are safe. Try again in a moment; if it keeps failing, your server logs will have the details."
         retry: 'Try again'
         title: "This didn't load"
+    follow_up:
+        credit_note: 'Credit note %id%'
+        empty: 'Nothing yet: send a quote or an invoice to a client.'
+        failed_count: '{1} 1 failed sending (30 d)|]1,Inf] %count% failed sendings (30 d)'
+        invoice: 'Invoice %id%'
+        quote: 'Quote %id%'
+        subtitle: 'What was sent, opened and answered by your clients'
+        title: 'Document follow-up'
     hero:
         credit_notes: 'Credit Issued'
         credit_notes_refunded: 'Refunded:'
@@ -1320,6 +1328,7 @@ dashboard:
         accounting_declarations: 'Declarations Outstanding'
         accounting_turnover: 'Turnover vs Limits'
         attention_required: 'Attention Required'
+        document_follow_up: 'Document follow-up'
         einvoicing_incoming: 'Electronic Inbox'
         einvoicing_outgoing: 'Sent Electronically'
         invoice_distribution: 'Invoice Status'
@@ -1435,6 +1444,13 @@ datagrid:
 delete_client: 'Delete Client'
 document_activity:
     automated: 'Probably an automatic link check (mail filter)'
+    badge:
+        accepted: 'Accepted %date%'
+        declined: 'Declined %date%'
+        failed: 'Sending failed'
+        never_sent: 'Never sent'
+        seen: 'Viewed %date%'
+        sent: 'Sent %date%'
     by: 'by %name%'
     by_client: 'By the client, from their link'
     detail:
@@ -3183,6 +3199,7 @@ quote:
             delete: Delete
             edit: Edit
             view: View
+        activity: 'Activity'
         client: "Client"
         created: "Created"
         discount: "Discount"

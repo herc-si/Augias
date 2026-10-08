@@ -70,6 +70,14 @@ abstract class BaseQuoteGrid extends Grid
                 ->label('quote.grid.status')
                 ->twigFunction('quote_label')
                 ->filter(ChoiceFilter::new('status', array_column(array_map(static fn (QuoteStatus $s) => [$s->value, $s->name], QuoteStatus::cases()), 1, 0))->multiple()),
+            StringColumn::new('id')
+                ->label('quote.grid.activity')
+                // Where the quote stands with its client: sent, opened,
+                // answered — or a finalised quote nobody sent (08/10/2026).
+                ->formatValue(static fn (mixed $value, Quote $quote): Quote => $quote)
+                ->twigFunction('document_activity_badge')
+                ->sortable(false)
+                ->searchable(false),
             MoneyColumn::new('tax')
                 ->label('quote.grid.tax')
                 ->formatValue(fn (BigNumber $value, Quote $quote) => new Money((string) $value, $quote->getClient()?->getCurrency())),
