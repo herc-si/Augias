@@ -1101,7 +1101,20 @@
                 flex: 1 1 auto;
             }
         }
+
+        .billing-form-actions-main {
+            flex-direction: column-reverse;
+            align-items: stretch;
+        }
     }
+}
+
+// The draft (or update) button beside the split "send" button.
+
+.billing-form-actions-main {
+    display: flex;
+    align-items: center;
+    gap: var(--swp-space-2);
 }
 
 // Split button group for save actions

@@ -969,7 +969,7 @@ credit_note:
     action:
         create: 'Créer un avoir'
         issue: 'Émettre'
-        send: 'Envoyer'
+        send: 'Envoyer au client'
     create:
         title: 'Nouvel avoir'
         subtitle: "Corriger une facture déjà remise au client."
@@ -1436,11 +1436,15 @@ document_activity:
     detail:
         reminder: 'Relance envoyée par e-mail'
     empty: 'Rien pour le moment.'
+    not_sent:
+        invoice: "Cette facture est finalisée, mais aucun envoi au client n'est enregistré."
+        quote: "Ce devis est finalisé, mais aucun envoi au client n'est enregistré."
+        send: 'Envoyer au client'
     summary:
         last_seen: 'Consulté par le client le %date%'
         last_sent: 'Envoyé au client le %date%'
         never_seen: 'Pas encore consulté par le client'
-        never_sent: 'Jamais envoyé au client par e-mail'
+        never_sent: "Aucun envoi au client par e-mail n'est enregistré"
     title: Suivi
     to: 'à %recipients%'
     transition:
@@ -1453,7 +1457,7 @@ document_activity:
         new: Créé
         overdue: 'Passé en retard'
         pay: Payé
-        publish: 'Publié (sans envoi)'
+        publish: 'Finalisé (sans envoi)'
         reopen: Rouvert
         settle: Soldé
     type:
@@ -2275,8 +2279,9 @@ invoice:
         cancel: Annuler
         draft: 'Enregistrer comme brouillon'
         enable: 'Enregistrer et activer'
-        publish: Publier
-        send: 'Enregistrer et envoyer'
+        publish: 'Finaliser sans envoyer'
+        publish_hint: 'Le client ne reçoit rien, vous pourrez l''envoyer plus tard.'
+        send: 'Enregistrer et envoyer au client'
         update: 'Mettre à jour'
     send:
         no_recipients: 'Impossible d''envoyer la facture : aucun contact avec une adresse e-mail trouvé'
@@ -2394,9 +2399,9 @@ invoice:
             mark_paid: 'Marquer comme payée'
             more_actions: 'Plus d''actions'
             pay_now: 'Payer maintenant'
-            publish_and_send: 'Publier et envoyer'
+            publish_and_send: 'Envoyer au client'
             reopen: Rouvrir
-            send: Envoyer
+            send: 'Envoyer au client'
             send_electronic: 'Envoyer la facture électronique'
             send_reminder: 'Envoyer un rappel'
             toggle_dropdown: 'Basculer le menu déroulant'
@@ -3200,8 +3205,9 @@ quote:
     save:
         cancel: Annuler
         draft: 'Enregistrer comme brouillon'
-        publish: Publier
-        send: 'Enregistrer et envoyer'
+        publish: 'Finaliser sans envoyer'
+        publish_hint: 'Le client ne reçoit rien, vous pourrez l''envoyer plus tard.'
+        send: 'Enregistrer et envoyer au client'
         update: 'Mettre à jour'
     send_to: 'Envoyer le devis à :'
     sent: 'Devis envoyé'
@@ -3273,9 +3279,9 @@ quote:
             decline: Refuser
             edit: Modifier
             more_actions: 'Plus d''actions'
-            publish_and_send: 'Publier et envoyer'
+            publish_and_send: 'Envoyer au client'
             reopen: Rouvrir
-            send: Envoyer
+            send: 'Envoyer au client'
             toggle_dropdown: 'Basculer le menu déroulant'
             view_invoice: 'Voir la facture'
     withholding: Retenue

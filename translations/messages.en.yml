@@ -969,7 +969,7 @@ credit_note:
     action:
         create: 'Create Credit Note'
         issue: 'Issue'
-        send: 'Send'
+        send: 'Send to the client'
     create:
         title: 'New Credit Note'
         subtitle: 'Correct an invoice that has already gone to the client.'
@@ -1436,11 +1436,15 @@ document_activity:
     detail:
         reminder: 'Reminder sent by email'
     empty: 'Nothing yet.'
+    not_sent:
+        invoice: 'This invoice is finalised, but no sending to the client is recorded.'
+        quote: 'This quote is finalised, but no sending to the client is recorded.'
+        send: 'Send to the client'
     summary:
         last_seen: 'Viewed by the client on %date%'
         last_sent: 'Sent to the client on %date%'
         never_seen: 'Not viewed by the client yet'
-        never_sent: 'Never sent to the client by email'
+        never_sent: 'No sending to the client by email recorded'
     title: Activity
     to: 'to %recipients%'
     transition:
@@ -1453,7 +1457,7 @@ document_activity:
         new: Created
         overdue: 'Became overdue'
         pay: Paid
-        publish: 'Published (not sent)'
+        publish: 'Finalised (not sent)'
         reopen: Reopened
         settle: Settled
     type:
@@ -2275,8 +2279,9 @@ invoice:
         cancel: Cancel
         draft: 'Save as Draft'
         enable: 'Save and Enable'
-        publish: Publish
-        send: 'Save and Send'
+        publish: 'Finalise without sending'
+        publish_hint: 'The client receives nothing; you can send it later.'
+        send: 'Save and send to the client'
         update: Update
     send:
         no_recipients: 'Cannot send invoice: no contacts with email addresses found'
@@ -2394,9 +2399,9 @@ invoice:
             mark_paid: 'Mark Paid'
             more_actions: 'More Actions'
             pay_now: 'Pay Now'
-            publish_and_send: 'Publish and Send'
+            publish_and_send: 'Send to the client'
             reopen: Re-Open
-            send: Send
+            send: 'Send to the client'
             send_electronic: 'Send Electronic Invoice'
             send_reminder: 'Send Reminder'
             toggle_dropdown: 'Toggle Dropdown'
@@ -3200,8 +3205,9 @@ quote:
     save:
         cancel: Cancel
         draft: 'Save as Draft'
-        publish: Publish
-        send: 'Save and Send'
+        publish: 'Finalise without sending'
+        publish_hint: 'The client receives nothing; you can send it later.'
+        send: 'Save and send to the client'
         update: Update
     send_to: 'Send quote to:'
     sent: 'Quote Sent'
@@ -3273,9 +3279,9 @@ quote:
             decline: Decline
             edit: Edit
             more_actions: 'More Actions'
-            publish_and_send: 'Publish and Send'
+            publish_and_send: 'Send to the client'
             reopen: Re-Open
-            send: Send
+            send: 'Send to the client'
             toggle_dropdown: 'Toggle Dropdown'
             view_invoice: 'View Invoice'
     withholding: Withholding
