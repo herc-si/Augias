@@ -17,6 +17,7 @@ Every invoice in Augias has a status that reflects where it is in the billing li
 | **Pending** | Yellow | The invoice has been published and the client has been notified. Payment is expected. |
 | **Overdue** | Red | The due date has passed and the invoice has not been paid. |
 | **Paid** | Green | The invoice has been paid in full. |
+| **Credited** | Cyan | Credit notes settled the invoice, with no payment. |
 | **Cancelled** | Grey | The invoice has been cancelled. Any payments already recorded are converted to client credits. |
 
 ## Draft
@@ -66,6 +67,12 @@ A paid invoice is closed. The Invoice Summary shows the payment date and the out
 
 No payment or send actions are available once an invoice is paid. You can still download the PDF or print it for your records.
 
+## Credited
+
+A credited invoice is settled by one or more [credit notes](./credit-notes.md) set against it, with no payment at all: that is how an issued invoice is cancelled. Reminders stop. If part of it had been paid, the invoice moves to **Paid** once settled.
+
+**Available actions:** Clone, Archive, Download PDF, Print.
+
 ## Cancelled
 
 Cancelling an invoice does two things:
@@ -86,6 +93,8 @@ Draft → Pending  (Publish or Save and Send)
 Pending → Paid   (payment recorded)
 Pending → Overdue (due date passes, automatic)
 Overdue → Paid   (payment recorded)
+Pending → Credited (credit note settles it)
+Overdue → Credited (credit note settles it)
 Pending → Cancelled
 Overdue → Cancelled
 ```

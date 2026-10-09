@@ -54,12 +54,20 @@ Un avoir émis ne peut plus être modifié ni supprimé : il se conserve comme u
 
 À l'émission, le montant de l'avoir s'ajoute au [crédit du client](../managing-clients/client-credit.md).
 
+Si la `Facture concernée` est en attente ou en retard, l'avoir s'y impute aussitôt, pour au plus ce qui reste dû :
+
+- l'avoir couvre tout ce qui reste dû : la facture passe au statut **Créditée**, et les relances s'arrêtent ;
+- il en couvre une partie : la facture reste en attente, avec un solde réduit d'autant ;
+- il dépasse ce qui reste dû : le surplus reste au crédit du client.
+
+Une facture déjà payée n'est pas touchée : l'avoir reste au crédit du client, à rembourser ou à déduire plus tard.
+
 ## Régler un avoir
 
 La page d'un avoir émis affiche un cadre `Règlement` avec le `Reste dû`. Pour enregistrer ce qui en a été fait :
 
 1. Choisissez la `Nature` :
-   - `Imputé sur une facture` : le montant est déduit de ce que le client doit sur une autre de ses factures. Choisissez cette facture.
+   - `Imputé sur une facture` : le montant est déduit de ce que le client doit sur une autre de ses factures. Choisissez cette facture. Si plus rien n'y reste dû, elle passe **Créditée** (ou **Payée** si elle avait aussi reçu un paiement).
    - `Remboursé` : vous avez rendu l'argent au client. Aucune facture n'est à choisir.
 2. Saisissez le `Montant`, au plus le reste dû, la `Date` et, si besoin, des `Notes`.
 3. Cliquez sur `Enregistrer`.

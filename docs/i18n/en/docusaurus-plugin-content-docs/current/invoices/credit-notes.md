@@ -54,12 +54,20 @@ An issued credit note can no longer be edited or deleted: it is kept like an inv
 
 When issued, the credit note's amount is added to the [client's credit](../managing-clients/client-credit.md).
 
+If the `Invoice being credited` is pending or overdue, the credit note is set against it at once, for at most what is still owed:
+
+- it covers everything still owed: the invoice moves to **Credited**, and reminders stop;
+- it covers part of it: the invoice stays pending, with its balance lowered by that much;
+- it exceeds what is still owed: the rest stays on the client's credit.
+
+An invoice already paid is left alone: the credit note stays on the client's credit, to refund or to deduct later.
+
 ## Settle a credit note
 
 The page of an issued credit note shows a `Settlement` box with what is `Still owed`. To record what was done with it:
 
 1. Choose `How`:
-   - `Set against an invoice`: the amount is deducted from what the client owes on another of their invoices. Choose that invoice.
+   - `Set against an invoice`: the amount is deducted from what the client owes on another of their invoices. Choose that invoice. Once nothing is owed on it, it moves to **Credited** (or **Paid** if it had also received a payment).
    - `Refunded`: you gave the money back to the client. No invoice to choose.
 2. Enter the `Amount`, at most what is still owed, the `Date` and, if needed, `Notes`.
 3. Click `Record`.

@@ -24,19 +24,19 @@ C'est le planificateur qui fait le travail : sans lui, aucune facture n'est gén
 
 ## Types de récurrence
 
-Le champ `Type de récurrence` décide de ce qu'est un « jour concerné ». Chaque type demande un complément différent. L'application affiche pour l'instant leurs noms en anglais.
+Le champ `Type de récurrence` décide de ce qu'est un « jour concerné ». Chaque type demande un complément différent.
 
-### Quotidienne (`Daily`)
+### Quotidienne
 
 Une facture chaque jour à partir de la date de début. Aucun complément : une fois active, elle génère chaque jour.
 
-### Hebdomadaire (`Weekly`)
+### Hebdomadaire
 
 Fait apparaître `Se répète le`, une rangée de cases de `Lundi` à `Dimanche`. Cochez un ou plusieurs jours : une facture est générée chaque semaine sur chaque jour coché.
 
 Pour un abonnement hebdomadaire, cochez un seul jour. Pour tous les jours ouvrés, cochez de `Lundi` à `Vendredi`.
 
-### Mensuelle (`Monthly`)
+### Mensuelle
 
 Fait apparaître `Jours du mois`, une liste à choix multiples du 1er au 31. Choisissez un ou plusieurs jours : une facture est générée chaque mois sur chaque jour choisi.
 
@@ -44,7 +44,7 @@ Fait apparaître `Jours du mois`, une liste à choix multiples du 1er au 31. Cho
 Si vous choisissez le 31 et qu'un mois compte 30 jours ou moins, aucune facture n'est générée ce mois-là pour ce jour : il n'existe pas dans ce mois.
 :::
 
-### Annuelle (`Yearly`)
+### Annuelle
 
 Fait apparaître deux champs :
 

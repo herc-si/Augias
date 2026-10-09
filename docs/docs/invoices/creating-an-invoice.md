@@ -14,8 +14,8 @@ Pour créer une facture, ouvrez `Factures de vente` dans le menu latéral et cli
 
 Commencez par indiquer à qui s'adresse la facture. Deux possibilités :
 
-- choisir un client existant dans la liste ;
-- créer un nouveau client sur place, en saisissant son nom, le nom du contact et son adresse e-mail. Le client est enregistré automatiquement.
+- `Client existant` : choisir un client dans la liste ;
+- `Nouveau client` : le créer sur place, en saisissant son nom, le nom du contact et son adresse e-mail. Le client est enregistré automatiquement.
 
 ![Le formulaire de facture en mode nouveau client, avec les champs du client et du contact](/img/invoices/create-invoice-new-client.png)
 

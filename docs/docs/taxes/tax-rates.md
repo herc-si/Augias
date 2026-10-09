@@ -36,15 +36,15 @@ Fixe le calcul par rapport au prix de l'article :
 
 ### Catégorie
 
-La catégorie détermine la présentation du taux sur les documents et celle des totaux. Les libellés s'affichent pour l'instant en anglais dans l'application :
+La catégorie détermine la présentation du taux sur les documents et celle des totaux :
 
 | Catégorie | Quand l'utiliser |
 | --- | --- |
-| **Normale** (`Standard`) | Le cas général des biens et services taxables. |
-| **Taux zéro** (`Zero-Rated`) | Taxable à 0 %. |
-| **Exonérée** (`Exempt`) | Non soumis à la taxe. Le taux reste affiché par transparence. |
-| **Hors champ** (`Out of Scope`) | Hors du champ de la taxe. |
-| **Autoliquidation** (`Reverse Charge`) | Le client déclare la taxe à la place du fournisseur. |
+| **Normale** | Le cas général des biens et services taxables. |
+| **Taux zéro** | Taxable à 0 %. |
+| **Exonérée** | Non soumis à la taxe. Le taux reste affiché par transparence. |
+| **Hors champ** | Hors du champ de la taxe. |
+| **Autoliquidation** | Le client déclare la taxe à la place du fournisseur. |
 
 ### Taxe composée
 

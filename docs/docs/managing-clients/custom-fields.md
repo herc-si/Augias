@@ -57,8 +57,8 @@ Pour les champs de **facture** et de **devis** seulement :
 
 | Option | Où le champ apparaît |
 | --- | --- |
-| **Interne** | Dans l'application seulement : ni sur les PDF, ni sur la page vue par le client |
-| **Visible client** | Dans l'application, sur les PDF et sur la page vue par le client |
+| **Interne uniquement** | Dans l'application seulement : ni sur les PDF, ni sur la page vue par le client |
+| **Visible par le client** | Dans l'application, sur les PDF et sur la page vue par le client |
 
 ### Valeur par défaut
 

@@ -17,6 +17,7 @@ Chaque facture a un statut qui dit où elle en est. Le statut détermine les act
 | **En attente** | Jaune | La facture est finalisée et numérotée. Le paiement est attendu. |
 | **En retard** | Rouge | L'échéance est passée et la facture n'est pas payée. |
 | **Payée** | Vert | La facture est entièrement payée. |
+| **Créditée** | Cyan | Des avoirs ont soldé la facture, sans paiement. |
 | **Annulée** | Gris | La facture a été annulée. Les paiements déjà enregistrés deviennent du crédit client. |
 
 ## Brouillon
@@ -67,6 +68,12 @@ Une facture payée est close. Le résumé affiche la date de paiement et le sold
 
 **Actions possibles :** Dupliquer, Envoyer au client, Établir un avoir, Archiver, PDF, Imprimer.
 
+## Créditée
+
+Une facture créditée est soldée par un ou plusieurs [avoirs](./credit-notes.md) imputés sur elle, sans aucun paiement : c'est ainsi qu'on annule une facture déjà émise. Les relances s'arrêtent. Si une partie avait été payée, la facture passe **Payée** une fois soldée.
+
+**Actions possibles :** Dupliquer, Archiver, PDF, Imprimer.
+
 ## Annulée
 
 Annuler une facture :
@@ -85,6 +92,8 @@ Brouillon → En attente  (Envoyer au client ou Finaliser sans envoyer)
 En attente → Payée      (paiement enregistré)
 En attente → En retard  (échéance passée, automatique)
 En retard → Payée       (paiement enregistré)
+En attente → Créditée   (avoir imputé qui solde la facture)
+En retard → Créditée    (avoir imputé qui solde la facture)
 Brouillon → Annulée
 En attente → Annulée    (sans régime comptable seulement)
 En retard → Annulée     (sans régime comptable seulement)

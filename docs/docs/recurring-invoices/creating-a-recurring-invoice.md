@@ -37,7 +37,7 @@ La section `Planification récurrente` dit *quand* les factures sont générées
 ![La section Planification récurrente, en hebdomadaire](/img/recurring-invoices/schedule-weekly-options.png)
 
 - **`Date de début`** *(obligatoire)* : le départ du calendrier. Aujourd'hui par défaut ; ne peut pas être dans le passé.
-- **`Type de récurrence`** *(obligatoire)* : quotidienne, hebdomadaire, mensuelle ou annuelle (l'application affiche pour l'instant `Daily`, `Weekly`, `Monthly` et `Yearly`). Chaque type fait apparaître son propre champ (jours de la semaine, jours du mois, mois de l'année).
+- **`Type de récurrence`** *(obligatoire)* : `Quotidienne`, `Hebdomadaire`, `Mensuelle` ou `Annuelle`. Chaque type fait apparaître son propre champ (jours de la semaine, jours du mois, mois de l'année).
 - **`Type de fin`** *(obligatoire)* : `Jamais`, `À la date suivante` ou `Après x occurrences`. Le champ de date ou de nombre correspondant apparaît une fois le choix fait.
 
 ## Enregistrer
