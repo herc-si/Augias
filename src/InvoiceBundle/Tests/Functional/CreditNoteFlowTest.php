@@ -23,6 +23,7 @@ use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\CreditReason;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Test\Factory\CreditNoteFactory;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Augias\UserBundle\Entity\User;
@@ -94,6 +95,131 @@ final class CreditNoteFlowTest extends WebTestCase
             ->visit('/invoices/credit-notes/create/' . $invoice->getId())
             ->assertSuccessful()
             ->assertSeeIn('body', 'Annual licence');
+    }
+
+    /**
+     * A credit note left over from another invoice is used where the invoice
+     * is settled, the payment page: one button, and the invoice is paid.
+     */
+    public function testUsesTheClientsCreditNotesFromTheInvoicePage(): void
+    {
+        $creditNote = CreditNoteFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => CreditNoteStatus::Draft,
+            'discount' => new Discount(),
+            'lines' => [new CreditNoteLine()->setDescription('Remboursement')->setPrice(5_000)->setQty(1)->updateTotal()],
+        ]);
+        $workflow = self::getContainer()->get(\Symfony\Component\Workflow\Registry::class)->get($creditNote, 'credit_note');
+        $workflow->apply($creditNote, \Augias\InvoiceBundle\Model\CreditNoteGraph::TRANSITION_ISSUE);
+        $this->em->flush();
+
+        $invoice = InvoiceFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => InvoiceStatus::Pending,
+            'discount' => new Discount(),
+            'lines' => [new \Augias\InvoiceBundle\Entity\Line()->setDescription('Service')->setPrice(5_000)->setQty(1)->updateTotal()],
+        ]);
+        $invoice->setBalance(5_000);
+        $this->em->flush();
+
+        $this->browser()
+            ->actingAs($this->createUser())
+            ->visit('/payments/create/' . $invoice->getUuid())
+            ->assertSuccessful()
+            ->assertSeeElement('#payment-apply-credit-notes')
+            ->click('#payment-apply-credit-notes')
+            ->assertSuccessful()
+            ->assertOn('/invoices/view/' . $invoice->getId());
+
+        $this->em->clear();
+        $reloaded = $this->em->find(\Augias\InvoiceBundle\Entity\Invoice::class, $invoice->getId());
+        self::assertSame(InvoiceStatus::Paid, $reloaded?->getStatus());
+    }
+
+    /**
+     * Rémi's case: 50 of credit notes on a 100 invoice. The credit notes are
+     * used, and the payment page comes back for the 50 still owed.
+     */
+    public function testUsingCreditNotesThatCoverPartOfTheInvoiceComesBackToPayTheRest(): void
+    {
+        $creditNote = CreditNoteFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => CreditNoteStatus::Draft,
+            'discount' => new Discount(),
+            'lines' => [new CreditNoteLine()->setDescription('Remboursement')->setPrice(5_000)->setQty(1)->updateTotal()],
+        ]);
+        $workflow = self::getContainer()->get(\Symfony\Component\Workflow\Registry::class)->get($creditNote, 'credit_note');
+        $workflow->apply($creditNote, \Augias\InvoiceBundle\Model\CreditNoteGraph::TRANSITION_ISSUE);
+        $this->em->flush();
+
+        $invoice = InvoiceFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => InvoiceStatus::Pending,
+            'discount' => new Discount(),
+            'lines' => [new \Augias\InvoiceBundle\Entity\Line()->setDescription('Service')->setPrice(10_000)->setQty(1)->updateTotal()],
+        ]);
+        $invoice->setBalance(10_000);
+        $this->em->flush();
+
+        $this->browser()
+            ->actingAs($this->createUser())
+            ->visit('/payments/create/' . $invoice->getUuid())
+            ->click('#payment-apply-credit-notes')
+            ->assertSuccessful()
+            ->assertOn('/payments/create/' . $invoice->getUuid())
+            ->assertNotSeeElement('#payment-apply-credit-notes')
+            ->assertSeeIn('.totals-row-balance', '50.00');
+    }
+
+    /**
+     * Credit that comes from a credit note is not paid with the "Credit"
+     * method: that left the credit note open, to be refunded a second time.
+     */
+    public function testRefusesToPayWithCreditThatComesFromCreditNotes(): void
+    {
+        $creditNote = CreditNoteFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => CreditNoteStatus::Draft,
+            'discount' => new Discount(),
+            'lines' => [new CreditNoteLine()->setDescription('Remboursement')->setPrice(5_000)->setQty(1)->updateTotal()],
+        ]);
+        $workflow = self::getContainer()->get(\Symfony\Component\Workflow\Registry::class)->get($creditNote, 'credit_note');
+        $workflow->apply($creditNote, \Augias\InvoiceBundle\Model\CreditNoteGraph::TRANSITION_ISSUE);
+        $this->em->flush();
+
+        // Every company has one, set up with the company.
+        $method = $this->em->getRepository(\Augias\PaymentBundle\Entity\PaymentMethod::class)
+            ->findOneBy(['gatewayName' => \Augias\PaymentBundle\Entity\PaymentMethod::GATEWAY_CREDIT]);
+        self::assertNotNull($method);
+        $method->setEnabled(true);
+
+        $invoice = InvoiceFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => InvoiceStatus::Pending,
+            'discount' => new Discount(),
+            'lines' => [new \Augias\InvoiceBundle\Entity\Line()->setDescription('Service')->setPrice(10_000)->setQty(1)->updateTotal()],
+        ]);
+        $invoice->setBalance(10_000);
+        $this->em->flush();
+
+        $this->browser()
+            ->actingAs($this->createUser())
+            ->visit('/payments/create/' . $invoice->getUuid())
+            ->selectFieldOption('payment[payment_method]', (string) $method->getId())
+            ->fillField('payment[amount]', '50')
+            ->click('.btn-pay')
+            ->assertSuccessful()
+            ->assertSee('This credit comes from credit notes');
+
+        $this->em->clear();
+        $reloaded = $this->em->find(\Augias\InvoiceBundle\Entity\Invoice::class, $invoice->getId());
+        self::assertCount(0, $reloaded?->getPayments() ?? []);
     }
 
     public function testShowsACreditNote(): void

@@ -28,6 +28,7 @@ use Augias\InvoiceBundle\Listener\Workflow\OffsetCreditedInvoiceListener;
 use Augias\InvoiceBundle\Model\CreditNoteGraph;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
 use Augias\InvoiceBundle\Service\CreditNoteAllocator;
+use Augias\InvoiceBundle\Service\CreditNoteApplier;
 use Augias\InvoiceBundle\Service\InvoiceSettlement;
 use Augias\InvoiceBundle\Test\Factory\CreditNoteFactory;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
@@ -44,6 +45,7 @@ use function assert;
  */
 #[CoversClass(InvoiceSettlement::class)]
 #[CoversClass(OffsetCreditedInvoiceListener::class)]
+#[CoversClass(CreditNoteApplier::class)]
 final class CreditedInvoiceTest extends KernelTestCase
 {
     use EnsureApplicationInstalled;
@@ -118,7 +120,7 @@ final class CreditedInvoiceTest extends KernelTestCase
         self::assertSame('10000', (string) $creditNote->getClient()->getCredit()->getValue());
     }
 
-    public function testSettingACreditNoteAgainstAnotherInvoiceCreditsItOnceNothingIsOwed(): void
+    public function testSettingACreditNoteAgainstAnotherInvoicePaysItOnceNothingIsOwed(): void
     {
         $creditNote = $this->issuedCreditNote(10_000);
         $invoice = $this->invoice(InvoiceStatus::Pending, 10_000);
@@ -127,7 +129,7 @@ final class CreditedInvoiceTest extends KernelTestCase
         assert($allocator instanceof CreditNoteAllocator);
         $allocator->allocate($creditNote, AllocationKind::Offset, 10_000, $invoice);
 
-        self::assertSame(InvoiceStatus::Credited, $invoice->getStatus());
+        self::assertSame(InvoiceStatus::Paid, $invoice->getStatus());
     }
 
     /**
@@ -142,6 +144,63 @@ final class CreditedInvoiceTest extends KernelTestCase
         assert($repository instanceof InvoiceRepository);
 
         self::assertFalse($repository->isFullyPaid($invoice));
+    }
+
+    /**
+     * Rémi's case on app-test: a 50 credit note left over from a paid invoice,
+     * used on a new 100 invoice. Half of it is settled, the rest still owed.
+     */
+    public function testCreditLeftOverFromAnotherInvoicePaysPartOfANewOne(): void
+    {
+        $paid = $this->invoice(InvoiceStatus::Paid, 5_000);
+        $creditNote = $this->issuedCreditNote(5_000, $paid);
+        $invoice = $this->invoice(InvoiceStatus::Pending, 10_000);
+
+        $applied = $this->applier()->applyTo($invoice);
+
+        self::assertSame('5000', (string) $applied);
+        self::assertSame(InvoiceStatus::Pending, $invoice->getStatus());
+        self::assertSame('5000', (string) $invoice->getBalance()->toBigInteger());
+        self::assertSame(CreditNoteStatus::Settled, $creditNote->getStatus());
+        self::assertSame('0', (string) $creditNote->getClient()->getCredit()->getValue());
+    }
+
+    /**
+     * Settled by credit carried over from another document, the invoice is
+     * paid, not credited: it was not cancelled.
+     */
+    public function testCreditCarriedOverMarksTheInvoicePaid(): void
+    {
+        $paid = $this->invoice(InvoiceStatus::Paid, 10_000);
+        $this->issuedCreditNote(10_000, $paid);
+        $invoice = $this->invoice(InvoiceStatus::Pending, 6_000);
+
+        $this->applier()->applyTo($invoice);
+
+        self::assertSame(InvoiceStatus::Paid, $invoice->getStatus());
+        self::assertSame('4000', (string) $this->applier()->available($this->client()), 'The rest of the credit note stays available.');
+    }
+
+    public function testUsesTheOldestCreditNotesFirst(): void
+    {
+        $paid = $this->invoice(InvoiceStatus::Paid, 10_000);
+        $first = $this->issuedCreditNote(2_000, $paid, new \Carbon\CarbonImmutable('2026-09-01'));
+        $second = $this->issuedCreditNote(3_000, $paid, new \Carbon\CarbonImmutable('2026-09-15'));
+        $invoice = $this->invoice(InvoiceStatus::Pending, 4_000);
+
+        $this->applier()->applyTo($invoice);
+
+        self::assertSame(CreditNoteStatus::Settled, $first->getStatus());
+        self::assertSame(CreditNoteStatus::Issued, $second->getStatus());
+        self::assertSame(InvoiceStatus::Paid, $invoice->getStatus());
+    }
+
+    private function applier(): CreditNoteApplier
+    {
+        $applier = self::getContainer()->get(CreditNoteApplier::class);
+        assert($applier instanceof CreditNoteApplier);
+
+        return $applier;
     }
 
     private function invoice(InvoiceStatus $status, int $total): Invoice
@@ -166,9 +225,10 @@ final class CreditedInvoiceTest extends KernelTestCase
         return $invoice;
     }
 
-    private function issuedCreditNote(int $total, ?Invoice $creditedInvoice = null): CreditNote
+    private function issuedCreditNote(int $total, ?Invoice $creditedInvoice = null, ?\Carbon\CarbonImmutable $date = null): CreditNote
     {
         $creditNote = CreditNoteFactory::createOne([
+            'creditNoteDate' => $date ?? \Carbon\CarbonImmutable::now(),
             'company' => $this->company,
             'client' => $this->client(),
             'status' => CreditNoteStatus::Draft,

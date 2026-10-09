@@ -51,8 +51,9 @@ final readonly class InvoiceSettlement
 
     /**
      * Brings the balance up to date and, once nothing is owed, closes the
-     * invoice: paid when any money came in, credited when credit notes alone
-     * settled it.
+     * invoice. Credited when only its own credit notes settled it, that is
+     * when it was cancelled or corrected; paid otherwise, including when
+     * credit left over from another document paid for it.
      *
      * @throws MathException
      */
@@ -67,7 +68,12 @@ final readonly class InvoiceSettlement
         }
 
         $paid = $this->payments->getTotalPaidForInvoice($invoice);
-        $transition = BigNumber::of($paid)->isZero() ? Graph::TRANSITION_CREDIT : Graph::TRANSITION_PAY;
+        $carriedOver = $this->allocations->offsetTotalForInvoice($invoice)->toBigDecimal()
+            ->minus($this->allocations->ownOffsetTotalForInvoice($invoice));
+
+        $transition = BigNumber::of($paid)->isZero() && $carriedOver->isZero()
+            ? Graph::TRANSITION_CREDIT
+            : Graph::TRANSITION_PAY;
 
         if ($this->invoiceStateMachine->can($invoice, $transition)) {
             $this->invoiceStateMachine->apply($invoice, $transition);
