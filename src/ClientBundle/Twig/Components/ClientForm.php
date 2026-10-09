@@ -100,6 +100,7 @@ class ClientForm extends AbstractController
             return;
         }
 
+        $this->formValues['isCompany'] = '1';
         $this->formValues['name'] = $company->name;
         $this->formValues['siren'] = $company->siren;
         $this->formValues['siret'] = $company->siret ?? '';

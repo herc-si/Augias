@@ -27,6 +27,7 @@ use RuntimeException;
 use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\UrlType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -50,6 +51,18 @@ class ClientType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder->add('name', null, ['label' => 'client.form.name.label', 'help' => 'client.form.name.help', 'required' => false, 'sanitize_html' => true, 'allow_single_quotes' => true]);
+        // Said, not guessed: it decides the default terms and whether
+        // e-invoicing asks for a SIRET, so a typo in the name must not flip it.
+        $builder->add('isCompany', ChoiceType::class, [
+            'label' => 'client.form.kind.label',
+            'choices' => [
+                'client.form.kind.company' => true,
+                'client.form.kind.individual' => false,
+            ],
+            'expanded' => true,
+            // A submission that leaves it out keeps the usual case.
+            'empty_data' => '1',
+        ]);
         $builder->add('isClient', CheckboxType::class, ['label' => 'client.form.is_client.label', 'required' => false]);
         $builder->add('isSupplier', CheckboxType::class, ['label' => 'client.form.is_supplier.label', 'required' => false]);
         $builder->add('website', UrlType::class, ['label' => 'client.form.website.label', 'required' => false, 'default_protocol' => 'http']);
@@ -157,39 +170,19 @@ class ClientType extends AbstractType
             ]);
         }
 
-        // Not every client is a company — an individual can be added without
-        // typing a name twice: leave "Name" empty and it's filled in from the
-        // first contact's own name instead. Whichever branch fires also sets
-        // isCompany, since that's the only signal we have for it — driving
-        // RequiredFiscalIdentifierForElectronicInvoicingValidator, which
-        // shouldn't demand a SIRET from a private individual.
+        // An individual can be added without typing a name twice: left empty,
+        // it is filled in from the first contact's own name.
         $builder->addEventListener(FormEvents::SUBMIT, static function (FormEvent $event): void {
             $client = $event->getData();
 
-            if (! $client instanceof Client) {
+            if (! $client instanceof Client || $client->isCompany() || trim((string) $client->getName()) !== '') {
                 return;
             }
 
             $primaryContact = $client->getContacts()->first();
 
-            if (trim((string) $client->getName()) !== '') {
-                // An individual's record comes back to its edit form with the
-                // name filled in from the contact. Saving it unchanged must not
-                // turn the client into a company: that switches its default
-                // terms and makes e-invoicing demand a SIRET. A name of its own
-                // still does.
-                $stillTheContactsName = ! $client->isCompany()
-                    && $primaryContact instanceof Contact
-                    && trim((string) $client->getName()) === trim($primaryContact->getFirstName() . ' ' . $primaryContact->getLastName());
-
-                $client->setIsCompany(! $stillTheContactsName);
-
-                return;
-            }
-
             if ($primaryContact instanceof Contact) {
                 $client->setName(trim($primaryContact->getFirstName() . ' ' . $primaryContact->getLastName()));
-                $client->setIsCompany(false);
             }
         });
     }

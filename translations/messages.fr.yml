@@ -717,6 +717,10 @@ client:
         has_issued_documents: "%name% a des factures ou des avoirs émis, qui doivent être conservés : le client ne peut pas être supprimé. Archivez-le plutôt."
     delete_success: 'Le client a été supprimé avec succès'
     form:
+        kind:
+            label: 'Type de client'
+            company: 'Professionnel'
+            individual: 'Particulier'
         address_description: 'Ajoutez des adresses de facturation ou de livraison'
         contact_description: 'Ajoutez au moins un contact'
         currency:
