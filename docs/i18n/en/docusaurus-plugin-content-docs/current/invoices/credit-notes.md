@@ -23,8 +23,10 @@ This is the most common case.
 
 The form opens already filled in: the client, the invoice under `Invoice being credited`, the reason `Cancellation`, the invoice's lines and its discount. Adjust the lines to credit only part of the invoice.
 
-:::info
-The invoice's discount is carried over because the client paid the discounted amount: crediting the full amount would give back more than they paid. The `Discount` field only appears once an invoice is chosen.
+:::info[The original invoice discount]
+A credit note grants no discount: it carries over the one the invoice already had, to give back what was actually invoiced. An invoice of €1,000 excl. VAT with 10% off cost the client €1,080 incl. VAT; a credit note without the discount would give back €1,200.
+
+It is not typed: the form shows it on one line, `Original invoice discount`. A percentage applies as it is to the lines credited; a fixed amount is shared out over the lines credited (crediting half the invoice takes half the discount). Disbursements are never discounted.
 :::
 
 ## Raise a credit note with no original invoice

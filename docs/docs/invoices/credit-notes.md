@@ -23,8 +23,10 @@ C'est le cas le plus courant.
 
 Le formulaire s'ouvre déjà rempli : le client, la facture dans `Facture concernée`, le motif `Annulation`, les lignes de la facture et sa remise. Ajustez les lignes pour ne créditer qu'une partie de la facture.
 
-:::info
-La remise de la facture est reprise parce que le client a payé le montant remisé : créditer le montant plein lui rendrait plus qu'il n'a payé. Le champ `Remise` n'apparaît que lorsqu'une facture est choisie.
+:::info[La remise de la facture d'origine]
+Un avoir n'accorde pas de remise : il reprend celle que la facture avait déjà, pour rendre ce qui a réellement été facturé. Une facture de 1 000 € HT remisée de 10 % a coûté 1 080 € TTC au client ; un avoir sans la remise lui rendrait 1 200 €.
+
+Elle ne se saisit pas : le formulaire l'indique sur une ligne, `Remise de la facture d'origine`. Un pourcentage s'applique tel quel aux lignes créditées ; un montant fixe est réparti au prorata des lignes créditées (créditer la moitié de la facture reprend la moitié de la remise). Les débours ne sont jamais remisés.
 :::
 
 ## Établir un avoir sans facture d'origine
