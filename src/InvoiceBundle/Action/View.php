@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Action;
 
+use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Pdf\Generator;
 use Augias\CoreBundle\Response\PdfResponse;
 use Augias\CoreBundle\Templates\BillingTemplateChannel;
 use Augias\CoreBundle\Templates\BillingTemplateResolver;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceManagerInterface;
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\InvoiceBundle\Service\CreditNoteApplier;
 use Augias\PaymentBundle\Repository\PaymentRepository;
 use Mpdf\MpdfException;
 use Symfony\Bridge\Twig\Attribute\Template;
@@ -40,6 +42,7 @@ final readonly class View
         private Environment $twig,
         private BillingTemplateResolver $templateResolver,
         private ElectronicInvoiceManagerInterface $electronicInvoiceManager,
+        private ?CreditNoteApplier $creditNoteApplier = null,
     ) {
     }
 
@@ -57,11 +60,15 @@ final readonly class View
             return new PdfResponse($this->pdfGenerator->generate($this->twig->render($this->templateResolver->resolve($invoice, BillingTemplateChannel::Pdf), ['invoice' => $invoice])), sprintf('invoice_%s.pdf', $invoice->getInvoiceId()));
         }
 
+        $client = $invoice->getClient();
+
         return [
             'invoice' => $invoice,
             'payments' => $this->paymentRepository->getPaymentsForInvoice($invoice),
             'documentTemplate' => $this->templateResolver->customTemplate($invoice, BillingTemplateChannel::View),
             'showElectronicInvoiceAction' => $this->electronicInvoiceManager->isEligible($invoice),
+            // What the client's open credit notes could still take off it.
+            'availableCredit' => $client instanceof Client && $this->creditNoteApplier instanceof CreditNoteApplier ? (string) $this->creditNoteApplier->available($client) : '0',
         ];
     }
 }

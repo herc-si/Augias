@@ -2045,6 +2045,15 @@ installation:
         locale_placeholder: 'Veuillez sélectionner une langue'
 invalid_file: 'Fichier invalide'
 invoice:
+    credit_notes:
+        applied: '%amount% d''avoirs imputés sur cette facture.'
+        apply: 'Utiliser les avoirs'
+        apply_help: 'Impute les avoirs ouverts du client sur cette facture, du plus ancien au plus récent, pour au plus ce qui reste dû.'
+        available: 'Avoirs disponibles'
+        invalid_token: 'La demande a expiré. Réessayez.'
+        none_available: 'Ce client n''a aucun avoir ouvert.'
+        nothing_owed: 'Rien n''est dû sur cette facture.'
+        title: 'Avoirs'
     payment_details:
         bank: Banque
         reference: 'Référence à indiquer'

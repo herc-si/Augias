@@ -2045,6 +2045,15 @@ installation:
         locale_placeholder: 'Please select a locale'
 invalid_file: 'Invalid File'
 invoice:
+    credit_notes:
+        applied: '%amount% of credit notes set against this invoice.'
+        apply: 'Use the credit notes'
+        apply_help: 'Sets the client''s open credit notes against this invoice, oldest first, for at most what it still owes.'
+        available: 'Open credit notes'
+        invalid_token: 'The request expired. Please try again.'
+        none_available: 'This client has no open credit note.'
+        nothing_owed: 'Nothing is owed on this invoice.'
+        title: 'Credit notes'
     payment_details:
         bank: Bank
         reference: 'Reference to quote'

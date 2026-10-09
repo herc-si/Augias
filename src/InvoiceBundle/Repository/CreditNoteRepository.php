@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Repository;
 
+use Augias\ClientBundle\Entity\Client;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
 use Augias\InvoiceBundle\Enum\AllocationKind;
@@ -21,6 +22,8 @@ use Brick\Math\BigInteger;
 use Brick\Math\Exception\MathException;
 use Doctrine\Persistence\ManagerRegistry;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
+use Symfony\Bridge\Doctrine\Types\UlidType;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * @extends EntityRepository<CreditNote>
@@ -185,5 +188,33 @@ final class CreditNoteRepository extends EntityRepository
         }
 
         return $totals;
+    }
+
+    /**
+     * The client's issued credit notes, oldest first: the ones that may still
+     * have something left to set against an invoice.
+     *
+     * @return list<CreditNote>
+     */
+    public function issuedForClient(Client $client): array
+    {
+        $id = $client->getId();
+
+        if (! $id instanceof Ulid) {
+            return [];
+        }
+
+        /** @var list<CreditNote> $creditNotes */
+        $creditNotes = $this->createQueryBuilder('c')
+            ->where('c.client = :client')
+            ->andWhere('c.status = :issued')
+            ->setParameter('client', $id, UlidType::NAME)
+            ->setParameter('issued', CreditNoteStatus::Issued->value)
+            ->orderBy('c.creditNoteDate', 'ASC')
+            ->addOrderBy('c.created', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $creditNotes;
     }
 }
