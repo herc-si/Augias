@@ -1,22 +1,22 @@
 ---
 title: Helm (Kubernetes)
-description: Deploy Augias to a Kubernetes cluster using the official Helm chart.
+description: Déployer Augias sur un cluster Kubernetes avec le chart Helm officiel.
 sidebar_position: 8
 ---
 
 # Helm (Kubernetes)
 
-The official Augias Helm chart deploys the application, a background worker, and a scheduler to any Kubernetes cluster. It can also bring up MySQL, PostgreSQL, and Redis via Bitnami subcharts.
+Le chart Helm officiel d'Augias déploie l'application, un worker d'arrière-plan et un planificateur sur n'importe quel cluster Kubernetes. Il peut aussi démarrer MySQL, PostgreSQL et Redis par les sous-charts Bitnami.
 
-## Prerequisites
+## Prérequis
 
 - Kubernetes **1.23+**
 - Helm **3.2+**
-- A StorageClass that supports `ReadWriteOnce` PersistentVolumeClaims (required for the application's secrets vault at `/etc/augias`)
+- Une StorageClass qui accepte les PersistentVolumeClaims `ReadWriteOnce` (nécessaire au coffre de secrets de l'application, dans `/etc/augias`)
 
-## Get the chart
+## Récupérer le chart
 
-The chart is not published to a Helm repository; it ships inside this one.
+Le chart n'est pas publié dans un dépôt Helm : il est livré dans ce dépôt-ci.
 
 ```bash
 git clone https://github.com/herc-si/Augias.git
@@ -24,125 +24,124 @@ cd Augias
 helm dependency update helm/augias
 ```
 
-All commands below install from that local path.
+Toutes les commandes ci-dessous installent depuis ce chemin local.
 
-## Quick start with MySQL
+## Démarrage rapide avec MySQL
 
 ```bash
 helm install augias helm/augias \
   --set mysql.enabled=true \
-  --set mysql.auth.password="your-mysql-password" \
-  --set mysql.auth.rootPassword="your-root-password" \
-  --set app.secret="your-secret-key"
+  --set mysql.auth.password="votre-mot-de-passe-mysql" \
+  --set mysql.auth.rootPassword="votre-mot-de-passe-root" \
+  --set app.secret="votre-cle-secrete"
 ```
 
-This brings up Augias with a bundled MySQL instance. Browse to the pod's URL and complete the [installation wizard](./system-installation.md).
+Augias démarre avec une instance MySQL fournie. Ouvrez l'adresse du pod et terminez avec l'[assistant d'installation](./system-installation.md).
 
-## Quick start with PostgreSQL
+## Démarrage rapide avec PostgreSQL
 
 ```bash
 helm install augias helm/augias \
   --set postgresql.enabled=true \
-  --set postgresql.auth.password="your-pg-password" \
-  --set app.secret="your-secret-key"
+  --set postgresql.auth.password="votre-mot-de-passe-pg" \
+  --set app.secret="votre-cle-secrete"
 ```
 
-## External database
+## Base de données externe
 
-Pass a full `DATABASE_URL` to skip the bundled database subcharts:
+Passez une `DATABASE_URL` complète pour vous passer des sous-charts de base de données :
 
 ```bash
 helm install augias helm/augias \
   --set externalDatabase.url="mysql://user:password@host:3306/augias" \
-  --set app.secret="your-secret-key"
+  --set app.secret="votre-cle-secrete"
 ```
 
-## Enable async messaging with Redis
+## Messages asynchrones avec Redis
 
-Redis is required for asynchronous background jobs (sending emails, processing payments). When `redis.enabled=true` the chart configures the Messenger transport automatically:
+Redis sert aux tâches d'arrière-plan asynchrones (envoi des e-mails, traitement des paiements). Avec `redis.enabled=true`, le chart configure seul le transport Messenger :
 
 ```bash
 helm install augias helm/augias \
   --set mysql.enabled=true \
-  --set mysql.auth.password="your-mysql-password" \
+  --set mysql.auth.password="votre-mot-de-passe-mysql" \
   --set redis.enabled=true \
-  --set redis.auth.password="your-redis-password" \
-  --set app.secret="your-secret-key"
+  --set redis.auth.password="votre-mot-de-passe-redis" \
+  --set app.secret="votre-cle-secrete"
 ```
 
-## Automated install (skip the web wizard)
+## Installation automatique (sans l'assistant web)
 
-Set `install.enabled=true` to run the installer as a Kubernetes Job during the first deploy, so the wizard step is skipped entirely:
+Réglez `install.enabled=true` pour lancer l'installeur comme Job Kubernetes au premier déploiement : l'étape de l'assistant est entièrement sautée.
 
 ```bash
 helm install augias helm/augias \
   --set mysql.enabled=true \
-  --set mysql.auth.password="your-mysql-password" \
-  --set app.secret="your-secret-key" \
+  --set mysql.auth.password="votre-mot-de-passe-mysql" \
+  --set app.secret="votre-cle-secrete" \
   --set install.enabled=true \
   --set install.adminEmail="admin@example.com" \
-  --set install.adminPassword="your-admin-password"
+  --set install.adminPassword="votre-mot-de-passe-admin"
 ```
 
-## Expose via Ingress
+## Exposer par un Ingress
 
 ```bash
 helm install augias helm/augias \
   --set mysql.enabled=true \
-  --set mysql.auth.password="your-mysql-password" \
-  --set app.secret="your-secret-key" \
+  --set mysql.auth.password="votre-mot-de-passe-mysql" \
+  --set app.secret="votre-cle-secrete" \
   --set ingress.enabled=true \
-  --set ingress.hosts[0].host="invoices.example.com" \
+  --set ingress.hosts[0].host="factures.example.com" \
   --set ingress.tls[0].secretName="augias-tls" \
-  --set "ingress.tls[0].hosts[0]=invoices.example.com"
+  --set "ingress.tls[0].hosts[0]=factures.example.com"
 ```
 
-## OCI registry (alternative)
+## Registre OCI (alternative)
 
-The chart is also published to GitHub Container Registry as an OCI artifact. Use this if you prefer OCI-native installs or want to pin to an exact version without adding a repo:
+Le chart est aussi publié comme artefact OCI sur GitHub Container Registry. Pratique pour une installation OCI ou pour figer une version sans ajouter de dépôt :
 
 ```bash
 helm install augias oci://ghcr.io/augias/charts/augias --version 3.0.0
 ```
 
-## Key values reference
+## Principales valeurs
 
-| Value | Default | Description |
+| Valeur | Défaut | Description |
 | --- | --- | --- |
-| `app.secret` | *(auto-generated if empty)* | Application secret — **save this**; changing it invalidates all sessions and API tokens |
-| `app.locale` | `en` | Default locale |
-| `app.allowRegistration` | `false` | Allow public self-registration |
-| `app.workerMode` | `false` | Enable FrankenPHP persistent worker mode |
-| `install.enabled` | `false` | Run the CLI installer as a Job (skips web wizard) |
-| `install.adminEmail` | — | Admin user email (used when `install.enabled=true`) |
-| `install.adminPassword` | — | Admin user password (used when `install.enabled=true`) |
-| `worker.enabled` | `true` | Deploy the Messenger consumer worker |
-| `worker.replicaCount` | `1` | Number of worker pods |
-| `scheduler.enabled` | `true` | Deploy the cron scheduler |
-| `persistence.enabled` | `true` | Create a PVC for `/etc/augias` |
-| `persistence.size` | `1Gi` | PVC size |
-| `ingress.enabled` | `false` | Create an Ingress resource |
+| `app.secret` | *(générée si vide)* | Le secret de l'application. **Conservez-le** : le changer invalide toutes les sessions et tous les jetons d'API. |
+| `app.locale` | `en` | La langue par défaut. |
+| `app.allowRegistration` | `false` | Ouvrir l'inscription publique. |
+| `app.workerMode` | `false` | Activer le mode worker persistant de FrankenPHP. |
+| `install.enabled` | `false` | Lancer l'installeur en ligne de commande comme Job (sans l'assistant web). |
+| `install.adminEmail` | — | L'e-mail de l'administrateur (avec `install.enabled=true`). |
+| `install.adminPassword` | — | Le mot de passe de l'administrateur (avec `install.enabled=true`). |
+| `worker.enabled` | `true` | Déployer le worker consommateur de Messenger. |
+| `worker.replicaCount` | `1` | Le nombre de pods worker. |
+| `scheduler.enabled` | `true` | Déployer le planificateur cron. |
+| `persistence.enabled` | `true` | Créer un PVC pour `/etc/augias`. |
+| `persistence.size` | `1Gi` | La taille du PVC. |
+| `ingress.enabled` | `false` | Créer une ressource Ingress. |
 
-## Upgrading
+## Mettre à jour
 
-Always pass `--reuse-values` (or re-specify `app.secret`) so the secret doesn't change between releases:
+Passez toujours `--reuse-values` (ou redonnez `app.secret`) pour que le secret ne change pas d'une version à l'autre :
 
 ```bash
-helm repo update augias
 helm upgrade augias helm/augias --reuse-values
 ```
 
-Database migrations run automatically as a pre-upgrade Job before the new pods start.
+Les migrations de base de données passent automatiquement, dans un Job lancé avant le démarrage des nouveaux pods.
 
-## Persistence
+## Persistance
 
-`/etc/augias` stores the application's Symfony secrets vault. The PVC is annotated with `helm.sh/resource-policy: keep` so it is **not** deleted when you run `helm uninstall`. Back it up before migrating clusters.
+`/etc/augias` contient le coffre de secrets Symfony de l'application. Le PVC porte l'annotation `helm.sh/resource-policy: keep` : il n'est **pas** supprimé par `helm uninstall`. Sauvegardez-le avant de changer de cluster.
 
 :::warning
-For multi-replica deployments (`replicaCount > 1`), the PVC must use a `ReadWriteMany` StorageClass so all pods can share the vault. A `ReadWriteOnce` PVC only works with a single replica.
+Avec plusieurs réplicas (`replicaCount > 1`), le PVC doit utiliser une StorageClass `ReadWriteMany` pour que tous les pods partagent le coffre. Un PVC `ReadWriteOnce` ne fonctionne qu'avec un seul réplica.
 :::
 
-## Related
+## Voir aussi
 
-- [System installation wizard](./system-installation.md)
+- [Assistant d'installation](./system-installation.md)
 - [Docker](./docker.md)

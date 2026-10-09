@@ -1,46 +1,46 @@
 ---
-title: Quick install
-description: Install Augias from the self-contained download — no PHP, webserver, or Composer required.
+title: Installation rapide
+description: Installer Augias depuis le téléchargement autonome, sans PHP, serveur web ni Composer.
 sidebar_position: 2
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Quick install
+# Installation rapide
 
-The quick install bundles Augias, PHP, and a webserver into a single self-contained download. It is the fastest way to get a production-ready instance running and is the recommended install method for most users.
+L'installation rapide réunit Augias, PHP et un serveur web dans un seul téléchargement autonome. C'est le moyen le plus rapide d'obtenir une instance prête pour la production, et la méthode conseillée pour la plupart des utilisateurs.
 
-## System requirements
+## Configuration requise
 
-- 64-bit Linux (`x86_64` or `arm64`) or macOS (Intel or Apple Silicon).
-- A database — SQLite works out of the box; MySQL, MariaDB, or PostgreSQL are also supported.
+- Linux 64 bits (`x86_64` ou `arm64`) ou macOS (Intel ou Apple Silicon).
+- Une base de données : SQLite fonctionne d'emblée ; MySQL, MariaDB et PostgreSQL sont aussi pris en charge.
 
-You do **not** need PHP, Composer, Nginx, Apache, or a separate cron job — the bundled webserver and worker handle all of it.
+Vous n'avez **pas** besoin de PHP, de Composer, de Nginx, d'Apache ni d'une tâche cron : le serveur web et le worker intégrés s'en chargent.
 
 :::note[Windows]
-There is no native Windows build. Run the Linux binary inside [WSL2](https://learn.microsoft.com/windows/wsl/install) instead.
+Il n'existe pas de version Windows native. Utilisez le binaire Linux dans [WSL2](https://learn.microsoft.com/fr-fr/windows/wsl/install).
 :::
 
-## Download and run
+## Télécharger et lancer
 
 <Tabs groupId="os">
   <TabItem value="linux" label="Linux" default>
 
-  **One-liner install** — downloads the binary and installs it to `/usr/local/bin`:
+  **En une ligne** : télécharge le binaire et l'installe dans `/usr/local/bin` :
 
   ```bash
   curl -fsSL https://raw.githubusercontent.com/herc-si/Augias/4.0.x/packaging/install.sh | sh
   augias run
   ```
 
-  To also install a systemd service so Augias starts on boot:
+  Pour installer aussi un service systemd qui démarre Augias au lancement de la machine :
 
   ```bash
   curl -fsSL https://raw.githubusercontent.com/herc-si/Augias/4.0.x/packaging/install.sh | INSTALL_SERVICE=1 sh
   ```
 
-  **Manual download** — grab the binary for your architecture from the [releases page](https://github.com/herc-si/Augias/releases/latest), then make it executable and start it:
+  **Téléchargement manuel** : récupérez le binaire de votre architecture sur la [page des versions](https://github.com/herc-si/Augias/releases/latest), rendez-le exécutable et lancez-le :
 
   ```bash
   chmod +x augias
@@ -50,130 +50,130 @@ There is no native Windows build. Run the Linux binary inside [WSL2](https://lea
   </TabItem>
   <TabItem value="macos" label="macOS">
 
-  Download the latest binary for your architecture from the [releases page](https://github.com/herc-si/Augias/releases/latest), then make it executable and start it:
+  Téléchargez le binaire de votre architecture sur la [page des versions](https://github.com/herc-si/Augias/releases/latest), rendez-le exécutable et lancez-le :
 
   ```bash
   chmod +x augias
   ./augias run
   ```
 
-  On first launch macOS may block the binary because it isn't notarised. Open `System Settings → Privacy & Security` and click `Open anyway`, or run `xattr -d com.apple.quarantine ./augias` first.
+  Au premier lancement, macOS peut bloquer le binaire faute de notarisation. Ouvrez `Réglages Système → Confidentialité et sécurité` et cliquez sur `Ouvrir quand même`, ou lancez d'abord `xattr -d com.apple.quarantine ./augias`.
 
   :::tip
-  On macOS, [Homebrew](./homebrew.md) is the easiest way to install and keep Augias up to date.
+  Sur macOS, [Homebrew](./homebrew.md) est le moyen le plus simple d'installer Augias et de le tenir à jour.
   :::
 
   </TabItem>
 </Tabs>
 
-The application starts on `https://localhost:8765` with a self-signed certificate. Open the URL in your browser and continue with the [first-run wizard](./system-installation.md).
+L'application démarre sur `https://localhost:8765` avec un certificat auto-signé. Ouvrez l'adresse dans votre navigateur et poursuivez avec l'[assistant de premier démarrage](./system-installation.md).
 
 :::info
-Recurring tasks (such as recurring invoices) and async work (email sending) run automatically — there is no separate cron job or messenger consumer to set up.
+Les tâches récurrentes (comme les factures récurrentes) et le travail en arrière-plan (envoi des e-mails) tournent seuls : pas de tâche cron ni de consommateur de messages à mettre en place.
 :::
 
 ## SSL
 
-The application uses [Caddy](https://caddyserver.com/) under the hood, so HTTPS is enabled by default.
+L'application s'appuie sur [Caddy](https://caddyserver.com/) : le HTTPS est activé par défaut.
 
-### Self-signed (default)
+### Auto-signé (par défaut)
 
 ```bash
 ./augias run
 ```
 
-Useful for local testing. Browsers will show a warning that you have to accept once.
+Pratique pour des essais en local. Les navigateurs affichent un avertissement à accepter une fois.
 
-### Let's Encrypt (recommended for production)
+### Let's Encrypt (conseillé en production)
 
 ```bash
-./augias run --domain=invoice.example.com --lets-encrypt
+./augias run --domain=factures.example.com --lets-encrypt
 ```
 
-Issues and renews a free SSL certificate from [Let's Encrypt](https://letsencrypt.org/) automatically. Requirements:
+Obtient et renouvelle automatiquement un certificat gratuit de [Let's Encrypt](https://letsencrypt.org/). Conditions :
 
-- The domain's DNS `A`/`AAAA` record must point at the server's public IP.
-- Ports `80` and `443` must be reachable from the public internet (Let's Encrypt validates ownership over them).
+- l'enregistrement DNS `A`/`AAAA` du domaine doit pointer vers l'adresse IP publique du serveur ;
+- les ports `80` et `443` doivent être joignables depuis internet (Let's Encrypt y vérifie la propriété du domaine).
 
-### Custom certificate
+### Certificat personnel
 
 ```bash
 ./augias run \
-  --domain=invoice.example.com \
+  --domain=factures.example.com \
   --ssl-cert=/etc/ssl/augias.pem \
   --ssl-key=/etc/ssl/augias.key
 ```
 
-Use this when you already have a certificate (wildcard, EV, or one issued by a corporate CA).
+Si vous avez déjà un certificat (wildcard, EV, ou délivré par l'autorité de votre entreprise).
 
-### Behind a reverse proxy
+### Derrière un proxy inverse
 
 ```bash
 ./augias run --disable-https
 ```
 
-Use when an upstream proxy (Cloudflare, Nginx, an ingress controller) terminates TLS for you. Augias listens over plain HTTP and trusts the proxy's `X-Forwarded-*` headers.
+Quand un proxy en amont (Cloudflare, Nginx, un contrôleur d'entrée) gère le TLS. Augias écoute en HTTP simple et fait confiance aux en-têtes `X-Forwarded-*` du proxy.
 
-## Available flags
+## Options disponibles
 
-All flags below apply to the `run` command.
+Toutes ces options s'appliquent à la commande `run`.
 
-| Flag | Default | Description |
+| Option | Défaut | Description |
 | --- | --- | --- |
-| `--domain <name>` | _(none)_ | Public hostname. Required for `--lets-encrypt` and `--ssl-cert`. |
-| `--port <port>` | `8765` | Port to listen on. |
-| `--server-ip <ip>` | _(auto-detected)_ | Bind to a specific local IP. By default the server binds to all interfaces. |
-| `--lets-encrypt` | `false` | Issue and auto-renew a Let's Encrypt certificate. Requires `--domain`. |
-| `--ssl-cert <path>` | _(none)_ | Path to a custom certificate (PEM). Requires `--ssl-key` and `--domain`. |
-| `--ssl-key <path>` | _(none)_ | Path to the certificate's private key. Requires `--ssl-cert` and `--domain`. |
-| `--disable-https` | `false` | Serve plain HTTP. Use behind a reverse proxy. |
-| `--worker-mode` | `false` | Enable FrankenPHP worker mode for higher throughput (keeps PHP alive between requests). |
-| `--worker-threads <n>` | `2` | Number of FrankenPHP worker threads when `--worker-mode` is enabled. |
-| `--messenger-workers <n>` | `1` | Number of background async workers. Set to `0` to run no workers in this process. |
-| `--log-format <format>` | `console` | `console` for human-readable output, `json` for structured logs. |
-| `--enable-metrics` | `false` | Expose a Prometheus metrics endpoint at `/metrics` on a dedicated port. |
-| `--metrics-port <port>` | `9090` | Port for the metrics endpoint. |
-| `--skip-intro` | `false` | Suppress the boot banner. |
+| `--domain <nom>` | _(aucun)_ | Le nom d'hôte public. Obligatoire avec `--lets-encrypt` et `--ssl-cert`. |
+| `--port <port>` | `8765` | Le port d'écoute. |
+| `--server-ip <ip>` | _(détectée)_ | Écouter sur une adresse IP locale précise. Par défaut, le serveur écoute sur toutes les interfaces. |
+| `--lets-encrypt` | `false` | Obtenir et renouveler un certificat Let's Encrypt. Demande `--domain`. |
+| `--ssl-cert <chemin>` | _(aucun)_ | Le chemin d'un certificat personnel (PEM). Demande `--ssl-key` et `--domain`. |
+| `--ssl-key <chemin>` | _(aucun)_ | Le chemin de la clé privée du certificat. Demande `--ssl-cert` et `--domain`. |
+| `--disable-https` | `false` | Servir en HTTP simple. Derrière un proxy inverse. |
+| `--worker-mode` | `false` | Activer le mode worker de FrankenPHP pour plus de débit (PHP reste chargé entre les requêtes). |
+| `--worker-threads <n>` | `2` | Le nombre de threads worker FrankenPHP quand `--worker-mode` est activé. |
+| `--messenger-workers <n>` | `1` | Le nombre de workers d'arrière-plan. `0` pour n'en lancer aucun dans ce processus. |
+| `--log-format <format>` | `console` | `console` pour une sortie lisible, `json` pour des journaux structurés. |
+| `--enable-metrics` | `false` | Publier des métriques Prometheus sur `/metrics`, sur un port dédié. |
+| `--metrics-port <port>` | `9090` | Le port des métriques. |
+| `--skip-intro` | `false` | Masquer la bannière de démarrage. |
 
-## Other commands
+## Autres commandes
 
 ```bash
-./augias console <command>   # run any Symfony console command (e.g. cache:clear)
-./augias worker --workers=2  # dedicated messenger worker process (e.g. for Kubernetes)
-./augias version             # print the version
-./augias build-info          # print build details
+./augias console <commande>  # lancer une commande console Symfony (par exemple cache:clear)
+./augias worker --workers=2  # processus worker dédié (par exemple pour Kubernetes)
+./augias version             # afficher la version
+./augias build-info          # afficher le détail de la compilation
 ```
 
-## Health check
+## Vérifier l'état
 
 ```bash
 curl http://localhost:8765/health
 ```
 
-Returns `OK` (HTTP 200) when the application is running.
+Renvoie `OK` (HTTP 200) quand l'application tourne.
 
-## Updating
+## Mettre à jour
 
-Replace the binary with the latest release and restart it. Your data lives apart from the binary, so updates don't touch your invoices, clients, or settings:
+Remplacez le binaire par la dernière version et relancez-le. Vos données sont rangées à part du binaire : une mise à jour ne touche ni vos factures, ni vos clients, ni vos réglages.
 
-| System  | Configuration and SQLite database             | Supporting documents                                  |
-|---------|-----------------------------------------------|-------------------------------------------------------|
-| Linux   | `~/.config/Augias/env`                        | `~/.config/Augias/attachments`                        |
-| macOS   | `~/Library/Application Support/Augias/env`    | `~/Library/Application Support/Augias/attachments`    |
-| Windows | `%AppData%\Augias\env`                        | `%AppData%\Augias\attachments`                        |
+| Système | Configuration et base SQLite | Justificatifs |
+| --- | --- | --- |
+| Linux | `~/.config/Augias/env` | `~/.config/Augias/attachments` |
+| macOS | `~/Library/Application Support/Augias/env` | `~/Library/Application Support/Augias/attachments` |
+| Windows | `%AppData%\Augias\env` | `%AppData%\Augias\attachments` |
 
-These are the directories to back up. Set `AUGIAS_CONFIG_DIR` and `AUGIAS_ATTACHMENTS_DIR` to keep them elsewhere. `~/.Augias/` only holds the application the binary unpacks, one copy per version.
+Ce sont les dossiers à sauvegarder. Réglez `AUGIAS_CONFIG_DIR` et `AUGIAS_ATTACHMENTS_DIR` pour les placer ailleurs. `~/.Augias/` ne contient que l'application décompressée par le binaire, une copie par version.
 
-:::info[Coming from 4.0.0]
-The 4.0.0 binary kept your data inside the unpacked application, under `~/.SolidInvoice/`, in a directory that changes with every version. The first start of a newer binary copies it to the directories above and says so. The old copy is left in place; delete `~/.SolidInvoice/` once you have checked that everything is there.
+:::info[Depuis la 4.0.0]
+Le binaire 4.0.0 gardait vos données dans l'application décompressée, sous `~/.SolidInvoice/`, dans un dossier qui change à chaque version. Le premier lancement d'un binaire plus récent les copie dans les dossiers ci-dessus et le signale. L'ancienne copie reste en place ; supprimez `~/.SolidInvoice/` après avoir vérifié que tout y est.
 :::
 
-## Worker mode (high-traffic deployments)
+## Mode worker (fort trafic)
 
-For instances handling sustained traffic, enable worker mode:
+Pour une instance au trafic soutenu, activez le mode worker :
 
 ```bash
 ./augias run --worker-mode --worker-threads=4 --messenger-workers=5
 ```
 
-Worker mode keeps PHP processes alive between requests, which significantly reduces request latency at the cost of higher memory use.
+Le mode worker garde les processus PHP en vie entre les requêtes, ce qui réduit nettement la latence au prix d'une consommation de mémoire plus élevée.
