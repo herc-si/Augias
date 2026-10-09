@@ -85,6 +85,20 @@ final class CreditNoteElectronicInvoicingTest extends KernelTestCase
         self::assertCount(0, $creditNote->getElectronicInvoiceSubmissions());
     }
 
+    /**
+     * The column migration 56 creates. Left to the naming strategy, the
+     * mapping read "creditNote_id", which the test schema (built from the
+     * mapping) had and a migrated database did not: a 500 on every credit
+     * note page.
+     */
+    public function testTheSubmissionMapsTheMigratedColumn(): void
+    {
+        $metadata = $this->entityManager()->getClassMetadata(ElectronicInvoiceSubmission::class);
+
+        self::assertSame('credit_note_id', $metadata->getSingleAssociationJoinColumnName('creditNote'));
+        self::assertSame('invoice_id', $metadata->getSingleAssociationJoinColumnName('invoice'));
+    }
+
     private function issue(Client $client): CreditNote
     {
         $creditNote = CreditNoteFactory::createOne([

@@ -59,7 +59,7 @@ class ElectronicInvoiceSubmission
     private ?Invoice $invoice = null;
 
     #[ORM\ManyToOne(targetEntity: CreditNote::class, inversedBy: 'electronicInvoiceSubmissions')]
-    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(name: 'credit_note_id', nullable: true, onDelete: 'CASCADE')]
     private ?CreditNote $creditNote = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
