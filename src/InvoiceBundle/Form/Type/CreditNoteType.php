@@ -22,6 +22,7 @@ use Augias\InvoiceBundle\DTO\CreditNoteFormDTO;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Enum\CreditReason;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\MoneyBundle\Form\Type\HiddenMoneyType;
 use Augias\SettingsBundle\SystemConfig;
 use Doctrine\ORM\EntityRepository;
@@ -75,6 +76,11 @@ class CreditNoteType extends AbstractType
 
         // Only the chosen client's invoices, and the field stays optional: a
         // rebate or a gesture credits no single invoice.
+        //
+        // Only issued ones, paid or not. An issued invoice cannot be withdrawn,
+        // so a credit note is how it gets corrected, and an unpaid one is the
+        // commonest case. A draft has not been issued (and has no number to
+        // show here), a cancelled one was never owed.
         $builder->addDependent('creditedInvoice', 'client', function (DependentField $field, ?Client $client): void {
             if (! $client instanceof Client || ! $client->getId() instanceof Ulid) {
                 return;
@@ -89,7 +95,13 @@ class CreditNoteType extends AbstractType
                 'choice_label' => 'invoiceId',
                 'query_builder' => static fn (EntityRepository $repo) => $repo->createQueryBuilder('i')
                     ->where('i.client = :client')
+                    ->andWhere('i.status IN (:issued)')
                     ->setParameter('client', $clientId, UlidType::NAME)
+                    ->setParameter('issued', [
+                        InvoiceStatus::Pending->value,
+                        InvoiceStatus::Overdue->value,
+                        InvoiceStatus::Paid->value,
+                    ])
                     ->orderBy('i.invoiceDate', 'DESC'),
             ]);
         });
