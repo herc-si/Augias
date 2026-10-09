@@ -15,7 +15,6 @@ namespace Augias\CronBundle\Enum;
 
 use Symfony\Contracts\Translation\TranslatableInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use function ucfirst;
 
 enum ScheduleRecurringType: string implements TranslatableInterface
 {
@@ -26,7 +25,7 @@ enum ScheduleRecurringType: string implements TranslatableInterface
 
     public function trans(TranslatorInterface $translator, ?string $locale = null): string
     {
-        return $translator->trans(ucfirst($this->value), [], null, $locale);
+        return $translator->trans('invoice.recurring.type.' . $this->value, [], null, $locale);
     }
 
     public function isDaily(): bool

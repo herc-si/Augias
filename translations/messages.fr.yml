@@ -653,6 +653,9 @@ change_password:
         title: 'Mettre à jour votre mot de passe'
     submit: Enregistrer
     subtitle: 'Mettez à jour votre mot de passe pour sécuriser votre compte'
+client_mode:
+    existing: 'Client existant'
+    new: 'Nouveau client'
 client:
     address:
         add: 'Ajouter une adresse'
@@ -1042,6 +1045,24 @@ credit_note:
         heading: 'AVOIR'
         credits_invoice: "Avoir se rapportant à la facture %invoice%."
 custom_field:
+    type:
+        text: Texte
+        textarea: 'Texte long'
+        number: Nombre
+        date: Date
+        email: E-mail
+        url: URL
+        checkbox: 'Case à cocher'
+        select: 'Choix unique'
+        multi_select: 'Choix multiple'
+    target:
+        client: Client
+        contact: Contact
+        invoice: Facture
+        quote: Devis
+    visibility:
+        internal: 'Interne uniquement'
+        client_visible: 'Visible par le client'
     add: 'Ajouter un champ'
     badge:
         client_visible: 'Visible client'
@@ -2299,6 +2320,10 @@ invoice:
         start_date: 'Date de début'
         total_generated: 'Total généré'
         type:
+            daily: Quotidienne
+            weekly: Hebdomadaire
+            monthly: Mensuelle
+            yearly: Annuelle
             label: 'Type de récurrence'
             placeholder: 'Sélectionner un type de récurrence'
         upcoming: 'Prochaines occurrences'
@@ -4088,6 +4113,16 @@ status:
     unknown: Inconnu
 success: Succès
 tax:
+    category:
+        Standard: Normale
+        ZeroRated: 'Taux zéro'
+        Exempt: Exonérée
+        OutOfScope: 'Hors champ'
+        ReverseCharge: Autoliquidation
+    choice:
+        label: '%name% (%rate%)'
+        compound: '%name% (%rate%, composée)'
+        with_category: '%label% [%category%]'
     company_identifiers:
         add: 'Ajouter un identifiant fiscal'
         description: 'Les identifiants de votre société : ils figurent sur les factures et devis que vous émettez, et identifient vos factures électroniques.'

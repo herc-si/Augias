@@ -22,12 +22,8 @@ enum CustomFieldTarget: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::CLIENT => 'Client',
-            self::CONTACT => 'Contact',
-            self::INVOICE => 'Invoice',
-            self::QUOTE => 'Quote',
-        };
+        // A translation key: the settings screen shows it in the user's language.
+        return 'custom_field.target.' . strtolower($this->value);
     }
 
     public function supportsVisibility(): bool
