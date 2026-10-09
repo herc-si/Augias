@@ -36,6 +36,8 @@ For a rebate or a commercial gesture that relates to no particular invoice:
 1. In the sidebar, open `Credit Notes`, then click `Create Credit Note`.
 2. Choose the client, then the `Reason`: `Cancellation`, `Return`, `Rebate`, `Commercial gesture` or `Error correction`.
 3. Leave `Invoice being credited` on `No specific invoice`, or choose an invoice. Only the client's issued invoices are offered: pending, overdue or paid.
+
+   Once the invoice is chosen, a summary shows it: number and status, date, total, `Still owed` and `Already credited` by issued credit notes, so it is not credited twice. The `Copy the invoice lines` button copies its lines as invoiced; then remove what you do not credit.
 4. Add one line per item credited.
 
 The credit note's terms are filled in with the credit notes' text, not the invoices'. See [Default terms](./default-terms.md#credit-notes).

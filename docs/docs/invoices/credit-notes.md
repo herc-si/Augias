@@ -36,6 +36,8 @@ Pour une ristourne ou un geste commercial qui ne se rapporte à aucune facture e
 1. Dans le menu latéral, ouvrez `Avoirs`, puis cliquez sur `Créer un avoir`.
 2. Choisissez le client, puis le `Motif` : `Annulation`, `Retour`, `Ristourne`, `Geste commercial` ou `Correction d'erreur`.
 3. Laissez `Facture concernée` sur `Aucune facture précise`, ou choisissez une facture. Seules les factures émises du client sont proposées : en attente, en retard ou payées.
+
+   Une fois la facture choisie, un résumé l'affiche : numéro et statut, date, total, `Reste dû` et `Déjà crédité` par les avoirs émis, pour ne pas la créditer deux fois. Le bouton `Reprendre les lignes de la facture` recopie ses lignes telles qu'elles ont été facturées ; retirez ensuite ce que vous ne créditez pas.
 4. Ajoutez une ligne par élément crédité.
 
 Les conditions de l'avoir sont préremplies avec le texte des avoirs, pas avec celui des factures. Voir [Conditions par défaut](./default-terms.md#avoirs).
