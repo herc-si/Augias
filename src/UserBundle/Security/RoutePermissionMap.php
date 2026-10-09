@@ -146,6 +146,7 @@ final class RoutePermissionMap
         '_credit_notes_send' => CompanyPermission::BillingWrite,
         '_einvoicing_incoming_respond' => CompanyPermission::BillingWrite,
         '_einvoicing_send' => CompanyPermission::BillingWrite,
+        '_einvoicing_send_credit_note' => CompanyPermission::BillingWrite,
         '_einvoicing_sync' => CompanyPermission::BillingWrite,
         '_invoices_clone' => CompanyPermission::BillingWrite,
         '_invoices_clone_recurring' => CompanyPermission::BillingWrite,

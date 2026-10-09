@@ -34,7 +34,7 @@
 
     {% if invoice %}
         {{ email.spacer('xs') }}
-        {{ email.info_row('einvoicing.notification_problem.invoice_number'|trans({}, 'email'), invoice_number(invoice) ?? invoice.id) }}
+        {{ email.info_row('einvoicing.notification_problem.invoice_number'|trans({}, 'email'), (number is defined and number ? number : (invoice_number(invoice) ?? invoice.id))) }}
         {{ email.spacer('xs') }}
         {{ email.info_row('einvoicing.notification_problem.client'|trans({}, 'email'), invoice.client.name) }}
     {% endif %}
@@ -47,7 +47,7 @@
     {{ email.divider('md') }}
 
     {% if invoice %}
-        {{ email.button('einvoicing.notification_problem.view_invoice'|trans({}, 'email'), url('_invoices_view', {'id': invoice.id}), 'primary', 'large') }}
+        {{ email.button('einvoicing.notification_problem.view_invoice'|trans({}, 'email'), (creditNote is defined and creditNote is not null ? url('_credit_notes_view', {'id': creditNote.id}) : url('_invoices_view', {'id': invoice.id})), 'primary', 'large') }}
     {% else %}
         {{ email.button('einvoicing.notification_problem.view_settings'|trans({}, 'email'), url('_einvoicing_providers'), 'primary', 'large') }}
     {% endif %}

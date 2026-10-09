@@ -15,6 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Provider;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use LogicException;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
@@ -69,7 +70,7 @@ final readonly class ElectronicInvoiceProviderRegistry
         return $provider instanceof ElectronicInvoiceReceiverInterface ? $provider : null;
     }
 
-    public function send(Invoice $invoice): ElectronicInvoiceSubmissionResult
+    public function send(Invoice | CreditNote $invoice): ElectronicInvoiceSubmissionResult
     {
         $setting = $this->settingRepository->findActive();
 

@@ -15,6 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Action;
 
 use Augias\CoreBundle\Response\FlashResponse;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceManagerInterface;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Generator;
 use LogicException;
@@ -36,7 +37,19 @@ final class SendElectronicInvoice
 
     public function __invoke(Request $request, Invoice $invoice): RedirectResponse
     {
-        $route = $this->router->generate('_invoices_view', ['id' => $invoice->getId()]);
+        return $this->sendAndReturnTo($invoice, $this->router->generate('_invoices_view', ['id' => $invoice->getId()]));
+    }
+
+    /**
+     * The same for a credit note: sent again from its own page.
+     */
+    public function creditNote(CreditNote $creditNote): RedirectResponse
+    {
+        return $this->sendAndReturnTo($creditNote, $this->router->generate('_credit_notes_view', ['id' => $creditNote->getId()]));
+    }
+
+    private function sendAndReturnTo(Invoice | CreditNote $invoice, string $route): RedirectResponse
+    {
 
         try {
             $submission = $this->manager->send($invoice);

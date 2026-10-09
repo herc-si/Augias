@@ -15,8 +15,10 @@ namespace Augias\InvoiceBundle\Action\CreditNote;
 
 use Augias\CoreBundle\Pdf\Generator;
 use Augias\CoreBundle\Response\PdfResponse;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceManagerInterface;
 use Augias\InvoiceBundle\DTO\CreditNoteAllocationDTO;
 use Augias\InvoiceBundle\Entity\CreditNote;
+use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Form\Type\CreditNoteAllocationType;
 use Augias\InvoiceBundle\Service\CreditNoteAllocator;
 use Brick\Math\BigNumber;
@@ -49,6 +51,7 @@ final readonly class View
         private CreditNoteAllocator $allocator,
         private FormFactoryInterface $formFactory,
         private RouterInterface $router,
+        private ?ElectronicInvoiceManagerInterface $electronicInvoiceManager = null,
     ) {
     }
 
@@ -85,6 +88,11 @@ final readonly class View
             'allocationForm' => $creditNote->isIssued() && $remaining->isPositive()
                 ? $this->allocationForm($creditNote)->createView()
                 : null,
+            // To a business client, an issued credit note is sent through the
+            // platform; offered by hand when it has not gone through.
+            'showElectronicInvoiceAction' => $creditNote->getStatus() !== CreditNoteStatus::Draft
+                && $this->electronicInvoiceManager?->isEligible($creditNote) === true
+                && ! $this->wasAccepted($creditNote),
         ];
     }
 
@@ -104,5 +112,20 @@ final readonly class View
             'client_id' => $clientId,
             'action' => $this->router->generate('_credit_notes_allocate', ['id' => $creditNote->getId()]),
         ]);
+    }
+
+    /**
+     * Already on its way: a submission the platform took. Sending again would
+     * duplicate it.
+     */
+    private function wasAccepted(CreditNote $creditNote): bool
+    {
+        foreach ($creditNote->getElectronicInvoiceSubmissions() as $submission) {
+            if ($submission->isSuccess()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
