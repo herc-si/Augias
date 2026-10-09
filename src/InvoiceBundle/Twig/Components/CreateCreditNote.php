@@ -47,6 +47,7 @@ use Symfony\UX\LiveComponent\Attribute\PreReRender;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 use Symfony\UX\LiveComponent\LiveCollectionTrait;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
+use Symfony\UX\TwigComponent\Attribute\PostMount;
 use function assert;
 
 /**
@@ -103,6 +104,19 @@ final class CreateCreditNote extends AbstractController
      *
      * @throws MathException
      */
+    /**
+     * Opened from an invoice, the credit note already has lines: its totals are
+     * worked out before the first render rather than at the first change.
+     * Before initializeForm() (priority 0), so the form starts with them.
+     *
+     * @throws MathException
+     */
+    #[PostMount(priority: 5)]
+    public function calculateTotalsOnMount(): void
+    {
+        $this->calculateTotals();
+    }
+
     #[PreReRender(priority: -10)]
     public function calculateTotals(): void
     {
