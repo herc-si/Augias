@@ -20,8 +20,9 @@ Cochez `Client`, `Fournisseur`, ou les deux. Une même fiche peut servir aux deu
 
 ## Informations générales
 
-- **Rechercher dans l'annuaire des entreprises** : tapez le nom, le SIREN ou le SIRET d'une entreprise française. Choisissez-la dans les résultats : le nom, les identifiants et l'adresse du siège se remplissent depuis l'annuaire officiel. Une entreprise fermée est signalée `Fermée`.
-- **Nom** : le nom ou la raison sociale du client, repris partout où il apparaît (factures, devis, liste, recherche). **Pour un particulier, laissez-le vide** : il sera rempli avec le nom du contact. C'est ce qui fait de la fiche celle d'un particulier plutôt que d'un professionnel.
+- **Type de client** : `Professionnel` ou `Particulier`. C'est ce choix, et lui seul, qui fait de la fiche celle d'un professionnel ou d'un particulier.
+- **Rechercher dans l'annuaire des entreprises** : tapez le nom, le SIREN ou le SIRET d'une entreprise française. Choisissez-la dans les résultats : le nom, les identifiants et l'adresse du siège se remplissent depuis l'annuaire officiel. Une entreprise fermée est signalée `Fermée`. Choisir une entreprise passe le type à `Professionnel`. La recherche n'apparaît pas pour un particulier.
+- **Nom** : le nom ou la raison sociale du client, repris partout où il apparaît (factures, devis, liste, recherche). Pour un particulier, vous pouvez le laisser vide : il sera rempli avec le nom du contact.
 - **Site web** *(facultatif)* : l'adresse complète, affichée comme lien sur la fiche.
 - **Code de devise** *(facultatif)* : la devise dans laquelle vous facturez ce client. `Par défaut du système` reprend la devise de votre entreprise. Voir [Devise du client](./client-currency.md).
 
@@ -43,7 +44,7 @@ Cliquez sur `Ajouter un contact` pour en ajouter un autre, et sur `Supprimer` po
 
 ## Identifiants fiscaux
 
-`SIREN`, `SIRET` et `N° de TVA intracommunautaire` figurent sur les factures et les devis adressés au client, et servent à lui adresser ses factures électroniques. Laissez-les vides pour un particulier.
+`SIREN`, `SIRET` et `N° de TVA intracommunautaire` figurent sur les factures et les devis adressés au client, et servent à lui adresser ses factures électroniques. Ils n'apparaissent pas pour un particulier.
 
 Sous `Autres identifiants`, `Ajouter un identifiant` ajoute une adresse électronique de facturation (quand ce n'est pas le SIREN), un RCS, un code APE/NAF ou un autre identifiant. Voir [Identifiants fiscaux des clients](../taxes/client-tax-identifiers.md).
 

@@ -12,7 +12,7 @@ Les identifiants fiscaux d'un client sont les siens : SIREN, SIRET, numéro de T
 
 Les identifiants font partie de la fiche du client. Saisissez-les à la création du client ou plus tard, depuis le formulaire de modification. La recherche dans l'annuaire des entreprises les remplit pour une entreprise française : voir [Créer un client](../managing-clients/create-new-client.md).
 
-Dans le formulaire, le cadre **Identifiants fiscaux** propose trois champs : **SIREN**, **SIRET** et **N° de TVA intracommunautaire**. Laissez-les vides pour un particulier.
+Dans le formulaire, le cadre **Identifiants fiscaux** propose trois champs : **SIREN**, **SIRET** et **N° de TVA intracommunautaire**. Ils n'apparaissent pas quand la fiche est celle d'un particulier.
 
 ## Autres identifiants
 

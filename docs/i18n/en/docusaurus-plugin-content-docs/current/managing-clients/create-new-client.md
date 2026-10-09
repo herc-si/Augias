@@ -18,6 +18,8 @@ From the sidebar, click `Clients` → `Add Client`, or go to `/clients/add` dire
 
 The top card captures the client's company-level details.
 
+- **`Client type`** — `Business` or `Private individual`. This choice alone makes the record a business's or a private individual's: it decides the default terms, and whether e-invoicing asks for a SIRET. For a private individual, `Name` can be left empty: it is filled in from the contact's name.
+
 - **`Name`** *(required)* — the client's company or trading name. Shown everywhere a client is referenced — invoices, quotes, the client list, search results.
 - **`Website`** *(optional)* — full URL including `https://`. Surfaces as a clickable link on the client view.
 - **`Currency code`** *(optional)* — the currency you'll bill this client in. Leave it on `System Default` to inherit your company's default currency. See [Client currency](./client-currency.md) for how the choice flows through to invoices and quotes.
