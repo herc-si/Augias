@@ -67,7 +67,7 @@ Le premier trouve les factures en retard les plus récentes. Le deuxième trouve
 
 Quand vous créez, modifiez ou supprimez une fiche, par l'application, l'API ou une intégration, la recherche est mise à jour aussitôt. Pas de réindexation programmée ni rien à rafraîchir : une fiche créée se retrouve dès la frappe suivante.
 
-Si les résultats semblent décalés (par exemple après la restauration d'une base en auto-hébergement), les index peuvent être reconstruits : voir [Intégration Meilisearch → Indexation initiale](../integrations/meilisearch.md#initial-indexing).
+Si les résultats semblent décalés (par exemple après la restauration d'une base en auto-hébergement), les index peuvent être reconstruits : voir [Intégration Meilisearch → Indexation initiale](../integrations/meilisearch.md#indexation-initiale).
 
 ## Dépannage
 
@@ -77,7 +77,7 @@ Le moteur de recherche n'est pas configuré pour votre installation. Sur le serv
 
 ### Une fiche que je viens de créer ou de modifier n'apparaît pas
 
-L'indexation se fait dès l'enregistrement, ce cas devrait donc être rare. S'il se produit, en général après une modification directe de la base ou une restauration de sauvegarde, relancez l'import du moteur de recherche en ligne de commande pour reconstruire les index. La commande et ses options sont dans [Intégration Meilisearch → Indexation initiale](../integrations/meilisearch.md#initial-indexing).
+L'indexation se fait dès l'enregistrement, ce cas devrait donc être rare. S'il se produit, en général après une modification directe de la base ou une restauration de sauvegarde, relancez l'import du moteur de recherche en ligne de commande pour reconstruire les index. La commande et ses options sont dans [Intégration Meilisearch → Indexation initiale](../integrations/meilisearch.md#indexation-initiale).
 
 ### Ma recherche libre ne renvoie rien
 
