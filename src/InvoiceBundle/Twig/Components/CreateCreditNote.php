@@ -22,6 +22,7 @@ use Augias\CoreBundle\Twig\Components\ManagesNoteLines;
 use Augias\InvoiceBundle\DTO\CreditNoteFormDTO;
 use Augias\InvoiceBundle\Email\CreditNoteEmail;
 use Augias\InvoiceBundle\Entity\CreditNote;
+use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Form\Type\CreditNoteType;
 use Augias\InvoiceBundle\Manager\CreditNoteFormManager;
 use Augias\InvoiceBundle\Model\CreditNoteGraph;
@@ -171,6 +172,28 @@ final class CreateCreditNote extends AbstractController
         return $this->persist(true, true);
     }
 
+    /**
+     * The credited invoice's discount, shown for what it is: carried over from
+     * the invoice, not a reduction typed on the credit note.
+     */
+    #[ExposeInTemplate]
+    public function invoiceDiscount(): ?Discount
+    {
+        $invoice = $this->dto->creditedInvoice;
+
+        if (! $invoice instanceof Invoice) {
+            return null;
+        }
+
+        $discount = $invoice->getDiscount();
+
+        if (Discount::TYPE_MONEY === $discount->getType()) {
+            return $discount->getValueMoney()->isZero() ? null : $discount;
+        }
+
+        return ($discount->getValuePercentage() ?? 0.0) > 0 ? $discount : null;
+    }
+
     #[ExposeInTemplate]
     public function hasTax(): bool
     {
@@ -193,10 +216,6 @@ final class CreateCreditNote extends AbstractController
     #[ExposeInTemplate]
     public function getDiscountAmount(): string
     {
-        if (! $this->dto->discount instanceof Discount) {
-            return '0';
-        }
-
         try {
             $draft = $this->formManager->createFromDTO($this->dto);
         } catch (InvalidArgumentException) {

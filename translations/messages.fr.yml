@@ -942,6 +942,10 @@ create_new: 'Créer nouveau'
 create_now: 'Créez-en un maintenant.'
 created: Créé
 credit_note:
+    discount:
+        label: 'Remise de la facture d''origine'
+        mirrored_percent: 'Remise de la facture d''origine : %rate% %, appliquée aux lignes créditées, pour que l''avoir rende ce qui a réellement été facturé.'
+        mirrored_amount: 'Remise de la facture d''origine : %amount%, répartie au prorata des lignes créditées, pour que l''avoir rende ce qui a réellement été facturé.'
     delete:
         issued: "L'avoir %number% a été émis et doit être conservé : il ne peut pas être supprimé."
     menu:

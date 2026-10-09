@@ -217,10 +217,16 @@
                     {% endif %}
                 </div>
 
-                {% if form.discount is defined %}
-                    {# Only present on a credit note that mirrors an invoice. #}
-                    <div class="billing-discount-row mt-3">
-                        {{ form_row(form.discount) }}
+                {% if invoiceDiscount %}
+                    {# Not a field: the credited invoice's own discount, carried over
+                     # so the credit note gives back what was actually invoiced. #}
+                    <div class="billing-discount-row mt-3 text-muted small" id="credit-note-invoice-discount">
+                        {{ ux_icon('tabler:percentage', {width: 16, height: 16, class: 'me-1'}) }}
+                        {% if invoiceDiscount.type == 'money' %}
+                            {{ 'credit_note.discount.mirrored_amount'|trans({'%amount%': invoiceDiscount.valueMoney|formatCurrency(currency)}) }}
+                        {% else %}
+                            {{ 'credit_note.discount.mirrored_percent'|trans({'%rate%': invoiceDiscount.valuePercentage|format_number}) }}
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>
@@ -240,9 +246,9 @@
                             <span class="totals-value">{{ dto.baseTotal|formatCurrency(currency) }}</span>
                         </div>
 
-                        {% if form.discount is defined %}
+                        {% if invoiceDiscount %}
                             <div class="totals-row totals-row-discount">
-                                <span class="totals-label">{{ 'billing.discount'|trans }}</span>
+                                <span class="totals-label">{{ 'credit_note.discount.label'|trans }}</span>
                                 <span class="totals-value">{{ discountAmount|formatCurrency(currency) }}</span>
                             </div>
                         {% endif %}

@@ -942,6 +942,10 @@ create_new: 'Create New'
 create_now: 'Create one now.'
 created: Created
 credit_note:
+    discount:
+        label: 'Original invoice discount'
+        mirrored_percent: 'Original invoice discount: %rate% %, applied to the lines credited, so the credit note gives back what was actually invoiced.'
+        mirrored_amount: 'Original invoice discount: %amount%, shared out over the lines credited, so the credit note gives back what was actually invoiced.'
     delete:
         issued: "Credit note %number% has been issued and has to be kept: it cannot be deleted."
     menu:
