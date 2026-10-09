@@ -4069,6 +4069,7 @@ status:
     captured: Enregistré
     complete: Terminé
     credit: Crédit
+    credited: Créditée
     declined: Refusé
     disputed: 'En litige'
     draft: Brouillon
