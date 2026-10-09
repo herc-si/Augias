@@ -149,9 +149,10 @@ class Client implements Stringable, Journalled
 
     /**
      * Whether this party is a registered business (has a SIRET/company
-     * registration) rather than a private individual. Kept in sync with
-     * whether `name` was typed in directly or left blank for {@see ClientType}
-     * to fill in from the primary contact — see its SUBMIT listener. Drives
+     * registration) rather than a private individual. Chosen explicitly in
+     * {@see ClientType} ("Type de client"), never guessed from the name: it
+     * used to follow whether the name was left blank, and a record edited
+     * later flipped to a company. Drives
      * {@see \Augias\TaxBundle\Validator\Constraints\RequiredFiscalIdentifierForElectronicInvoicingValidator}:
      * an individual is never required to provide a SIRET, since the French
      * mandatory e-invoicing rules this validates against only apply

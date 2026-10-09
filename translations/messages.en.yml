@@ -717,6 +717,10 @@ client:
         has_issued_documents: "%name% has issued invoices or credit notes, which have to be kept: the client cannot be deleted. Archive it instead."
     delete_success: 'The client was deleted successfully'
     form:
+        kind:
+            label: 'Client type'
+            company: 'Business'
+            individual: 'Private individual'
         address_description: 'Add billing or shipping addresses'
         contact_description: 'Add at least one contact person'
         currency:
