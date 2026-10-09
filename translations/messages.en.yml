@@ -266,8 +266,8 @@ accounting:
             invoice_refund: 'Refund to client'
             manual: 'Manual entry'
     invoice:
-        cancel_blocked: 'This invoice has been issued and can no longer be cancelled. Raise a credit note against it instead.'
-        edit_blocked: 'This invoice has been issued and can no longer be edited. Raise a credit note against it instead.'
+        cancel_blocked: 'This invoice has been issued and can no longer be cancelled. Raise a credit note against it instead: More Actions, Raise a credit note.'
+        edit_blocked: 'This invoice has been issued and can no longer be edited. Raise a credit note against it instead: More Actions, Raise a credit note.'
     menu:
         bank: Bank
         declarations: Declarations
@@ -2439,6 +2439,7 @@ invoice:
             archive: Archive
             cancel: Cancel
             clone: Clone
+            credit_note: 'Raise a credit note'
             edit: Edit
             mark_paid: 'Mark Paid'
             more_actions: 'More Actions'
