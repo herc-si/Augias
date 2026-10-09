@@ -266,8 +266,8 @@ accounting:
             invoice_refund: 'Remboursement client'
             manual: 'Saisie manuelle'
     invoice:
-        cancel_blocked: "Cette facture a été émise et ne peut plus être annulée. Établissez un avoir qui s'y rapporte."
-        edit_blocked: "Cette facture a été émise et ne peut plus être modifiée. Établissez un avoir qui s'y rapporte."
+        cancel_blocked: "Cette facture a été émise et ne peut plus être annulée. Établissez un avoir qui s'y rapporte : menu « Plus d'actions », « Établir un avoir »."
+        edit_blocked: "Cette facture a été émise et ne peut plus être modifiée. Établissez un avoir qui s'y rapporte : menu « Plus d'actions », « Établir un avoir »."
     menu:
         bank: Banque
         declarations: Déclarations
@@ -2439,6 +2439,7 @@ invoice:
             archive: Archiver
             cancel: Annuler
             clone: Dupliquer
+            credit_note: 'Établir un avoir'
             edit: Modifier
             mark_paid: 'Marquer comme payée'
             more_actions: 'Plus d''actions'
