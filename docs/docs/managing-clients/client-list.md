@@ -1,63 +1,63 @@
 ---
-title: Client list
-description: Browse, search, filter, and archive clients in Augias.
+title: Liste des clients
+description: Parcourir, rechercher, filtrer et archiver vos clients dans Augias.
 sidebar_position: 1
 ---
 
-# Client list
+# Liste des clients
 
-The `Clients` page (sidebar → `Clients` → `List Clients`, or `/clients`) is the entry point for everything client-related — viewing the list of clients you bill, finding a specific client, and archiving the ones you no longer work with.
+La page `Clients` (menu latéral → `Clients` → `Liste des clients`, ou `/clients`) réunit tout ce qui concerne vos clients : la liste de ceux que vous facturez, la recherche d'un client précis et l'archivage de ceux avec qui vous ne travaillez plus.
 
-![The Clients list with stats row, Active/Archived tabs, and a populated grid](/img/managing-clients/client-list-active.png)
+![La liste des clients avec les statistiques, les onglets Actifs et Archivés et le tableau](/img/managing-clients/client-list-active.png)
 
-## What's on the page
+## Le contenu de la page
 
-The top row shows four at-a-glance stats for the current company:
+Quatre statistiques résument l'entreprise en cours :
 
-- `Active Clients` — count of clients you currently bill.
-- `Archived Clients` — count of clients you've archived.
-- `Total Contacts` — sum of contacts across all clients.
-- `Outstanding Balance` — total unpaid amount across all your clients' invoices.
+- `Clients actifs` : le nombre de clients que vous facturez.
+- `Clients archivés` : le nombre de clients archivés.
+- `Total des contacts` : le nombre de contacts, tous clients confondus.
+- `Solde impayé` : le montant impayé sur l'ensemble des factures de vos clients.
 
-Below the stats are two tabs:
+Deux onglets suivent :
 
-- `Active` — clients available for new quotes and invoices.
-- `Archived` — clients hidden from quote/invoice creation but kept for historical records.
+- `Actifs` : les clients proposés sur les nouveaux devis et factures.
+- `Archivés` : les clients retirés de la création de devis et de factures, mais gardés pour l'historique.
 
-Each tab shows its own grid with the same columns: `Name`, `Website`, `Currency`, `Total Balance`, `Outstanding Balance`, and `Created`. The list is searchable (search box above the grid), and you can filter by currency or by date range using the `Filters` button on the right. Click the column-toggle icon next to it to hide or show columns.
+Chaque onglet a son tableau, avec les mêmes colonnes : `Nom`, `Site web`, `Devise`, `Solde total`, `Solde impayé` et `Créé le`. La zone de recherche au-dessus du tableau filtre la liste, et le bouton `Filtres` filtre par devise ou par période. L'icône à côté affiche ou masque des colonnes.
 
-The two icons at the right of every row are `View` (eye icon) — opens the client's detail page — and `Edit` (pencil icon) — opens the same form used to create the client.
+Les deux icônes au bout de chaque ligne sont `Voir` (un œil), qui ouvre la fiche du client, et `Modifier` (un crayon), qui ouvre le formulaire de création.
 
-## Creating a client
+## Créer un client
 
-Click the green `+ Create Client` button at the top right. See [Creating a client](./create-new-client.md) for the full form walkthrough.
+Cliquez sur le bouton de création en haut à droite. Le formulaire est décrit dans [Créer un client](./create-new-client.md).
 
-## Archiving a client
+## Archiver un client
 
-Archiving keeps a client's history (quotes, invoices, payments, contacts, addresses) but hides them from the list of clients you can pick when creating new quotes or invoices.
+L'archivage garde tout l'historique du client (devis, factures, paiements, contacts, adresses), mais le retire de la liste des clients proposés sur les nouveaux devis et factures.
 
-1. On the `Active` tab, tick the checkbox next to one or more clients in the list.
-2. Click the `Archive` batch action that appears in the toolbar above the grid.
+1. Dans l'onglet `Actifs`, cochez un ou plusieurs clients.
+2. Cliquez sur l'action groupée `Archiver` qui apparaît au-dessus du tableau.
 
-Archived clients move to the `Archived` tab. They no longer count toward the `Active Clients` stat, and they don't appear in the client picker on new quotes/invoices.
+Les clients archivés passent dans l'onglet `Archivés`. Ils ne comptent plus dans `Clients actifs` et ne sont plus proposés sur les nouveaux devis et factures.
 
 :::info
-Archiving is a soft action — nothing is deleted. You can restore an archived client at any time, and all their invoices, quotes, and payments remain visible from the dashboard and reports.
+L'archivage ne supprime rien. Vous pouvez réactiver un client archivé à tout moment, et ses factures, devis et paiements restent visibles dans le tableau de bord et les rapports.
 :::
 
-## Restoring an archived client
+## Réactiver un client archivé
 
-Switch to the `Archived` tab, tick the client(s), and use the `Activate` batch action. The clients move back to `Active` and become available for new work again.
+Dans l'onglet `Archivés`, cochez le ou les clients et utilisez l'action groupée `Activer`. Ils reviennent dans `Actifs` et sont de nouveau proposés.
 
-## Deleting a client
+## Supprimer un client
 
-Deletion is permanent and available from both the `Active` and `Archived` tabs — you don't need to archive a client before deleting them.
+La suppression est définitive et possible depuis les deux onglets, sans archiver d'abord.
 
-1. Tick the client(s) to remove on either tab.
-2. Click the `Delete` batch action.
+1. Cochez le ou les clients à supprimer.
+2. Cliquez sur l'action groupée `Supprimer`.
 
 :::danger
-Deleting a client is fully cascading: every quote, invoice, recurring invoice, payment, contact, address, and credit balance attached to the client is permanently deleted along with the client record. The client and all their history disappear from the dashboard, reports, and totals.
+Supprimer un client supprime avec lui ses contacts, ses adresses, son crédit, ses brouillons et ses devis.
 
-If you want to stop billing a client but keep their history for reporting and tax purposes, **archive** them instead. Only delete when you're certain you don't need any record of the relationship.
+Un document émis, en revanche, se conserve : tant qu'un client a une facture ou un avoir émis, même annulé ou archivé, Augias refuse de le supprimer, et rien n'est supprimé. Pour ne plus facturer un client tout en gardant son historique, **archivez-le**.
 :::

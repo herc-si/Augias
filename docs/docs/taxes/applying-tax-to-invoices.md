@@ -1,74 +1,74 @@
 ---
-title: Applying taxes to invoices
-description: Add line-level taxes per item and invoice-level adjustments such as withholding tax.
+title: Appliquer les taxes aux factures
+description: Ajouter des taxes ligne par ligne et des ajustements sur toute la facture, comme une retenue à la source.
 sidebar_position: 4
 ---
 
-# Applying taxes to invoices
+# Appliquer les taxes aux factures
 
-Augias supports two independent levels of tax on every invoice (and quote):
+Augias gère deux niveaux de taxe indépendants sur chaque facture (et chaque devis) :
 
-- **Line taxes** — applied to individual line items, calculated as a percentage or flat amount of each item's price.
-- **Invoice taxes** — applied to the invoice as a whole, used for withholding tax, surcharges, or any adjustment that spans all line items.
+- **Taxes par ligne** : appliquées à chaque ligne, en pourcentage ou en montant fixe de son prix.
+- **Taxes de facture** : appliquées à la facture entière, pour une retenue à la source, une majoration ou tout ajustement qui concerne toutes les lignes.
 
 :::info
-The tax column and the invoice-level tax section only appear when at least one [tax rate](./tax-rates.md) has been configured for your company.
+La colonne des taxes et la section des taxes de facture n'apparaissent qu'une fois au moins un [taux de taxe](./tax-rates.md) créé dans l'entreprise.
 :::
 
-## Line-level taxes
+## Taxes par ligne
 
-Each line item on an invoice has a **Tax** column. You can assign one or more tax rates to a single line.
+Chaque ligne d'une facture a une colonne **TVA**. Une ligne peut recevoir un ou plusieurs taux.
 
-### Add a tax to a line
+### Ajouter une taxe à une ligne
 
-1. On the line item row, click **+ Add tax** in the Tax column.
-2. A dropdown appears — select the tax rate to apply. The dropdown shows the rate name, the percentage or flat amount, and a tag for non-standard categories (e.g. `[exempt]`, `[zero-rated]`, `[reverse charge]`).
-3. To apply a second tax to the same line, click **+ Add tax** again and choose another rate.
+1. Sur la ligne, cliquez sur **+ Ajouter une taxe** dans la colonne des taxes.
+2. Choisissez le taux dans la liste. Elle affiche le nom du taux, le pourcentage ou le montant, et une étiquette pour les catégories particulières (exonérée, taux zéro, autoliquidation).
+3. Pour une seconde taxe sur la même ligne, cliquez de nouveau sur **+ Ajouter une taxe** et choisissez un autre taux.
 
-### Remove a tax from a line
+### Retirer une taxe d'une ligne
 
-Click the remove button next to the tax row on the line item.
+Cliquez sur le bouton de suppression à côté de la taxe, sur la ligne.
 
-### Compound taxes
+### Taxes composées
 
-If a rate is marked as [compound](./tax-rates.md), it is calculated on the subtotal that includes previously applied taxes on that line rather than on the original price. The order in which taxes are listed on the line determines the calculation sequence.
+Un taux marqué [composé](./tax-rates.md#taxe-composée) se calcule sur le sous-total qui inclut les taxes déjà appliquées à la ligne, et non sur le prix d'origine. L'ordre des taxes sur la ligne fixe l'ordre de calcul.
 
-## Invoice-level taxes
+## Taxes de facture
 
-The **Withholding & adjustments** section sits below the line items. Use it for taxes or charges that apply to the whole invoice — for example, TDS (tax deducted at source) or a flat regulatory surcharge.
+La section **Retenues et ajustements** se trouve sous les lignes. Elle sert aux taxes ou frais qui s'appliquent à toute la facture, par exemple une retenue à la source ou une contribution forfaitaire.
 
-### Add an invoice tax
+### Ajouter une taxe de facture
 
-Click **Add invoice tax**. A row with three fields appears:
+Cliquez sur **Ajouter une taxe de facture**. Une ligne de trois champs apparaît :
 
-| Field | Description |
-|---|---|
-| **Tax** | Select a rate from your configured tax rates. The same dropdown as line taxes — shows rate, amount, and category tags. |
-| **Direction** | How the tax affects the invoice total (see below). |
-| **Note** | Optional free-text note printed on the invoice (e.g. `Reverse-charge VAT — recipient accounts for VAT`). |
+| Champ | Description |
+| --- | --- |
+| **Taxe** | Un de vos taux de taxe, dans la même liste que pour les lignes. |
+| **Sens** | L'effet de la taxe sur le total de la facture (voir ci-dessous). |
+| **Note** | Un texte libre facultatif, imprimé sur la facture (par exemple `Autoliquidation : TVA due par le preneur`). |
 
-### Direction
+### Sens
 
-| Direction | Effect |
-|---|---|
-| **Additive** | The tax amount is added to the invoice total. Use for surcharges and additional levies. |
-| **Deductive** | The tax amount is subtracted from the invoice total. Use for withholding tax (TDS) where the client remits the tax directly to the authority. |
-| **Informational** | The tax is displayed on the invoice for reference only and does not change the total. Use when you are required to disclose a tax that the client handles separately. |
+| Sens | Effet |
+| --- | --- |
+| **Additive** | Le montant s'ajoute au total. Pour les majorations et les contributions. |
+| **Déductive** | Le montant se retranche du total. Pour une retenue à la source que le client verse directement à l'administration. |
+| **Informative** | La taxe figure sur la facture pour information, sans changer le total. Quand vous devez mentionner une taxe que le client gère lui-même. |
 
-### Remove an invoice tax
+### Retirer une taxe de facture
 
-Click the trash icon on the right of the tax row.
+Cliquez sur l'icône de corbeille à droite de la ligne.
 
-## Tax on quotes
+## Taxes sur les devis
 
-The same line-tax and invoice-tax controls are available when creating a quote. Taxes configured on a quote are carried over when you [convert the quote to an invoice](../invoices/creating-an-invoice.md).
+Les mêmes taxes par ligne et de facture sont disponibles sur les devis. Elles sont reprises quand un devis devient une [facture](../invoices/creating-an-invoice.md).
 
-## Rate snapshots
+## Taux figés
 
-When an invoice is issued, Augias records a snapshot of each tax rate — its name, percentage, category, and type — at that point in time. If you later edit a tax rate, the change applies only to new invoices; the tax amounts on previously issued invoices remain unchanged.
+À l'émission d'une facture, Augias fige chaque taux de taxe (nom, pourcentage, catégorie, type) tel qu'il est à ce moment. Si vous modifiez ensuite un taux, seules les nouvelles factures en tiennent compte ; les montants des factures déjà émises ne changent pas.
 
-## Related
+## Voir aussi
 
-- [Setting up tax rates](./tax-rates.md)
-- [Adding client tax identifiers](./client-tax-identifiers.md)
-- [Creating an invoice](../invoices/creating-an-invoice.md)
+- [Régler les taux de taxe](./tax-rates.md)
+- [Identifiants fiscaux des clients](./client-tax-identifiers.md)
+- [Créer une facture](../invoices/creating-an-invoice.md)

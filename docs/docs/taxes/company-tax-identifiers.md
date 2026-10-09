@@ -1,42 +1,52 @@
 ---
-title: Adding company tax identifiers
-description: Record your business's tax registration numbers so they appear on every invoice and quote you issue.
+title: Identifiants fiscaux de l'entreprise
+description: Enregistrer les identifiants de votre entreprise pour qu'ils figurent sur chaque facture et chaque devis.
 sidebar_position: 2
 ---
 
-# Adding company tax identifiers
+# Identifiants fiscaux de l'entreprise
 
-Company tax identifiers are your own business's tax registration numbers — VAT number, GST registration, TIN, ABN, and so on. Augias prints them on every invoice and quote you issue so your clients can verify your tax registration.
+Les identifiants fiscaux de l'entreprise sont les vôtres : SIREN, SIRET, numéro de TVA intracommunautaire, RCS, etc. Augias les imprime sur chaque facture et chaque devis, et s'en sert pour identifier vos factures électroniques.
 
-## Navigate to the settings
+## Ouvrir les réglages
 
-Go to **Settings** in the sidebar. The **Company Tax Identifiers** section appears at the bottom of the **Company** settings tab.
+Ouvrez **Paramètres** dans le menu latéral. Le cadre **Identifiants fiscaux de la société** se trouve en bas de l'onglet **Société**.
 
-## Add an identifier
+## Renseigner les identifiants
 
-Click **Add tax identifier**. A new row appears with three fields:
+Trois champs sont prévus pour les identifiants de toute entreprise française :
 
-| Field | Description |
-|---|---|
-| **Type** | The kind of tax identifier. Choose from `VAT`, `GSTIN`, `TIN`, `ABN`, `CNPJ`, `TRN`, or `Other`. |
-| **Number** | Your registration number for that identifier type. |
-| **Primary** | Mark one identifier as primary when you have more than one. The primary identifier is emphasised on output documents. |
+- **SIRET** ;
+- **SIREN** ;
+- **N° de TVA intracommunautaire**.
 
-Repeat for each tax identifier your business holds. There is no limit to how many you can add.
+Quand la facturation électronique est activée, le SIRET et le numéro de TVA intracommunautaire sont exigés.
 
-## Save
+## Autres identifiants
 
-Click **Save tax identifiers** to store your changes. The identifiers are saved independently of the main company settings form, so you do not need to click **Save Settings** as well.
+Sous **Autres identifiants (RCS, code APE/NAF, adresse électronique…)**, cliquez sur **Ajouter un identifiant fiscal**. Une ligne de trois champs apparaît :
 
-## Remove an identifier
+| Champ | Description |
+| --- | --- |
+| **Type** | `Adresse électronique` (l'adresse de facturation électronique, quand ce n'est pas simplement le SIREN), `RCS`, `Code APE/NAF` ou `Autre`. |
+| **Numéro** | Votre numéro pour ce type d'identifiant. |
+| **Principal** | Si vous en avez plusieurs, marquez-en un comme principal : il est mis en avant sur les documents. |
 
-Click the trash icon on the right of any row to remove that identifier.
+Recommencez pour chaque identifiant. Leur nombre n'est pas limité.
+
+## Enregistrer
+
+Cliquez sur **Enregistrer les identifiants fiscaux**. Les identifiants s'enregistrent à part du reste des paramètres : inutile de cliquer aussi sur **Enregistrer les paramètres**.
+
+## Retirer un identifiant
+
+Cliquez sur l'icône de corbeille au bout de la ligne.
 
 :::info
-Company tax identifiers describe *your* business. For your clients' tax registration numbers — which also appear on the documents you send them — see [Adding client tax identifiers](./client-tax-identifiers.md).
+Ces identifiants décrivent *votre* entreprise. Pour ceux de vos clients, qui figurent aussi sur les documents que vous leur adressez, voir [Identifiants fiscaux des clients](./client-tax-identifiers.md).
 :::
 
-## Related
+## Voir aussi
 
-- [Adding client tax identifiers](./client-tax-identifiers.md)
-- [Setting up tax rates](./tax-rates.md)
+- [Identifiants fiscaux des clients](./client-tax-identifiers.md)
+- [Régler les taux de taxe](./tax-rates.md)

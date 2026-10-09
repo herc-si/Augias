@@ -1,40 +1,40 @@
 ---
-title: Creating a company
-description: Add a new company workspace in Augias.
+title: Créer une entreprise
+description: Ajouter une nouvelle entreprise dans Augias.
 sidebar_position: 2
 ---
 
-# Creating a company
+# Créer une entreprise
 
-There are three places to start the create-company form. The form itself is the same in all three.
+Le formulaire de création d'une entreprise s'ouvre depuis trois endroits. C'est le même formulaire dans les trois cas.
 
-## On your first login
+## À la première connexion
 
-The first time you log in (or any time you log in without belonging to any company yet), Augias opens its welcome wizard. Its first step, `Your Business`, asks for the company name and currency. The next two, `First Client` and `First Invoice`, are optional: skip them to add clients and invoices from the dashboard later. The company exists as soon as you reach the last step, `Ready!`.
+À votre première connexion (ou chaque fois que vous vous connectez sans appartenir à aucune entreprise), Augias ouvre son assistant de bienvenue. La première étape, `Votre société`, demande le nom et la devise de l'entreprise. Les deux suivantes, `Premier client` et `Première facture`, sont facultatives : passez-les pour ajouter clients et factures plus tard depuis le tableau de bord. L'entreprise existe dès que vous atteignez la dernière étape, `Prêt !`.
 
-![The first step of the welcome wizard, asking for the company name and currency](/img/companies/create-company-first-run.png)
+![La première étape de l'assistant de bienvenue, qui demande le nom et la devise de l'entreprise](/img/companies/create-company-first-run.png)
 
-## From the topbar
+## Depuis la barre du haut
 
-Once you're inside a company, open the company dropdown in the top right (the button labelled with the current company name) and click `+ Add Company`.
+Une fois dans une entreprise, ouvrez le menu des entreprises en haut à droite (le bouton qui porte le nom de l'entreprise en cours) et cliquez sur `Ajouter une société`.
 
-![The company dropdown with the Add Company entry](/img/companies/topbar-add-company.png)
+![Le menu des entreprises avec l'entrée d'ajout](/img/companies/topbar-add-company.png)
 
-## From the company picker
+## Depuis le choix de l'entreprise
 
-If you log in and belong to more than one company, the picker page also has a `Create Company` button below the list of companies you can switch to.
+Si vous appartenez à plusieurs entreprises, la page de choix qui suit la connexion a aussi un bouton de création sous la liste.
 
-## Filling in the form
+## Remplir le formulaire
 
-Two fields, both required:
+Deux champs, tous deux obligatoires :
 
-| Field | Notes |
+| Champ | Remarques |
 | --- | --- |
-| `Name` | Appears on every quote and invoice you send. Form hint: *"This will be displayed on your invoices and quotes"*. |
-| `Currency` | Sets the default currency for invoices, quotes, and payments. Form hint: *"All invoices and payments will use this currency"*. |
+| `Nom` | Figure sur chaque devis et chaque facture. Aide du champ : *« Ceci apparaîtra sur vos factures et devis »*. |
+| `Devise` | La devise par défaut des factures, des devis et des paiements. Aide du champ : *« Toutes les factures et paiements utiliseront cette devise »*. |
 
-Click `Create Company`. The new company becomes your active workspace and you land on its dashboard.
+Cliquez sur `Créer la société`. La nouvelle entreprise devient votre espace de travail et vous arrivez sur son tableau de bord.
 
 :::info
-On the self-hosted version of Augias there's no per-company subscription — create as many as you need.
+En auto-hébergement, il n'y a pas d'abonnement par entreprise : créez-en autant que nécessaire.
 :::

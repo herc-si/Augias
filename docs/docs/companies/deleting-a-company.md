@@ -1,39 +1,39 @@
 ---
-title: Closing a company
-description: Close a company, download its data, and have it deleted after 30 days.
+title: Fermer une entreprise
+description: Fermer une entreprise, télécharger ses données, et la faire supprimer au bout de 30 jours.
 sidebar_position: 4
 ---
 
-# Closing a company
+# Fermer une entreprise
 
-Closing a company schedules its deletion 30 days later. Until then it stays readable, so you can download everything it holds, and you can change your mind.
+Fermer une entreprise programme sa suppression 30 jours plus tard. D'ici là, elle reste consultable pour que vous puissiez télécharger tout ce qu'elle contient, et vous pouvez revenir sur votre décision.
 
 :::danger
-On the closure date the company is permanently deleted with **all its data**: invoices, credit notes, quotes, clients, payments and accounting. Augias does not keep a copy. The law requires you to keep your invoices for 10 years: download the full export before that date.
+À la date de fermeture, l'entreprise est supprimée définitivement avec **toutes ses données** : factures, avoirs, devis, clients, paiements et comptabilité. Augias n'en garde aucune copie. La loi vous impose de conserver vos factures 10 ans : téléchargez l'export complet avant cette date.
 :::
 
-## Before you close
+## Avant de fermer
 
-You can only close the company that's currently active. If the one you want to close is not the active company, [switch to it first](./switching-between-companies.md).
+Seule l'entreprise active peut être fermée. Si ce n'est pas celle que vous voulez fermer, [passez d'abord dessus](./switching-between-companies.md).
 
-## Steps
+## Étapes
 
-1. Go to `Settings` from the sidebar.
-2. Scroll to the bottom of the page to the **Danger Zone** panel.
-3. Click `Close Company`. A confirmation modal opens.
-4. Type the company name exactly as shown into the `Company Name` input. The button stays disabled until the typed name matches.
-5. Click `Close Company` in the modal.
+1. Ouvrez `Paramètres` depuis le menu latéral.
+2. Descendez jusqu'au cadre **Zone dangereuse**, en bas de la page.
+3. Cliquez sur `Fermer la société`. Une fenêtre de confirmation s'ouvre.
+4. Tapez le nom de l'entreprise exactement comme affiché dans le champ `Nom de la société`. Le bouton reste inactif tant que le nom ne correspond pas.
+5. Cliquez sur `Fermer la société` dans la fenêtre.
 
-![The Close Company confirmation modal, with the warning, the link to the full export and the Company Name field](/img/companies/delete-company-modal.png)
+![La fenêtre de confirmation de fermeture, avec l'avertissement, le lien vers l'export complet et le champ du nom](/img/companies/delete-company-modal.png)
 
-You land on the **Data Export** page, which shows the closure date.
+Vous arrivez sur la page **Export de données**, qui affiche la date de fermeture.
 
-## During the 30 days
+## Pendant les 30 jours
 
-The company is read-only for all its members: nothing can be created or changed, but everything can be viewed and exported. Download the full export from `Data Export` in your profile: it holds the invoices and credit notes as PDF, the receipts and the accounting.
+L'entreprise est en lecture seule pour tous ses membres : rien ne peut être créé ni modifié, mais tout se consulte et s'exporte. Téléchargez l'export complet depuis `Export de données` dans votre profil : il contient les factures et les avoirs en PDF, les justificatifs et la comptabilité.
 
-Augias emails the company's owners when the closure is scheduled, and again shortly before the deletion.
+Augias prévient par e-mail les propriétaires de l'entreprise quand la fermeture est programmée, puis peu avant la suppression.
 
-## Changing your mind
+## Revenir sur sa décision
 
-Until the closure date, open `Data Export` in your profile while the company is active and click `Cancel the closure`. The company becomes editable again, as if nothing had happened.
+Jusqu'à la date de fermeture, ouvrez `Export de données` dans votre profil, l'entreprise étant active, et cliquez sur `Annuler la fermeture`. L'entreprise redevient modifiable, comme si de rien n'était.

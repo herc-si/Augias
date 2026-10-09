@@ -1,45 +1,45 @@
 ---
-title: Adding client tax identifiers
-description: Store a client's tax registration numbers so they appear on the invoices and quotes you send them.
+title: Identifiants fiscaux des clients
+description: Enregistrer les identifiants d'un client pour qu'ils figurent sur les factures et les devis que vous lui adressez.
 sidebar_position: 3
 ---
 
-# Adding client tax identifiers
+# Identifiants fiscaux des clients
 
-Client tax identifiers are your client's tax registration numbers — their VAT number, GST registration, TIN, and so on. Augias prints them on the invoices and quotes you send to that client.
+Les identifiants fiscaux d'un client sont les siens : SIREN, SIRET, numéro de TVA intracommunautaire, etc. Augias les imprime sur les factures et les devis que vous lui adressez, et s'en sert pour lui adresser ses factures électroniques.
 
-## Where to add them
+## Où les saisir
 
-Tax identifiers are part of the client record. You can add them when creating a new client or at any time through the client edit form.
+Les identifiants font partie de la fiche du client. Saisissez-les à la création du client ou plus tard, depuis le formulaire de modification. La recherche dans l'annuaire des entreprises les remplit pour une entreprise française : voir [Créer un client](../managing-clients/create-new-client.md).
 
-In the client form, scroll to the **Tax Identifiers** section (marked as optional). If no identifiers have been added yet, you will see the hint: *No tax identifiers added yet. Add one if this client has a VAT, GST or other registered tax number.*
+Dans le formulaire, le cadre **Identifiants fiscaux** propose trois champs : **SIREN**, **SIRET** et **N° de TVA intracommunautaire**. Laissez-les vides pour un particulier.
 
-## Add an identifier
+## Autres identifiants
 
-Click **Add tax identifier**. A row appears with three fields:
+Sous **Autres identifiants**, cliquez sur **Ajouter un identifiant**. Une ligne de trois champs apparaît :
 
-| Field | Description |
-|---|---|
-| **Type** | The kind of identifier. Choose from `VAT`, `GSTIN`, `TIN`, `ABN`, `CNPJ`, `TRN`, or `Other`. |
-| **Number** | The client's registration number for that identifier type. |
-| **Primary** | Mark one identifier as primary when the client has more than one. The primary identifier is emphasised on output documents. |
+| Champ | Description |
+| --- | --- |
+| **Type** | `Adresse électronique` (l'adresse de facturation électronique du client, quand ce n'est pas son SIREN), `RCS`, `Code APE/NAF` ou `Autre`. |
+| **Valeur** | Le numéro du client pour ce type d'identifiant. |
+| **Principal** | Si le client en a plusieurs, marquez-en un comme principal : il est mis en avant sur les documents. |
 
-Repeat for each identifier the client holds.
+Recommencez pour chaque identifiant du client.
 
-## Remove an identifier
+## Retirer un identifiant
 
-Click the trash icon on the right of the row to remove it.
+Cliquez sur l'icône de corbeille au bout de la ligne.
 
-## Save
+## Enregistrer
 
-Save the client form as normal. All identifier changes are saved together with the rest of the client record.
+Enregistrez le formulaire du client comme d'habitude : les identifiants sont enregistrés avec le reste de la fiche.
 
 :::tip
-If you are registered for VAT and your client is too, recording both your own VAT number (under [Company Tax Identifiers](./company-tax-identifiers.md)) and the client's VAT number here ensures both appear on the invoice — a common requirement for business-to-business tax compliance.
+Entre professionnels assujettis à la TVA, la facture doit porter votre numéro de TVA intracommunautaire (dans les [identifiants de l'entreprise](./company-tax-identifiers.md)) et celui du client : renseignez les deux.
 :::
 
-## Related
+## Voir aussi
 
-- [Adding company tax identifiers](./company-tax-identifiers.md)
-- [Setting up tax rates](./tax-rates.md)
-- [Applying taxes to invoices](./applying-tax-to-invoices.md)
+- [Identifiants fiscaux de l'entreprise](./company-tax-identifiers.md)
+- [Régler les taux de taxe](./tax-rates.md)
+- [Appliquer les taxes aux factures](./applying-tax-to-invoices.md)

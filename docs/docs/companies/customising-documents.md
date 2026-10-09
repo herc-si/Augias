@@ -1,47 +1,47 @@
 ---
-title: Customising your documents
-description: Choose a design for your invoices and quotes, set your brand colour, and add a footer to every page.
+title: Personnaliser vos documents
+description: Choisir un modèle pour vos factures et devis, régler votre couleur de marque et ajouter un pied de page à chaque page.
 sidebar_position: 5
 ---
 
-# Customising your documents
+# Personnaliser vos documents
 
-Make your invoices, quotes and credit notes look like your company: a design, your logo, your colour, and a footer on every page. Open `Settings` and the `Design` tab.
+Donnez à vos factures, devis et avoirs l'image de votre entreprise : un modèle, votre logo, votre couleur et un pied de page sur chaque page. Ouvrez `Paramètres`, onglet `Design`.
 
-## Your logo and details
+## Logo et coordonnées
 
-The logo, company name, address, email and phone number shown on documents come from the `System` tab of the settings. Upload your logo there. It appears on invoices, quotes, credit notes and disbursement notes.
+Le logo, le nom, l'adresse, l'e-mail et le téléphone imprimés sur les documents viennent de l'onglet `Société` des paramètres. C'est là que vous déposez votre logo. Il figure sur les factures, les devis, les avoirs et les notes de débours.
 
-## Choose a design
+## Choisir un modèle
 
-Under `Invoice & Quote Template`, pick one of the designs. Each card shows a preview; click it to open a full preview with sample data. The design applies to your invoice and quote PDFs, the emails that send them and the page clients open from the link.
+Sous `Modèle de facture & devis`, choisissez l'un des modèles. Chaque carte en montre un aperçu ; cliquez dessus pour l'ouvrir en grand avec des données d'exemple. Le modèle s'applique aux PDF de vos factures et devis, aux e-mails qui les envoient et à la page que le client ouvre depuis le lien.
 
-Credit notes keep a layout of their own, matching the invoices they correct.
+Les avoirs gardent une mise en page à eux, assortie aux factures qu'ils corrigent.
 
 :::info
-On the hosted service, the choice of design is part of the plans that include custom templates. On a self-hosted install it is always available.
+Sur le service hébergé, le choix du modèle fait partie des offres qui incluent les modèles personnalisés. En auto-hébergement, il est toujours disponible.
 :::
 
-## Brand colour
+## Couleur de marque
 
-Enter your colour as a hexadecimal code, such as `#1e4976`, in `Brand colour`. It colours the total and balance rows, the terms heading and the payment button on every design, and the heading of credit notes. The text on it turns white or dark automatically so that it stays readable.
+Saisissez votre couleur en code hexadécimal, par exemple `#1e4976`, dans `Couleur de marque`. Elle colore les lignes du total et du solde, le titre des conditions et le bouton de paiement sur tous les modèles, ainsi que le titre des avoirs. Le texte posé dessus passe seul en blanc ou en foncé pour rester lisible.
 
-Leave the field empty to keep each design's own colours.
+Laissez le champ vide pour garder les couleurs propres à chaque modèle.
 
-## Footer
+## Pied de page
 
-`Footer` is text repeated at the foot of every page, up to 400 characters. It is the place for what French law asks invoices to carry beyond the basics: legal form and share capital, registration number, late payment penalties, the fixed recovery fee.
+Le `Pied de page` est un texte répété au bas de chaque page, jusqu'à 400 caractères. C'est la place de ce que la loi française demande aux factures au-delà de l'essentiel : forme juridique et capital, numéro d'immatriculation, pénalités de retard, indemnité forfaitaire de recouvrement.
 
-The page leaves room for the footer, so longer text never runs over the content.
+La page réserve la place du pied de page : un texte long ne déborde jamais sur le contenu.
 
-Your bank details are not in the footer: they have their own place under the `Company` tab, and are printed next to the totals of the invoices clients still have to pay. See [Bank details](./bank-details.md).
+Vos coordonnées bancaires ne vont pas dans le pied de page : elles ont leur place dans l'onglet `Société` et s'impriment près des totaux des factures que vos clients doivent encore payer. Voir [Coordonnées bancaires](./bank-details.md).
 
-## Troubleshooting
+## Dépannage
 
-### My colour does not show
+### Ma couleur ne s'affiche pas
 
-The value must be a hexadecimal colour code: `#` followed by three or six characters from `0`-`9` and `a`-`f`, such as `#1e4976` or `#fc0`. Anything else is ignored and the design's own colours are used.
+La valeur doit être un code couleur hexadécimal : `#` suivi de trois ou six caractères parmi `0` à `9` et `a` à `f`, comme `#1e4976` ou `#fc0`. Toute autre valeur est ignorée et les couleurs du modèle s'appliquent.
 
-### The design I chose is not used
+### Le modèle choisi n'est pas utilisé
 
-On the hosted service, the design applies only while your plan includes custom templates. If your plan changed, documents fall back to the default design until you choose a plan that includes them.
+Sur le service hébergé, le modèle ne s'applique que tant que votre offre inclut les modèles personnalisés. Si votre offre a changé, les documents reprennent le modèle par défaut jusqu'à ce que vous choisissiez une offre qui les inclut.

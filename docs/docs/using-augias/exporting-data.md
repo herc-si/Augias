@@ -1,41 +1,41 @@
 ---
-title: Exporting data
-description: Export individual grids or a full copy of your company data as CSV, JSON, or XML.
+title: Exporter vos données
+description: Exporter une liste ou une copie complète des données de votre entreprise en CSV, JSON ou XML.
 sidebar_position: 5
 ---
 
-# Exporting data
+# Exporter vos données
 
-Augias lets you export data in two ways: download the rows from any grid directly, or request a complete export of everything in your company.
+Augias exporte vos données de deux façons : les lignes d'une liste, directement, ou une copie complète de tout ce que contient votre entreprise.
 
-## Grid export
+## Exporter une liste
 
-Any data grid — invoices, quotes, clients, payments, and others — has an export option. The export uses whatever filters and search terms are currently active, so you can narrow the data before downloading.
+Toutes les listes (factures, devis, clients, paiements…) ont une option d'export. L'export reprend les filtres et la recherche en cours : affinez la liste avant de télécharger.
 
-Look for the export button in the grid toolbar. Choose your format:
+Le bouton d'export se trouve dans la barre d'outils de la liste. Choisissez le format :
 
-| Format | Use it when… |
+| Format | Pour… |
 | --- | --- |
-| **CSV** | You want to open the data in a spreadsheet app |
-| **JSON** | You need to process it programmatically |
-| **XML** | Your system requires structured markup |
+| **CSV** | ouvrir les données dans un tableur |
+| **JSON** | les traiter par programme |
+| **XML** | un système qui demande un balisage structuré |
 
-The file downloads immediately.
+Le fichier se télécharge aussitôt.
 
-## Full company data export
+## Export complet de l'entreprise
 
-A full export packages everything in your company — clients, contacts, invoices, quotes, payments, and more — into a single downloadable archive.
+L'export complet rassemble tout ce que contient votre entreprise (clients, contacts, factures, devis, paiements, etc.) dans une seule archive.
 
-1. In the left sidebar, click your name to open the profile menu, then choose `Data Export`. You can also navigate to `/profile/exports`.
-2. Click `Request Export`.
-3. Augias queues the export as a background job. You'll receive an email notification when it's ready.
-4. Return to the `Data Export` page and click `Download` next to the completed export.
+1. Dans le menu latéral, cliquez sur votre nom pour ouvrir le menu du profil, puis choisissez `Export de données`. L'adresse directe est `/profile/exports`.
+2. Cliquez sur `Demander un export`.
+3. Augias prépare l'export en tâche de fond et vous prévient par e-mail quand il est prêt.
+4. Revenez sur `Export de données` et cliquez sur `Télécharger` à côté de l'export terminé.
 
 :::info
-Large datasets can take a few minutes to process. The export runs in the background so you can keep working in Augias.
+Un gros volume de données peut demander quelques minutes. L'export tourne en tâche de fond : vous pouvez continuer à travailler.
 :::
 
-## Related
+## Voir aussi
 
-- [User profile](./user-profile.md)
-- [Managing invoices](../invoices/managing-invoices.md)
+- [Votre profil](./user-profile.md)
+- [Gérer les factures](../invoices/managing-invoices.md)
