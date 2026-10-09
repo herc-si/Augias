@@ -1,70 +1,70 @@
 ---
-title: Understanding the schedule
-description: How the recurring invoice schedule decides when invoices get generated.
+title: Comprendre le calendrier
+description: Comment le calendrier d'une facture récurrente décide du moment où les factures sont générées.
 sidebar_position: 2
 ---
 
-# Understanding the schedule
+# Comprendre le calendrier
 
-A recurring invoice is generated when three things line up: today's date matches the schedule, the recurring invoice is in the `Active` state, and Augias's background scheduler runs. This page explains each piece.
+Une facture est générée quand trois conditions sont réunies : la date du jour correspond au calendrier, la facture récurrente est active, et le planificateur d'Augias tourne. Cette page explique chacune.
 
-## How generation works
+## La génération
 
-Augias's background scheduler runs **every hour**. On each run, it:
+Le planificateur d'Augias passe **toutes les heures**. À chaque passage, il :
 
-1. Finds every active recurring invoice.
-2. Checks whether today's date is one of the schedule's matching dates.
-3. If a date matches and an invoice hasn't already been generated for that day, it creates one.
+1. trouve toutes les factures récurrentes actives ;
+2. vérifie si la date du jour fait partie des dates du calendrier ;
+3. si oui, et si aucune facture n'a encore été générée ce jour-là, en crée une.
 
-That last step means a recurring invoice will only ever produce one invoice per matching day, even if the scheduler runs many times.
+Cette dernière étape garantit qu'une facture récurrente ne produit jamais qu'une facture par jour concerné, même si le planificateur passe plusieurs fois.
 
 :::warning
-The scheduler is what does the work — without it running, no invoices are generated. The [Cron job setup guide](../installation-guide/distribution-package/cron-job-setup.md) covers how to set it up on each platform. The Homebrew, Docker, and quick-install paths run it automatically.
+C'est le planificateur qui fait le travail : sans lui, aucune facture n'est générée. Le guide des [tâches planifiées](../installation-guide/distribution-package/cron-job-setup.md) explique sa mise en place sur chaque plateforme. Homebrew, Docker et l'installation rapide le lancent automatiquement.
 :::
 
-## Recurring types
+## Types de récurrence
 
-The `Recurring Type` field decides what counts as a "matching day". Each type asks for a different follow-up.
+Le champ `Type de récurrence` décide de ce qu'est un « jour concerné ». Chaque type demande un complément différent. L'application affiche pour l'instant leurs noms en anglais.
 
-### Daily
+### Quotidienne (`Daily`)
 
-Generates an invoice every day from the start date onward. No follow-up field — once it's `Active`, it generates daily.
+Une facture chaque jour à partir de la date de début. Aucun complément : une fois active, elle génère chaque jour.
 
-### Weekly
+### Hebdomadaire (`Weekly`)
 
-Reveals a `Repeats on` row of checkboxes for `Monday` through `Sunday`. Tick one or more days. An invoice is generated on each ticked day every week.
+Fait apparaître `Se répète le`, une rangée de cases de `Lundi` à `Dimanche`. Cochez un ou plusieurs jours : une facture est générée chaque semaine sur chaque jour coché.
 
-For a once-a-week subscription, tick a single day. For an every-weekday schedule, tick `Monday` through `Friday`.
+Pour un abonnement hebdomadaire, cochez un seul jour. Pour tous les jours ouvrés, cochez de `Lundi` à `Vendredi`.
 
-### Monthly
+### Mensuelle (`Monthly`)
 
-Reveals a `Days of the month` multi-select with values `1st` through `31st`. Pick one or more. An invoice is generated on each picked day every month.
+Fait apparaître `Jours du mois`, une liste à choix multiples du 1er au 31. Choisissez un ou plusieurs jours : une facture est générée chaque mois sur chaque jour choisi.
 
 :::note
-If you pick `31st` and a month has 30 or fewer days, no invoice is generated for that month on that date — the day simply doesn't exist in that month.
+Si vous choisissez le 31 et qu'un mois compte 30 jours ou moins, aucune facture n'est générée ce mois-là pour ce jour : il n'existe pas dans ce mois.
 :::
 
-### Yearly
+### Annuelle (`Yearly`)
 
-Reveals two fields:
+Fait apparaître deux champs :
 
-- **`Repeats in months`** — checkboxes for `January` through `December`. Pick one or more.
-- **`Day of month`** *(optional)* — a dropdown with `1st` through `31st`. If left blank, the schedule uses the day from the `Start Date`.
+- **`Se répète les mois`** : des cases de `Janvier` à `Décembre`. Cochez un ou plusieurs mois.
+- **`Jour du mois`** *(facultatif)* : une liste du 1er au 31. Laissé vide, le calendrier prend le jour de la `Date de début`.
 
-A yearly schedule generates one invoice per chosen month per year, on the chosen (or inherited) day.
+Un calendrier annuel génère une facture par mois choisi et par an, le jour choisi (ou hérité).
 
-## End conditions
+## Fin du calendrier
 
-The `End Recurrence` field controls when the schedule stops.
+Le champ `Type de fin` décide de l'arrêt du calendrier.
 
-- **`Never`** — invoices are generated indefinitely until you pause, cancel, or archive the recurring invoice.
-- **`On the following date`** — reveals an `End Date` picker (must be in the future). The schedule stops *on or after* that date and the recurring invoice is automatically marked `Complete`.
-- **`After x occurrences`** — reveals an `End After Occurrences` number field. Once that many invoices have been generated, the schedule stops and the recurring invoice is marked `Complete`.
+- **`Jamais`** : les factures sont générées indéfiniment, jusqu'à ce que vous mettiez en pause, annuliez ou archiviez la facture récurrente.
+- **`À la date suivante`** : fait apparaître la `Date de fin` (dans le futur). Le calendrier s'arrête à cette date ou après, et la facture récurrente passe automatiquement à `Terminé`.
+- **`Après x occurrences`** : fait apparaître `Fin après un nombre d'occurrences`. Une fois ce nombre de factures générées, le calendrier s'arrête et la facture récurrente passe à `Terminé`.
 
-`Complete` is the *natural* end state — it's set automatically when one of the end conditions is reached. To stop a schedule manually, see [Managing the schedule](./managing-the-schedule.md).
+`Terminé` est la fin *naturelle*, posée automatiquement quand une condition de fin est atteinte. Pour arrêter un calendrier à la main, voir [Gérer le calendrier](./managing-the-schedule.md).
 
-## What you see on the view page
+## Ce que montre la page
 
-The recurring invoice's view page shows a `Recurring Schedule` card summarising the configuration in plain English (for example, `Every Monday`), the `Start Date`, and the `End Date` if one is set.
+La page de la facture récurrente montre une carte `Planification récurrente` qui résume le réglage en clair, la `Date de début` et la `Date de fin` s'il y en a une.
 
-While the recurring invoice is `Active`, an `Upcoming Occurrences` card lists the next few dates the scheduler is going to fire — useful for verifying the schedule does what you expected.
+Tant que la facture récurrente est active, une carte `Prochaines occurrences` liste les prochaines dates de génération : pratique pour vérifier que le calendrier fait ce que vous attendiez.

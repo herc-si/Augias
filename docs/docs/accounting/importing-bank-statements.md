@@ -1,63 +1,63 @@
 ---
-title: Importing bank statements
-description: Import the statements you download from your bank and match each operation to the payment it proves.
+title: Importer vos relevés bancaires
+description: Importer les relevés téléchargés depuis votre banque et rapprocher chaque opération du paiement qu'elle prouve.
 sidebar_position: 5
 ---
 
-# Importing bank statements
+# Importer vos relevés bancaires
 
-Download your statements from your bank's website and import them into Augias, then match each operation to the invoice or supplier bill it settles. Augias never connects to your bank: you choose what to import.
+Téléchargez vos relevés sur le site de votre banque et importez-les dans Augias, puis rapprochez chaque opération de la facture ou de la facture fournisseur qu'elle règle. Augias ne se connecte jamais à votre banque : c'est vous qui choisissez ce que vous importez.
 
-Click `Accounting` in the sidebar, then `Bank`.
+Cliquez sur `Comptabilité` dans le menu latéral, puis sur `Banque`.
 
-## Add a bank account
+## Ajouter un compte bancaire
 
-In the `Add a bank account` card, give the account a name, optionally its IBAN, and its currency, then click `Add the account`. Each account gets a tab at the top of the page.
+Dans la carte `Ajouter un compte bancaire`, donnez un nom au compte, éventuellement son IBAN, et sa devise, puis cliquez sur `Ajouter le compte`. Chaque compte a son onglet en haut de la page.
 
-If your invoices already carry bank details, the form starts filled in with them. The account your invoices print is marked `On your invoices`, and another one can take its place with `Put on my invoices`: see [Bank details](../companies/bank-details.md).
+Si vos factures portent déjà des coordonnées bancaires, le formulaire s'ouvre prérempli avec elles. Le compte imprimé sur vos factures est marqué `Sur vos factures`, et un autre peut prendre sa place avec `Mettre sur mes factures` : voir [Coordonnées bancaires](../companies/bank-details.md).
 
-## Import a statement
+## Importer un relevé
 
-1. On your bank's website, download a statement in one of these formats:
-   - `CAMT.053` (XML), the European standard, offered by most banks;
-   - `OFX`, often labelled "Money" or "Quicken";
-   - `CSV`, the spreadsheet export.
-2. In the `Import a statement` card, choose the file and click `Import`.
+1. Sur le site de votre banque, téléchargez un relevé dans l'un de ces formats :
+   - `CAMT.053` (XML), la norme européenne, proposée par la plupart des banques ;
+   - `OFX`, souvent présenté comme « Money » ou « Quicken » ;
+   - `CSV`, l'export pour tableur.
+2. Dans la carte `Importer un relevé`, choisissez le fichier et cliquez sur `Importer`.
 
-Augias reports how many operations were added and how many it already knew. Importing the same statement twice, or two statements that overlap, adds nothing twice.
+Augias indique combien d'opérations ont été ajoutées et combien étaient déjà connues. Importer deux fois le même relevé, ou deux relevés qui se recouvrent, n'ajoute rien en double.
 
 :::tip
-Prefer `CAMT.053` or `OFX` when your bank offers them: they carry the bank's own reference for each operation and the name of the other party, which makes matching more reliable.
+Préférez `CAMT.053` ou `OFX` quand votre banque les propose : ils portent la référence de la banque pour chaque opération et le nom de l'autre partie, ce qui fiabilise le rapprochement.
 :::
 
-## Reconcile the operations
+## Rapprocher les opérations
 
-The `To reconcile` tab lists the operations nothing in Augias accounts for yet. Next to each one, Augias suggests what it most likely is, among the documents with exactly the same amount:
+L'onglet `À rapprocher` liste les opérations dont rien dans Augias ne rend encore compte. À côté de chacune, Augias propose ce qu'elle est le plus probablement, parmi les documents de même montant exactement :
 
-- `Payment already recorded` — a payment you have already entered. Matching only ties the operation to it.
-- `Collect invoice` — an invoice still owed. Matching records its payment as a bank transfer on the date the bank booked it, and the invoice is marked paid once nothing is left to pay.
-- `Pay supplier invoice` — the same for a supplier bill.
+- `Paiement déjà enregistré` : un paiement que vous avez déjà saisi. Le rapprochement ne fait que l'y relier.
+- `Encaisser la facture` : une facture encore due. Le rapprochement enregistre son paiement par virement à la date retenue par la banque, et la facture passe payée quand il ne reste plus rien à payer.
+- `Payer la facture fournisseur` : la même chose pour une facture fournisseur.
 
-Suggestions that mention the invoice number or the other party's name come first.
+Les propositions qui citent le numéro de facture ou le nom de l'autre partie viennent en premier.
 
-Click the suggestion that is right. When none is, record the payment from the invoice as usual, or click `Set aside` for an operation that has nothing to match, such as a transfer between your own accounts. `Undo` puts a reconciled or set-aside operation back in the list; it does not delete the payment that was recorded.
+Cliquez sur la bonne proposition. Si aucune ne convient, enregistrez le paiement depuis la facture comme d'habitude, ou cliquez sur `Écarter` pour une opération qui n'a rien à rapprocher, comme un virement entre vos propres comptes. `Annuler` remet dans la liste une opération rapprochée ou écartée ; le paiement enregistré n'est pas supprimé.
 
-Payments recorded this way go into your books like any other, on the date of the bank operation.
+Les paiements enregistrés ainsi entrent dans vos livres comme les autres, à la date de l'opération bancaire.
 
 :::info
-If your company charges VAT and has not chosen a tax regime, a private customer's payment cannot be recorded from the bank page either, for the reason explained in [Setting up accounting](./setting-up-accounting.md#when-a-regime-is-required).
+Si votre entreprise facture la TVA et n'a pas choisi de régime fiscal, le paiement d'un client particulier ne peut pas non plus être enregistré depuis la page Banque, pour la raison expliquée dans [Mettre en place la comptabilité](./setting-up-accounting.md#quand-un-régime-est-obligatoire).
 :::
 
-## Troubleshooting
+## Dépannage
 
-### `Columns not found in the CSV`
+### `Colonnes introuvables dans le CSV`
 
-Augias recognises the usual column headings of French and English bank exports: a date, a label, and either an amount or separate debit and credit columns. Some banks use other headings. Download the `CAMT.053` or `OFX` version of the statement instead, or rename the columns in a spreadsheet before importing.
+Augias reconnaît les intitulés de colonnes habituels des exports bancaires français et anglais : une date, un libellé, et soit un montant, soit des colonnes débit et crédit séparées. Certaines banques utilisent d'autres intitulés. Téléchargez plutôt la version `CAMT.053` ou `OFX` du relevé, ou renommez les colonnes dans un tableur avant l'import.
 
-### `This statement is in USD, the account in EUR`
+### `Ce relevé est en USD, le compte en EUR`
 
-The file belongs to another account. Import it into the account in that currency, or add one.
+Le fichier appartient à un autre compte. Importez-le dans le compte de cette devise, ou créez-en un.
 
-### An operation has no suggestion
+### Une opération n'a aucune proposition
 
-Only documents with exactly the same amount are suggested, and a recorded payment only within ten days of the bank's date. A partial payment, or a transfer covering several invoices, has to be recorded from the invoices themselves.
+Seuls les documents de même montant exactement sont proposés, et un paiement déjà enregistré seulement à dix jours au plus de la date de la banque. Un paiement partiel, ou un virement qui couvre plusieurs factures, s'enregistre depuis les factures elles-mêmes.

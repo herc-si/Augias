@@ -1,54 +1,54 @@
 ---
-title: Creating a recurring invoice
-description: Set up a recurring invoice template that issues invoices automatically on a schedule.
+title: Créer une facture récurrente
+description: Mettre en place un modèle de facture récurrente qui émet des factures automatiquement selon un calendrier.
 sidebar_position: 1
 ---
 
-# Creating a recurring invoice
+# Créer une facture récurrente
 
-A recurring invoice is a saved template tied to one client. Augias generates a real invoice from it on the schedule you set — daily, weekly, monthly, or yearly — until you stop it or it reaches its end condition.
+Une facture récurrente est un modèle enregistré, lié à un client. Augias en tire une vraie facture selon le calendrier choisi (chaque jour, chaque semaine, chaque mois ou chaque année) jusqu'à ce que vous l'arrêtiez ou qu'elle atteigne sa fin.
 
-## Open the create form
+## Ouvrir le formulaire
 
-From the sidebar, click `Recurring Invoices` → `Create Recurring Invoice`, or click the green `+ Create Recurring Invoice` button at the top right of the recurring invoices list.
+Dans le menu latéral, cliquez sur `Factures récurrentes` → `Créer une récurrente`, ou sur le bouton `Créer une facture récurrente` en haut à droite de la liste des factures récurrentes.
 
-![The Recurring Invoices list page with the Create Recurring Invoice button](/img/recurring-invoices/recurring-invoices-list-page.png)
+![La liste des factures récurrentes avec le bouton de création](/img/recurring-invoices/recurring-invoices-list-page.png)
 
-## Fill in the template
+## Remplir le modèle
 
-The top of the form is the same as a one-off invoice — pick the client, choose the contacts to send to, and add line items.
+Le haut du formulaire est celui d'une facture ponctuelle : choisissez le client, les contacts destinataires, et ajoutez les lignes.
 
-![The Create Recurring Invoice form](/img/recurring-invoices/create-recurring-invoice-form.png)
+![Le formulaire de création d'une facture récurrente](/img/recurring-invoices/create-recurring-invoice-form.png)
 
-- **`Client`** *(required)* — the client this recurring invoice is for. Once selected, a `Send invoice to:` checkbox list appears so you can pick at least one contact to receive each generated invoice.
-- **`Discount`** *(optional)* — flat amount or percentage; applied to every generated invoice.
-- **`Line Items`** *(at least one)* — description, price, quantity, and tax. The total at the bottom of the form is the per-invoice total.
+- **`Client`** *(obligatoire)* : le client facturé. Une fois choisi, une liste `Envoyer la facture à :` apparaît pour cocher au moins un contact qui recevra chaque facture.
+- **`Remise`** *(facultative)* : un montant ou un pourcentage, appliqué à chaque facture générée.
+- **`Lignes de facturation`** *(au moins une)* : description, prix, quantité et taxe. Le total en bas du formulaire est celui de chaque facture.
 
 :::tip
-Line item descriptions support placeholders that are filled in when each invoice is generated: `{day}`, `{day_name}`, `{month}`, and `{year}`. For example, `Subscription for {month}` becomes `Subscription for May` on a May invoice. Click `Available variables for descriptions` above the items to see the full list.
+Les descriptions des lignes acceptent des repères remplacés à chaque génération : `{day}`, `{day_name}`, `{month}` et `{year}`. Par exemple, `Abonnement pour {month}` devient « Abonnement pour mai » sur la facture de mai. Cliquez sur `Variables disponibles pour les descriptions`, au-dessus des lignes, pour la liste complète.
 :::
 
-`Terms & Notes` is collapsed by default — click `Toggle terms and notes section` to expand it. Both fields apply to every generated invoice; notes stay internal and are never shown to the client.
+`Conditions & Notes` est replié par défaut : cliquez sur l'en-tête de la section pour le déplier. Les deux champs valent pour chaque facture générée ; les notes restent internes et ne sont jamais montrées au client.
 
-## Configure the schedule
+## Régler le calendrier
 
-The `Recurring Schedule` section is where you say *when* invoices get generated. See [Understanding the schedule](./understanding-the-schedule.md) for the full breakdown — the short version is:
+La section `Planification récurrente` dit *quand* les factures sont générées. Le détail est dans [Comprendre le calendrier](./understanding-the-schedule.md) ; en bref :
 
-![The Recurring Schedule section with Weekly selected](/img/recurring-invoices/schedule-weekly-options.png)
+![La section Planification récurrente, en hebdomadaire](/img/recurring-invoices/schedule-weekly-options.png)
 
-- **`Start Date`** *(required)* — when the schedule begins. Defaults to today; can't be in the past.
-- **`Recurring Type`** *(required)* — `Daily`, `Weekly`, `Monthly`, or `Yearly`. Each type reveals its own follow-up field (days of the week, days of the month, months of the year).
-- **`End Recurrence`** *(required)* — choose `Never`, `On the following date`, or `After x occurrences`. The matching date or count field appears once you pick.
+- **`Date de début`** *(obligatoire)* : le départ du calendrier. Aujourd'hui par défaut ; ne peut pas être dans le passé.
+- **`Type de récurrence`** *(obligatoire)* : quotidienne, hebdomadaire, mensuelle ou annuelle (l'application affiche pour l'instant `Daily`, `Weekly`, `Monthly` et `Yearly`). Chaque type fait apparaître son propre champ (jours de la semaine, jours du mois, mois de l'année).
+- **`Type de fin`** *(obligatoire)* : `Jamais`, `À la date suivante` ou `Après x occurrences`. Le champ de date ou de nombre correspondant apparaît une fois le choix fait.
 
-## Save
+## Enregistrer
 
-Two save options are available from the green button at the bottom of the form:
+Deux choix d'enregistrement, en bas du formulaire :
 
-- **`Save as Draft`** — saves the template without generating any invoices. Useful if you want to review or edit the schedule before activating it.
-- **`Save and Enable`** — open the dropdown next to `Save as Draft` and choose this to save the template and immediately activate it. The first invoice is generated the next time the scheduler runs after the start date is reached.
+- **`Enregistrer comme brouillon`** : enregistre le modèle sans générer de facture. Pratique pour revoir le calendrier avant de l'activer.
+- **`Enregistrer et activer`** : dans le menu à côté de `Enregistrer comme brouillon`, enregistre le modèle et l'active aussitôt. La première facture est générée au premier passage du planificateur après la date de début.
 
-After saving you land on the recurring invoice's view page. From there you can `Activate` a draft, or move on to [Managing the schedule](./managing-the-schedule.md) once it's running.
+Après l'enregistrement, vous arrivez sur la page de la facture récurrente. De là, vous pouvez `Activer` un brouillon, ou passer à [Gérer le calendrier](./managing-the-schedule.md) une fois qu'elle tourne.
 
 :::warning
-Generated invoices only get created if Augias's background scheduler is running. Set this up once during installation — see [Cron job setup](../installation-guide/distribution-package/cron-job-setup.md). Without it, an active recurring invoice still won't produce any invoices.
+Les factures ne sont générées que si le planificateur d'Augias tourne en arrière-plan. Il se met en place une fois, à l'installation : voir [Tâches planifiées](../installation-guide/distribution-package/cron-job-setup.md). Sans lui, une facture récurrente active ne produit aucune facture.
 :::
