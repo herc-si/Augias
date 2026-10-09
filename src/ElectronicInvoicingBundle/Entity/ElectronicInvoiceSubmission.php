@@ -16,12 +16,14 @@ namespace Augias\ElectronicInvoicingBundle\Entity;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceSubmissionRepository;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use LogicException;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
@@ -49,9 +51,16 @@ class ElectronicInvoiceSubmission
     #[ORM\CustomIdGenerator(class: UlidGenerator::class)]
     private ?Ulid $id = null;
 
+    /**
+     * The document sent: an invoice, or a credit note (one or the other).
+     */
     #[ORM\ManyToOne(targetEntity: Invoice::class, inversedBy: 'electronicInvoiceSubmissions')]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private Invoice $invoice;
+    #[ORM\JoinColumn(nullable: true, onDelete: 'CASCADE')]
+    private ?Invoice $invoice = null;
+
+    #[ORM\ManyToOne(targetEntity: CreditNote::class, inversedBy: 'electronicInvoiceSubmissions')]
+    #[ORM\JoinColumn(name: 'credit_note_id', nullable: true, onDelete: 'CASCADE')]
+    private ?CreditNote $creditNote = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
     private string $provider;
@@ -91,7 +100,7 @@ class ElectronicInvoiceSubmission
         return $this->id;
     }
 
-    public function getInvoice(): Invoice
+    public function getInvoice(): ?Invoice
     {
         return $this->invoice;
     }
@@ -101,6 +110,36 @@ class ElectronicInvoiceSubmission
         $this->invoice = $invoice;
 
         return $this;
+    }
+
+    public function getCreditNote(): ?CreditNote
+    {
+        return $this->creditNote;
+    }
+
+    public function setCreditNote(CreditNote $creditNote): self
+    {
+        $this->creditNote = $creditNote;
+
+        return $this;
+    }
+
+    /**
+     * The document this submission sent, whichever kind it is.
+     */
+    public function getDocument(): Invoice | CreditNote
+    {
+        return $this->invoice ?? $this->creditNote ?? throw new LogicException('An electronic invoicing submission sends an invoice or a credit note.');
+    }
+
+    /**
+     * Its number, as the client and the platform know it.
+     */
+    public function getDocumentNumber(): string
+    {
+        $document = $this->getDocument();
+
+        return $document instanceof Invoice ? $document->getInvoiceId() : $document->getCreditNoteId();
     }
 
     public function getProvider(): string

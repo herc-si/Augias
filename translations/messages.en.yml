@@ -978,6 +978,7 @@ credit_note:
         recorded: 'Settlement recorded'
         invalid: 'That settlement could not be recorded. Check the amount and the date.'
     action:
+        send_electronic: 'Send the electronic credit note'
         create: 'Create Credit Note'
         issue: 'Issue'
         send: 'Send to the client'

@@ -16,7 +16,7 @@
 
 {{ 'einvoicing.notification_rejected.message'|trans({}, 'email') }}
 
-{{ 'einvoicing.notification_rejected.invoice_number'|trans({}, 'email') }}: {{ invoice_number(invoice) ?? invoice.id }}
+{{ 'einvoicing.notification_rejected.invoice_number'|trans({}, 'email') }}: {{ (number is defined and number ? number : (invoice_number(invoice) ?? invoice.id)) }}
 {% if client -%}
 {{ 'einvoicing.notification_rejected.client'|trans({}, 'email') }}: {{ client.name }}
 {% elseif invoice.client -%}
@@ -26,5 +26,5 @@
 {{ 'einvoicing.notification_rejected.status_code'|trans({}, 'email') }}: {{ statusCode }}
 
 {{ '-'|repeat(60) }}
-{{ 'einvoicing.notification_rejected.view_invoice'|trans({}, 'email') }}: {{ url('_invoices_view', {'id': invoice.id}) }}
+{{ 'einvoicing.notification_rejected.view_invoice'|trans({}, 'email') }}: {{ (creditNote is defined and creditNote is not null ? url('_credit_notes_view', {'id': creditNote.id}) : url('_invoices_view', {'id': invoice.id})) }}
 {% endautoescape %}

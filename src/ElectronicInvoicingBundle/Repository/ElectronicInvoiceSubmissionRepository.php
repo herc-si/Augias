@@ -78,8 +78,10 @@ final class ElectronicInvoiceSubmissionRepository extends EntityRepository
     public function findRecent(int $limit): array
     {
         return $this->createQueryBuilder('s')
-            ->innerJoin('s.invoice', 'i')
+            ->leftJoin('s.invoice', 'i')
             ->addSelect('i')
+            ->leftJoin('s.creditNote', 'c')
+            ->addSelect('c')
             ->orderBy('s.created', 'DESC')
             ->setMaxResults($limit)
             ->getQuery()

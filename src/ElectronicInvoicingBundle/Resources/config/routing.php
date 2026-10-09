@@ -33,6 +33,10 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->controller(SendElectronicInvoice::class);
 
     $routingConfigurator
+        ->add('_einvoicing_send_credit_note', '/send-credit-note/{id}')
+        ->controller([SendElectronicInvoice::class, 'creditNote']);
+
+    $routingConfigurator
         ->add('_einvoicing_incoming', '/incoming')
         ->controller(IncomingInvoices::class)
         ->methods(['GET']);

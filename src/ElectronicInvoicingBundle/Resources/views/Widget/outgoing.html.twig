@@ -42,7 +42,8 @@
         <div class="attention-items">
             {% for submission in submissions %}
                 {% set status = statuses[submission.id] %}
-                <a href="{{ path('_invoices_view', {id: submission.invoice.id}) }}"
+                {% set sentDocument = submission.document %}
+                <a href="{{ submission.creditNote ? path('_credit_notes_view', {id: sentDocument.id}) : path('_invoices_view', {id: sentDocument.id}) }}"
                    class="attention-item{{ status.value == 'rejected' ? ' attention-item--danger' }}">
                     <span class="attention-item-main">
                         {#
@@ -50,8 +51,8 @@
                          # in practice nothing is transmitted before that — but a
                          # bare "#" is worse than no number at all if it happens.
                          #}
-                        {% if submission.invoice.numbered %}
-                            <span class="attention-item-id">{{ invoice_number(submission.invoice, '#') }}</span>
+                        {% if sentDocument.numbered %}
+                            <span class="attention-item-id">{{ submission.creditNote ? credit_note_number(sentDocument) : invoice_number(sentDocument, '#') }}</span>
                         {% endif %}
                         {#
                          # The provider's own message, when it left one. A rejection

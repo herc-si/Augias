@@ -25,6 +25,7 @@ use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\FacturXInvoiceBuilder;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpAccessTokens;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApiException;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\SettingsBundle\SystemConfig;
 use Brick\Math\BigDecimal;
@@ -252,7 +253,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
     /**
      * @param array<string, mixed> $config
      */
-    public function send(Invoice $invoice, array $config): ElectronicInvoiceSubmissionResult
+    public function send(Invoice | CreditNote $invoice, array $config): ElectronicInvoiceSubmissionResult
     {
         if (! $this->tokens->hasCredentials($config)) {
             return ElectronicInvoiceSubmissionResult::failure('einvoicing.provider.super_pdp.missing_credentials');

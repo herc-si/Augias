@@ -978,6 +978,7 @@ credit_note:
         recorded: 'Règlement enregistré'
         invalid: "Ce règlement n'a pas pu être enregistré. Vérifiez le montant et la date."
     action:
+        send_electronic: 'Envoyer l''avoir électronique'
         create: 'Créer un avoir'
         issue: 'Émettre'
         send: 'Envoyer au client'

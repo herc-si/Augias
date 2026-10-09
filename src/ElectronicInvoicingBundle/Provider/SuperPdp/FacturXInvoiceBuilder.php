@@ -22,6 +22,7 @@ use Augias\CoreBundle\Enum\SupplyType;
 use Augias\CoreBundle\Pdf\Generator;
 use Augias\CoreBundle\Templates\BillingTemplateChannel;
 use Augias\CoreBundle\Templates\BillingTemplateResolver;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\SettingsBundle\SystemConfig;
@@ -37,6 +38,7 @@ use Augias\TaxBundle\Form\Type\TaxIdentifierType;
 use Augias\TaxBundle\Repository\TaxIdentifierRepository;
 use Brick\Math\BigDecimal;
 use Brick\Math\BigNumber;
+use Brick\Math\Exception\MathException;
 use Brick\Math\RoundingMode;
 use horstoeko\zugferd\codelists\ZugferdInvoiceType;
 use horstoeko\zugferd\codelists\ZugferdSchemeIdentifiers;
@@ -113,14 +115,17 @@ final readonly class FacturXInvoiceBuilder
     /**
      * @throws JsonException
      */
-    public function build(Invoice $invoice): string
+    public function build(Invoice | CreditNote $invoice): string
     {
         $documentBuilder = $this->buildDocument($invoice);
 
-        $pdfContent = $this->pdfGenerator->generate(
-            $this->twig->render($this->templateResolver->resolve($invoice, BillingTemplateChannel::Pdf), ['invoice' => $invoice]),
-            protect: false,
-        );
+        // The credit note's own PDF: it says AVOIR and names the invoice it
+        // corrects, which the invoice templates do not.
+        $html = $invoice instanceof CreditNote
+            ? $this->twig->render('@AugiasInvoice/CreditNote/pdf.html.twig', ['creditNote' => $invoice])
+            : $this->twig->render($this->templateResolver->resolve($invoice, BillingTemplateChannel::Pdf), ['invoice' => $invoice]);
+
+        $pdfContent = $this->pdfGenerator->generate($html, protect: false);
 
         $pdfBuilder = ZugferdDocumentPdfBuilder::fromPdfString($documentBuilder, $pdfContent);
         $pdfBuilder->setAdditionalCreatorTool('Augias');
@@ -132,18 +137,28 @@ final readonly class FacturXInvoiceBuilder
     /**
      * @throws JsonException
      */
-    public function buildDocument(Invoice $invoice): ZugferdDocumentBuilder
+    public function buildDocument(Invoice | CreditNote $invoice): ZugferdDocumentBuilder
     {
         $client = $invoice->getClient();
+        $isCreditNote = $invoice instanceof CreditNote;
 
         $documentBuilder = ZugferdDocumentBuilder::createNew(ZugferdProfiles::PROFILE_EN16931);
 
+        // A credit note is type 381 with positive amounts: the type carries
+        // the meaning, not the sign (EN 16931).
         $documentBuilder->setDocumentInformation(
-            $invoice->getInvoiceId(),
-            ZugferdInvoiceType::INVOICE,
-            $invoice->getInvoiceDate(),
+            $isCreditNote ? $invoice->getCreditNoteId() : $invoice->getInvoiceId(),
+            $isCreditNote ? ZugferdInvoiceType::CREDITNOTE : ZugferdInvoiceType::INVOICE,
+            $isCreditNote ? $invoice->getCreditNoteDate() : $invoice->getInvoiceDate(),
             $client?->getCurrencyCode() ?? $this->systemConfig->getCurrency()->getCode(),
         );
+
+        // BG-3: the invoice a credit note corrects, by number and date.
+        $credited = $isCreditNote ? $invoice->getCreditedInvoice() : null;
+
+        if ($credited instanceof Invoice && $credited->isNumbered()) {
+            $documentBuilder->addDocumentInvoiceReferencedDocument($credited->getInvoiceId(), null, $credited->getInvoiceDate());
+        }
 
         // BT-23: mandatory "cadre de facturation" code, read off the lines. An
         // invoice of goods alone is "B1". Anything with a service stays "S1",
@@ -163,7 +178,7 @@ final readonly class FacturXInvoiceBuilder
         // BT-72, the actual delivery date. Without one, zugferd still emits an
         // empty ApplicableHeaderTradeDelivery element, which PEPPOL-EN16931-R008
         // rejects — so the invoice date stands in when no delivery date was given.
-        $documentBuilder->setDocumentSupplyChainEvent($invoice->getSupplyDate());
+        $documentBuilder->setDocumentSupplyChainEvent($isCreditNote ? $invoice->getCreditNoteDate() : $invoice->getSupplyDate());
 
         $this->setSeller($documentBuilder, $invoice->getCompany());
 
@@ -174,7 +189,8 @@ final readonly class FacturXInvoiceBuilder
         // BG-16: a SEPA credit transfer (BT-81 "58") to the company's account,
         // with the invoice number as the reference to quote (BT-83) — what lets
         // the client's software prepare the transfer on its own.
-        $bank = $this->bankDetails->get($invoice->getCompany());
+        // Not on a credit note: there the seller is the one paying back.
+        $bank = $isCreditNote ? null : $this->bankDetails->get($invoice->getCompany());
 
         if (null !== $bank) {
             $documentBuilder->addDocumentPaymentMeanToCreditTransfer($bank->iban, payeeBic: $bank->bic, paymentReference: $invoice->getInvoiceId());
@@ -317,8 +333,8 @@ final readonly class FacturXInvoiceBuilder
         // The fees alone — the figures the invoice document shows, the
         // disbursements being on the note.
         $documentBuilder->setDocumentSummation(
-            $this->minorToFloat($invoice->getFeesTotal()),
-            $this->minorToFloat($invoice->getFeesPayableAmount()),
+            $this->minorToFloat($this->feesTotal($invoice)),
+            $this->minorToFloat($this->feesPayableAmount($invoice)),
             $lineTotal,
             null,
             $allowanceTotal > 0.0 ? round($allowanceTotal, 2) : null,
@@ -338,16 +354,23 @@ final readonly class FacturXInvoiceBuilder
 
         $vatNumber = null;
         $companyNumber = null;
+        $sellerSiren = null;
 
         foreach ($this->taxIdentifierRepository->findCompanyIdentifiers($company->getId()) as $identifier) {
             if ($this->isFrenchCompanyNumber($identifier)) {
                 $siret = $identifier->getValue();
-                $companyNumber = $siret;
+                // The SIRET when there is one: it is the tax registration a
+                // company in franchise is named by (see below).
+                $companyNumber = null === $companyNumber || strlen((string) $siret) === 14 ? $siret : $companyNumber;
                 $globalSiren = $this->sirenForScheme0002($siret);
 
-                if ($globalSiren !== null) {
+                // A SIRET and a SIREN both name the same company: one global
+                // ID, or EN 16931 refuses the second (FX-SCH-A-000164,
+                // BR-FR-CO-10). The company register fills in both.
+                if ($globalSiren !== null && $globalSiren !== $sellerSiren) {
                     $documentBuilder->addDocumentSellerGlobalId($globalSiren, ZugferdSchemeIdentifiers::ISO_6523_0002);
                     $documentBuilder->setDocumentSellerLegalOrganisation($globalSiren, ZugferdSchemeIdentifiers::ISO_6523_0002, null);
+                    $sellerSiren = $globalSiren;
                 }
 
                 $documentBuilder->setDocumentSellerCommunication(self::PEPPOL_FRANCE_SCHEME, $this->siren($siret));
@@ -389,14 +412,18 @@ final readonly class FacturXInvoiceBuilder
 
         $this->setAddress($documentBuilder->setDocumentBuyerAddress(...), $address);
 
+        $buyerSiren = null;
+
         foreach ($client->getTaxIdentifiers() as $identifier) {
             if ($this->isFrenchCompanyNumber($identifier)) {
                 $siret = $identifier->getValue();
                 $globalSiren = $this->sirenForScheme0002($siret);
 
-                if ($globalSiren !== null) {
+                // Once, however many of SIRET and SIREN name it (see setSeller()).
+                if ($globalSiren !== null && $globalSiren !== $buyerSiren) {
                     $documentBuilder->addDocumentBuyerGlobalId($globalSiren, ZugferdSchemeIdentifiers::ISO_6523_0002);
                     $documentBuilder->setDocumentBuyerLegalOrganisation($globalSiren, ZugferdSchemeIdentifiers::ISO_6523_0002, null);
+                    $buyerSiren = $globalSiren;
                 }
 
                 $documentBuilder->setDocumentBuyerCommunication(self::PEPPOL_FRANCE_SCHEME, $this->siren($siret));
@@ -568,7 +595,40 @@ final readonly class FacturXInvoiceBuilder
      * "B1" when every line sold is goods, "S1" otherwise. Disbursements sell
      * nothing and do not count either way.
      */
-    private function businessProcess(Invoice $invoice): string
+    /**
+     * The document's total without its disbursements, which travel on a note
+     * of their own. The invoice works it out itself; a credit note the same way.
+     *
+     * @throws MathException
+     */
+    private function feesTotal(Invoice | CreditNote $document): BigNumber
+    {
+        if ($document instanceof Invoice) {
+            return $document->getFeesTotal();
+        }
+
+        return $document->getTotal()->toBigDecimal()->minus($document->getDisbursementTotal());
+    }
+
+    /**
+     * @throws MathException
+     */
+    private function feesPayableAmount(Invoice | CreditNote $document): BigNumber
+    {
+        if ($document instanceof Invoice) {
+            return $document->getFeesPayableAmount();
+        }
+
+        $payable = $document->getPayableAmount();
+
+        if ($payable->isZero()) {
+            $payable = $document->getTotal()->toBigDecimal()->minus($document->getWithholdingAmount());
+        }
+
+        return $payable->toBigDecimal()->minus($document->getDisbursementTotal());
+    }
+
+    private function businessProcess(Invoice | CreditNote $invoice): string
     {
         $goods = false;
 
