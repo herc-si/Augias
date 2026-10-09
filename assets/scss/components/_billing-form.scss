@@ -879,6 +879,16 @@
     overflow: hidden;
 }
 
+// A second card under the totals, such as the invoice a credit note answers to.
+.billing-totals-card + .billing-totals-card {
+    margin-top: var(--swp-space-4);
+}
+
+.billing-credited-invoice-card .billing-totals-icon {
+    background: linear-gradient(135deg, var(--swp-primary-light) 0%, rgba(var(--swp-primary-rgb), 0.2) 100%);
+    color: var(--swp-primary);
+}
+
 .billing-totals-header {
     display: flex;
     align-items: center;
