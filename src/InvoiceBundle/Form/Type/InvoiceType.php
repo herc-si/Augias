@@ -79,6 +79,7 @@ class InvoiceType extends AbstractType
                 'class' => InvoiceClientMode::class,
                 'expanded' => true,
                 'label' => false,
+                'choice_label' => static fn (InvoiceClientMode $mode): string => 'client_mode.' . $mode->value,
                 'choice_attr' => fn () => ['data-action' => 'live#$render'],
             ]
         );

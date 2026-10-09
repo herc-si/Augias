@@ -27,17 +27,8 @@ enum CustomFieldType: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::TEXT => 'Text',
-            self::TEXTAREA => 'Long text',
-            self::NUMBER => 'Number',
-            self::DATE => 'Date',
-            self::EMAIL => 'Email',
-            self::URL => 'URL',
-            self::CHECKBOX => 'Checkbox',
-            self::SELECT => 'Single-select',
-            self::MULTI_SELECT => 'Multi-select',
-        };
+        // A translation key: the settings screen shows it in the user's language.
+        return 'custom_field.type.' . $this->value;
     }
 
     public function requiresOptions(): bool

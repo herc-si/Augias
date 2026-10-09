@@ -653,6 +653,9 @@ change_password:
         title: 'Update Your Password'
     submit: Save
     subtitle: 'Update your password to keep your account secure'
+client_mode:
+    existing: 'Existing client'
+    new: 'New client'
 client:
     address:
         add: 'Add Address'
@@ -1042,6 +1045,24 @@ credit_note:
         heading: 'CREDIT NOTE'
         credits_invoice: 'Credit note relating to invoice %invoice%.'
 custom_field:
+    type:
+        text: Text
+        textarea: 'Long text'
+        number: Number
+        date: Date
+        email: Email
+        url: URL
+        checkbox: Checkbox
+        select: Single-select
+        multi_select: Multi-select
+    target:
+        client: Client
+        contact: Contact
+        invoice: Invoice
+        quote: Quote
+    visibility:
+        internal: 'Internal only'
+        client_visible: 'Visible to client'
     add: 'Add field'
     badge:
         client_visible: Client-visible
@@ -2299,6 +2320,10 @@ invoice:
         start_date: 'Start Date'
         total_generated: 'Total Generated'
         type:
+            daily: Daily
+            weekly: Weekly
+            monthly: Monthly
+            yearly: Yearly
             label: 'Recurring Type'
             placeholder: 'Select a recurring type'
         upcoming: 'Upcoming Occurrences'
@@ -4088,6 +4113,16 @@ status:
     unknown: Unknown
 success: Success
 tax:
+    category:
+        Standard: Standard
+        ZeroRated: Zero-rated
+        Exempt: Exempt
+        OutOfScope: 'Out of scope'
+        ReverseCharge: 'Reverse charge'
+    choice:
+        label: '%name% (%rate%)'
+        compound: '%name% (%rate%, compound)'
+        with_category: '%label% [%category%]'
     company_identifiers:
         add: 'Add an identifier'
         description: 'Your company''s identifiers: they appear on the invoices and quotes you issue, and identify your e-invoices.'
