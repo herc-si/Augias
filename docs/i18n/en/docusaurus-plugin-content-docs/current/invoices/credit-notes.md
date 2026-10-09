@@ -76,6 +76,12 @@ The page of an issued credit note shows a `Settlement` box with what is `Still o
 2. Enter the `Amount`, at most what is still owed, the `Date` and, if needed, `Notes`.
 3. Click `Record`.
 
+### Use a credit note on a new invoice
+
+A credit note left on the client's credit comes off an invoice when it is settled. On the invoice, click `Pay Now`: the payment page shows the client's `Open credit notes`. Click `Use the credit notes`: they are set against the invoice, oldest first, for at most what is still owed. If something is left to pay, the payment page comes back to record it; otherwise the invoice moves to **Paid**.
+
+Do not pay with the `Credit` method what comes from a credit note: Augias refuses it, since the credit note would stay open and could be refunded a second time.
+
 A credit note can be settled in several goes. When nothing is still owed, it moves to `Settled`. Each settlement is deducted from the client's credit.
 
 :::info

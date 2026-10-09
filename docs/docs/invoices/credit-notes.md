@@ -76,6 +76,12 @@ La page d'un avoir émis affiche un cadre `Règlement` avec le `Reste dû`. Pour
 2. Saisissez le `Montant`, au plus le reste dû, la `Date` et, si besoin, des `Notes`.
 3. Cliquez sur `Enregistrer`.
 
+### Utiliser un avoir sur une nouvelle facture
+
+Un avoir resté au crédit du client se déduit d'une facture au moment de la régler. Sur la facture, cliquez sur `Payer maintenant` : la page de paiement affiche les `Avoirs disponibles` du client. Cliquez sur `Utiliser les avoirs` : ils sont imputés sur la facture, du plus ancien au plus récent, pour au plus ce qui reste dû. S'il reste quelque chose à payer, la page de paiement revient pour l'enregistrer ; sinon la facture passe **Payée**.
+
+Ne payez pas avec le moyen `Crédit` ce qui vient d'un avoir : Augias le refuse, car l'avoir resterait ouvert et pourrait être remboursé une seconde fois.
+
 Un avoir peut se régler en plusieurs fois. Quand le reste dû tombe à zéro, il passe au statut `Soldé`. Chaque règlement est déduit du crédit du client.
 
 :::info
