@@ -1,146 +1,148 @@
 <div align="center">
 
+**Français** · [English](README.en.md)
+
 <img src="docs/static/img/augias-banner.png" alt="Augias — facturation open source pour les indépendants et les petites entreprises" width="100%" />
 
 # Augias
 
-**The open-source invoicing platform for freelancers and small businesses.**
+**La facturation libre pour les indépendants et les petites entreprises.**
 
-Send quotes and invoices, issue and receive French electronic invoices (Factur-X), keep your books — and own every byte of your data.
+Envoyez devis et factures, émettez et recevez les factures électroniques françaises (Factur-X), tenez vos livres, et gardez la maîtrise de chacune de vos données.
 
 <p>
-  <a href="https://github.com/herc-si/Augias/blob/HEAD/LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" /></a>
-  <a href="https://github.com/herc-si/Augias/releases"><img alt="Latest Release" src="https://img.shields.io/github/v/release/herc-si/Augias?include_prereleases&style=flat-square" /></a>
+  <a href="https://github.com/herc-si/Augias/blob/HEAD/LICENSE"><img alt="Licence : MIT" src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square" /></a>
+  <a href="https://github.com/herc-si/Augias/releases"><img alt="Dernière version" src="https://img.shields.io/github/v/release/herc-si/Augias?include_prereleases&style=flat-square" /></a>
   <a href="https://www.php.net/"><img alt="PHP 8.4+" src="https://img.shields.io/badge/php-8.4%2B-777BB4?style=flat-square&logo=php&logoColor=white" /></a>
   <a href="https://symfony.com/"><img alt="Symfony 8" src="https://img.shields.io/badge/symfony-8.1-000000?style=flat-square&logo=symfony" /></a>
-  <a href="https://github.com/herc-si/Augias/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/herc-si/Augias?style=flat-square" /></a>
+  <a href="https://github.com/herc-si/Augias/stargazers"><img alt="Étoiles GitHub" src="https://img.shields.io/github/stars/herc-si/Augias?style=flat-square" /></a>
 </p>
 
 <p>
-  <a href="https://github.com/herc-si/Augias"><img src="https://img.shields.io/badge/Star-on%20GitHub-181717?style=for-the-badge&logo=github" alt="Star on GitHub" /></a>
+  <a href="https://github.com/herc-si/Augias"><img src="https://img.shields.io/badge/Star-on%20GitHub-181717?style=for-the-badge&logo=github" alt="Une étoile sur GitHub" /></a>
 </p>
 
-<img src="docs/static/img/dashboard.png" alt="Augias Dashboard" width="100%" />
+<img src="docs/static/img/dashboard.png" alt="Tableau de bord d'Augias" width="100%" />
 
 </div>
 
 ---
 
-## Why Augias?
+## Pourquoi Augias ?
 
-Most invoicing tools force a trade-off: easy to use *or* respectful of your data. Augias gives you both. It's a billing and bookkeeping platform for French freelancers and small businesses that you can run on your own server for free, or have hosted by [HERC SI](https://www.herc-si.fr) — no lock-in, full export at any time. Built on Symfony 8.1 and PHP 8.4, it's designed to be extended, integrated, and trusted.
+La plupart des outils de facturation imposent un choix : simples à utiliser *ou* respectueux de vos données. Augias offre les deux. C'est un logiciel de facturation et de comptabilité pour les indépendants et les petites entreprises françaises, que vous pouvez faire tourner gratuitement sur votre propre serveur, ou faire héberger par [HERC SI](https://www.herc-si.fr) : sans enfermement, avec un export complet à tout moment. Construit sur Symfony 8.1 et PHP 8.4, il est pensé pour être étendu, intégré, et digne de confiance.
 
 ---
 
-## 🇫🇷 French e-invoicing and bookkeeping
+## 🇫🇷 Facturation électronique et comptabilité françaises
 
-Since 1 September 2026 every French business must be able to **receive** electronic invoices; small and micro businesses must **issue** them and send their e-reporting data from 1 September 2027 ([impots.gouv.fr](https://www.impots.gouv.fr/professionnel/je-decouvre-la-facturation-electronique)). Augias is built for it:
+Depuis le 1er septembre 2026, toute entreprise française doit pouvoir **recevoir** des factures électroniques ; les TPE et PME doivent les **émettre** et transmettre leurs données d'e-reporting à partir du 1er septembre 2027 ([impots.gouv.fr](https://www.impots.gouv.fr/professionnel/je-decouvre-la-facturation-electronique)). Augias est conçu pour cela :
 
-- **Factur-X** invoices and credit notes (EN 16931), generated with every invoice
-- **Sending and receiving through a dematerialisation platform** — a connector for [SUPER PDP](https://www.superpdp.tech) ships today, behind a provider interface open to others
-- Status tracking of every invoice sent, and accept / dispute / refuse answers to the ones you receive
-- **E-reporting** of B2C transactions and payments
-- Supplier invoices imported straight from their Factur-X, no retyping
-- French tax rules where they matter: VAT on goods vs services, VAT on debits, deposits, discounts before tax, *débours* kept out of turnover, VAT-exempt mention (art. 293 B CGI)
+- Factures et avoirs **Factur-X** (EN 16931), produits avec chaque facture
+- **Émission et réception par une plateforme de dématérialisation** : un connecteur [SUPER PDP](https://www.superpdp.tech) est fourni, derrière une interface ouverte à d'autres plateformes
+- Suivi du statut de chaque facture envoyée, et réponses (accepter, contester, refuser) à celles que vous recevez
+- **E-reporting** des opérations avec les particuliers et des paiements
+- Factures fournisseurs importées directement depuis leur Factur-X, sans ressaisie
+- Les règles fiscales françaises là où elles comptent : TVA sur les biens et sur les services, option pour les débits, acomptes, remises avant TVA, *débours* exclus du chiffre d'affaires, mention d'exonération de TVA (art. 293 B du CGI)
 
-And the books that follow from it:
+Et la comptabilité qui en découle :
 
-- Revenue book and purchase register (micro-entreprise), sales and purchase journals (réel), written automatically from your documents
-- Accounting regimes (micro-entreprise, réel), fiscal year, period closing and a lock date
-- Turnover and **VAT returns (CA3)** prepared from the books
-- **FEC** export (fichier des écritures comptables) for a tax audit
-- Bank statement import (CAMT, OFX, CSV) and reconciliation
+- Livre des recettes et registre des achats (micro-entreprise), journaux des ventes et des achats (réel), écrits automatiquement depuis vos documents
+- Régimes comptables (micro-entreprise, réel), exercice, clôture des périodes et date de verrouillage
+- Chiffre d'affaires et **déclarations de TVA (CA3)** préparés depuis les livres
+- Export du **FEC** (fichier des écritures comptables) pour un contrôle fiscal
+- Import des relevés bancaires (CAMT, OFX, CSV) et rapprochement
 
 > [!NOTE]
-> Augias is a tool, not an accountant: check what it prepares with your adviser.
+> Augias est un outil, pas un expert-comptable : faites vérifier ce qu'il prépare par votre conseil.
 
 ---
 
-## ✨ Features
+## ✨ Fonctionnalités
 
-### 💼 Billing & Invoicing
-- Quotes that convert into invoices in one click
-- Recurring invoices on flexible schedules
-- Multi-currency support (real `Money` objects — no float rounding)
-- Credit notes, offset against an invoice or refunded
-- A tax rate per line — inclusive, exclusive or flat-rate — frozen on the document when it is issued
-- Document-level discounts, as a percentage or an amount, applied before VAT
-- 8 built-in PDF templates for invoices and quotes, with your colours, footer and bank details
-- Automatic overdue detection with configurable notifications
-- Payment reminders sent on a schedule you define
-- Create a new client directly from the invoice or quote form
-- Invoice state machine (draft → pending → overdue → paid, or cancelled)
+### 💼 Facturation
+- Des devis qui deviennent des factures en un clic
+- Des factures récurrentes au calendrier souple
+- Plusieurs devises (de vrais objets `Money`, sans arrondi de nombres à virgule)
+- Des avoirs, imputés sur une facture ou remboursés
+- Un taux de taxe par ligne (inclus, exclus ou forfaitaire), figé sur le document à son émission
+- Des remises sur le document, en pourcentage ou en montant, appliquées avant TVA
+- 8 modèles PDF pour les factures et les devis, avec vos couleurs, votre pied de page et vos coordonnées bancaires
+- Le passage en retard détecté automatiquement, avec des notifications réglables
+- Des relances de paiement envoyées selon le calendrier que vous fixez
+- La création d'un client directement depuis le formulaire de facture ou de devis
+- Un cycle de vie des factures (brouillon → en attente → en retard → payée, ou annulée)
 
-### 👥 Clients & Contacts
-- Full client and contact management
-- Custom fields for clients, contacts, invoices and quotes
-- Per-client currency, addresses and contact channels
-- Multi-tenancy out of the box (run multiple companies from one install)
+### 👥 Clients et contacts
+- La gestion complète des clients et des contacts
+- Des champs personnalisés pour les clients, les contacts, les factures et les devis
+- Devise, adresses et moyens de contact propres à chaque client
+- Plusieurs entreprises dans une même installation
 
-### 🔐 User & Security
-- Two-factor authentication, by authenticator app or by email
-- Google OAuth login
-- User email verification
-- Four roles per company — owner, administrator, billing, accountant
-- A sign-in journal for each user and each company
-- Guided onboarding flow with a checklist for new users
+### 🔐 Utilisateurs et sécurité
+- L'authentification à deux facteurs, par application ou par e-mail
+- La connexion avec Google
+- La vérification de l'adresse e-mail des utilisateurs
+- Quatre rôles par entreprise : propriétaire, administrateur, facturation, comptable
+- Un journal des connexions pour chaque utilisateur et chaque entreprise
+- Une prise en main guidée, avec une liste d'étapes pour les nouveaux utilisateurs
 
-### 💳 Payments
-- Bring-your-own Stripe, PayPal and other gateways via [Payum](https://payum.gitbook.io/payum/)
-- Online payment links sent with invoices
-- PCI-compliant — no card data ever touches your server
+### 💳 Paiements
+- Vos propres passerelles Stripe, PayPal et autres, par [Payum](https://payum.gitbook.io/payum/)
+- Des liens de paiement en ligne envoyés avec les factures
+- Conforme PCI : aucune donnée de carte ne passe par votre serveur
 
-### 🔌 Integrations & API
-- REST API (JSON-LD, JSON-HAL, JSON, XML) powered by [API Platform 4](https://api-platform.com/)
-- Token-based auth (`X-API-TOKEN`)
-- Built-in MCP server with OAuth2 for AI agent automation
-- Meilisearch integration for fast full-text search across all data
-- Grid export and full company data export
-- Notifications via email, SMS and chat channels
+### 🔌 Intégrations et API
+- Une API REST (JSON-LD, JSON-HAL, JSON, XML) propulsée par [API Platform 4](https://api-platform.com/)
+- Une authentification par jeton (`X-API-TOKEN`)
+- Un serveur MCP intégré, avec OAuth2, pour l'automatisation par des agents d'IA
+- L'intégration Meilisearch pour une recherche plein texte rapide dans toutes les données
+- L'export des listes et l'export complet des données d'une entreprise
+- Des notifications par e-mail, SMS et messageries
 
-### 🛡 Privacy & Ownership
-- 100% self-hostable — your database, your rules
-- Encrypted secrets, Doctrine multi-tenancy filters
-- MIT licensed — fork it, modify it, ship it
+### 🛡 Vie privée et maîtrise des données
+- 100 % auto-hébergeable : votre base de données, vos règles
+- Des secrets chiffrés, un cloisonnement des entreprises par filtres Doctrine
+- Sous licence MIT : forkez-le, modifiez-le, distribuez-le
 
-### 🚀 Modern Stack
+### 🚀 Une pile moderne
 - Symfony 8.1, PHP 8.4, Doctrine ORM, API Platform 4
-- Tabler UI on Bootstrap 5.3 — fully responsive, mobile-friendly
+- L'interface Tabler sur Bootstrap 5.3, adaptée au mobile
 - Stimulus, Webpack Encore, Bun, Sass
-- Helm charts for Kubernetes, opt-in Prometheus metrics
-- Symfony Messenger for async task processing
-- ULID primary keys, PHPStan level 6, ECS, Rector
+- Un chart Helm pour Kubernetes, des métriques Prometheus en option
+- Symfony Messenger pour les traitements asynchrones
+- Des clés primaires ULID, PHPStan niveau 6, ECS, Rector
 
 ---
 
-## 🏠 Self-Hosted vs. ☁️ Hosted
+## 🏠 Auto-hébergé ou ☁️ hébergé
 
-Both versions ship the same codebase and feature set. Pick whichever fits your workflow.
+Les deux versions partagent le même code et les mêmes fonctionnalités. Choisissez celle qui vous convient.
 
-|                | 🏠 **Self-Hosted** (Free, MIT)  | ☁️ **Hosted by HERC SI**                     |
-| -------------- | ------------------------------- | -------------------------------------------- |
-| Price          | Free forever                    | A free plan, and paid plans for automation   |
-| Setup          | You install & maintain          | Sign up and send                             |
-| Updates        | Manual                          | Automatic                                    |
-| Data location  | Your server                     | Hosted in Europe (Infomaniak)                |
-| Data ownership | Full                            | Full — export anytime                        |
-| Best for       | Tinkerers, privacy-first teams  | Anyone who wants to invoice today            |
+|                         | 🏠 **Auto-hébergé** (gratuit, MIT)    | ☁️ **Hébergé par HERC SI**                          |
+| ----------------------- | ------------------------------------- | --------------------------------------------------- |
+| Prix                    | Gratuit, pour toujours                | Une offre gratuite, et des offres payantes pour l'automatisation |
+| Mise en place           | Vous installez et entretenez          | Inscrivez-vous et facturez                          |
+| Mises à jour            | À la main                             | Automatiques                                        |
+| Emplacement des données | Votre serveur                         | Hébergées en Europe (Infomaniak)                    |
+| Propriété des données   | Totale                                | Totale, export à tout moment                        |
+| Idéal pour              | Les bricoleurs, les équipes soucieuses de leur vie privée | Quiconque veut facturer dès aujourd'hui |
 
 ---
 
-## 📸 Screenshots
+## 📸 Captures d'écran
 
 | | |
 | :---: | :---: |
-| <img src="docs/static/img/dashboard.png" alt="Dashboard" /><br/>**Dashboard** | <img src="docs/static/img/managing-clients/client-view-overview.png" alt="Client View" /><br/>**Client View** |
-| <img src="docs/static/img/invoices/invoice-list.png" alt="Invoice List" /><br/>**Invoice List** | <img src="docs/static/img/invoices/create-invoice-form.png" alt="Invoice Editor" /><br/>**Invoice Editor** |
-| <img src="docs/static/img/recurring-invoices/recurring-invoices-list-page.png" alt="Recurring Invoices" /><br/>**Recurring Invoices** | <img src="docs/static/img/payments.png" alt="Payments" /><br/>**Payments** |
+| <img src="docs/static/img/dashboard.png" alt="Tableau de bord" /><br/>**Tableau de bord** | <img src="docs/static/img/managing-clients/client-view-overview.png" alt="Fiche client" /><br/>**Fiche client** |
+| <img src="docs/static/img/invoices/invoice-list.png" alt="Liste des factures" /><br/>**Liste des factures** | <img src="docs/static/img/invoices/create-invoice-form.png" alt="Éditeur de facture" /><br/>**Éditeur de facture** |
+| <img src="docs/static/img/recurring-invoices/recurring-invoices-list-page.png" alt="Factures récurrentes" /><br/>**Factures récurrentes** | <img src="docs/static/img/payments.png" alt="Paiements" /><br/>**Paiements** |
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Démarrage rapide
 
-### Option 1 — Docker Compose from source (recommended)
+### Option 1 : Docker Compose depuis les sources (conseillée)
 
 ```bash
 git clone https://github.com/herc-si/Augias.git
@@ -148,26 +150,26 @@ cd Augias
 docker compose -f docker-compose.dev.yml up
 ```
 
-Composer and frontend dependencies install themselves into named volumes on the
-first run, so nothing needs to be present on the host. The application is served
-on `http://localhost:8765`.
+Les dépendances Composer et front-end s'installent seules dans des volumes nommés
+au premier lancement : rien n'est nécessaire sur la machine hôte. L'application
+est servie sur `http://localhost:8765`.
 
-### Option 2 — Single binary
+### Option 2 : binaire unique
 
-Get up and running in seconds with a self-contained binary — no PHP, no web server, no extensions to install.
+Démarrez en quelques secondes avec un binaire autonome : ni PHP, ni serveur web, ni extensions à installer.
 
-**Direct binary download:**
+**Téléchargement direct :**
 
-Grab the binary for your platform (`augias-linux-amd64`, `augias-linux-arm64`, `augias-mac-amd64`, `augias-mac-arm64`) from the [releases page](https://github.com/herc-si/Augias/releases), make it executable, and run it:
+Récupérez le binaire de votre plateforme (`augias-linux-amd64`, `augias-linux-arm64`, `augias-mac-amd64`, `augias-mac-arm64`) sur la [page des versions](https://github.com/herc-si/Augias/releases), rendez-le exécutable et lancez-le :
 
 ```bash
 chmod +x augias-linux-amd64
 ./augias-linux-amd64 run
 ```
 
-That's it — open `http://localhost:8765` and you're invoicing.
+C'est tout : ouvrez `http://localhost:8765` et facturez.
 
-### Option 3 — From source (for developers)
+### Option 3 : depuis les sources (pour les développeurs)
 
 ```bash
 git clone https://github.com/herc-si/Augias.git
@@ -176,70 +178,69 @@ composer install
 bun install && bun run dev
 ```
 
-For production builds:
+Pour une version de production :
 
 ```bash
 bun run build
 ```
 
-**Requirements:** PHP 8.4.1+, ext-curl, ext-gd, ext-intl, ext-openssl, ext-pdo, ext-soap, ext-xsl, MySQL/MariaDB or PostgreSQL.
+**Prérequis :** PHP 8.4.1+, ext-curl, ext-gd, ext-intl, ext-openssl, ext-pdo, ext-soap, ext-xsl, MySQL/MariaDB ou PostgreSQL.
 
 ---
 
-## 🛠 Tech Stack
+## 🛠 Pile technique
 
-**Backend:** Symfony 8.1 · PHP 8.4 · Doctrine ORM · API Platform 4 · Payum · MoneyPHP
-**Frontend:** Tabler · Bootstrap 5.3 · Stimulus · Webpack Encore · Bun · Sass
-**Quality:** PHPStan (level 6) · ECS · Rector · PHPUnit · Foundry · GitHub Actions
+**Back-end :** Symfony 8.1 · PHP 8.4 · Doctrine ORM · API Platform 4 · Payum · MoneyPHP
+**Front-end :** Tabler · Bootstrap 5.3 · Stimulus · Webpack Encore · Bun · Sass
+**Qualité :** PHPStan (niveau 6) · ECS · Rector · PHPUnit · Foundry · GitHub Actions
 
 ---
 
 ## 📚 Documentation
 
-- 📖 Docs & guides — the `docs/` directory in this repository
-- 🔄 Upgrading — [`UPGRADE.md`](UPGRADE.md)
-- 📝 Changelog — [`CHANGELOG.md`](CHANGELOG.md)
+- 📖 Documentation et guides : le dossier `docs/` de ce dépôt, en français, avec sa version anglaise
+- 🔄 Mises à jour : [`UPGRADE.md`](UPGRADE.md)
+- 📝 Historique des versions : [`CHANGELOG.md`](CHANGELOG.md)
 
 ---
 
-## 🤝 Contributing
+## 🤝 Contribuer
 
-We love contributions of every shape — code, docs, translations, bug reports, ideas. Look for the [`good first issue`](https://github.com/herc-si/Augias/labels/good%20first%20issue) label to get started, then read the [contributing guide](CONTRIBUTING.md) and our [code of conduct](CODE_OF_CONDUCT.md).
-
----
-
-## 🔒 Security
-
-Found a vulnerability? Please **do not** open a public issue. See [`SECURITY.md`](SECURITY.md) for our responsible disclosure process.
+Toutes les contributions sont les bienvenues : code, documentation, traductions, signalements de bogues, idées. Commencez par l'étiquette [`good first issue`](https://github.com/herc-si/Augias/labels/good%20first%20issue), puis lisez le [guide de contribution](CONTRIBUTING.md) et notre [code de conduite](CODE_OF_CONDUCT.md).
 
 ---
 
-## 💖 Acknowledgements
+## 🔒 Sécurité
 
-Augias is a fork of **[SolidInvoice](https://github.com/SolidInvoice/SolidInvoice)**
-by Pierre du Plessis / SolidWorx, released under the MIT License. Essentially all
-of the application below the rebrand is their work.
-
-The upstream project is supported by **[JetBrains](https://www.jetbrains.com/)**
-(PhpStorm licenses), **[Docker](https://www.docker.com/)** (Docker Hub) and
-**[Sentry](https://sentry.io/)** (Business plan). Those sponsorships are theirs,
-not this fork's — they are listed here as credit, not as a claim.
+Vous avez trouvé une vulnérabilité ? **N'ouvrez pas** de ticket public. Notre procédure de signalement responsable est dans [`SECURITY.md`](SECURITY.md).
 
 ---
 
-## 📄 License
+## 💖 Remerciements
 
-Augias is open-source software released under the [MIT License](LICENSE),
-inherited from SolidInvoice. The copyright notice of the original author is
-retained in `LICENSE` and in every source file, as the licence requires.
+Augias est un fork de **[SolidInvoice](https://github.com/SolidInvoice/SolidInvoice)**,
+de Pierre du Plessis / SolidWorx, publié sous licence MIT. L'essentiel de
+l'application, sous le changement de nom, est leur travail.
+
+Le projet d'origine est soutenu par **[JetBrains](https://www.jetbrains.com/)**
+(licences PhpStorm), **[Docker](https://www.docker.com/)** (Docker Hub) et
+**[Sentry](https://sentry.io/)** (offre Business). Ces parrainages sont les leurs,
+pas ceux de ce fork : ils figurent ici en remerciement, pas comme une revendication.
+
+---
+
+## 📄 Licence
+
+Augias est un logiciel libre publié sous [licence MIT](LICENSE), héritée de
+SolidInvoice. La mention de droits d'auteur de l'auteur d'origine est conservée
+dans `LICENSE` et dans chaque fichier source, comme la licence l'exige.
 
 ---
 
 <div align="center">
 
-**[Releases](https://github.com/herc-si/Augias/releases)** · **[Docs](docs/)** · **[Upstream project](https://github.com/SolidInvoice/SolidInvoice)**
+**[Versions](https://github.com/herc-si/Augias/releases)** · **[Documentation](docs/)** · **[Projet d'origine](https://github.com/SolidInvoice/SolidInvoice)**
 
-Built on [SolidInvoice](https://github.com/SolidInvoice/SolidInvoice) by [SolidWorx](https://solidworx.co) and its [contributors](https://github.com/SolidInvoice/SolidInvoice/graphs/contributors).
+Construit sur [SolidInvoice](https://github.com/SolidInvoice/SolidInvoice) par [SolidWorx](https://solidworx.co) et ses [contributeurs](https://github.com/SolidInvoice/SolidInvoice/graphs/contributors).
 
 </div>
-

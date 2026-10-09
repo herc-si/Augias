@@ -1,38 +1,41 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: Signaler un bogue
+about: Décrire un problème pour nous aider à l'améliorer
 title: ''
 labels: bug
-assignees: pierredup
+assignees: ''
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Le bogue**
+Une description claire et concise du problème.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**Pour le reproduire**
+Les étapes qui mènent au problème :
+1. Aller sur '...'
+2. Cliquer sur '...'
+3. Descendre jusqu'à '...'
+4. Constater l'erreur
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**Le comportement attendu**
+Une description claire et concise de ce qui aurait dû se passer.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Captures d'écran**
+Si c'est utile, ajoutez des captures d'écran pour illustrer le problème.
 
-**Desktop (please complete the following information):**
-- OS: [e.g. iOS]
-- Browser [e.g. chrome, safari]
-- Version [e.g. 22]
+**Ordinateur (merci de compléter) :**
+- Système : [par exemple Windows 11, macOS 15]
+- Navigateur : [par exemple Firefox, Chrome, Safari]
+- Version : [par exemple 130]
 
-**Smartphone (please complete the following information):**
-- Device: [e.g. iPhone6]
-- OS: [e.g. iOS8.1]
-- Browser [e.g. stock browser, safari]
-- Version [e.g. 22]
+**Smartphone (merci de compléter) :**
+- Appareil : [par exemple iPhone 15]
+- Système : [par exemple iOS 18]
+- Navigateur : [par exemple Safari]
+- Version : [par exemple 18]
 
-**Additional context**
-Add any other context about the problem here.
+**Version d'Augias et installation**
+Par exemple : 4.1.0, binaire / Docker / service hébergé.
+
+**Autres informations**
+Tout autre élément utile pour comprendre le problème.
