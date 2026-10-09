@@ -1,93 +1,94 @@
 ---
-title: Invoice statuses
-description: Understand every invoice status in Augias and what actions are available at each stage.
+title: Statuts des factures
+description: Comprendre chaque statut de facture dans Augias et les actions possibles à chaque étape.
 sidebar_position: 2
 ---
 
-# Invoice statuses
+# Statuts des factures
 
-Every invoice in Augias has a status that reflects where it is in the billing lifecycle. The status controls which actions are available and whether automated reminders apply.
+Chaque facture a un statut qui dit où elle en est. Le statut détermine les actions possibles et le déclenchement des relances automatiques.
 
-## Status overview
+## Vue d'ensemble
 
-| Status | Badge colour | Meaning |
+| Statut | Couleur | Signification |
 | --- | --- | --- |
-| **New** | Grey | The invoice has been cloned or created programmatically and has not yet been saved as a draft or published. |
-| **Draft** | Blue | The invoice is saved but not yet sent to the client. You can still edit it freely. |
-| **Pending** | Yellow | The invoice has been published and the client has been notified. Payment is expected. |
-| **Overdue** | Red | The due date has passed and the invoice has not been paid. |
-| **Paid** | Green | The invoice has been paid in full. |
-| **Cancelled** | Grey | The invoice has been cancelled. Any payments already recorded are converted to client credits. |
+| **Nouveau** | Gris | La facture vient d'être dupliquée ou créée par programme, et n'a pas encore été enregistrée. |
+| **Brouillon** | Bleu | La facture est enregistrée mais pas encore finalisée. Elle n'a pas de numéro et se modifie librement. |
+| **En attente** | Jaune | La facture est finalisée et numérotée. Le paiement est attendu. |
+| **En retard** | Rouge | L'échéance est passée et la facture n'est pas payée. |
+| **Payée** | Vert | La facture est entièrement payée. |
+| **Annulée** | Gris | La facture a été annulée. Les paiements déjà enregistrés deviennent du crédit client. |
 
-## Draft
+## Brouillon
 
-A draft invoice is saved but not visible to the client. You can edit every field — line items, dates, discounts, terms — without any restriction.
+Un brouillon n'est pas visible du client et n'a pas encore de numéro. Tout se modifie : lignes, dates, remises, conditions.
 
-![A draft invoice view showing the Publish button in the toolbar](/img/invoices/invoice-view-draft.png)
+![Un brouillon de facture avec le bouton d'envoi dans la barre d'outils](/img/invoices/invoice-view-draft.png)
 
-**Available actions:** Edit, Publish, Clone, Cancel.
+**Actions possibles :** Modifier, Envoyer au client, Finaliser sans envoyer, Dupliquer, Annuler.
 
-The `Publish` button (with a dropdown arrow) transitions the invoice to **Pending**. The dropdown also offers a `Send` option that publishes and emails the invoice in one step.
+`Envoyer au client` finalise la facture, qui prend son numéro et passe **En attente**, puis l'envoie par e-mail. `Finaliser sans envoyer`, dans le menu à côté, la finalise sans rien envoyer.
 
-## Pending
+## En attente
 
-A pending invoice has been published and the client is expected to pay. The invoice date, amount, and client are locked for editing.
+Une facture en attente est finalisée : le client doit la payer.
 
-![A pending invoice view showing Pay Now and Send buttons and the Pending status badge](/img/invoices/invoice-view-pending.png)
+![Une facture en attente avec les boutons Payer maintenant et Envoyer au client, et le badge En attente](/img/invoices/invoice-view-pending.png)
 
-**Available actions:** Pay Now, Send, Clone, Send Reminder, Edit, Cancel.
+**Actions possibles :** Payer maintenant, Envoyer au client, Envoyer un rappel, Dupliquer, Établir un avoir.
 
-- **Pay Now** — record a payment against this invoice.
-- **Send** — email the invoice to the client again (useful if the original email was missed).
+- **Payer maintenant** : enregistrer un paiement sur cette facture.
+- **Envoyer au client** : renvoyer la facture par e-mail, par exemple si le premier envoi s'est perdu.
+- **Établir un avoir** : corriger ou annuler la facture. Voir [Avoirs](./credit-notes.md).
 
-Augias automatically tracks the due date and transitions the status to **Overdue** when it passes.
+Augias surveille l'échéance et fait passer la facture **En retard** dès le lendemain.
 
 :::info
-Automated payment reminders only run for invoices with a **Pending** or **Overdue** status. See [Payment reminders](./payment-reminders.md) for how to configure them.
+Une facture émise ne s'annule pas et ne se modifie pas : elle se corrige par un avoir. Quand un [régime comptable](../accounting/setting-up-accounting.md) est configuré, Augias l'impose et retire `Modifier` et `Annuler` des factures en attente ou en retard. Sans régime, ces deux actions restent proposées.
 :::
 
-## Overdue
-
-An overdue invoice is a pending invoice whose due date has passed. The status badge turns red and the due date is highlighted in the Invoice Summary panel.
-
-![An overdue invoice view with the red Overdue status badge and highlighted due date](/img/invoices/invoice-view-overdue.png)
-
-**Available actions:** Pay Now, Send, Clone, Send Reminder, Edit, Cancel.
-
-The available actions are identical to **Pending**. Automated reminders continue to fire on the overdue schedule (day 1, day 7, day 14).
-
-## Paid
-
-A paid invoice is closed. The Invoice Summary shows the payment date and the outstanding balance.
-
-![A paid invoice view with the green Paid status badge and paid date shown in the Invoice Summary](/img/invoices/invoice-view-paid.png)
-
-**Available actions:** Clone, Download PDF, Print.
-
-No payment or send actions are available once an invoice is paid. You can still download the PDF or print it for your records.
-
-## Cancelled
-
-Cancelling an invoice does two things:
-
-1. Sets the status to **Cancelled** and stops all automated reminders.
-2. Converts any payments already recorded on the invoice into **client credits**, which can be applied to future invoices.
-
-To cancel an invoice, click the `···` More Actions button on the invoice view and select `Cancel`. A confirmation step prevents accidental cancellations.
-
-:::warning
-Cancellation cannot be undone through the UI. If you cancelled by mistake, the only recovery path is to clone the invoice and re-issue it.
+:::info
+Les relances automatiques ne concernent que les factures **En attente** ou **En retard**. Voir [Relances de paiement](./payment-reminders.md).
 :::
 
-## Status transitions at a glance
+## En retard
 
-```
-Draft → Pending  (Publish or Save and Send)
-Pending → Paid   (payment recorded)
-Pending → Overdue (due date passes, automatic)
-Overdue → Paid   (payment recorded)
-Pending → Cancelled
-Overdue → Cancelled
+Une facture en retard est une facture en attente dont l'échéance est passée. Le badge passe au rouge et l'échéance est mise en évidence dans le résumé de la facture.
+
+![Une facture en retard avec le badge rouge et l'échéance mise en évidence](/img/invoices/invoice-view-overdue.png)
+
+**Actions possibles :** les mêmes qu'**En attente**. Les relances automatiques continuent selon le calendrier des retards (1, 7 et 14 jours).
+
+## Payée
+
+Une facture payée est close. Le résumé affiche la date de paiement et le solde.
+
+![Une facture payée avec le badge vert et la date de paiement](/img/invoices/invoice-view-paid.png)
+
+**Actions possibles :** Dupliquer, Envoyer au client, Établir un avoir, Archiver, PDF, Imprimer.
+
+## Annulée
+
+Annuler une facture :
+
+1. la passe au statut **Annulée** et arrête toutes les relances ;
+2. transforme les paiements déjà enregistrés en **crédit client**, utilisable sur les prochaines factures.
+
+Pour annuler, ouvrez le menu `Plus d'actions` de la facture et choisissez `Annuler`.
+
+Une facture annulée peut être rouverte par `Rouvrir` : elle redevient un brouillon.
+
+## Les passages d'un statut à l'autre
+
+```text
+Brouillon → En attente  (Envoyer au client ou Finaliser sans envoyer)
+En attente → Payée      (paiement enregistré)
+En attente → En retard  (échéance passée, automatique)
+En retard → Payée       (paiement enregistré)
+Brouillon → Annulée
+En attente → Annulée    (sans régime comptable seulement)
+En retard → Annulée     (sans régime comptable seulement)
+Annulée → Brouillon     (Rouvrir)
 ```
 
-Any status can be cloned to create a fresh **New** invoice.
+Toute facture peut être dupliquée en une nouvelle facture au statut **Nouveau**.

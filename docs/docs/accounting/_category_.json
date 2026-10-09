@@ -1,9 +1,10 @@
 {
-  "label": "📒 Accounting",
+  "label": "📒 Comptabilité",
   "position": 8,
   "link": {
     "type": "generated-index",
-    "title": "Accounting",
-    "description": "Keep your statutory books, watch your turnover against the limits of your tax regime, and prepare your declarations."
+    "title": "Comptabilité",
+    "description": "Tenez vos livres obligatoires, suivez votre chiffre d'affaires face aux seuils de votre régime et préparez vos déclarations.",
+    "slug": "/category/accounting"
   }
 }

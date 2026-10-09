@@ -3,8 +3,8 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'Augias Docs',
-  tagline: 'Open-source invoicing for freelancers and small businesses',
+  title: 'Documentation Augias',
+  tagline: 'Facturation libre pour les indépendants et les petites entreprises',
   favicon: 'img/favicon.ico',
 
   future: {
@@ -73,9 +73,15 @@ const config: Config = {
     },
   ],
 
+  // French is the default: pages keep their URLs, in French. English is the
+  // second locale, served under /en/ from i18n/en/.
   i18n: {
-    defaultLocale: 'en',
-    locales: ['en'],
+    defaultLocale: 'fr',
+    locales: ['fr', 'en'],
+    localeConfigs: {
+      fr: {label: 'Français', htmlLang: 'fr-FR'},
+      en: {label: 'English', htmlLang: 'en'},
+    },
   },
 
   clientModules: [
@@ -119,9 +125,9 @@ const config: Config = {
       respectPrefersColorScheme: true,
     },
     navbar: {
-      title: 'Augias Docs',
+      title: 'Documentation Augias',
       logo: {
-        alt: 'Augias Logo',
+        alt: 'Logo Augias',
         src: 'img/logo.png',
         width: 32,
         height: 32,
@@ -132,6 +138,10 @@ const config: Config = {
           sidebarId: 'docsSidebar',
           position: 'left',
           label: 'Documentation',
+        },
+        {
+          type: 'localeDropdown',
+          position: 'right',
         },
         {
           href: 'https://github.com/herc-si/Augias',
@@ -147,7 +157,7 @@ const config: Config = {
           title: 'Documentation',
           items: [
             {
-              label: 'Get Started',
+              label: 'Bien démarrer',
               to: '/intro',
             },
             {
@@ -155,24 +165,24 @@ const config: Config = {
               to: '/installation-guide',
             },
             {
-              label: 'Companies',
+              label: 'Entreprises',
               to: '/companies/overview',
             },
             {
-              label: 'Integrations',
+              label: 'Intégrations',
               to: '/integrations/sentry',
             },
           ],
         },
         {
-          title: 'Community',
+          title: 'Communauté',
           items: [
             {
-              label: 'GitHub Discussions',
+              label: 'Discussions GitHub',
               href: 'https://github.com/herc-si/Augias/discussions',
             },
             {
-              label: 'Report an Issue',
+              label: 'Signaler un problème',
               href: 'https://github.com/herc-si/Augias/issues',
             },
             {
@@ -182,7 +192,7 @@ const config: Config = {
           ],
         },
         {
-          title: 'More',
+          title: 'Plus',
           items: [
             {
               label: 'GitHub',
@@ -203,7 +213,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Augias. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Augias. Construit avec Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,
@@ -217,6 +227,7 @@ const config: Config = {
       require.resolve('@easyops-cn/docusaurus-search-local'),
       {
         hashed: true,
+        language: ['fr', 'en'],
         indexBlog: false,
         docsRouteBasePath: '/',
         highlightSearchTermsOnTargetPage: true,

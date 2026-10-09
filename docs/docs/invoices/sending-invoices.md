@@ -1,64 +1,64 @@
 ---
-title: Sending, printing, and downloading invoices
-description: Email an invoice to a client, download it as a PDF, or print it directly from Augias.
+title: Envoyer, imprimer et télécharger une facture
+description: Envoyer une facture par e-mail, la télécharger en PDF ou l'imprimer depuis Augias.
 sidebar_position: 3
 ---
 
-# Sending, printing, and downloading invoices
+# Envoyer, imprimer et télécharger une facture
 
-Once an invoice is ready, you can deliver it to your client by email, download it as a PDF, or print it. All three options are available from the invoice view page.
+Une facture prête peut partir chez le client par e-mail, être téléchargée en PDF ou imprimée. Les trois se font depuis la page de la facture.
 
-## Emailing an invoice
+## Envoyer une facture par e-mail
 
-Click `Send` in the invoice toolbar to email the invoice to the client.
+Cliquez sur `Envoyer au client` dans la barre d'outils de la facture.
 
-![The pending invoice toolbar showing the Send button](/img/invoices/invoice-view-pending.png)
+![La barre d'outils d'une facture en attente avec le bouton d'envoi](/img/invoices/invoice-view-pending.png)
 
-Clicking `Send` does two things:
+Ce bouton :
 
-1. Transitions the invoice status from **Draft** to **Pending** (if it was still a draft).
-2. Emails the invoice to every contact on the client that has an email address on file.
+1. finalise la facture si c'était encore un brouillon : elle prend son numéro et passe **En attente** ;
+2. l'envoie par e-mail aux contacts choisis.
 
-The email includes a link the client can use to view and pay the invoice online, and the invoice PDF is attached automatically.
+L'e-mail contient un lien pour consulter et payer la facture en ligne, et le PDF de la facture en pièce jointe.
 
 :::info
-The email subject is configurable. Go to `System` → `Settings` → `Invoices` to change the default subject. Use the `{id}` placeholder to include the invoice number — for example, `Invoice #{id} from Acme Corp`.
+L'objet de l'e-mail se règle dans `Paramètres`, onglet `Factures`. Laissé vide, il suit la langue de votre entreprise. Le repère `{id}` insère le numéro de facture, par exemple `Facture {id} de Acme`.
 
-You can also set a BCC address on the same settings page to receive a copy of every invoice email.
+La même page permet d'indiquer une adresse en copie cachée, qui reçoit une copie de chaque e-mail de facture.
 :::
 
-### Sending again
+### Envoyer de nouveau
 
-If the client missed the first email or requests a copy, click `Send` again from the invoice toolbar. The invoice must already be in **Pending** or **Overdue** status. Sending again does not reset the automated reminder schedule.
+Si le client n'a pas reçu le premier e-mail ou demande une copie, cliquez de nouveau sur `Envoyer au client`. La facture doit être **En attente** ou **En retard**. Un nouvel envoi ne remet pas à zéro le calendrier des relances.
 
-### Manual payment reminders
+### Relance manuelle
 
-To send a payment reminder without re-sending the full invoice, use `Send Reminder` from the **More Actions** (`···`) menu. See [Payment reminders](./payment-reminders.md) for details.
+Pour relancer sans renvoyer toute la facture, choisissez `Envoyer un rappel` dans le menu `Plus d'actions`. Voir [Relances de paiement](./payment-reminders.md).
 
-## Downloading as PDF
+## Télécharger le PDF
 
-Click the `PDF` button in the invoice toolbar to download the invoice as a PDF file.
+Cliquez sur le bouton `PDF` de la barre d'outils pour télécharger la facture.
 
-![The invoice PDF showing the company name, invoice number, client details, line items, and a PENDING watermark](/img/invoices/invoice-pdf.png)
+![Le PDF d'une facture avec l'entreprise, le numéro, le client et les lignes](/img/invoices/invoice-pdf.png)
 
-The PDF includes:
+Le PDF comprend :
 
-- Your company name and details
-- Invoice number, invoice date, and due date
-- Total due in a highlighted box
-- Client name, VAT number, address, and email
-- Line items with price, quantity, and totals
-- Sub-total, tax breakdown, and grand total
-- Payment link (if the invoice is unpaid)
-- Terms (if you added any)
-- A diagonal watermark showing the invoice status (e.g. **PENDING**, **PAID**)
+- le nom et les coordonnées de votre entreprise ;
+- le numéro, la date de facture et l'échéance ;
+- le montant dû, mis en évidence ;
+- le nom du client, son numéro de TVA, son adresse et son e-mail ;
+- les lignes avec prix, quantité et totaux ;
+- le sous-total, le détail de la TVA et le total ;
+- le lien de paiement, si la facture n'est pas payée ;
+- vos conditions, s'il y en a ;
+- un filigrane en diagonale qui rappelle le statut de la facture.
 
 :::tip
-The PDF is generated server-side and is always up to date. If you edit the invoice after downloading, download it again to get the latest version.
+Le PDF est produit par le serveur à chaque téléchargement : il est toujours à jour. Après une modification, téléchargez-le de nouveau.
 :::
 
-## Printing
+## Imprimer
 
-Click the `Print` button (printer icon) in the invoice toolbar to open the browser's print dialog.
+Cliquez sur le bouton `Imprimer` (icône d'imprimante) pour ouvrir la fenêtre d'impression du navigateur.
 
-Augias sends the invoice to the browser's native print function. You can print to a physical printer or use your operating system's "Print to PDF" option as an alternative to the built-in PDF download.
+Vous pouvez imprimer sur papier, ou choisir « Imprimer en PDF » dans votre système, en alternative au téléchargement du PDF.

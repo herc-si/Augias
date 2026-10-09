@@ -1,78 +1,77 @@
 ---
-title: Creating an invoice
-description: Create a new invoice in Augias and send it to a client.
+title: Créer une facture
+description: Créer une facture dans Augias et l'envoyer à un client.
 sidebar_position: 1
 ---
 
-# Creating an invoice
+# Créer une facture
 
-To create a new invoice, go to `Invoices` in the sidebar and click `+ Create Invoice`, or use the global `+ Create` button at the top of the page.
+Pour créer une facture, ouvrez `Factures de vente` dans le menu latéral et cliquez sur `Créer une facture`.
 
-![The invoice list with the Create Invoice button](/img/invoices/invoice-list.png)
+![La liste des factures avec le bouton de création](/img/invoices/invoice-list.png)
 
-## Choose a client
+## Choisir le client
 
-The first step is selecting who the invoice is for. Augias offers two modes:
+Commencez par indiquer à qui s'adresse la facture. Deux possibilités :
 
-- **Existing** — choose a client already in your contacts list from the dropdown.
-- **NewClient** — create a new client on the spot by entering their name, contact name, and email address. The new client is saved to your contacts automatically.
+- choisir un client existant dans la liste ;
+- créer un nouveau client sur place, en saisissant son nom, le nom du contact et son adresse e-mail. Le client est enregistré automatiquement.
 
-![The create invoice form with NewClient mode selected, showing Client Name, First Name, Last Name, and Email fields](/img/invoices/create-invoice-new-client.png)
+![Le formulaire de facture en mode nouveau client, avec les champs du client et du contact](/img/invoices/create-invoice-new-client.png)
 
-## Invoice details
+## En-tête de la facture
 
-With the client set, fill in the invoice header fields:
+Le client choisi, renseignez l'en-tête :
 
-| Field | Required | Description |
+| Champ | Obligatoire | Description |
 | --- | --- | --- |
-| **Invoice date** | Yes | The date the invoice is issued. Defaults to today. |
-| **Due Date** | No | The date payment is due. Leave blank if there is no fixed deadline. |
-| **Invoice #** | Auto | Auto-generated from your ID settings. Click the pencil icon to change it for this invoice. |
-| **Discount** | No | An invoice-wide discount — enter a value and choose `%` for a percentage or your currency symbol for a fixed amount. |
+| **Date de facture** | Oui | La date d'émission. Aujourd'hui par défaut. |
+| **Date d'échéance** | Non | La date limite de paiement. Laissez vide s'il n'y en a pas. |
+| **Remise** | Non | Une remise sur toute la facture : saisissez une valeur et choisissez `%` pour un pourcentage, ou le symbole de la devise pour un montant. |
 
-![The create invoice form showing the header fields and an empty line items section](/img/invoices/create-invoice-form.png)
+La facture n'a pas encore de numéro : il lui est attribué à la finalisation, dans la suite réglée dans les paramètres. Un brouillon affiche `Numéro attribué à la finalisation`.
 
-## Line items
+![Le formulaire de facture avec l'en-tête et la section des lignes vide](/img/invoices/create-invoice-form.png)
 
-Every invoice needs at least one line item. The form starts with one blank row; click `+ Add Item` to add more.
+## Lignes
 
-Each line item has these fields:
+Une facture compte au moins une ligne. Le formulaire s'ouvre avec une ligne vide ; cliquez sur `Ajouter un article` pour en ajouter.
 
-| Field | Description |
+Chaque ligne comporte :
+
+| Champ | Description |
 | --- | --- |
-| **Description** | What the service or product is. Supports multiple lines. |
-| **Price** | The unit price. |
-| **Qty** | The quantity. Defaults to `1`. Fractional quantities are supported to six decimal places, so you can bill part-hours, metered usage or weights exactly. |
-| **Unit** | What the quantity counts: `Unit`, `Hour`, `Day`, `Month`, `Kilogram`, `Litre`, `Metre` or `Flat rate`. Filled in from the product when you add one from the catalogue. The PDF shows it after the quantity (`3 h`, `2 d`), and the electronic invoice carries it. |
-| **Tax** | An optional tax rate to apply to this line. Tax rates are managed in `System` → `Taxes`. |
+| **Description** | Le service ou le produit facturé. Plusieurs lignes de texte possibles. |
+| **Prix** | Le prix unitaire. |
+| **Quantité** | `1` par défaut. Jusqu'à six décimales, pour facturer exactement des fractions d'heure, une consommation ou un poids. |
+| **Unité** | Ce que compte la quantité : `Unité`, `Heure`, `Jour`, `Mois`, `Kilogramme`, `Litre`, `Mètre` ou `Forfait`. Reprise du produit quand vous l'ajoutez depuis le catalogue. Le PDF l'affiche après la quantité, et la facture électronique la transmet. |
+| **TVA** | Un taux de taxe facultatif pour cette ligne. Les taux se gèrent dans `Système` → `Taxes`. |
 
-The **Total** column and the **Summary** panel on the right update in real time as you type.
+La colonne **Total** et le cadre **Totaux** à droite se mettent à jour pendant la saisie.
 
 :::info
-Tax is applied per line item, not to the invoice as a whole. Different lines can carry different tax rates.
+La taxe s'applique ligne par ligne, et non à la facture entière. Chaque ligne peut avoir son propre taux.
 :::
 
-## Terms and notes
+## Conditions et notes
 
-Click **Terms & Notes** at the bottom of the form to expand this optional section.
+Cliquez sur **Conditions & Notes** en bas du formulaire pour déplier cette section facultative.
 
-![The Terms & Notes section expanded, showing Terms and Notes text areas](/img/invoices/create-invoice-terms-notes.png)
+![La section Conditions & Notes dépliée](/img/invoices/create-invoice-terms-notes.png)
 
-- **Terms** — payment terms or conditions. This text appears on the invoice and is visible to the client. A new invoice opens with your [default terms](./default-terms.md), worded for a business client or a private individual depending on the client you choose.
-- **Notes** — internal notes for your own records. Notes are **not** visible to the client and do not appear on the invoice or PDF.
+- **Conditions** : vos conditions de paiement. Ce texte figure sur la facture et le client le voit. Une nouvelle facture s'ouvre avec vos [conditions par défaut](./default-terms.md), rédigées pour un professionnel ou pour un particulier selon le client choisi.
+- **Notes** : des notes pour vous seul. Elles n'apparaissent **pas** sur la facture ni sur le PDF.
 
-## Saving the invoice
+## Enregistrer la facture
 
-Click the dropdown arrow next to `Save as Draft` to see all save options:
+En bas du formulaire :
 
-![The save dropdown showing Save as Draft, Publish, and Save and Send options](/img/invoices/create-invoice-save-options.png)
-
-| Option | What it does |
+| Bouton | Effet |
 | --- | --- |
-| **Save as Draft** | Saves the invoice without sending it. Status is set to **Draft**. You can edit and publish it later. |
-| **Publish** | Saves and marks the invoice as **Pending**, ready to be paid. Does not send an email. |
-| **Save and Send** | Saves, marks as **Pending**, and immediately emails the invoice to all contacts on the client. |
+| **Enregistrer comme brouillon** | Enregistre la facture sans l'envoyer, au statut **Brouillon**. Vous pourrez la modifier puis la finaliser plus tard. |
+| **Enregistrer et envoyer au client** | Finalise la facture (elle prend son numéro et passe **En attente**) et l'envoie par e-mail aux contacts choisis. |
+| **Finaliser sans envoyer** | Dans le menu à côté du bouton d'envoi : finalise la facture sans rien envoyer au client. Vous pourrez l'envoyer plus tard. |
 
 :::tip
-Use **Save as Draft** while you're still working on an invoice. Use **Publish** or **Save and Send** when it's ready for the client.
+Gardez le brouillon tant que vous travaillez sur la facture. Une fois finalisée et remise au client, une facture se corrige par un [avoir](./credit-notes.md).
 :::
