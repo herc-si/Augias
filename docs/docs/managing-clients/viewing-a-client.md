@@ -1,6 +1,6 @@
 ---
 title: Consulter un client
-description: La fiche d'un client : synthèse financière, contacts, adresses, crédit, et ses devis, factures et avoirs.
+description: "La fiche d'un client : synthèse financière, contacts, adresses, crédit, et ses devis, factures et avoirs."
 sidebar_position: 3
 ---
 

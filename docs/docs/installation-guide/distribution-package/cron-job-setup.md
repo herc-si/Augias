@@ -1,6 +1,6 @@
 ---
 title: Tâches planifiées
-description: Planifier le processus de fond d'Augias sur votre plateforme : systemd, cron, Plesk, cPanel ou Windows.
+description: "Planifier le processus de fond d'Augias sur votre plateforme : systemd, cron, Plesk, cPanel ou Windows."
 sidebar_position: 2
 ---
 

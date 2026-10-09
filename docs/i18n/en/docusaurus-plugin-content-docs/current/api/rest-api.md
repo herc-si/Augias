@@ -134,7 +134,6 @@ The interactive Swagger UI for your installation is the authoritative reference 
 https://your-instance.example/api/docs
 ```
 
-The same documentation for the latest public release is hosted at [augias.app/api/docs](https://augias.app/api/docs).
 
 The main resource roots are:
 

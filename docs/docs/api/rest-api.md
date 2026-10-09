@@ -1,166 +1,164 @@
 ---
-title: REST API
-description: Authenticate and use the Augias REST API.
+title: API REST
+description: S'authentifier et utiliser l'API REST d'Augias.
 sidebar_position: 1
 ---
 
-# REST API
+# API REST
 
-Augias exposes a REST API at `/api/*` that mirrors the web UI: clients, invoices, quotes, payments, recurring invoices, taxes, and more. Authentication is via a per-user API token. The full endpoint reference is auto-generated and served by your Augias instance at `/api/docs`.
+Augias expose une API REST sous `/api/*` qui reprend l'interface web : clients, factures, devis, paiements, factures récurrentes, taxes, etc. L'authentification passe par un jeton d'API propre à chaque utilisateur. La référence complète des points d'accès est générée automatiquement et servie par votre instance sur `/api/docs`.
 
 :::tip
-Prefer a flexible query language over fixed endpoints? See the [GraphQL API](./graphql.md) for an alternative way to access the same data.
+Vous préférez un langage de requête souple à des points d'accès fixes ? L'[API GraphQL](./graphql.md) donne accès aux mêmes données autrement.
 :::
 
-## Creating an API token
+## Créer un jeton d'API
 
-Sign in to Augias and open `Settings` → `API Keys` (or visit `/profile/api` directly). Click the green `+ Create Token` button at the top right of the list.
+Connectez-vous à Augias et ouvrez `Clés API` dans le menu de votre profil (ou allez directement sur `/profile/api`). Cliquez sur `Créer un jeton` en haut à droite de la liste.
 
-![The API Tokens page with the stats row, info banner, Create Token button, and one existing token](/img/api/api-tokens-page.png)
+![La page des jetons d'API avec les statistiques, le bandeau d'information, le bouton de création et un jeton existant](/img/api/api-tokens-page.png)
 
-In the `Create New API Token` dialog, fill in:
+Dans la fenêtre `Créer un nouveau jeton API`, renseignez :
 
-- **`Name`** *(required)* — a label for the token. Pick something that identifies where it will be used, e.g. `Reporting integration` or `Zapier`.
-- **`Description`** *(optional)* — a longer note describing the token's purpose.
+- **`Nom`** *(obligatoire)* : un libellé pour le jeton. Choisissez de quoi reconnaître son usage, par exemple `Intégration comptable` ou `Zapier`.
+- **`Description`** *(facultative)* : une note plus longue sur le rôle du jeton.
 
-![The Create New API Token dialog with Name and Description fields](/img/api/create-token-modal.png)
+![La fenêtre de création d'un jeton avec les champs Nom et Description](/img/api/create-token-modal.png)
 
-Click `Save`. The dialog updates to show the generated token value:
+Cliquez sur `Enregistrer`. La fenêtre affiche alors la valeur du jeton :
 
-![The success state with the token value, copy button, and warning that the token will not be shown again](/img/api/token-created-modal.png)
+![La fenêtre de confirmation avec la valeur du jeton, le bouton de copie et l'avertissement](/img/api/token-created-modal.png)
 
 :::warning
-The token is shown **only once**, immediately after creation. Click the `Copy` button and store it in a password manager or your integration's secret store before clicking `I have copied the token`. If you lose it, revoke the token and create a new one — there is no way to retrieve the original value later.
+Le jeton n'est affiché **qu'une fois**, juste après sa création. Cliquez sur `Copier` et rangez-le dans un gestionnaire de mots de passe ou le coffre de secrets de votre intégration avant de cliquer sur `J'ai copié le jeton`. S'il est perdu, révoquez-le et créez-en un autre : la valeur d'origine ne peut pas être retrouvée.
 :::
 
-## Viewing your tokens
+## Consulter vos jetons
 
-The token list shows everything you've created, with these columns:
+La liste montre tous vos jetons, avec ces colonnes :
 
-- `Name`, `Description` — what you entered when creating the token.
-- `Usage Count` — total number of API requests made with this token.
-- `Last Used` — when the token was last used to make a request, or empty if never used.
-- `Created` — when the token was generated.
+- `Nom`, `Description` : ce que vous avez saisi à la création ;
+- `Nombre d'utilisations` : le nombre total de requêtes faites avec ce jeton ;
+- `Dernière utilisation` : la date de la dernière requête, vide s'il n'a jamais servi ;
+- `Créé le` : la date de création.
 
-The four stat cards above the list summarise the same data across all your tokens: `Active Tokens`, `API Calls This Month`, `Last Activity`, and `Most Used Token`.
+Les quatre cartes au-dessus de la liste résument ces données pour tous vos jetons : `Jetons actifs`, `Appels API ce mois-ci`, `Dernière activité` et `Jeton le plus utilisé`.
 
-The list is searchable and sortable. The token value itself is never shown again after creation — only its name.
+La liste se recherche et se trie. La valeur du jeton n'est plus jamais affichée après sa création : seul son nom l'est.
 
-## Viewing request history
+## Consulter l'historique des requêtes
 
-Every successful API request authenticated with a token is recorded against that token. Click `View History` on a token's row in the list to open a modal with the captured requests.
+Chaque requête authentifiée avec succès par un jeton est enregistrée pour ce jeton. Cliquez sur `Voir l'historique` sur la ligne du jeton pour ouvrir la liste des requêtes.
 
-![The API Request History modal listing recent calls with method, endpoint, status, IP address, and user agent](/img/api/token-history-modal.png)
+![L'historique des requêtes avec méthode, point de terminaison, statut, adresse IP et agent utilisateur](/img/api/token-history-modal.png)
 
-Each row records:
+Chaque ligne indique :
 
-- `Date` — when the request arrived.
-- `Method` — `GET`, `POST`, `PATCH`, `PUT`, or `DELETE`.
-- `Endpoint` — the path that was called (e.g. `/api/invoices`).
-- `Status` — the HTTP status code returned to the client.
-- `IP Address` — the client's IP at the time of the request.
-- `User Agent` — the `User-Agent` header sent by the client.
+- `Date` : l'arrivée de la requête ;
+- `Méthode` : `GET`, `POST`, `PATCH`, `PUT` ou `DELETE` ;
+- `Point de terminaison` : le chemin appelé (par exemple `/api/invoices`) ;
+- `Statut` : le code HTTP renvoyé ;
+- `Adresse IP` : l'adresse du client au moment de la requête ;
+- `Agent utilisateur` : l'en-tête `User-Agent` envoyé par le client.
 
-The history list is filterable by date range, method, and status range, and is capped at the 100 most recent entries displayed at a time. Failed authentication attempts (no token or wrong token) are **not** recorded — only successful ones.
+L'historique se filtre par période, par méthode et par plage de statut, et affiche au plus les 100 requêtes les plus récentes. Les authentifications manquées (sans jeton ou avec un mauvais jeton) **ne sont pas** enregistrées : seules les réussies le sont.
 
-## Revoking a token
+## Révoquer un jeton
 
-To revoke a token, tick its checkbox in the list, then choose `Revoke` from the batch-actions toolbar.
+Pour révoquer un jeton, cochez-le dans la liste, puis choisissez `Révoquer` dans les actions groupées.
 
 :::warning
-Revocation is **immediate** and there is no confirmation dialog. The token row is deleted along with its full request history. Any application using the revoked token will start receiving `401 Unauthorized` on its next request — so plan to update integrations before you revoke.
+La révocation est **immédiate**, sans fenêtre de confirmation. Le jeton est supprimé avec tout son historique. Toute application qui l'utilise reçoit `401 Unauthorized` dès sa requête suivante : mettez vos intégrations à jour avant de révoquer.
 :::
 
-If you need to rotate a token without downtime, create the new token first, switch your integration over to the new value, verify it's working (look for the new token's `Last Used` timestamp updating), and only then revoke the old token.
+Pour remplacer un jeton sans interruption, créez d'abord le nouveau, basculez votre intégration dessus, vérifiez qu'il fonctionne (sa `Dernière utilisation` se met à jour), puis seulement révoquez l'ancien.
 
-## Authenticating requests
+## Authentifier les requêtes
 
-Send the token in the `X-API-TOKEN` HTTP header on every request:
+Envoyez le jeton dans l'en-tête HTTP `X-API-TOKEN` de chaque requête :
 
 ```bash
-curl -H "X-API-TOKEN: <your-token>" \
+curl -H "X-API-TOKEN: <votre-jeton>" \
      -H "Accept: application/ld+json" \
-     https://your-instance.example/api/invoices
+     https://votre-instance.example/api/invoices
 ```
 
-The API is **stateless** — there is no session, no CSRF token, and no login round-trip. Send the header on every request. Tokens are scoped to one user *and* one company; if your account belongs to multiple companies, generate a separate token per company by switching companies in the UI before creating the token.
+L'API est **sans état** : pas de session, pas de jeton CSRF, pas d'aller-retour de connexion. Envoyez l'en-tête à chaque requête. Un jeton vaut pour un utilisateur *et* une entreprise ; si votre compte appartient à plusieurs entreprises, créez un jeton par entreprise en passant sur chacune dans l'application avant de créer son jeton.
 
-If a request lacks a valid token, the server responds with `401 Unauthorized` and a JSON body:
+Sans jeton valide, le serveur répond `401 Unauthorized` avec un corps JSON :
 
 ```json
 { "message": "No API token provided" }
 ```
 
-## Response formats
+## Formats de réponse
 
-The API supports content negotiation via the `Accept` header. Available formats:
+L'API négocie le format par l'en-tête `Accept`. Formats disponibles :
 
-| Accept value | Format |
+| Valeur d'`Accept` | Format |
 | --- | --- |
-| `application/ld+json` (default) | JSON-LD with Hydra hypermedia |
-| `application/json` | Plain JSON |
-| `application/hal+json` | HAL JSON |
+| `application/ld+json` (défaut) | JSON-LD avec hypermédia Hydra |
+| `application/json` | JSON simple |
+| `application/hal+json` | JSON HAL |
 | `application/vnd.api+json` | JSON:API |
-| `application/xml` or `text/xml` | XML |
+| `application/xml` ou `text/xml` | XML |
 
-Collection endpoints are paginated with **30 items per page** by default. Override with the `itemsPerPage` query parameter:
+Les collections sont paginées par **30 éléments par page** par défaut. Le paramètre `itemsPerPage` change ce nombre :
 
 ```bash
-curl -H "X-API-TOKEN: <your-token>" \
-     "https://your-instance.example/api/invoices?page=2&itemsPerPage=50"
+curl -H "X-API-TOKEN: <votre-jeton>" \
+     "https://votre-instance.example/api/invoices?page=2&itemsPerPage=50"
 ```
 
-Errors are returned in [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) `application/problem+json` format with a human-readable `title`, `detail`, and a machine-readable `type`.
+Les erreurs sont renvoyées au format [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) `application/problem+json`, avec un `title` et un `detail` lisibles et un `type` exploitable par programme.
 
-## Rate limits
+## Limites de débit
 
-The API is rate-limited to **300 requests per minute**, using a sliding window. The bucket is keyed by token when authenticated, falling back to client IP for unauthenticated requests.
+L'API est limitée à **300 requêtes par minute**, en fenêtre glissante. Le compteur est tenu par jeton pour les requêtes authentifiées, et par adresse IP sinon.
 
-Every API response includes the current state of your bucket in the headers:
+Chaque réponse indique l'état de votre compteur dans ses en-têtes :
 
-| Header | Meaning |
+| En-tête | Signification |
 | --- | --- |
-| `X-RateLimit-Limit` | The total budget per window (`300`). |
-| `X-RateLimit-Remaining` | Requests left in the current window. |
-| `X-RateLimit-Reset` | Unix timestamp when the budget resets. |
+| `X-RateLimit-Limit` | Le budget total par fenêtre (`300`). |
+| `X-RateLimit-Remaining` | Les requêtes restantes dans la fenêtre en cours. |
+| `X-RateLimit-Reset` | L'horodatage Unix de remise à zéro. |
 
-If you exceed the limit, the response is `429 Too Many Requests` with a `Retry-After` header and an `application/problem+json` body. Back off until `Retry-After` seconds have elapsed before retrying.
+Au-delà, la réponse est `429 Too Many Requests`, avec un en-tête `Retry-After` et un corps `application/problem+json`. Attendez le nombre de secondes indiqué par `Retry-After` avant de réessayer.
 
-## Endpoint reference
+## Référence des points d'accès
 
-The interactive Swagger UI for your installation is the authoritative reference — it always reflects the exact resources and fields available on your version:
+L'interface Swagger interactive de votre installation fait foi : elle reflète toujours exactement les ressources et les champs de votre version.
 
 ```text
-https://your-instance.example/api/docs
+https://votre-instance.example/api/docs
 ```
 
-The same documentation for the latest public release is hosted at [augias.app/api/docs](https://augias.app/api/docs).
+Les principales ressources :
 
-The main resource roots are:
-
-- `/api/invoices` and `/api/recurring-invoices`
+- `/api/invoices` et `/api/recurring-invoices`
 - `/api/quotes`
-- `/api/clients`, `/api/contacts`, and `/api/addresses`
+- `/api/clients`, `/api/contacts` et `/api/addresses`
 - `/api/payments`
 - `/api/taxes`
-- `/api/api-tokens` (manage your own tokens via the API)
+- `/api/api-tokens` (gérer vos propres jetons par l'API)
 
-All resources support standard CRUD verbs: `GET` for collections and items, `POST` to create, `PATCH` to update, `DELETE` to remove. Monetary amounts are expressed in **minor currency units** (e.g. cents for USD), and the currency itself comes from the associated client.
+Toutes les ressources acceptent les verbes habituels : `GET` pour les collections et les éléments, `POST` pour créer, `PATCH` pour modifier, `DELETE` pour supprimer. Les montants sont exprimés dans la **plus petite unité de la devise** (les centimes pour l'euro), et la devise vient du client concerné.
 
-## Troubleshooting
+## Dépannage
 
-### `401 Unauthorized` on every request
+### `401 Unauthorized` à chaque requête
 
-The token is missing, mistyped, or has been revoked. Double-check the `X-API-TOKEN` header value against the original — leading or trailing whitespace and stray quote characters are common culprits when copying from terminals or password managers. If the token genuinely no longer works, generate a new one and update your integration.
+Le jeton manque, est mal saisi ou a été révoqué. Comparez la valeur de l'en-tête `X-API-TOKEN` avec l'original : des espaces en début ou en fin, ou des guillemets parasites, se glissent souvent lors d'un copier-coller depuis un terminal ou un gestionnaire de mots de passe. Si le jeton ne fonctionne vraiment plus, créez-en un autre et mettez votre intégration à jour.
 
 ### `429 Too Many Requests`
 
-You've exceeded 300 requests per minute. Look at the `Retry-After` header in the response and wait at least that many seconds before retrying. For high-volume integrations, batch requests where possible, cache read-heavy responses, and stagger requests across the rate-limit window rather than firing them in tight loops.
+Vous avez dépassé 300 requêtes par minute. Lisez l'en-tête `Retry-After` et attendez au moins ce nombre de secondes. Pour une intégration à fort volume, regroupez les requêtes, mettez en cache les lectures fréquentes et étalez les appels sur la fenêtre plutôt que de les enchaîner.
 
-### Authentication succeeds but the request is rejected with `403`
+### L'authentification réussit mais la requête est refusée en `403`
 
-The token is valid but the authenticated user lacks permission for the action you requested. Verify the user owns the resource (or has the right role on the company that owns it) and that the token was generated while that company was active in the UI.
+Le jeton est valide, mais l'utilisateur n'a pas le droit de faire cette action. Vérifiez que la ressource appartient à l'utilisateur (ou qu'il a le bon rôle dans l'entreprise propriétaire) et que le jeton a été créé quand cette entreprise était active.
 
-### Request history isn't recording your calls
+### L'historique n'enregistre pas vos appels
 
-Only **successful** authentication is recorded. If your requests are returning `401`, they won't appear in `View History` even if they reach the server. Make at least one request that returns `2xx` and refresh the history to confirm the token works.
+Seules les authentifications **réussies** sont enregistrées. Des requêtes qui renvoient `401` n'apparaissent pas dans `Voir l'historique`, même si elles atteignent le serveur. Faites au moins une requête qui renvoie `2xx` et rafraîchissez l'historique pour vérifier que le jeton fonctionne.

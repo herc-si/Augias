@@ -1,6 +1,6 @@
 ---
 title: Guide d'installation
-description: Choisir comment installer Augias : installation rapide, Homebrew, Docker, paquet de distribution ou depuis les sources.
+description: "Choisir comment installer Augias : installation rapide, Homebrew, Docker, paquet de distribution ou depuis les sources."
 sidebar_position: 1
 ---
 

@@ -3,7 +3,7 @@ import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-  title: 'Documentation Augias',
+  title: 'Augias',
   tagline: 'Facturation libre pour les indépendants et les petites entreprises',
   favicon: 'img/favicon.ico',
 
