@@ -82,6 +82,14 @@ A credit note can be settled in several goes. When nothing is still owed, it mov
 In your books, a refund is money going out: it is recorded on the date entered. An offset is not recorded on its own, since the payment that follows is simply smaller. See [Your books](../accounting/your-books.md).
 :::
 
+## Electronic invoicing
+
+A credit note to a French business client (with a SIREN or a SIRET) is a corrective invoice: it goes through the electronic invoicing platform, like an invoice. When electronic invoicing is on, Augias sends it by itself when it is issued, as a Factur-X naming the original invoice.
+
+The credit note page shows the statuses the platform returns. If sending failed, the `Send the electronic credit note` button tries again.
+
+A credit note to a private individual is not sent: it goes into e-reporting. See [SUPER PDP account connection](../integrations/super-pdp.md).
+
 ## Send a credit note
 
 If you did not send it when issuing, open the credit note and click `Send to the client`. The button only appears when the credit note has at least one contact. The PDF is attached to the email and names the invoice being credited.

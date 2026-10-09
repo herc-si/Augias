@@ -82,6 +82,14 @@ Un avoir peut se régler en plusieurs fois. Quand le reste dû tombe à zéro, i
 Dans vos livres, un remboursement est une sortie d'argent : il est enregistré à la date saisie. Une imputation n'est pas enregistrée à part, puisque le paiement qui suit est simplement plus petit. Voir [Vos livres](../accounting/your-books.md).
 :::
 
+## Facturation électronique
+
+Un avoir adressé à un client professionnel français (avec un SIREN ou un SIRET) est une facture rectificative : il passe par la plateforme de facturation électronique, comme une facture. Si la facturation électronique est activée, Augias l'envoie de lui-même à l'émission, au format Factur-X, avec la facture d'origine en référence.
+
+La page de l'avoir affiche les statuts renvoyés par la plateforme. Si l'envoi a échoué, le bouton `Envoyer l'avoir électronique` permet de recommencer.
+
+Un avoir adressé à un particulier n'est pas envoyé : il entre dans l'e-reporting. Voir [Connexion d'un compte SUPER PDP](../integrations/super-pdp.md).
+
 ## Envoyer un avoir
 
 Si vous ne l'avez pas envoyé à l'émission, ouvrez l'avoir et cliquez sur `Envoyer au client`. Le bouton n'apparaît que si l'avoir a au moins un contact. Le PDF est joint à l'e-mail et mentionne la facture concernée.
