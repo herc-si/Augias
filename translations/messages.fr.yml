@@ -2046,6 +2046,7 @@ installation:
 invalid_file: 'Fichier invalide'
 invoice:
     credit_notes:
+        use_on_payment: 'Utilisables au moment du paiement : « Payer maintenant ».'
         applied: '%amount% d''avoirs imputés sur cette facture.'
         apply: 'Utiliser les avoirs'
         apply_help: 'Impute les avoirs ouverts du client sur cette facture, du plus ancien au plus récent, pour au plus ce qui reste dû.'
@@ -2758,12 +2759,15 @@ payment:
         label: 'Traiter le paiement en ligne'
     client: Client
     create:
+        credit_note_label: 'Avoir %number%'
+        credit_notes_help: 'Impute les avoirs ouverts du client sur cette facture ; enregistrez ensuite ci-dessous le paiement de ce qui reste.'
         balance: 'Solde impayé'
         base_total: 'Total de base'
         cancel: Annuler
         credit: 'Crédit :'
         discount: Remise
         exception:
+            use_credit_notes: 'Ce crédit vient d''avoirs : utilisez « Utiliser les avoirs », pour que chaque avoir garde trace de ce qu''il a réglé.'
             books_required: "Votre entreprise est assujettie à la TVA : le paiement d'un particulier ne peut être enregistré que si votre comptabilité est tenue dans Augias (CGI, art. 286). Choisissez d'abord votre régime comptable, dans le menu Comptabilité."
             amount_exceeds_balance: 'Le montant saisi dépasse le solde impayé'
             invoice_cannot_be_paid: 'Cette facture ne peut pas être payée'

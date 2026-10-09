@@ -54,6 +54,9 @@ final readonly class ApplyCreditNotes
         $session = $request->getSession();
         assert($session instanceof Session);
 
+        // From the payment page, back to it to pay the rest; done there or
+        // from the invoice page, to the invoice.
+        $fromPayment = 'payment' === $request->request->get('_return');
         $response = new RedirectResponse($this->router->generate('_invoices_view', ['id' => $invoice->getId()]));
 
         if (! $this->csrf->isTokenValid(new CsrfToken('apply_credit_notes' . $invoice->getId(), (string) $request->request->get('_token')))) {
@@ -86,6 +89,10 @@ final readonly class ApplyCreditNotes
         $amount = $this->formatter->format(new Money((string) $applied->toScale(0), $currency));
 
         $session->getFlashBag()->add('success', $this->translator->trans('invoice.credit_notes.applied', ['%amount%' => $amount]));
+
+        if ($fromPayment && in_array($invoice->getStatus(), [InvoiceStatus::Pending, InvoiceStatus::Overdue], true)) {
+            return new RedirectResponse($this->router->generate('_payments_create', ['uuid' => $invoice->getUuid()]));
+        }
 
         return $response;
     }

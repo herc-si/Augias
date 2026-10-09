@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\PaymentBundle\Action;
 
 use const FILTER_VALIDATE_BOOLEAN;
+use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Contracts\CashRegisterGateInterface;
 use Augias\CoreBundle\Response\FlashResponse;
@@ -21,6 +22,7 @@ use Augias\CoreBundle\Traits\SaveableTrait;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Model\Graph;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
+use Augias\InvoiceBundle\Service\CreditNoteApplier;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Entity\PaymentMethod;
 use Augias\PaymentBundle\Enum\PaymentStatus;
@@ -78,6 +80,7 @@ final class Prepare
         private readonly CompanySelector $companySelector,
         private readonly InvoiceRepository $invoiceRepository,
         private readonly CashRegisterGateInterface $cashRegister,
+        private readonly ?CreditNoteApplier $creditNoteApplier = null,
     ) {
     }
 
@@ -185,8 +188,17 @@ final class Prepare
             if (PaymentMethod::GATEWAY_CREDIT === $paymentName) {
                 $clientCredit = $invoice->getClient()->getCredit()->getValue();
 
+                // Credit that comes from credit notes is used through them
+                // ("Utiliser les avoirs"), so the credit note records what it
+                // paid and cannot also be refunded. Only the rest of the
+                // client's credit can be paid with here.
+                $fromCreditNotes = BigNumber::of($this->availableCreditNotes($invoice, true));
+                $plainCredit = BigNumber::of($clientCredit)->toBigDecimal()->minus($fromCreditNotes);
+
                 $invalid = '';
-                if ($amount->isGreaterThan($clientCredit)) {
+                if ($fromCreditNotes->isPositive() && $amount->isGreaterThan($plainCredit)) {
+                    $invalid = 'payment.create.exception.use_credit_notes';
+                } elseif ($amount->isGreaterThan($clientCredit)) {
                     $invalid = 'payment.create.exception.not_enough_credit';
                 } elseif ($amount->isGreaterThan($invoice->getBalance())) {
                     $invalid = 'payment.create.exception.amount_exceeds_balance';
@@ -203,6 +215,7 @@ final class Prepare
                         'form' => $form->createView(),
                         'invoice' => $invoice,
                         'internal' => $offlinePaymentGateways,
+                        'availableCreditNotes' => $this->availableCreditNotes($invoice, $isAuthenticated),
                     ];
                 }
             }
@@ -260,6 +273,7 @@ final class Prepare
             'form' => $form->createView(),
             'invoice' => $invoice,
             'internal' => $offlinePaymentGateways,
+            'availableCreditNotes' => $this->availableCreditNotes($invoice, $isAuthenticated),
         ];
     }
 
@@ -274,5 +288,20 @@ final class Prepare
         }
 
         return $user;
+    }
+
+    /**
+     * What the client's open credit notes could still take off the invoice.
+     * Shown to the company only: a client paying online uses none.
+     */
+    private function availableCreditNotes(Invoice $invoice, bool $isAuthenticated): string
+    {
+        $client = $invoice->getClient();
+
+        if (! $isAuthenticated || ! $client instanceof Client || ! $this->creditNoteApplier instanceof CreditNoteApplier) {
+            return '0';
+        }
+
+        return (string) $this->creditNoteApplier->available($client);
     }
 }
