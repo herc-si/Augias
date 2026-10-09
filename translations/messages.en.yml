@@ -942,6 +942,20 @@ create_new: 'Create New'
 create_now: 'Create one now.'
 created: Created
 credit_note:
+    copy_lines:
+        help: 'Replaces the credit note lines with the invoice lines; then remove what you do not credit.'
+        label: 'Copy the invoice lines'
+    invoice_summary:
+        already_credited: 'Already credited'
+        balance: 'Still owed'
+        date: 'Invoice date'
+        title: 'Invoice %number%'
+        total: 'Total'
+        view: 'Open the invoice'
+    discount:
+        label: 'Original invoice discount'
+        mirrored_percent: 'Original invoice discount: %rate% %, applied to the lines credited, so the credit note gives back what was actually invoiced.'
+        mirrored_amount: 'Original invoice discount: %amount%, shared out over the lines credited, so the credit note gives back what was actually invoiced.'
     delete:
         issued: "Credit note %number% has been issued and has to be kept: it cannot be deleted."
     menu:
