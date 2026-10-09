@@ -26,7 +26,9 @@ use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Form\Type\CreditNoteType;
 use Augias\InvoiceBundle\Manager\CreditNoteFormManager;
 use Augias\InvoiceBundle\Model\CreditNoteGraph;
+use Augias\InvoiceBundle\Repository\CreditNoteRepository;
 use Augias\MoneyBundle\Calculator;
+use Augias\MoneyBundle\Currency\CurrencyScale;
 use Augias\TaxBundle\Service\TaxAvailability;
 use Brick\Math\Exception\MathException;
 use Carbon\CarbonImmutable;
@@ -89,6 +91,8 @@ final class CreateCreditNote extends AbstractController
         private readonly RouterInterface $router,
         private readonly EmailVerificationGateInterface $emailVerificationGate,
         private readonly Calculator $calculator,
+        private readonly CurrencyScale $currencyScale,
+        private readonly CreditNoteRepository $creditNoteRepository,
     ) {
         $this->dto = new CreditNoteFormDTO();
     }
@@ -192,6 +196,94 @@ final class CreateCreditNote extends AbstractController
         }
 
         return ($discount->getValuePercentage() ?? 0.0) > 0 ? $discount : null;
+    }
+
+    /**
+     * The invoice this credit note answers to, at a glance: what it charged,
+     * what is still owed on it, and what credit notes already took back, so
+     * the user does not credit it twice.
+     *
+     * @return array{invoice: Invoice, total: string, balance: string, alreadyCredited: string}|null
+     */
+    #[ExposeInTemplate]
+    public function creditedInvoiceSummary(): ?array
+    {
+        $invoice = $this->dto->creditedInvoice;
+
+        if (! $invoice instanceof Invoice) {
+            return null;
+        }
+
+        return [
+            'invoice' => $invoice,
+            'total' => (string) $invoice->getTotal(),
+            'balance' => (string) $invoice->getBalance(),
+            'alreadyCredited' => (string) $this->creditNoteRepository->issuedTotalFor($invoice, $this->creditNote),
+        ];
+    }
+
+    /**
+     * Fills the credit note with the credited invoice's lines, as they were
+     * invoiced: price, quantity, unit, taxes, disbursement and note marks. The
+     * lines typed so far are replaced; trim the copy to credit only part.
+     *
+     * Works on the form values, like the catalogue on an invoice: the DTO is
+     * rebuilt from them on every render, so lines set on it would be lost.
+     */
+    #[LiveAction]
+    public function copyInvoiceLines(): void
+    {
+        $invoice = $this->dto->creditedInvoice;
+
+        if (! $invoice instanceof Invoice && ($this->formValues['creditedInvoice'] ?? '') !== '') {
+            $found = $this->entityManager->getRepository(Invoice::class)->find($this->formValues['creditedInvoice']);
+            $invoice = $found instanceof Invoice ? $found : null;
+        }
+
+        if (! $invoice instanceof Invoice) {
+            return;
+        }
+
+        $currency = $invoice->getClient()?->getCurrency();
+        $lines = [];
+
+        foreach ($invoice->getLines() as $line) {
+            $values = [
+                'description' => (string) $line->getDescription(),
+                'price' => null === $currency
+                    ? (string) $line->getPrice()
+                    : (string) $this->currencyScale->toMajorUnit($line->getPrice(), $currency),
+                'qty' => (string) $line->getQty(),
+                'unit' => $line->getUnit()->value,
+                'position' => (string) $line->getPosition(),
+            ];
+
+            if ($line->isDisbursement()) {
+                $values['disbursement'] = '1';
+            }
+
+            if ($line->isNote()) {
+                $values['note'] = '1';
+            }
+
+            // The form only has these fields where tax is offered.
+            if ($this->hasTax()) {
+                $values['supplyType'] = $line->getSupplyType()->value;
+                $values['taxes'] = [];
+
+                foreach ($line->getTaxes() as $lineTax) {
+                    $tax = $lineTax->getTax();
+
+                    if (null !== $tax) {
+                        $values['taxes'][] = ['tax' => (string) $tax->getId()];
+                    }
+                }
+            }
+
+            $lines[] = $values;
+        }
+
+        $this->formValues['lines'] = $lines;
     }
 
     #[ExposeInTemplate]

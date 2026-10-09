@@ -179,6 +179,45 @@ final class CreateCreditNoteTest extends LiveComponentTest
         }
     }
 
+    /**
+     * The invoice being credited shows at a glance, with a button that copies
+     * its lines into the credit note.
+     */
+    public function testSummarisesTheCreditedInvoiceAndCopiesItsLines(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+        $invoice = InvoiceFactory::createOne([
+            'company' => $this->company,
+            'client' => $client,
+            'status' => InvoiceStatus::Pending,
+            'lines' => [
+                new \Augias\InvoiceBundle\Entity\Line()->setDescription('Audit annuel')->setPrice(120_000)->setQty(1)->updateTotal(),
+                new \Augias\InvoiceBundle\Entity\Line()->setDescription('Formation')->setPrice(30_000)->setQty(2)->updateTotal(),
+            ],
+        ]);
+
+        $dto = new CreditNoteFormDTO();
+        $dto->client = $client;
+        $dto->creditedInvoice = $invoice;
+        $dto->creditNoteDate = CarbonImmutable::now();
+        $dto->lines->add(new CreditNoteLine());
+
+        $component = $this->createLiveComponent(CreateCreditNote::class, ['dto' => $dto])
+            ->actingAs($this->getUser());
+
+        $html = $component->render()->toString();
+        self::assertStringContainsString('credit-note-invoice-summary', $html);
+        self::assertStringContainsString('credit-note-copy-lines', $html);
+        self::assertStringNotContainsString('Audit annuel', $html);
+
+        $component->call('copyInvoiceLines');
+
+        $html = $component->render()->toString();
+        self::assertStringContainsString('Audit annuel', $html);
+        self::assertStringContainsString('Formation', $html);
+        self::assertStringContainsString('1200', $html, 'The price is shown in major units.');
+    }
+
     private function dto(): CreditNoteFormDTO
     {
         $dto = new CreditNoteFormDTO();
