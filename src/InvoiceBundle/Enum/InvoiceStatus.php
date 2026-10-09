@@ -21,6 +21,8 @@ enum InvoiceStatus: string implements HasStatusLabel
     case Draft = 'draft';
     case Pending = 'pending';
     case Paid = 'paid';
+    /** Settled by a credit note set against it rather than by a payment. */
+    case Credited = 'credited';
     case Active = 'active';
     case Overdue = 'overdue';
     case Cancelled = 'cancelled';
@@ -33,6 +35,7 @@ enum InvoiceStatus: string implements HasStatusLabel
             self::Draft => 'Draft',
             self::Pending => 'Pending',
             self::Paid => 'Paid',
+            self::Credited => 'Credited',
             self::Active => 'Active',
             self::Overdue => 'Overdue',
             self::Cancelled => 'Cancelled',
@@ -47,6 +50,7 @@ enum InvoiceStatus: string implements HasStatusLabel
             self::Draft => 'gray',
             self::Pending => 'yellow',
             self::Paid => 'green',
+            self::Credited => 'cyan',
             self::Active => 'green',
             self::Overdue => 'red',
             self::Cancelled => 'dark',

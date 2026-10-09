@@ -29,6 +29,9 @@ final class Graph
 
     public const string TRANSITION_PAY = 'pay';
 
+    /** Settled by a credit note set against it, with no payment at all. */
+    public const string TRANSITION_CREDIT = 'credit';
+
     public const string TRANSITION_REOPEN = 'reopen';
 
     public const string TRANSITION_ARCHIVE = 'archive';

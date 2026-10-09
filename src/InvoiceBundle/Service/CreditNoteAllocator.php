@@ -46,6 +46,7 @@ final readonly class CreditNoteAllocator
         private CreditRepository $credits,
         private WorkflowInterface $creditNoteStateMachine,
         private ClockInterface $clock,
+        private ?InvoiceSettlement $settlement = null,
     ) {
     }
 
@@ -117,6 +118,12 @@ final readonly class CreditNoteAllocator
         }
 
         $this->entityManager->flush();
+
+        // An offset is what the client no longer owes on that invoice.
+        if (AllocationKind::Offset === $kind && $invoice instanceof Invoice && $this->settlement instanceof InvoiceSettlement) {
+            $this->settlement->refresh($invoice);
+            $this->entityManager->flush();
+        }
 
         return $allocation;
     }
