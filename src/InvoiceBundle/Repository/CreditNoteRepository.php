@@ -212,6 +212,9 @@ final class CreditNoteRepository extends EntityRepository
             ->setParameter('issued', CreditNoteStatus::Issued->value)
             ->orderBy('c.creditNoteDate', 'ASC')
             ->addOrderBy('c.created', 'ASC')
+            // ULIDs grow with time: the tie-break for two created in the
+            // same second, which "oldest first" would otherwise leave to chance.
+            ->addOrderBy('c.id', 'ASC')
             ->getQuery()
             ->getResult();
 

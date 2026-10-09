@@ -184,8 +184,8 @@ final class CreditedInvoiceTest extends KernelTestCase
     public function testUsesTheOldestCreditNotesFirst(): void
     {
         $paid = $this->invoice(InvoiceStatus::Paid, 10_000);
-        $first = $this->issuedCreditNote(2_000, $paid);
-        $second = $this->issuedCreditNote(3_000, $paid);
+        $first = $this->issuedCreditNote(2_000, $paid, new \Carbon\CarbonImmutable('2026-09-01'));
+        $second = $this->issuedCreditNote(3_000, $paid, new \Carbon\CarbonImmutable('2026-09-15'));
         $invoice = $this->invoice(InvoiceStatus::Pending, 4_000);
 
         $this->applier()->applyTo($invoice);
@@ -225,9 +225,10 @@ final class CreditedInvoiceTest extends KernelTestCase
         return $invoice;
     }
 
-    private function issuedCreditNote(int $total, ?Invoice $creditedInvoice = null): CreditNote
+    private function issuedCreditNote(int $total, ?Invoice $creditedInvoice = null, ?\Carbon\CarbonImmutable $date = null): CreditNote
     {
         $creditNote = CreditNoteFactory::createOne([
+            'creditNoteDate' => $date ?? \Carbon\CarbonImmutable::now(),
             'company' => $this->company,
             'client' => $this->client(),
             'status' => CreditNoteStatus::Draft,
