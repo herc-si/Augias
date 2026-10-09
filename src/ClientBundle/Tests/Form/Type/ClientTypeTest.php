@@ -84,6 +84,56 @@ final class ClientTypeTest extends FormTestCase
         self::assertSame('Jane Doe', $form->getData()->getName());
     }
 
+    /**
+     * Editing an individual brings the name back filled in from the contact.
+     * Saving the record unchanged used to make it a company.
+     */
+    public function testAnIndividualStaysOneWhenTheirRecordIsSavedAgain(): void
+    {
+        $this->disabledFeatures = ['custom_fields'];
+
+        $client = new Client();
+        $client->setName('Jane Doe');
+        $client->setIsCompany(false);
+
+        $form = $this->factory->create(ClientType::class, $client);
+        $form->submit([
+            'name' => 'Jane Doe',
+            'currencyCode' => 'USD',
+            'contacts' => [
+                ['firstName' => 'Jane', 'lastName' => 'Doe', 'email' => 'jane@example.com'],
+            ],
+            'addresses' => [],
+        ]);
+
+        self::assertTrue($form->isSynchronized());
+        self::assertFalse($client->isCompany());
+    }
+
+    /**
+     * The counterpart: giving the record a name of its own makes it a company.
+     */
+    public function testAnIndividualGivenACompanyNameBecomesACompany(): void
+    {
+        $this->disabledFeatures = ['custom_fields'];
+
+        $client = new Client();
+        $client->setName('Jane Doe');
+        $client->setIsCompany(false);
+
+        $form = $this->factory->create(ClientType::class, $client);
+        $form->submit([
+            'name' => 'Doe Consulting',
+            'currencyCode' => 'USD',
+            'contacts' => [
+                ['firstName' => 'Jane', 'lastName' => 'Doe', 'email' => 'jane@example.com'],
+            ],
+            'addresses' => [],
+        ]);
+
+        self::assertTrue($client->isCompany());
+    }
+
     public function testSubmitWithMultiCurrencyGatedOverridesEntityCurrency(): void
     {
         $this->disabledFeatures = ['multi_currency'];

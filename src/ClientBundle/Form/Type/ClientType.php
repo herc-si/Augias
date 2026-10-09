@@ -170,13 +170,22 @@ class ClientType extends AbstractType
                 return;
             }
 
+            $primaryContact = $client->getContacts()->first();
+
             if (trim((string) $client->getName()) !== '') {
-                $client->setIsCompany(true);
+                // An individual's record comes back to its edit form with the
+                // name filled in from the contact. Saving it unchanged must not
+                // turn the client into a company: that switches its default
+                // terms and makes e-invoicing demand a SIRET. A name of its own
+                // still does.
+                $stillTheContactsName = ! $client->isCompany()
+                    && $primaryContact instanceof Contact
+                    && trim((string) $client->getName()) === trim($primaryContact->getFirstName() . ' ' . $primaryContact->getLastName());
+
+                $client->setIsCompany(! $stillTheContactsName);
 
                 return;
             }
-
-            $primaryContact = $client->getContacts()->first();
 
             if ($primaryContact instanceof Contact) {
                 $client->setName(trim($primaryContact->getFirstName() . ' ' . $primaryContact->getLastName()));
