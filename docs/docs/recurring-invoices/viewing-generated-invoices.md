@@ -1,42 +1,42 @@
 ---
-title: Viewing generated invoices
-description: Find the invoices a recurring schedule has produced and manage them like any other invoice.
+title: Retrouver les factures générées
+description: Retrouver les factures produites par un calendrier récurrent et les gérer comme toute autre facture.
 sidebar_position: 4
 ---
 
-# Viewing generated invoices
+# Retrouver les factures générées
 
-Each time the scheduler matches a recurring invoice's date, it creates a real invoice in your system. Those invoices behave exactly like any other invoice — you can send them, mark them paid, record payments, or refund — but Augias also keeps a back-link so you can find them from the recurring invoice they came from.
+Chaque fois que le planificateur tombe sur une date du calendrier, il crée une vraie facture. Ces factures se comportent exactement comme les autres (envoi, paiement, avoir…), mais Augias garde un lien vers la facture récurrente dont elles viennent.
 
-## From the recurring invoice's view page
+## Depuis la page de la facture récurrente
 
-Open the recurring invoice. Once it has generated at least one invoice, a `Generated Invoices` card appears in the right-hand sidebar showing the most recent five, with each invoice's ID, total, and status.
+Ouvrez la facture récurrente. Dès qu'elle a généré au moins une facture, une carte `Factures générées` apparaît dans la colonne de droite, avec les cinq plus récentes, leur numéro, leur total et leur statut.
 
-![Active recurring invoice view page](/img/recurring-invoices/recurring-invoice-view-active.png)
+![La page d'une facture récurrente active](/img/recurring-invoices/recurring-invoice-view-active.png)
 
-The `Total Generated` count at the bottom of the `Invoice Summary` card shows the running total of invoices this schedule has produced. Each entry in the `Generated Invoices` card is a link straight to that invoice's view page.
+Le compteur `Total généré`, en bas de la carte `Résumé de la facture`, donne le nombre de factures produites par ce calendrier. Chaque entrée de la carte `Factures générées` mène directement à la facture.
 
-When more than five invoices have been generated, a `View all <n> invoices` link appears below the list. It opens the regular invoice list filtered to invoices from this recurring invoice only — useful for bulk operations, exports, or just seeing the full history.
+Au-delà de cinq factures, un lien sous la liste ouvre la liste des factures filtrée sur cette facture récurrente : pratique pour une action groupée, un export ou l'historique complet.
 
-## Working with generated invoices
+## Travailler avec les factures générées
 
-A generated invoice is a normal Augias invoice. Once it exists you can:
+Une facture générée est une facture Augias ordinaire. Vous pouvez :
 
-- Send it to the client (manual send, or rely on whatever automatic send policy your install is configured with).
-- Record payments against it.
-- Apply discounts or credits.
-- Reopen, cancel, or archive it independently of the recurring invoice it came from.
+- l'envoyer au client ;
+- enregistrer ses paiements ;
+- la corriger par un [avoir](../invoices/credit-notes.md) ;
+- l'annuler ou l'archiver indépendamment de la facture récurrente.
 
-Cancelling, pausing, or archiving the recurring invoice does **not** affect already-generated invoices — they keep their own state and lifecycle.
+Annuler, mettre en pause ou archiver la facture récurrente ne touche **pas** les factures déjà générées : elles gardent leur propre statut.
 
-## Finding all recurring invoices
+## Retrouver toutes les factures récurrentes
 
-The `Recurring Invoices` list page (sidebar → `Recurring Invoices` → `List Recurring Invoices`) shows every recurring invoice grouped by tab:
+La liste des factures récurrentes (menu latéral → `Factures récurrentes` → `Récurrentes`) les classe par onglet :
 
-- **`Active`** — `Active`, `Draft`, and `Paused` recurring invoices.
-- **`Completed`** — recurring invoices that reached their end condition naturally.
-- **`Archived`** — recurring invoices you've archived.
+- **`Actives`** : les factures récurrentes actives, en brouillon et en pause ;
+- **`Terminées`** : celles qui ont atteint leur condition de fin ;
+- **`Archivées`** : celles que vous avez archivées.
 
-The four stat cards at the top of the page summarise activity at a glance: `Active Recurring`, `Upcoming in 7 Days`, `Status Breakdown` (active / draft / paused counts), and `Total Generated` (across all recurring invoices).
+Les quatre cartes du haut résument l'activité : `Récurrences actives`, `À venir sous 7 jours`, `Répartition par statut` (actives, brouillons, en pause) et `Total généré` (toutes factures récurrentes confondues).
 
-The grid columns — `Client`, `Frequency`, `Date Start`, `End Date`, `Next Run Date`, `Status`, `Total`, `Tax`, `Discount` — are sortable by clicking the header. Use the `Filters` and `Search` controls above the grid to narrow the list.
+Les colonnes du tableau (`Client`, `Fréquence`, `Date de début`, `Date de fin`, `Prochaine exécution`, `Statut`, `Total`, `Taxe`, `Remise`) se trient d'un clic sur l'en-tête. Les commandes `Filtres` et `Rechercher` au-dessus du tableau affinent la liste.

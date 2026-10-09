@@ -1,24 +1,24 @@
 ---
-title: Git (advanced)
-description: Clone the Augias source for contributing or hacking on the code.
+title: Git (avancé)
+description: Cloner les sources d'Augias pour contribuer ou travailler sur le code.
 sidebar_position: 9
 ---
 
-# Git (advanced)
+# Git (avancé)
 
 :::warning
-Installing from Git is intended for contributors and developers who want to hack on the Augias source. **It is not recommended for production use** — for that, use the [quick install](./quick-install.mdx), [Homebrew](./homebrew.md), or [Docker](./docker.md).
+L'installation depuis Git s'adresse aux contributeurs et aux développeurs qui veulent travailler sur le code d'Augias. **Elle n'est pas conseillée en production** : utilisez plutôt l'[installation rapide](./quick-install.mdx), [Homebrew](./homebrew.md) ou [Docker](./docker.md).
 :::
 
-## System requirements
+## Configuration requise
 
-- PHP 8.4 or higher with the `curl`, `gd`, `intl`, `json`, `openssl`, `pdo`, `soap`, and `xsl` extensions.
+- PHP 8.4 ou plus, avec les extensions `curl`, `gd`, `intl`, `json`, `openssl`, `pdo`, `soap` et `xsl`.
 - [Composer](https://getcomposer.org/).
 - [Bun](https://bun.sh/).
-- [Symfony CLI](https://symfony.com/download) — recommended for the local web server (see below). Optional if you bring your own webserver.
-- A supported database (MySQL, MariaDB, PostgreSQL, or SQLite).
+- [Symfony CLI](https://symfony.com/download), conseillée pour le serveur web local (voir ci-dessous). Facultative si vous avez votre propre serveur web.
+- Une base de données prise en charge (MySQL, MariaDB, PostgreSQL ou SQLite).
 
-## Clone and install
+## Cloner et installer
 
 ```bash
 git clone https://github.com/herc-si/Augias.git
@@ -28,20 +28,20 @@ bun install
 bun run build
 ```
 
-## Run the local web server
+## Lancer le serveur web local
 
-The recommended way to run Augias for development is the [Symfony CLI](https://symfony.com/doc/current/setup/symfony_cli.html#running-the-local-web-server) — it ships a local web server with HTTPS, Docker integration, and a workers manager.
+Pour le développement, le plus simple est la [Symfony CLI](https://symfony.com/doc/current/setup/symfony_cli.html#running-the-local-web-server) : elle fournit un serveur web local en HTTPS, l'intégration Docker et un gestionnaire de workers.
 
 ```bash
 symfony serve
 ```
 
-This reads the project's `.symfony.local.yaml` and:
+La commande lit le `.symfony.local.yaml` du projet et :
 
-- Starts an HTTPS web server on port `7005` (configurable in `.symfony.local.yaml`).
-- Starts the async messenger consumer as a managed worker, so scheduled tasks and async messages (emails) are processed without you having to run `messenger:consume` separately.
+- démarre un serveur web HTTPS sur le port `7005` (réglable dans `.symfony.local.yaml`) ;
+- démarre le consommateur de messages asynchrones comme worker géré : les tâches planifiées et les messages asynchrones (e-mails) sont traités sans lancer `messenger:consume` à part.
 
-The committed `.symfony.local.yaml` already contains both the HTTP and worker configuration:
+Le `.symfony.local.yaml` du dépôt contient déjà la configuration HTTP et celle du worker :
 
 ```yaml title=".symfony.local.yaml"
 http:
@@ -58,22 +58,22 @@ workers:
         watch: ['config', 'src']
 ```
 
-The `watch` paths restart the worker whenever you change application code, so it picks up your edits automatically.
+Les chemins `watch` redémarrent le worker à chaque modification du code : il prend vos changements en compte tout seul.
 
-To follow the worker logs alongside the web server logs:
+Pour suivre les journaux du worker avec ceux du serveur web :
 
 ```bash
 symfony server:log
 ```
 
-## Bring-your-own webserver
+## Votre propre serveur web
 
-If you'd rather use Nginx or Apache directly, point the document root at `public/` (see the [distribution package guide](./distribution-package/index.mdx#2-configure-the-webserver) for example configs) and set up the [background worker](./distribution-package/cron-job-setup.md) the same way.
+Pour utiliser directement Nginx ou Apache, faites pointer la racine des documents sur `public/` (exemples de configuration dans le [guide du paquet de distribution](./distribution-package/index.mdx#2-configurer-le-serveur-web)) et mettez en place le [processus de fond](./distribution-package/cron-job-setup.md) de la même façon.
 
-## Finish setup
+## Terminer l'installation
 
-Open the URL Symfony CLI prints (typically `https://127.0.0.1:7005`) and finish setup with the [first-run wizard](./system-installation.md).
+Ouvrez l'adresse affichée par la Symfony CLI (en général `https://127.0.0.1:7005`) et terminez avec l'[assistant de premier démarrage](./system-installation.md).
 
-For development workflow, code conventions, and how to run the test suite, read [`CONTRIBUTING.md`](https://github.com/herc-si/Augias/blob/4.0.x/CONTRIBUTING.md) in the repository.
+Pour le flux de développement, les conventions de code et le lancement des tests, lisez [`CONTRIBUTING.md`](https://github.com/herc-si/Augias/blob/4.0.x/CONTRIBUTING.md) dans le dépôt.
 
-If you encounter issues, please [open a bug report](https://github.com/herc-si/Augias/issues).
+En cas de problème, [signalez-le](https://github.com/herc-si/Augias/issues).

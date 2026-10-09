@@ -1,84 +1,87 @@
 ---
-title: Managing invoices
-description: View, search, clone, cancel, and archive invoices in Augias.
+title: Gérer les factures
+description: Consulter, rechercher, dupliquer, annuler et archiver des factures dans Augias.
 sidebar_position: 4
 ---
 
-# Managing invoices
+# Gérer les factures
 
-## The invoice list
+## La liste des factures
 
-Go to `Invoices` in the sidebar to see all your invoices. The top of the page shows four summary cards:
+Ouvrez `Factures de vente` dans le menu latéral pour voir toutes vos factures. Quatre cartes résument la situation en haut de la page :
 
-- **Total Invoices** — the number of active invoices.
-- **Pending** — how many invoices are pending (with an overdue count in brackets).
-- **Total Income** — the sum of all paid invoices.
-- **Outstanding** — the total amount still owed across all unpaid invoices.
+- **Total des factures** : le nombre de factures actives.
+- **En attente** : le nombre de factures en attente, avec entre parenthèses celles en retard.
+- **Revenu total** : la somme des factures payées.
+- **Impayé** : le montant encore dû sur toutes les factures non payées.
 
-![The invoice list showing summary cards and the sortable table with status badges](/img/invoices/invoice-list.png)
+![La liste des factures avec les cartes de synthèse et le tableau triable](/img/invoices/invoice-list.png)
 
-The table below the cards lists every invoice with these columns: Invoice #, Invoice Date, Client, Balance, Due Date, Paid Date, Status, Total, Tax, and Discount. Click any column header to sort by that column.
+Le tableau liste chaque facture avec ces colonnes : N° de facture, Date de facture, Client, Solde, Date d'échéance, Date de paiement, Statut, Total, Taxe et Remise. Cliquez sur l'en-tête d'une colonne pour trier.
 
-Use the **Search** box to filter by invoice number or client name. Use the **Filters** button to filter by status, date range, or other criteria. Use the **Columns** button to show or hide individual columns.
+La zone **Rechercher** filtre par numéro ou par nom de client. Le bouton **Filtres** filtre par statut, par période ou selon d'autres critères. Le bouton **Colonnes** affiche ou masque des colonnes.
 
-### Archived invoices
+### Factures archivées
 
-The `Archived` tab shows invoices you have archived. Archived invoices are hidden from the active list and from outstanding balance calculations. They are not deleted and can be viewed at any time.
+L'onglet `Archivées` montre les factures que vous avez archivées. Elles disparaissent de la liste active et du calcul de l'impayé, mais ne sont pas supprimées et restent consultables.
 
-## Viewing an invoice
+## Consulter une facture
 
-Click `View` in the Actions column of any invoice row to open the invoice detail page.
+Cliquez sur `Voir` dans la colonne des actions pour ouvrir la facture.
 
-The detail page shows the full invoice: your company details on the left, the client's details on the right, a line-by-line breakdown of what was charged, and totals at the bottom. If the invoice has terms or notes, these appear below the line items.
+La page montre la facture entière : vos coordonnées à gauche, celles du client à droite, le détail ligne par ligne et les totaux en bas. Les conditions et les notes éventuelles figurent sous les lignes.
 
-The **Invoice Summary** panel on the right shows the status, total, invoice date, due date, and — for paid invoices — the paid date and outstanding balance.
+Le cadre **Résumé de la facture**, à droite, affiche le statut, le total, la date de facture, l'échéance et, pour une facture payée, la date de paiement et le solde.
 
-The **Client** panel shows the client name (linked to their profile) and the contact who will receive invoice emails.
+Le cadre **Client** donne le nom du client (avec un lien vers sa fiche) et le contact qui reçoit les e-mails.
 
-## Editing an invoice
+## Modifier une facture
 
-Click `Edit` from the invoice list actions or from `More Actions` on the invoice view page to open the edit form. The edit form is identical to the create form.
+Cliquez sur `Modifier` dans les actions de la liste, ou dans `Plus d'actions` sur la page de la facture. Le formulaire est le même qu'à la création.
+
+Un brouillon se modifie librement. Une facture déjà émise se corrige par un [avoir](./credit-notes.md). Quand un [régime comptable](../accounting/setting-up-accounting.md) est configuré, Augias refuse de la modifier et vous ramène sur la facture.
 
 :::info
-You can edit an invoice in any status, but changes to a **Pending** or **Overdue** invoice will not automatically re-send the email to the client. Use `Send` after editing if you want the client to receive an updated copy.
+Sans régime comptable, modifier une facture **En attente** ou **En retard** la repasse en brouillon, et rien n'est renvoyé au client. Utilisez `Envoyer au client` après la modification pour qu'il reçoive la nouvelle version.
 :::
 
-## Cloning an invoice
+## Dupliquer une facture
 
-Cloning creates a new invoice pre-filled with the same client, line items, discount, terms, and notes. The clone starts with **New** status and a new invoice number — none of the original's dates or payment history carry over.
+La duplication crée une nouvelle facture avec le même client, les mêmes lignes, la même remise, les mêmes conditions et les mêmes notes. Elle part au statut **Nouveau**, sans numéro : aucune date ni aucun paiement de l'originale n'est repris.
 
-To clone an invoice:
+Pour dupliquer une facture :
 
-1. Open the invoice view page.
-2. Click the `···` **More Actions** button.
-3. Select `Clone`.
+1. Ouvrez la facture.
+2. Cliquez sur le bouton `Plus d'actions`.
+3. Choisissez `Dupliquer`.
 
-![The More Actions dropdown on an invoice view showing Clone, Send Reminder, Edit, and Cancel options](/img/invoices/invoice-more-actions.png)
+![Le menu Plus d'actions d'une facture](/img/invoices/invoice-more-actions.png)
 
-The cloned invoice opens in the edit form so you can adjust dates and amounts before saving.
+La copie s'ouvre dans le formulaire pour que vous ajustiez dates et montants avant d'enregistrer.
 
 :::tip
-Cloning is the fastest way to create recurring one-off invoices for the same client with the same services. For automatic recurring billing, use [Recurring Invoices](../recurring-invoices/creating-a-recurring-invoice.md) instead.
+Dupliquer est le moyen le plus rapide de refacturer les mêmes services au même client. Pour une facturation automatique et régulière, utilisez plutôt les [factures récurrentes](../recurring-invoices/creating-a-recurring-invoice.md).
 :::
 
-## Cancelling an invoice
+## Annuler une facture
 
-Cancelling an invoice marks it as **Cancelled**, stops all automated payment reminders, and converts any recorded payments into **client credits**.
+Annuler une facture la passe au statut **Annulée**, arrête toutes les relances et transforme les paiements enregistrés en **crédit client**.
 
-To cancel an invoice:
+Pour annuler :
 
-1. Open the invoice view page.
-2. Click `···` **More Actions** → `Cancel`.
-3. Confirm the cancellation in the dialog.
+1. Ouvrez la facture.
+2. Cliquez sur `Plus d'actions`, puis `Annuler`.
 
 :::warning
-Cancellation cannot be undone. If you need to re-issue the invoice, clone it first and then cancel the original.
+N'annulez de cette façon qu'un brouillon, ou une facture qui n'a jamais été remise au client. Une facture émise se corrige par un [avoir](./credit-notes.md) ; avec un régime comptable, `Annuler` n'est d'ailleurs plus proposé pour elle.
 :::
 
-## Archiving an invoice
+Une facture annulée peut être rouverte avec `Rouvrir` : elle redevient un brouillon.
 
-Archiving moves a completed or cancelled invoice out of the active list. It does not delete the invoice or affect any financial totals — it simply keeps the active list clean.
+## Archiver une facture
 
-To archive one or more invoices, check the checkboxes in the invoice list and use the bulk-action controls that appear, or use the `···` More Actions menu on a single invoice view.
+L'archivage sort une facture payée ou annulée de la liste active. La facture n'est ni supprimée ni retirée des totaux financiers : la liste reste simplement plus lisible.
 
-Archived invoices are visible in the `Archived` tab on the invoice list page.
+Pour archiver une ou plusieurs factures, cochez-les dans la liste et utilisez les actions groupées qui apparaissent, ou passez par `Plus d'actions` sur la page d'une facture.
+
+Les factures archivées se retrouvent dans l'onglet `Archivées` de la liste.

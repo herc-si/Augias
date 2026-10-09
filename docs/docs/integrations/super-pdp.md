@@ -1,87 +1,87 @@
 ---
-title: SUPER PDP account connection
-description: Let companies connect their SUPER PDP account to Augias in a few clicks, instead of pasting API credentials.
+title: Connexion d'un compte SUPER PDP
+description: Permettre aux entreprises de relier leur compte SUPER PDP à Augias en quelques clics, sans coller d'identifiants d'API.
 sidebar_position: 5
 ---
 
-# SUPER PDP account connection
+# Connexion d'un compte SUPER PDP
 
-Augias sends electronic invoices through [SUPER PDP](https://www.superpdp.tech), a French approved platform (PA/PDP). By default, each company creates an application in its own SUPER PDP account and pastes its client ID and secret into Augias.
+Augias envoie les factures électroniques par [SUPER PDP](https://www.superpdp.tech), une plateforme agréée française (PA/PDP). Par défaut, chaque entreprise crée une application dans son propre compte SUPER PDP et colle son identifiant client et son secret dans Augias.
 
-If your installation registers its own application with SUPER PDP, companies connect their account instead. They are sent to SUPER PDP, where they sign in or create an account, have the company verified, and give Augias access. They never copy credentials.
+Si votre installation enregistre sa propre application auprès de SUPER PDP, les entreprises connectent plutôt leur compte. Elles sont envoyées sur SUPER PDP, où elles se connectent ou créent un compte, font vérifier l'entreprise et donnent l'accès à Augias. Elles ne copient jamais d'identifiants.
 
-The integration is optional. With no application configured, the SUPER PDP settings ask for the client ID and secret as before.
+L'intégration est facultative. Sans application configurée, les réglages SUPER PDP demandent l'identifiant client et le secret comme avant.
 
-## Create the application on SUPER PDP
+## Créer l'application sur SUPER PDP
 
-1. In your SUPER PDP account, create an OAuth application.
-2. Set its redirect URL to the SUPER PDP callback of your installation:
+1. Dans votre compte SUPER PDP, créez une application OAuth.
+2. Donnez-lui comme adresse de redirection le retour SUPER PDP de votre installation :
 
    ```text
-   https://your-augias-domain.example/electronic-invoicing/super-pdp/callback
+   https://votre-domaine-augias.example/electronic-invoicing/super-pdp/callback
    ```
 
-   The path is always `/electronic-invoicing/super-pdp/callback`. The scheme and host must be the public URL of your installation.
-3. Leave the scopes empty, and copy the client ID and client secret.
+   Le chemin est toujours `/electronic-invoicing/super-pdp/callback`. Le protocole et l'hôte sont ceux de l'adresse publique de votre installation.
+3. Laissez les portées (scopes) vides, et copiez l'identifiant client et le secret.
 
 :::info
-A sandbox account and a production account are separate on SUPER PDP. Companies connected through a sandbox application land in the sandbox, and their invoices go nowhere real.
+Sur SUPER PDP, un compte de test (bac à sable) et un compte de production sont distincts. Les entreprises connectées par une application de test arrivent dans le bac à sable, et leurs factures ne partent nulle part pour de vrai.
 :::
 
-## Configure Augias
+## Configurer Augias
 
-Set two environment variables, then restart the application:
+Réglez deux variables d'environnement, puis redémarrez l'application :
 
 | Variable | Description |
 | --- | --- |
-| `AUGIAS_SUPER_PDP_CLIENT_ID` | The client ID of the application. |
-| `AUGIAS_SUPER_PDP_CLIENT_SECRET` | The client secret of the application. |
+| `AUGIAS_SUPER_PDP_CLIENT_ID` | L'identifiant client de l'application. |
+| `AUGIAS_SUPER_PDP_CLIENT_SECRET` | Le secret de l'application. |
 
-Both must be set for companies to be offered the connection. Leaving either empty brings back the client ID and secret fields.
+Les deux doivent être renseignées pour que la connexion soit proposée aux entreprises. Si l'une est vide, les champs identifiant et secret reviennent.
 
-For the distribution package and source installs, add the values to `.env` at the root of the application:
+Pour le paquet de distribution et les installations depuis les sources, ajoutez les valeurs au fichier `.env` à la racine de l'application :
 
 ```ini title=".env"
-AUGIAS_SUPER_PDP_CLIENT_ID=your-client-id
-AUGIAS_SUPER_PDP_CLIENT_SECRET=your-client-secret
+AUGIAS_SUPER_PDP_CLIENT_ID=votre-identifiant-client
+AUGIAS_SUPER_PDP_CLIENT_SECRET=votre-secret
 ```
 
 :::warning
-The tokens of connected companies are encrypted with the application secret (`AUGIAS_APP_SECRET`). If you change that secret, every company has to connect its account again.
+Les jetons des entreprises connectées sont chiffrés avec le secret de l'application (`AUGIAS_APP_SECRET`). Si vous changez ce secret, chaque entreprise devra reconnecter son compte.
 :::
 
-## Connecting a company's account
+## Connecter le compte d'une entreprise
 
-1. In the sidebar, click `Electronic Invoicing`.
-2. Next to SUPER PDP, click `Configure`, give the provider a name, then click `Continue to SUPER PDP`.
-3. On SUPER PDP, sign in or create the company's account. The user's email and the company's SIREN are filled in when Augias knows them.
-4. Complete the company verification and give Augias access.
+1. Dans le menu latéral, cliquez sur `Facturation électronique`.
+2. À côté de SUPER PDP, cliquez sur `Configurer`, donnez un nom au fournisseur, puis cliquez sur `Continuer vers SUPER PDP`.
+3. Sur SUPER PDP, connectez-vous ou créez le compte de l'entreprise. L'e-mail de l'utilisateur et le SIREN de l'entreprise sont préremplis quand Augias les connaît.
+4. Terminez la vérification de l'entreprise et donnez l'accès à Augias.
 
-SUPER PDP sends the user back to Augias, which shows `SUPER PDP account connected.` If the company was still waiting for verification, Augias says so: no invoice is sent until SUPER PDP has verified the company.
+SUPER PDP renvoie l'utilisateur vers Augias, qui affiche `Compte SUPER PDP connecté.` Si l'entreprise attendait encore sa vérification, Augias le signale : aucune facture ne part tant que SUPER PDP n'a pas vérifié l'entreprise.
 
-The first provider a company sets up becomes the active one, used to send its invoices.
+Le premier fournisseur configuré par une entreprise devient le fournisseur actif, qui envoie ses factures.
 
-## Reconnecting
+## Reconnecter
 
-Open the SUPER PDP provider from `Electronic Invoicing`. The `SUPER PDP account` card shows whether the account is connected.
+Ouvrez le fournisseur SUPER PDP depuis `Facturation électronique`. La carte `Compte SUPER PDP` indique si le compte est connecté.
 
-- To switch to another SUPER PDP account, click `Connect again`. The previous access is withdrawn on SUPER PDP.
-- If the card says `Not connected`, Augias has no access to the account anymore and no invoice goes out. Click `Connect the account` to restore it.
+- Pour passer à un autre compte SUPER PDP, cliquez sur `Reconnecter`. L'accès précédent est retiré sur SUPER PDP.
+- Si la carte indique `Non connecté`, Augias n'a plus accès au compte et aucune facture ne part. Cliquez sur `Connecter le compte` pour le rétablir.
 
-A connection stops when the company withdraws Augias's access on SUPER PDP, or when the account goes unused for a year. Augias checks every active account each hour, provided its [background worker](../installation-guide/distribution-package/cron-job-setup.md) is running, so an active connection does not lapse for lack of use.
+Une connexion s'arrête quand l'entreprise retire l'accès d'Augias sur SUPER PDP, ou quand le compte reste inutilisé un an. Augias interroge chaque compte actif toutes les heures, à condition que son [processus de fond](../installation-guide/distribution-package/cron-job-setup.md) tourne : une connexion active ne s'éteint donc pas faute d'usage.
 
-Deleting the provider in Augias also withdraws its access on SUPER PDP.
+Supprimer le fournisseur dans Augias retire aussi son accès sur SUPER PDP.
 
-## Troubleshooting
+## Dépannage
 
-### SUPER PDP refuses the redirect URL
+### SUPER PDP refuse l'adresse de redirection
 
-The redirect URL set on the SUPER PDP application does not exactly match the one Augias sends. Check the scheme, host and path against the public URL of your installation.
+L'adresse de redirection de l'application SUPER PDP ne correspond pas exactement à celle qu'envoie Augias. Comparez le protocole, l'hôte et le chemin avec l'adresse publique de votre installation.
 
-### "This SUPER PDP connection has expired or was already used."
+### « Cette connexion à SUPER PDP a expiré ou a déjà servi. »
 
-The user came back from SUPER PDP more than an hour after leaving Augias, came back in another browser, or reloaded the return page. Start again from `Electronic Invoicing`.
+L'utilisateur est revenu de SUPER PDP plus d'une heure après avoir quitté Augias, dans un autre navigateur, ou a rechargé la page de retour. Recommencez depuis `Facturation électronique`.
 
-### The client ID and secret fields still appear
+### Les champs identifiant et secret apparaissent encore
 
-Both variables must be set and non-empty. After changing them, clear the application cache with `bin/console cache:clear`.
+Les deux variables doivent être renseignées et non vides. Après les avoir changées, videz le cache de l'application avec `bin/console cache:clear`.

@@ -1,28 +1,28 @@
 ---
-title: Installation Guide
-description: Choose how to install Augias — quick install, Homebrew, Docker, distribution package, or from source.
+title: Guide d'installation
+description: "Choisir comment installer Augias : installation rapide, Homebrew, Docker, paquet de distribution ou depuis les sources."
 sidebar_position: 1
 ---
 
-# Installation Guide
+# Guide d'installation
 
-Augias runs anywhere you can run a binary, a Docker container, or PHP. Pick the method that fits your environment — each path below is self-contained, so you only follow the steps that apply to it.
+Augias tourne partout où l'on peut lancer un binaire, un conteneur Docker ou PHP. Choisissez la méthode qui convient à votre environnement : chaque parcours ci-dessous se suffit à lui-même, ne suivez que les étapes qui le concernent.
 
-:::tip[Don't want to host it yourself?]
-Augias is self-hosted only: you run it on your own infrastructure and keep your own backups.
+:::tip[Vous ne voulez pas l'héberger vous-même ?]
+Ce guide couvre l'auto-hébergement : vous faites tourner Augias sur votre propre infrastructure et gardez vos propres sauvegardes.
 :::
 
-## Pick an install method
+## Choisir une méthode
 
-| If you want to… | Use this |
+| Pour… | Utilisez |
 | --- | --- |
-| Get running in under a minute, no PHP or webserver setup | [Quick install](./quick-install.mdx) **(recommended)** |
-| Install from a package manager on macOS or Linux | [Homebrew](./homebrew.md) |
-| Install as a snap on Ubuntu or any Linux with snapd | [Snap](./snap.md) |
-| Install natively on Debian, Ubuntu, RHEL, Fedora, or Alpine | [Linux packages](./linux-packages.mdx) |
-| Run Augias as a container alongside your other services | [Docker](./docker.md) |
-| Deploy to a Kubernetes cluster | [Helm](./helm.md) |
-| Deploy to shared hosting, an existing webserver, or have full control over the stack | [Distribution package](./distribution-package/index.mdx) |
-| Hack on the source or contribute back upstream | [Git (advanced)](./git.md) |
+| Démarrer en moins d'une minute, sans PHP ni serveur web à installer | [Installation rapide](./quick-install.mdx) **(conseillée)** |
+| Installer par un gestionnaire de paquets sur macOS ou Linux | [Homebrew](./homebrew.md) |
+| Installer un snap sur Ubuntu ou tout Linux avec snapd | [Snap](./snap.md) |
+| Installer nativement sur Debian, Ubuntu, RHEL, Fedora ou Alpine | [Paquets Linux](./linux-packages.mdx) |
+| Faire tourner Augias en conteneur à côté de vos autres services | [Docker](./docker.md) |
+| Déployer sur un cluster Kubernetes | [Helm](./helm.md) |
+| Déployer sur un hébergement mutualisé, un serveur web existant, ou garder la main sur toute la pile | [Paquet de distribution](./distribution-package/index.mdx) |
+| Travailler sur le code ou contribuer | [Git (avancé)](./git.md) |
 
-After installing, finish setup with the [first-run wizard](./system-installation.md).
+Après l'installation, terminez avec l'[assistant de premier démarrage](./system-installation.md).

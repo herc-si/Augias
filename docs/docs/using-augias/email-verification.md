@@ -1,40 +1,31 @@
 ---
-title: Email verification
-description: Verify your email address to unlock all Augias features.
+title: Vérifier son adresse e-mail
+description: Confirmer votre adresse e-mail pour ouvrir Augias.
 sidebar_position: 3
 ---
 
-# Email verification
+# Vérifier son adresse e-mail
 
-When you create an Augias account, a verification email is sent automatically. Confirming your address unlocks features that send emails to clients.
+À la création d'un compte sur le service hébergé, Augias envoie automatiquement un e-mail de vérification. Tant que l'adresse n'est pas confirmée, l'application reste fermée.
 
-## What's gated until you verify
+## Avant la vérification
 
-You can log in and use most of Augias right away. However, the following actions are disabled until your email is verified:
+Connecté avec une adresse non vérifiée, vous ne voyez qu'une page : `Vérifiez votre adresse e-mail`. Elle rappelle l'adresse à laquelle le lien est parti et propose deux boutons :
 
-- Sending invoices to clients
-- Sending quotes to clients
-- Activating recurring invoices
-- Sending payment reminders
+- `Renvoyer le lien`, si l'e-mail ne vous est pas parvenu ou si le lien a expiré. Un nouveau lien peut être demandé une fois par minute.
+- `Se déconnecter`.
 
-A banner at the top of the page reminds you to verify while any of these features are unavailable.
+## Vérifier votre adresse
 
-## Verify your email
-
-1. Check your inbox for an email with the subject **"Please Confirm your Email"**.
-2. Click the `Confirm Email Address` button inside. If the button doesn't work, copy the link beneath it and paste it into your browser.
-3. Augias confirms your address and redirects you to the login page with a success message.
+1. Cherchez dans votre boîte de réception l'e-mail **« Confirmez votre adresse e-mail »**. Pensez à regarder dans les indésirables.
+2. Cliquez sur le bouton `Confirmer l'adresse e-mail`. S'il ne fonctionne pas, copiez le lien qui figure en dessous dans votre navigateur.
+3. Augias confirme votre adresse et s'ouvre.
 
 :::info
-The verification link expires after a short window. If yours has expired, complete your account setup again via the registration flow or ask your administrator to re-invite you.
+Le lien reste valable une heure. Au-delà, demandez-en un nouveau avec `Renvoyer le lien`.
 :::
 
-## What happens after verification
+## Voir aussi
 
-The banner disappears and the gated features become available immediately. No page reload or logout is required.
-
-## Related
-
-- [Updating your profile](./user-profile.md)
-- [Sending invoices](../invoices/sending-invoices.md)
-- [Invoice payment reminders](../invoices/payment-reminders.md)
+- [Votre profil](./user-profile.md)
+- [Envoyer une facture](../invoices/sending-invoices.md)

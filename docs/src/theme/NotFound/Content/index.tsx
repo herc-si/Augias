@@ -3,18 +3,21 @@ import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import Heading from '@theme/Heading';
 import SearchBar from '@theme/SearchBar';
+import {translate} from '@docusaurus/Translate';
 import type {Props} from '@theme/NotFound/Content';
 
 import styles from './styles.module.css';
 
-const POPULAR_LINKS = [
-  {to: '/intro', label: 'Documentation overview'},
-  {to: '/installation-guide', label: 'Installation Guide'},
-  {to: '/installation-guide/quick-install', label: 'Quick install'},
-  {to: '/companies/overview', label: 'Companies overview'},
-  {to: '/installation-guide/distribution-package/cron-job-setup', label: 'Cron job setup'},
-  {to: '/integrations/sentry', label: 'Sentry integration'},
-];
+function popularLinks() {
+  return [
+  {to: '/intro', label: translate({id: 'notFound.popular.overview', message: "Vue d’ensemble"})},
+  {to: '/installation-guide', label: translate({id: 'notFound.popular.install', message: "Guide d’installation"})},
+  {to: '/installation-guide/quick-install', label: translate({id: 'notFound.popular.quick', message: "Installation rapide"})},
+  {to: '/companies/overview', label: translate({id: 'notFound.popular.companies', message: "Entreprises"})},
+  {to: '/installation-guide/distribution-package/cron-job-setup', label: translate({id: 'notFound.popular.cron', message: "Tâches planifiées (cron)"})},
+  {to: '/integrations/sentry', label: translate({id: 'notFound.popular.sentry', message: "Intégration Sentry"})},
+  ];
+}
 
 export default function NotFoundContent({className}: Props): ReactNode {
   return (
@@ -22,13 +25,12 @@ export default function NotFoundContent({className}: Props): ReactNode {
       <div className={styles.gridBackground} aria-hidden="true" />
       <div className="container">
         <div className={styles.inner}>
-          <span className={styles.eyebrow}>404 — Page not found</span>
+          <span className={styles.eyebrow}>{translate({id: 'notFound.eyebrow', message: "404 — Page introuvable"})}</span>
           <Heading as="h1" className={styles.title}>
-            We couldn't find that page.
+            {translate({id: 'notFound.title', message: "Nous n’avons pas trouvé cette page."})}
           </Heading>
           <p className={styles.subtitle}>
-            The link may be broken, or the page may have moved. Try a search,
-            or pick one of the popular pages below.
+            {translate({id: 'notFound.subtitle', message: "Le lien est peut-être cassé, ou la page a été déplacée. Lancez une recherche, ou choisissez une des pages ci-dessous."})}
           </p>
 
           <div className={styles.searchWrap}>
@@ -36,9 +38,9 @@ export default function NotFoundContent({className}: Props): ReactNode {
           </div>
 
           <div className={styles.popularSection}>
-            <h2 className={styles.popularLabel}>Popular pages</h2>
+            <h2 className={styles.popularLabel}>{translate({id: 'notFound.popular.title', message: "Pages les plus consultées"})}</h2>
             <ul className={styles.popularList}>
-              {POPULAR_LINKS.map(({to, label}) => (
+              {popularLinks().map(({to, label}) => (
                 <li key={to}>
                   <Link to={to} className={styles.popularLink}>
                     {label}
@@ -52,14 +54,14 @@ export default function NotFoundContent({className}: Props): ReactNode {
           </div>
 
           <p className={styles.footnote}>
-            If you arrived here from an external link,{' '}
+            {translate({id: 'notFound.footnote.before', message: "Si vous êtes arrivé ici depuis un lien extérieur,"})}{' '}
             <a
               href="https://github.com/herc-si/Augias/issues/new/choose"
               target="_blank"
               rel="noopener noreferrer">
-              let us know
+              {translate({id: 'notFound.footnote.link', message: "prévenez-nous"})}
             </a>{' '}
-            so we can fix it.
+            {translate({id: 'notFound.footnote.after', message: "pour que nous le corrigions."})}
           </p>
         </div>
       </div>

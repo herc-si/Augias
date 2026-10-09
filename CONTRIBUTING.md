@@ -1,18 +1,27 @@
-Contributing
-============
+**Français** · [English](CONTRIBUTING.en.md)
 
-If you wish to contribute to Augias, please fork it, make your changes, and submit a pull request.
+Contribuer
+==========
 
-Where possible, pull requests need to have unit tests available, and the unit tests should not fail.
+Pour contribuer à Augias, forkez le dépôt, faites vos modifications et proposez une pull request.
 
-All pull requests must conform to the standards of coding currently in the application. Pull requests that do not follow standards, won't be denied, but we will ask you to change the code before we accept the pull request.
+Dans la mesure du possible, une pull request s'accompagne de tests unitaires, et ces tests passent.
 
-If you encounter any bug or inconsistency, please submit a bug report, so we can fix it as quickly as possible.
+Toute pull request respecte les conventions de code de l'application. Une pull request qui s'en écarte n'est pas refusée pour autant, mais nous vous demanderons d'ajuster le code avant de l'accepter.
 
-Translations
-------------
+Si vous rencontrez un bogue ou une incohérence, signalez-le, pour que nous puissions le corriger au plus vite.
 
-Augias is fully translatable through a single, unified translation system — there are
-no hard-coded user-facing strings. If you add or change any text, put it in a translation
-catalog and reference it by key. See [TRANSLATING.md](TRANSLATING.md) for the conventions,
-the shared reusable keys, and the provider push/pull workflow.
+Traductions
+-----------
+
+Augias est entièrement traduisible par un système de traduction unique : aucun texte
+affiché à l'utilisateur n'est écrit en dur. Si vous ajoutez ou modifiez un texte, placez-le
+dans un catalogue de traduction et appelez-le par sa clé. Les conventions, les clés communes
+réutilisables et le circuit d'envoi et de récupération chez le prestataire de traduction sont
+décrits dans [TRANSLATING.md](TRANSLATING.md).
+
+Documentation
+-------------
+
+La documentation utilisateur, dans `docs/`, est en français par défaut, avec sa version
+anglaise dans `docs/i18n/en/`. Une page ajoutée ou modifiée l'est dans les deux langues.

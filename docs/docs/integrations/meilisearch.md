@@ -1,89 +1,89 @@
 ---
 title: Meilisearch
-description: Power Augias's global search with a Meilisearch instance.
+description: Alimenter la recherche d'Augias avec une instance Meilisearch.
 sidebar_position: 2
 ---
 
 # Meilisearch
 
-Augias uses [Meilisearch](https://www.meilisearch.com/) to power the global search bar in the top navigation. When a Meilisearch instance is configured, you can search across clients, contacts, invoices, recurring invoices, quotes, and payments from a single query box, with typo tolerance and per-entity filters.
+Augias s'appuie sur [Meilisearch](https://www.meilisearch.com/) pour la barre de recherche du haut de page. Avec une instance Meilisearch configurée, une seule zone de saisie cherche dans les clients, contacts, factures, factures récurrentes, devis et paiements, en tolérant les fautes de frappe et avec des filtres par type.
 
-The integration is entirely optional — without it, Augias runs normally and the search bar is hidden.
+L'intégration est entièrement facultative : sans elle, Augias fonctionne normalement et la barre de recherche est masquée.
 
-## How it works
+## Fonctionnement
 
-- Six indexes are maintained, one per searchable entity: `clients`, `contacts`, `invoices`, `recurring_invoices`, `quotes`, `payments`.
-- Records are scoped per company. Every searchable entity is indexed with a `companyId`, and queries are filtered to the active company so users only see results from their own data.
-- New, updated, and deleted records are indexed in real time via Doctrine lifecycle listeners — there is no scheduled re-index for normal operation.
-- The global search bar in the top navigation only appears when both the Meilisearch URL and API key are configured.
+- Six index sont tenus, un par type de fiche : `clients`, `contacts`, `invoices`, `recurring_invoices`, `quotes`, `payments`.
+- Les fiches sont rangées par entreprise. Chaque fiche est indexée avec un `companyId`, et les recherches sont filtrées sur l'entreprise active : chacun ne voit que ses propres données.
+- Les créations, modifications et suppressions sont indexées en temps réel par des écouteurs Doctrine : aucune réindexation programmée en fonctionnement normal.
+- La barre de recherche n'apparaît que lorsque l'adresse de Meilisearch et la clé d'API sont toutes deux configurées.
 
-## Prerequisites
+## Prérequis
 
-You need a running Meilisearch server (v1.x). Common options:
+Il vous faut un serveur Meilisearch (v1.x) en marche. Les choix courants :
 
-- **Self-hosted** — install via [the official binary, Docker image, or package manager](https://www.meilisearch.com/docs/learn/getting_started/installation).
-- **Meilisearch Cloud** — managed hosting; provides a URL and API key out of the box.
+- **Auto-hébergé** : par [le binaire officiel, l'image Docker ou un gestionnaire de paquets](https://www.meilisearch.com/docs/learn/getting_started/installation).
+- **Meilisearch Cloud** : un hébergement géré, qui fournit d'emblée une adresse et une clé d'API.
 
-The server needs to be reachable from the Augias application over HTTP. For self-hosted deployments, this is usually a private network address or `http://localhost:7700`.
+Le serveur doit être joignable en HTTP depuis l'application Augias. En auto-hébergement, c'est en général une adresse de réseau privé ou `http://localhost:7700`.
 
 :::warning
-Always set a master key on your Meilisearch server in production (`MEILI_MASTER_KEY` on the Meilisearch side). Running with no master key exposes write access to anyone who can reach the HTTP port.
+En production, donnez toujours une clé maîtresse à votre serveur Meilisearch (`MEILI_MASTER_KEY` côté Meilisearch). Sans clé maîtresse, n'importe qui pouvant joindre le port HTTP peut y écrire.
 :::
 
 ## Configuration
 
-The integration is configured through three environment variables, set the same way you set any other Augias environment variable (Docker `-e` flag, or a `.env` file in the application root for the distribution package).
+L'intégration se règle par trois variables d'environnement, comme toute variable d'Augias (option `-e` de Docker, ou fichier `.env` à la racine de l'application pour le paquet de distribution).
 
-| Variable | Default | Description |
+| Variable | Défaut | Description |
 | --- | --- | --- |
-| `AUGIAS_MEILISEARCH_URL` | *(empty)* | Base URL of your Meilisearch instance, e.g. `http://meilisearch:7700`. Leave empty to disable the integration. |
-| `AUGIAS_MEILISEARCH_API_KEY` | *(empty)* | An API key with read/write access to the indexes. Use the master key during setup, then switch to a scoped key once the indexes exist (see [Security](#security)). |
-| `AUGIAS_MEILISEARCH_PREFIX` | `augias_<env>_` | Prefix prepended to every index name. The default keeps `dev`, `test`, and `prod` indexes separate when sharing one Meilisearch server. |
+| `AUGIAS_MEILISEARCH_URL` | *(vide)* | L'adresse de votre instance Meilisearch, par exemple `http://meilisearch:7700`. Vide, l'intégration est désactivée. |
+| `AUGIAS_MEILISEARCH_API_KEY` | *(vide)* | Une clé d'API avec lecture et écriture sur les index. Utilisez la clé maîtresse pour la mise en place, puis une clé restreinte une fois les index créés (voir [Sécurité](#sécurité)). |
+| `AUGIAS_MEILISEARCH_PREFIX` | `augias_<env>_` | Le préfixe ajouté à chaque nom d'index. Par défaut, il sépare les index `dev`, `test` et `prod` qui partagent un même serveur. |
 
-A typical production configuration:
+Une configuration de production typique :
 
 ```ini title=".env"
 AUGIAS_MEILISEARCH_URL=http://meilisearch.internal:7700
-AUGIAS_MEILISEARCH_API_KEY=your-meilisearch-api-key
+AUGIAS_MEILISEARCH_API_KEY=votre-cle-meilisearch
 AUGIAS_MEILISEARCH_PREFIX=augias_prod_
 ```
 
-Restart the application after changing any of these values.
+Redémarrez l'application après chaque changement.
 
 :::info
-The search bar is shown only when both `AUGIAS_MEILISEARCH_URL` and `AUGIAS_MEILISEARCH_API_KEY` are non-empty. If you've configured the variables but the search bar still doesn't appear, clear the application cache: `bin/console cache:clear`.
+La barre de recherche ne s'affiche que si `AUGIAS_MEILISEARCH_URL` et `AUGIAS_MEILISEARCH_API_KEY` sont toutes deux non vides. Si les variables sont réglées mais que la barre n'apparaît toujours pas, videz le cache de l'application : `bin/console cache:clear`.
 :::
 
-## Initial indexing
+## Indexation initiale
 
-After configuring the environment variables for the first time — and any time you import data outside the Augias UI (for example, from a database backup or a migration from another tool) — you'll need to populate the indexes manually.
+Après la première configuration, et chaque fois que vous importez des données hors de l'application (par exemple depuis une sauvegarde de base ou une migration depuis un autre outil), remplissez les index à la main.
 
-Create the indexes with the configured settings:
+Créez les index avec leurs réglages :
 
 ```bash
 bin/console meilisearch:create
 ```
 
-Then import your existing data:
+Puis importez les données existantes :
 
 ```bash
 bin/console meilisearch:import
 ```
 
-This walks every searchable entity in the database and pushes it to Meilisearch. For large datasets, you can tune the batch size and request timeout:
+La commande parcourt chaque fiche de la base et l'envoie à Meilisearch. Pour un gros volume, réglez la taille des lots et le délai de réponse :
 
 ```bash
 bin/console meilisearch:import --batch-size=500 --response-timeout=10000
 ```
 
-To re-import only specific entities, pass `--indices` with a comma-separated list of index names:
+Pour ne réimporter que certains types, passez `--indices` avec une liste de noms d'index séparés par des virgules :
 
 ```bash
 bin/console meilisearch:import --indices=invoices,clients
 ```
 
 :::tip
-For zero-downtime re-indexing on a live system, use `--swap-indices`. Meilisearch indexes into temporary indexes and atomically swaps them in once the import completes, so users never see partial results during the rebuild.
+Pour réindexer un système en service sans interruption, utilisez `--swap-indices`. Meilisearch remplit des index temporaires et les échange d'un coup à la fin de l'import : les utilisateurs ne voient jamais de résultats partiels pendant la reconstruction.
 
 ```bash
 bin/console meilisearch:import --swap-indices
@@ -91,54 +91,54 @@ bin/console meilisearch:import --swap-indices
 
 :::
 
-After the initial import, day-to-day changes are picked up automatically — there's no need to re-run `meilisearch:import` when users create, edit, or delete records through the UI or API.
+Après l'import initial, les changements du quotidien sont pris en compte seuls : inutile de relancer `meilisearch:import` quand les utilisateurs créent, modifient ou suppriment des fiches dans l'application ou par l'API.
 
-## Maintenance commands
+## Commandes de maintenance
 
-The Meilisearch search bundle ships with a small set of commands for managing the indexes. All of them respect the configured prefix.
+Le module de recherche Meilisearch fournit quelques commandes de gestion des index. Toutes respectent le préfixe configuré.
 
-| Command | Purpose |
+| Commande | Rôle |
 | --- | --- |
-| `bin/console meilisearch:create` | Create the indexes and apply their configured settings (filterable/sortable attributes). Safe to run repeatedly. |
-| `bin/console meilisearch:import` | Bulk-import every entity into its index. See [Initial indexing](#initial-indexing). |
-| `bin/console meilisearch:update-settings` | Push only the settings (filterable/sortable attributes, etc.) without re-indexing documents. Use after upgrading Augias if the bundled index settings have changed. |
-| `bin/console meilisearch:clear` | Remove all documents from the indexes but keep the indexes themselves. |
-| `bin/console meilisearch:delete` | Delete the indexes entirely. You'll need to run `meilisearch:create` and `meilisearch:import` again afterwards. |
+| `bin/console meilisearch:create` | Crée les index et applique leurs réglages (attributs filtrables et triables). Peut être relancée sans risque. |
+| `bin/console meilisearch:import` | Importe en masse chaque fiche dans son index. Voir [Indexation initiale](#indexation-initiale). |
+| `bin/console meilisearch:update-settings` | Envoie seulement les réglages (attributs filtrables et triables, etc.) sans réindexer les documents. À lancer après une mise à jour d'Augias si les réglages des index ont changé. |
+| `bin/console meilisearch:clear` | Vide les index de leurs documents, sans supprimer les index. |
+| `bin/console meilisearch:delete` | Supprime entièrement les index. Il faudra ensuite relancer `meilisearch:create` et `meilisearch:import`. |
 
-Each command accepts `--indices=<list>` to scope it to a subset of indexes.
+Chaque commande accepte `--indices=<liste>` pour se limiter à certains index.
 
-## Using the search bar
+## La barre de recherche
 
-Once Meilisearch is configured and indexed, the search bar appears in the top navigation of every page. The query syntax (free-text, qualifiers like `in:`, `status:`, `client:`, `sort:`, etc.), what's searchable, and worked examples are documented at [Searching](../using-augias/searching.md) — that page covers everything end users need.
+Une fois Meilisearch configuré et indexé, la barre de recherche apparaît en haut de chaque page. La syntaxe (texte libre, filtres comme `in:`, `status:`, `client:`, `sort:`, etc.), ce qui se recherche et des exemples sont décrits dans [Rechercher](../using-augias/searching.md) : cette page couvre tout ce dont les utilisateurs ont besoin.
 
-Indexing happens in real time: when a record is created, updated, or deleted through the UI, the API, or the MCP server, the change is dispatched to Meilisearch as part of the same request. There is no replication delay beyond Meilisearch's own indexing time (typically milliseconds), and no scheduled re-index for normal operation.
+L'indexation est en temps réel : quand une fiche est créée, modifiée ou supprimée par l'application, l'API ou le serveur MCP, le changement part vers Meilisearch dans la même requête. Pas d'autre délai que le temps d'indexation de Meilisearch (quelques millisecondes en général), et pas de réindexation programmée en fonctionnement normal.
 
-If indexes ever drift out of sync — for example, after a database restore — re-run `bin/console meilisearch:import` to rebuild from the canonical data in the database (see [Initial indexing](#initial-indexing)).
+Si les index se décalent (par exemple après la restauration d'une base), relancez `bin/console meilisearch:import` pour les reconstruire depuis la base (voir [Indexation initiale](#indexation-initiale)).
 
-## Security
+## Sécurité
 
-The API key Augias uses needs both read and write access to the indexes. The simplest setup is to use the Meilisearch master key, but for production you should generate a [scoped API key](https://www.meilisearch.com/docs/learn/security/master_api_keys) limited to the indexes that match your configured prefix.
+La clé d'API utilisée par Augias doit pouvoir lire et écrire dans les index. Le plus simple est la clé maîtresse de Meilisearch, mais en production, générez une [clé d'API restreinte](https://www.meilisearch.com/docs/learn/security/master_api_keys) aux index qui portent votre préfixe.
 
-When generating a scoped key, grant it the following actions on indexes matching `<prefix>*`:
+Donnez-lui ces actions sur les index `<préfixe>*` :
 
-- `documents.add`, `documents.delete`, `documents.get` — for real-time indexing and search.
-- `indexes.create`, `indexes.update`, `indexes.delete` — for the management commands.
-- `settings.update`, `settings.get` — for `meilisearch:update-settings`.
-- `search` — for the global search bar.
+- `documents.add`, `documents.delete`, `documents.get` : indexation en temps réel et recherche ;
+- `indexes.create`, `indexes.update`, `indexes.delete` : commandes de gestion ;
+- `settings.update`, `settings.get` : `meilisearch:update-settings` ;
+- `search` : la barre de recherche.
 
-If you don't plan to run the maintenance commands from the application server (for example, you run them from a separate ops host), you can issue a more restrictive key for the application itself that grants only `search`, `documents.add`, `documents.delete`, and `documents.get`.
+Si vous ne lancez pas les commandes de maintenance depuis le serveur de l'application (par exemple depuis une machine d'exploitation séparée), l'application peut se contenter d'une clé limitée à `search`, `documents.add`, `documents.delete` et `documents.get`.
 
 :::warning
-Per-company isolation is enforced by Augias through the `companyId` filter on every query, not by Meilisearch itself. Anyone with direct access to the Meilisearch HTTP API and a valid key can read across all companies' data. Treat the Meilisearch endpoint as you would the application database — keep it on a private network and restrict the API key.
+Le cloisonnement entre entreprises est assuré par Augias, avec le filtre `companyId` de chaque requête, et non par Meilisearch. Quiconque accède directement à l'API HTTP de Meilisearch avec une clé valide peut lire les données de toutes les entreprises. Traitez Meilisearch comme la base de données de l'application : sur un réseau privé, avec une clé restreinte.
 :::
 
-## Disabling the integration
+## Désactiver l'intégration
 
-To turn the search off, clear the URL or API key:
+Pour couper la recherche, videz l'adresse ou la clé :
 
 ```ini title=".env"
 AUGIAS_MEILISEARCH_URL=
 AUGIAS_MEILISEARCH_API_KEY=
 ```
 
-Restart the application. The search bar disappears, and Augias stops dispatching updates to Meilisearch. Existing indexes on the Meilisearch server are left in place — delete them manually with `bin/console meilisearch:delete` (run before clearing the env vars) or directly through the Meilisearch dashboard if you no longer need them.
+Redémarrez l'application. La barre de recherche disparaît et Augias cesse d'envoyer des mises à jour à Meilisearch. Les index déjà présents sur le serveur Meilisearch restent en place : supprimez-les avec `bin/console meilisearch:delete` (avant de vider les variables) ou depuis le tableau de bord de Meilisearch si vous n'en avez plus besoin.

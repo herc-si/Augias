@@ -1,150 +1,150 @@
 ---
-title: System Installation
-description: Walk through the Augias installation wizard.
+title: Assistant d'installation
+description: Les étapes de l'assistant d'installation d'Augias.
 sidebar_position: 8
 ---
 
-# System Installation
+# Assistant d'installation
 
-When you open Augias for the first time, you're sent to `/install`. The wizard checks your system, sets up the database, configures the application, and creates your admin user.
+À la première ouverture d'Augias, vous êtes envoyé sur `/install`. L'assistant vérifie votre système, prépare la base de données, configure l'application et crée votre compte administrateur.
 
-## Before you start
+## Avant de commencer
 
-- Browse to the application's root URL. On a fresh install you'll be redirected to `/install` automatically.
-- Have your database connection details to hand. If you plan to use SQLite (the embedded database) you don't need anything extra.
+- Ouvrez l'adresse racine de l'application. Sur une installation neuve, vous êtes redirigé vers `/install`.
+- Ayez sous la main les informations de connexion à votre base de données. Avec SQLite (la base intégrée), rien de plus n'est nécessaire.
 
 :::info
-The Quick install, Homebrew, and Docker images bundle their own PHP runtime. They auto-skip the **System Requirements** step described below — you'll go straight from the welcome screen to the database step.
+L'installation rapide, Homebrew et les images Docker embarquent leur propre PHP. Elles sautent l'étape de **vérification des prérequis** décrite ci-dessous : vous passez directement de l'accueil à la base de données.
 :::
 
-## Welcome
+## Accueil
 
-The first screen introduces the wizard. Click `Begin Installation` to start.
+Le premier écran présente l'assistant. Cliquez sur `Démarrer l'installation`.
 
-![The installation wizard welcome screen](/img/installation-guide/wizard-welcome.png)
+![L'écran d'accueil de l'assistant d'installation](/img/installation-guide/wizard-welcome.png)
 
-## System Requirements
+## Vérification des prérequis
 
-This step verifies your environment can run Augias. Two summary cards show how many `Required` and `Recommended` checks pass. The `Next` button stays disabled while any required check is failing.
+Cette étape vérifie que votre environnement peut faire tourner Augias. Deux cartes indiquent combien de vérifications `Obligatoire` et `Recommandé` passent. Le bouton `Suivant` reste inactif tant qu'une vérification obligatoire échoue.
 
-![The system requirements screen with all checks passing](/img/installation-guide/wizard-system-requirements.png)
+![L'écran des prérequis, toutes vérifications passées](/img/installation-guide/wizard-system-requirements.png)
 
-Two collapsible accordions list the individual checks:
+Deux volets dépliables détaillent les vérifications :
 
-- **Required** — must all pass before you can continue. Failures show a `Failed` badge and a short hint about what to change.
-- **Recommended** — `Warning` badges here won't block install but are worth fixing for full functionality.
+- **Obligatoire** : toutes doivent passer pour continuer. Un échec affiche un badge `Échec` et une courte indication de ce qu'il faut changer.
+- **Recommandé** : un badge `Avertissement` ici ne bloque pas l'installation, mais mérite d'être corrigé pour profiter de tout.
 
-The **System Information** card below the checks shows the OS, web server, PHP version, the path to the active `php.ini`, memory limit, max execution time, upload max size, and the configured config / cache / log directories. Use these values when filing a support issue.
+La carte **Informations système**, sous les vérifications, donne le système, le serveur web, la version de PHP, le chemin du `php.ini` actif, la limite de mémoire, le temps d'exécution maximal, la taille maximale d'envoi et les dossiers de configuration, de cache et de journaux. Joignez ces valeurs à toute demande d'assistance.
 
-If you change a setting, refresh the page (the browser's reload button) to re-run the checks. Once all required checks pass, click `Next`.
+Après avoir changé un réglage, rechargez la page pour relancer les vérifications. Une fois toutes les vérifications obligatoires passées, cliquez sur `Suivant`.
 
-## Database configuration
+## Base de données
 
-Pick the database engine Augias should use.
+Choisissez le moteur de base de données d'Augias.
 
-![The database configuration screen with SQLite selected](/img/installation-guide/wizard-database-sqlite.png)
+![L'écran de la base de données avec SQLite choisi](/img/installation-guide/wizard-database-sqlite.png)
 
-The available options depend on which PDO drivers are installed on your server. The full list Augias can use is:
+Les choix dépendent des pilotes PDO installés sur votre serveur. Augias sait utiliser :
 
 - **MySQL**
 - **MariaDB**
 - **PostgreSQL**
-- **Embedded Database (SQLite)** — recommended for small installs and trial setups; needs no separate database server.
+- **SQLite**, la base intégrée : conseillée pour les petites installations et les essais, sans serveur de base de données à part.
 
-If you select **SQLite**, there's nothing more to fill in — the database file is created for you under the application's config directory.
+Avec **SQLite**, il n'y a rien d'autre à remplir : le fichier de base est créé pour vous dans le dossier de configuration de l'application.
 
-For MySQL, MariaDB, or PostgreSQL, fill in the connection details:
+Pour MySQL, MariaDB ou PostgreSQL, renseignez la connexion :
 
-![The database configuration screen with MySQL selected and connection fields visible](/img/installation-guide/wizard-database-server.png)
+![L'écran de la base de données avec MySQL choisi et les champs de connexion](/img/installation-guide/wizard-database-server.png)
 
-| Field | Notes |
+| Champ | Remarques |
 | --- | --- |
-| `Host` | Hostname or IP of the database server (defaults to `localhost`). |
-| `Port` | Optional. Leave blank to use the engine's default. |
-| `User` | Database user. |
-| `Password` | Password for that user. |
-| `Database Name` | The schema/database to use. Augias will create it if it doesn't already exist (the user must have permission to do so). |
+| `Hôte` | Le nom ou l'adresse IP du serveur de base de données (`localhost` par défaut). |
+| `Port` | Facultatif. Vide, le port par défaut du moteur est utilisé. |
+| `Utilisateur` | L'utilisateur de la base. |
+| `Mot de passe` | Son mot de passe. |
+| `Nom de la base de données` | La base à utiliser. Augias la crée si elle n'existe pas (l'utilisateur doit en avoir le droit). |
 
-Click `Next`. Augias connects to the server to verify the credentials before moving on; any errors are shown above the form.
+Cliquez sur `Suivant`. Augias se connecte au serveur pour vérifier les identifiants avant de continuer ; les erreurs s'affichent au-dessus du formulaire.
 
-## Your account
+## Votre compte
 
-This step combines two things: how the app will refer to itself, and the admin user you'll log in as.
+Cette étape réunit deux choses : la façon dont l'application se présente, et le compte administrateur avec lequel vous vous connecterez.
 
-![The user account screen with the form filled in](/img/installation-guide/wizard-user-account.png)
+![L'écran du compte utilisateur, formulaire rempli](/img/installation-guide/wizard-user-account.png)
 
-| Field | Notes |
+| Champ | Remarques |
 | --- | --- |
-| `Application URL` | The public URL where this Augias instance is reachable. Defaults to the URL you're loading the wizard from; must include `http://` or `https://`. |
-| `Locale` | Language plus number and currency formatting. The dropdown lists the full set of locales supported by your PHP `intl` extension. If `intl` isn't installed, the field is read-only and locked to English. |
-| `First name` / `Last name` | Used in the UI and on outgoing emails. |
-| `Email address` | Becomes the admin user's login. |
-| `Password` | Becomes the admin user's password. |
+| `URL de l'application` | L'adresse publique de cette instance d'Augias. Par défaut, celle depuis laquelle vous ouvrez l'assistant ; doit commencer par `http://` ou `https://`. |
+| Langue | La langue, et la mise en forme des nombres et des devises. La liste propose toutes les langues que connaît l'extension PHP `intl`. Sans `intl`, le champ est figé sur l'anglais. |
+| `Prénom` / `Nom` | Affichés dans l'application et dans les e-mails envoyés. |
+| `Adresse e-mail` | L'identifiant de connexion de l'administrateur. |
+| `Mot de passe` | Le mot de passe de l'administrateur. |
 
-Click `Next` to continue.
+Cliquez sur `Suivant`.
 
-## Review
+## Récapitulatif
 
-A summary of everything you've entered, so you can confirm before any changes are made.
+Le résumé de tout ce que vous avez saisi, à confirmer avant toute modification.
 
-![The review screen summarising the chosen database driver and admin account](/img/installation-guide/wizard-review.png)
+![Le récapitulatif avec le moteur de base choisi et le compte administrateur](/img/installation-guide/wizard-review.png)
 
-Click `Previous` to amend a setting, or `Install` to start the install.
+Cliquez sur `Précédent` pour corriger un réglage, ou sur le bouton d'installation pour lancer l'installation.
 
-## Install
+## Installation
 
-The wizard streams progress for five sub-steps over Server-Sent Events. Each card shows a status icon, a `View logs` button to expand the live output, and a `Retry` button if the step fails.
+L'assistant affiche en direct l'avancement de cinq sous-étapes. Chaque carte porte une icône d'état, un bouton `Voir les journaux` pour déplier la sortie en direct, et un bouton `Réessayer` si l'étape échoue.
 
-![The install screen with all five sub-steps complete](/img/installation-guide/wizard-install-running.png)
+![L'écran d'installation avec les cinq sous-étapes terminées](/img/installation-guide/wizard-install-running.png)
 
-The sub-steps run in order:
+Les sous-étapes, dans l'ordre :
 
-1. **Generating secret** — creates the application secret used for signing tokens and cookies.
-2. **Generating build id** — assigns a unique id to this installation (used for cache versioning).
-3. **Creating database** — creates the database if it doesn't already exist. For SQLite this just touches the database file.
-4. **Creating database schema** — runs the Doctrine migrations to build all tables.
-5. **Creating admin user** — saves the admin account you entered earlier.
+1. **Génération du secret** : crée le secret de l'application, qui signe les jetons et les cookies.
+2. **Génération de l'identifiant de version** : donne un identifiant unique à cette installation (pour le cache).
+3. **Création de la base de données** : crée la base si elle n'existe pas. Avec SQLite, crée simplement le fichier.
+4. **Création du schéma de base de données** : passe les migrations Doctrine qui construisent toutes les tables.
+5. **Création de l'administrateur** : enregistre le compte administrateur saisi plus tôt.
 
-If a step fails, expand its `View logs` panel to read the error, fix the underlying issue, and click `Retry` on that step. Most failures here are database-permission related — see [Troubleshooting](#troubleshooting).
+Si une étape échoue, dépliez `Voir les journaux` pour lire l'erreur, corrigez la cause et cliquez sur `Réessayer` sur cette étape. La plupart des échecs à ce stade viennent des droits sur la base de données : voir [Dépannage](#dépannage).
 
-When all five sub-steps show a green check, the `Next` button at the bottom is re-enabled. Click it.
+Quand les cinq sous-étapes affichent une coche verte, le bouton `Suivant` se réactive en bas. Cliquez dessus.
 
-## Finish
+## Fin
 
-A confirmation screen with a quick summary of what was set up.
+Un écran de confirmation résume ce qui a été mis en place.
 
-![The finish screen with the Launch Augias button](/img/installation-guide/wizard-finish.png)
+![L'écran de fin avec le bouton Lancer Augias](/img/installation-guide/wizard-finish.png)
 
-Click `Launch Augias` to go to the login page. Sign in with the admin email and password you set during the wizard.
+Cliquez sur `Lancer Augias` pour arriver sur la page de connexion. Connectez-vous avec l'e-mail et le mot de passe administrateur saisis dans l'assistant.
 
 :::info
-If you installed via the [distribution package](./distribution-package/index.mdx) or from [Git](./git.md), one more thing is left: starting the background worker that handles emails and recurring invoices. See the [Cron job setup](./distribution-package/cron-job-setup.md) guide for systemd, cron, cPanel, Plesk, and Windows configurations.
+Si vous avez installé le [paquet de distribution](./distribution-package/index.mdx) ou depuis [Git](./git.md), il reste à démarrer le processus de fond qui envoie les e-mails et génère les factures récurrentes. Voir le guide des [tâches planifiées](./distribution-package/cron-job-setup.md) pour systemd, cron, cPanel, Plesk et Windows.
 
-If you used [Quick install](./quick-install.mdx), [Homebrew](./homebrew.md), or [Docker](./docker.md), the worker is already running for you — nothing else to do.
+Avec l'[installation rapide](./quick-install.mdx), [Homebrew](./homebrew.md) ou [Docker](./docker.md), le processus de fond tourne déjà : rien d'autre à faire.
 :::
 
-## Troubleshooting
+## Dépannage
 
-### `/install` returns 404 instead of showing the wizard
+### `/install` renvoie une erreur 404 au lieu de l'assistant
 
-The application already considers itself installed. Augias writes an `installed:` timestamp to its config file (under the directory shown as `Config Directory` on the requirements screen). Only remove that line if you genuinely intend to reinstall — clearing it without also dropping the existing database will leave the next install in a broken half-state.
+L'application se considère déjà installée. Augias écrit une ligne `installed:` datée dans son fichier de configuration (dans le dossier affiché comme `Répertoire de configuration` sur l'écran des prérequis). Ne retirez cette ligne que si vous voulez vraiment réinstaller : sans supprimer aussi la base existante, la réinstallation resterait à moitié faite.
 
-### A required check is marked `Failed`
+### Une vérification obligatoire est en `Échec`
 
-Fix the underlying issue (install the missing PHP extension, raise `memory_limit`, fix a directory permission, etc.) and reload the page to re-run the checks. The `PHP Config File` row in the **System Information** card shows you which `php.ini` to edit.
+Corrigez la cause (installez l'extension PHP manquante, augmentez `memory_limit`, corrigez les droits d'un dossier, etc.) et rechargez la page pour relancer les vérifications. La ligne `Fichier de configuration PHP` de la carte **Informations système** indique le `php.ini` à modifier.
 
-### `SQLSTATE… Access denied` on the database step
+### `SQLSTATE… Access denied` à l'étape de la base de données
 
-The credentials are wrong, or the user lacks permission to create the target database. Either grant the user `CREATE` on the database, or pre-create it manually and connect with a user that has full rights on it.
+Les identifiants sont faux, ou l'utilisateur n'a pas le droit de créer la base. Donnez-lui le droit `CREATE`, ou créez la base vous-même et connectez-vous avec un utilisateur qui a tous les droits dessus.
 
-### `Could not connect` / connection timeout
+### `Could not connect`, ou délai de connexion dépassé
 
-The host and port are reachable from where you ran the wizard but not from the Augias host. Verify the database server is listening on the address you entered and that no firewall is in the way.
+L'hôte et le port sont joignables depuis votre poste mais pas depuis la machine d'Augias. Vérifiez que le serveur de base écoute à l'adresse saisie et qu'aucun pare-feu ne bloque.
 
-### `Creating database schema` fails
+### La création du schéma échoue
 
-The chosen user can connect but lacks DDL rights on the target database. Re-grant rights or switch to a user that owns the database.
+L'utilisateur peut se connecter mais n'a pas les droits de modification de structure (DDL) sur la base. Redonnez-lui ces droits, ou utilisez un utilisateur propriétaire de la base.
 
-### The install screen stalls and never shows progress
+### L'écran d'installation reste figé sans avancer
 
-The wizard streams progress over Server-Sent Events. If you're behind a reverse proxy, make sure it isn't buffering responses (for nginx, set `proxy_buffering off;` on the Augias location). Open the browser console — you'll see `EventSource` errors when the stream is being held back.
+L'assistant transmet l'avancement par Server-Sent Events. Derrière un proxy inverse, vérifiez qu'il ne met pas les réponses en mémoire tampon (pour nginx, `proxy_buffering off;` sur l'emplacement d'Augias). La console du navigateur affiche des erreurs `EventSource` quand le flux est retenu.

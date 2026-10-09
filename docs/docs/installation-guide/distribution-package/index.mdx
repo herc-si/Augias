@@ -1,65 +1,65 @@
 ---
-title: Distribution package
-description: Install Augias from the distribution archive on an existing PHP webserver, covering download, extraction, permissions, and the first-run setup wizard.
+title: Paquet de distribution
+description: "Installer Augias depuis l'archive de distribution sur un serveur web PHP existant : téléchargement, extraction, droits et assistant de premier démarrage."
 sidebar_position: 1
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Distribution package
+# Paquet de distribution
 
-The distribution package is a pre-built archive of Augias that you serve from an existing PHP webserver. Choose this method when you can't use the [quick install](../quick-install.mdx) — for example on shared hosting, on a managed PHP host, or when company policy requires you to use a specific webserver.
+Le paquet de distribution est une archive prête à l'emploi d'Augias, servie par un serveur web PHP existant. Choisissez cette méthode quand l'[installation rapide](../quick-install.mdx) n'est pas possible : hébergement mutualisé, hébergeur PHP géré, ou politique d'entreprise qui impose un serveur web.
 
 :::warning
-This is the most involved install method. You're responsible for the webserver, PHP, the database, the cron job, and the async worker. If you have a choice, the [quick install](../quick-install.mdx), [Homebrew](../homebrew.md), or [Docker](../docker.md) installs handle all of this for you.
+C'est la méthode la plus exigeante. Le serveur web, PHP, la base de données, la tâche cron et le worker asynchrone sont à votre charge. Si vous avez le choix, l'[installation rapide](../quick-install.mdx), [Homebrew](../homebrew.md) ou [Docker](../docker.md) s'occupent de tout cela pour vous.
 :::
 
-:::tip[Skip the setup entirely]
-This method assumes you already run a PHP webserver and are comfortable maintaining it.
+:::tip[À qui s'adresse cette méthode]
+Elle suppose que vous faites déjà tourner un serveur web PHP et que vous savez l'entretenir.
 :::
 
-## System requirements
+## Configuration requise
 
-- **PHP 8.4 or higher** with the following extensions enabled: `curl`, `gd`, `intl`, `json`, `openssl`, `pdo`, `soap`, `xsl`. You'll also need a `pdo` driver for your database (`pdo_mysql`, `pdo_pgsql`, or `pdo_sqlite`).
-- A webserver — **Nginx** (recommended) or **Apache** with `mod_rewrite`.
-- A supported database (MySQL, MariaDB, PostgreSQL, or SQLite).
-- The ability to run a cron job and a long-running PHP process on the host.
+- **PHP 8.4 ou plus** avec les extensions `curl`, `gd`, `intl`, `json`, `openssl`, `pdo`, `soap` et `xsl`, et un pilote `pdo` pour votre base (`pdo_mysql`, `pdo_pgsql` ou `pdo_sqlite`).
+- Un serveur web : **Nginx** (conseillé) ou **Apache** avec `mod_rewrite`.
+- Une base de données prise en charge (MySQL, MariaDB, PostgreSQL ou SQLite).
+- La possibilité de lancer une tâche cron et un processus PHP de longue durée sur la machine.
 
-## 1. Download
+## 1. Télécharger
 
-Download the archive of the latest version from the [releases page](https://github.com/herc-si/Augias/releases/latest), for example:
+Téléchargez l'archive de la dernière version sur la [page des versions](https://github.com/herc-si/Augias/releases/latest), par exemple :
 
 ```bash
-VERSION=4.0.0
+VERSION=4.1.0
 
 # Zip
 curl -LO "https://github.com/herc-si/Augias/releases/download/${VERSION}/Augias-${VERSION}.zip"
 
-# Or tar.gz
+# Ou tar.gz
 curl -LO "https://github.com/herc-si/Augias/releases/download/${VERSION}/Augias-${VERSION}.tar.gz"
 ```
 
-Extract it to a directory served by your webserver, for example `/opt/augias`.
+Décompressez-la dans un dossier servi par votre serveur web, par exemple `/opt/augias`.
 
 :::info
-On shared hosting with FTP-only access, download the archive locally, extract it, and upload the extracted files to your hosting account.
+Sur un hébergement mutualisé accessible seulement en FTP, téléchargez et décompressez l'archive sur votre poste, puis envoyez les fichiers décompressés sur votre hébergement.
 :::
 
-## 2. Configure the webserver
+## 2. Configurer le serveur web
 
-Point your webserver at the `public/` directory inside the extracted archive.
+Faites pointer votre serveur web sur le dossier `public/` de l'archive décompressée.
 
 <Tabs groupId="webserver">
   <TabItem value="nginx" label="Nginx" default>
 
   ```nginx
   server {
-      server_name yourdomain.com www.yourdomain.com;
+      server_name votredomaine.fr www.votredomaine.fr;
       root /opt/augias/public;
 
       location / {
-          # try to serve file directly, fallback to index.php
+          # servir le fichier s'il existe, sinon index.php
           try_files $uri /index.php$is_args$args;
       }
 
@@ -81,12 +81,12 @@ Point your webserver at the `public/` directory inside the extracted archive.
 
   ```apacheconf
   <VirtualHost *:80>
-      ServerName yourdomain.com
-      ServerAlias www.yourdomain.com
+      ServerName votredomaine.fr
+      ServerAlias www.votredomaine.fr
 
       DocumentRoot /opt/augias/public
       <Directory /opt/augias/public>
-          # enable the .htaccess rewrites
+          # active les réécritures du .htaccess
           AllowOverride All
           Require all granted
       </Directory>
@@ -100,48 +100,48 @@ Point your webserver at the `public/` directory inside the extracted archive.
 </Tabs>
 
 :::warning
-The exact paths (PHP-FPM socket, log directories) differ by operating system and PHP version. Adjust to match your environment.
+Les chemins exacts (socket PHP-FPM, dossiers de journaux) varient selon le système et la version de PHP. Adaptez-les à votre environnement.
 :::
 
-Open your browser at the URL the webserver is serving and finish setup with the [first-run wizard](../system-installation.md) — it walks you through the database connection, the admin user, and the basic application settings.
+Ouvrez dans votre navigateur l'adresse servie par le serveur web et terminez avec l'[assistant de premier démarrage](../system-installation.md) : il vous guide pour la connexion à la base, le compte administrateur et les réglages de base de l'application.
 
-## 3. Run the background worker
+## 3. Lancer le processus de fond
 
-Augias uses a single background worker for both async messages (emails, webhook dispatch) and scheduled tasks (recurring invoices, reminders, overdue checks). The worker runs `bin/console messenger:consume --all` in a loop.
+Augias utilise un seul processus de fond pour les messages asynchrones (e-mails, webhooks) et les tâches planifiées (factures récurrentes, relances, passage en retard). Il fait tourner `bin/console messenger:consume --all` en boucle.
 
-Follow the [cron job setup guide](./cron-job-setup.md) — it covers systemd, cron, cPanel, Plesk, and Windows Task Scheduler.
+Suivez le guide des [tâches planifiées](./cron-job-setup.md) : il couvre systemd, cron, cPanel, Plesk et le Planificateur de tâches de Windows.
 
 :::warning
-Without the worker running, async features and scheduled tasks won't fire — emails won't send and recurring invoices won't generate.
+Sans ce processus, ni les fonctions asynchrones ni les tâches planifiées ne s'exécutent : les e-mails ne partent pas et les factures récurrentes ne sont pas générées.
 :::
 
-## Useful environment variables
+## Variables d'environnement utiles
 
-The first-run wizard configures everything you need to get started. The variables below are useful when you want to override settings, automate deployment, or configure things the wizard doesn't ask about. Set them in `.env.local` (or your webserver's environment).
+L'assistant de premier démarrage règle tout ce qu'il faut pour commencer. Les variables ci-dessous servent à surcharger des réglages, à automatiser un déploiement, ou à régler ce que l'assistant ne demande pas. Placez-les dans `.env.local` (ou dans l'environnement de votre serveur web).
 
 | Variable | Description |
 | --- | --- |
-| `AUGIAS_ENV` | Application environment. Use `prod` in production. |
-| `AUGIAS_DEBUG` | Enable verbose error pages. Set to `0` in production. |
-| `AUGIAS_APP_SECRET` | Long random string used to sign cookies and CSRF tokens. |
-| `AUGIAS_APPLICATION_URL` | Public URL of the installation, e.g. `https://invoice.example.com`. |
-| `AUGIAS_DATABASE_URL` | Database DSN. The first-run wizard can also write this for you. |
-| `AUGIAS_MAILER_DSN` | Default outbound mail transport (SMTP, Mailgun, SendGrid, etc.), used by every company that has not set its own under `Settings` > `E-mail`. See [Sending emails](../sending-emails.md). |
-| `AUGIAS_MAILER_SENDER` | The `From:` address Augias sends mail from. Overrides the address configured in the UI. |
-| `AUGIAS_LOCALE` | Default locale (e.g. `en`). |
-| `AUGIAS_DEFAULT_CURRENCY` | The currency a new company starts in. `EUR` by default. |
-| `AUGIAS_CURRENCIES` | The currencies offered for companies and clients, comma-separated (e.g. `EUR,CHF,GBP`). Empty by default: every currency is offered. Supplier bills may always be in any currency. |
-| `AUGIAS_TELEMETRY_URL` | Where anonymous usage figures are sent. Empty by default, and Augias ships no collector of its own: leave it empty and nothing is ever sent anywhere. |
-| `AUGIAS_ENABLE_TELEMETRY` | Set to `1` to send those figures to the collector above. Off by default, and it does nothing on its own — both variables have to be set. |
+| `AUGIAS_ENV` | L'environnement de l'application. `prod` en production. |
+| `AUGIAS_DEBUG` | Active les pages d'erreur détaillées. `0` en production. |
+| `AUGIAS_APP_SECRET` | Une longue chaîne aléatoire qui signe les cookies et les jetons CSRF. |
+| `AUGIAS_APPLICATION_URL` | L'adresse publique de l'installation, par exemple `https://factures.example.com`. |
+| `AUGIAS_DATABASE_URL` | Le DSN de la base de données. L'assistant peut aussi l'écrire pour vous. |
+| `AUGIAS_MAILER_DSN` | Le transport d'envoi des e-mails par défaut (SMTP, Mailgun, SendGrid, etc.), utilisé par toute entreprise qui n'a pas réglé le sien dans `Paramètres` > `E-mail`. Voir [Envoyer des e-mails](../sending-emails.md). |
+| `AUGIAS_MAILER_SENDER` | L'adresse `From:` des e-mails d'Augias. Remplace celle réglée dans l'application. |
+| `AUGIAS_LOCALE` | La langue par défaut (par exemple `fr`). |
+| `AUGIAS_DEFAULT_CURRENCY` | La devise d'une nouvelle entreprise. `EUR` par défaut. |
+| `AUGIAS_CURRENCIES` | Les devises proposées aux entreprises et aux clients, séparées par des virgules (par exemple `EUR,CHF,GBP`). Vide par défaut : toutes les devises sont proposées. Les factures fournisseurs acceptent toujours toutes les devises. |
+| `AUGIAS_TELEMETRY_URL` | L'adresse où envoyer des chiffres d'usage anonymes. Vide par défaut, et Augias ne fournit pas de collecteur : laissez-la vide, et rien n'est jamais envoyé nulle part. |
+| `AUGIAS_ENABLE_TELEMETRY` | `1` pour envoyer ces chiffres au collecteur ci-dessus. Désactivée par défaut, et sans effet seule : les deux variables doivent être réglées. |
 
-Telemetry, if you turn it on, reports your version, operating system, PHP version, database engine and install type, plus named lifecycle events such as "an invoice was created". It never carries your data, your clients or your figures.
+La télémétrie, si vous l'activez, transmet votre version, votre système, votre version de PHP, votre moteur de base de données et votre type d'installation, ainsi que des événements nommés comme « une facture a été créée ». Elle ne transporte jamais vos données, vos clients ni vos montants.
 
-Other integrations (Sentry, Meilisearch, Google OAuth) have their own environment variables and are documented on their respective pages.
+Les autres intégrations (Sentry, Meilisearch, connexion Google) ont leurs propres variables, décrites sur leurs pages.
 
-## Updating
+## Mettre à jour
 
-1. Stop the messenger worker: `sudo systemctl stop augias-worker.service` (or comment out the cron entry).
-2. Back up your database and the project directory.
-3. Download the new archive and replace the project files, **keeping** your `.env.local` and any custom changes.
-4. Run `bin/console cache:clear --env=prod` and `bin/console doctrine:migrations:migrate --env=prod --no-interaction`.
-5. Restart the worker.
+1. Arrêtez le processus de fond : `sudo systemctl stop augias-worker.service` (ou commentez la ligne cron).
+2. Sauvegardez votre base de données et le dossier du projet.
+3. Téléchargez la nouvelle archive et remplacez les fichiers du projet, en **gardant** votre `.env.local` et vos modifications.
+4. Lancez `bin/console cache:clear --env=prod` puis `bin/console doctrine:migrations:migrate --env=prod --no-interaction`.
+5. Redémarrez le processus de fond.

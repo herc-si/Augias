@@ -1,65 +1,65 @@
 ---
-title: Google OAuth
-description: Let users sign in to Augias with their Google account.
+title: Connexion avec Google
+description: Permettre aux utilisateurs de se connecter à Augias avec leur compte Google.
 sidebar_position: 3
 ---
 
-# Google OAuth
+# Connexion avec Google
 
-Augias can use Google as an identity provider, letting users sign in or register with a Google account instead of an email and password. Users who already have an Augias account can also link it to Google from their profile page so they can sign in with either method afterwards.
+Augias peut s'appuyer sur Google comme fournisseur d'identité : les utilisateurs se connectent ou s'inscrivent avec leur compte Google au lieu d'un e-mail et d'un mot de passe. Un utilisateur qui a déjà un compte Augias peut aussi le relier à Google depuis son profil, pour se connecter ensuite de l'une ou l'autre façon.
 
-The integration is optional. With no Google client configured, the application uses email/password authentication only.
+L'intégration est facultative. Sans client Google configuré, l'application n'utilise que l'e-mail et le mot de passe.
 
-## What this enables
+## Ce que cela ajoute
 
-When the integration is configured, three new entry points appear in the UI:
+Une fois l'intégration configurée, trois points d'entrée apparaissent :
 
-- A `Login with Google` button on the login page.
-- A `Sign up with Google` button on the registration page (only when public registration is enabled — see [Registration through Google](#registration-through-google)).
-- A `Google Account` row in `/profile` → `Security`, where a signed-in user can link their existing account to a Google identity. Once linked, the row shows a `Linked` badge.
+- un bouton `Se connecter avec Google` sur la page de connexion ;
+- un bouton `S'inscrire avec Google` sur la page d'inscription (seulement si l'inscription publique est ouverte, voir [Inscription par Google](#inscription-par-google)) ;
+- une ligne `Compte Google` dans `/profile` → `Sécurité`, où un utilisateur connecté relie son compte à une identité Google. Une fois relié, la ligne affiche un badge `Lié`.
 
-Behind the scenes, when a user completes the Google flow, Augias does the following in order:
+Quand un utilisateur termine le parcours Google, Augias procède dans cet ordre :
 
-1. If an Augias user already has the returning Google ID, they are signed in as that user.
-2. Otherwise, if an Augias user has the same email address as the Google account, the Google ID is attached to that user and they are signed in.
-3. Otherwise, if a user is already signed in (the profile-page link flow), the Google ID is attached to the current user.
-4. Otherwise, if public registration is enabled, a new user is created using the email and verification status returned by Google.
-5. Otherwise, authentication is rejected with an error message on the login page.
+1. Si un utilisateur Augias a déjà cet identifiant Google, il est connecté sous ce compte.
+2. Sinon, si un utilisateur Augias a la même adresse e-mail que le compte Google, l'identifiant Google lui est rattaché et il est connecté.
+3. Sinon, si un utilisateur est déjà connecté (liaison depuis le profil), l'identifiant Google est rattaché à cet utilisateur.
+4. Sinon, si l'inscription publique est ouverte, un nouvel utilisateur est créé avec l'e-mail et l'état de vérification renvoyés par Google.
+5. Sinon, l'authentification est refusée avec un message d'erreur sur la page de connexion.
 
-## Create a Google OAuth client
+## Créer un client OAuth Google
 
-Before Augias can talk to Google, you need a Google OAuth 2.0 client.
+Augias a besoin d'un client OAuth 2.0 Google pour dialoguer avec Google.
 
-1. Open the [Google Cloud Console](https://console.cloud.google.com/) and select (or create) a project.
-2. Go to `APIs & Services` → `Credentials`.
-3. Configure the [OAuth consent screen](https://support.google.com/cloud/answer/10311615) if you haven't already. Choose `External` for general use, fill in the app name, support email, and developer contact, and add the `email` and `profile` scopes.
-4. Click `Create Credentials` → `OAuth client ID`.
-5. Choose `Web application` as the application type and give it a name (e.g. *Augias production*).
-6. Under `Authorized redirect URIs`, add the Augias OAuth check URL for your installation:
+1. Ouvrez la [Google Cloud Console](https://console.cloud.google.com/) et choisissez (ou créez) un projet.
+2. Allez dans `API et services` → `Identifiants`.
+3. Configurez l'[écran de consentement OAuth](https://support.google.com/cloud/answer/10311615) si ce n'est pas déjà fait. Choisissez `Externe` pour un usage général, renseignez le nom de l'application, l'e-mail d'assistance et le contact du développeur, et ajoutez les portées `email` et `profile`.
+4. Cliquez sur `Créer des identifiants` → `ID client OAuth`.
+5. Choisissez `Application Web` comme type d'application et donnez-lui un nom (par exemple *Augias production*).
+6. Sous `URI de redirection autorisés`, ajoutez l'adresse de retour OAuth de votre installation :
 
    ```text
-   https://your-augias-domain.example/oauth/check/google
+   https://votre-domaine-augias.example/oauth/check/google
    ```
 
-   The path is always `/oauth/check/google`. Add one entry per environment (production, staging, local development).
-7. Click `Create` and copy the generated `Client ID` and `Client secret`.
+   Le chemin est toujours `/oauth/check/google`. Ajoutez une entrée par environnement (production, préproduction, développement local).
+7. Cliquez sur `Créer` et copiez l'`ID client` et le `Code secret du client` générés.
 
 :::warning
-The redirect URI must match exactly — including the scheme (`http`/`https`), host, and trailing path. Mismatches show up as a `redirect_uri_mismatch` error from Google after the user clicks the sign-in button.
+L'URI de redirection doit correspondre exactement, protocole (`http`/`https`), hôte et chemin compris. Sinon, Google renvoie une erreur `redirect_uri_mismatch` quand l'utilisateur clique sur le bouton de connexion.
 :::
 
-## Configure Augias
+## Configurer Augias
 
-Set two environment variables on the Augias instance, then restart the application:
+Réglez deux variables d'environnement sur l'instance, puis redémarrez l'application :
 
 | Variable | Description |
 | --- | --- |
-| `AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_ID` | The `Client ID` from the Google Cloud Console. |
-| `AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_SECRET` | The `Client secret` from the Google Cloud Console. |
+| `AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_ID` | L'ID client donné par la Google Cloud Console. |
+| `AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_SECRET` | Le code secret du client donné par la Google Cloud Console. |
 
-Both variables must be set for the integration to activate. Leaving either empty disables the Google buttons everywhere in the UI.
+Les deux doivent être renseignées pour activer l'intégration. Si l'une est vide, les boutons Google disparaissent partout.
 
-For Docker:
+Avec Docker :
 
 ```bash
 docker run \
@@ -68,53 +68,53 @@ docker run \
   augias/augias
 ```
 
-For the distribution package and source installs, add the values to `.env` at the root of the application:
+Pour le paquet de distribution et les installations depuis les sources, ajoutez les valeurs au fichier `.env` à la racine de l'application :
 
 ```ini title=".env"
 AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_ID=1234567890-abcdef.apps.googleusercontent.com
-AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_SECRET=GOCSPX-your-client-secret
+AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_SECRET=GOCSPX-votre-secret
 ```
 
 :::tip
-If the Google buttons don't appear after setting the variables, clear the application cache: `bin/console cache:clear`.
+Si les boutons Google n'apparaissent pas après avoir réglé les variables, videz le cache de l'application : `bin/console cache:clear`.
 :::
 
-## Signing in with Google
+## Se connecter avec Google
 
-On the login page, click `Login with Google`. The browser is redirected to Google, the user authorizes the Augias application, and Google redirects back to `/oauth/check/google`. Augias signs the user in (matching by Google ID first, then by email) and redirects to the company selector.
+Sur la page de connexion, cliquez sur `Se connecter avec Google`. Le navigateur part chez Google, l'utilisateur autorise Augias, et Google le renvoie vers `/oauth/check/google`. Augias connecte l'utilisateur (d'abord par l'identifiant Google, puis par l'e-mail) et l'envoie au choix de l'entreprise.
 
-Already-existing accounts are matched on email automatically — a user who originally signed up with an email/password and later clicks `Login with Google` will end up signed into their existing account, with the Google ID stored for future logins.
+Les comptes existants sont retrouvés par leur e-mail : un utilisateur inscrit avec e-mail et mot de passe qui clique plus tard sur `Se connecter avec Google` arrive dans son compte habituel, et l'identifiant Google est gardé pour les connexions suivantes.
 
-## Registration through Google
+## Inscription par Google
 
-When public registration is enabled on your instance, the registration page shows a `Sign up with Google` button alongside the email/password form. Clicking it follows the same Google flow; if no Augias user matches the returning email, a new user is created with:
+Quand l'inscription publique est ouverte, la page d'inscription affiche un bouton `S'inscrire avec Google` à côté du formulaire. Il suit le même parcours ; si aucun utilisateur Augias ne correspond à l'e-mail renvoyé, un nouvel utilisateur est créé avec :
 
-- The email address returned by Google.
-- The Google-reported email verification status (skipping the Augias email verification step when Google has already verified the address).
-- A randomly generated password that is never shown — the user can sign in only via Google until they set a password through the password reset flow.
+- l'adresse e-mail renvoyée par Google ;
+- l'état de vérification de l'e-mail selon Google (la vérification Augias est sautée si Google a déjà vérifié l'adresse) ;
+- un mot de passe aléatoire jamais affiché : l'utilisateur ne se connecte que par Google jusqu'à ce qu'il choisisse un mot de passe par la réinitialisation.
 
-If public registration is disabled, the `Sign up with Google` button is hidden, and Google sign-in is rejected for any email that doesn't already have an Augias account.
+Si l'inscription publique est fermée, le bouton `S'inscrire avec Google` est masqué, et la connexion Google est refusée pour tout e-mail qui n'a pas déjà de compte Augias.
 
-## Linking an existing account
+## Relier un compte existant
 
-Users who already signed up with email/password can link their account to Google from the profile page. While signed in, navigate to `/profile`, scroll to the `Security` section, and click `Sign in with Google` on the `Google Account` row. After completing the Google flow, the row updates to show a `Linked` badge, and the user can sign in with either Google or their original password from then on.
+Un utilisateur inscrit avec e-mail et mot de passe peut relier son compte à Google depuis son profil. Connecté, ouvrez `/profile`, descendez jusqu'à `Sécurité` et cliquez sur `Se connecter avec Google` sur la ligne `Compte Google`. Au retour de Google, la ligne affiche le badge `Lié`, et l'utilisateur peut se connecter par Google ou avec son mot de passe.
 
-![The Security section of the profile page, showing the Google Account row with a Sign in with Google button](/img/integrations/profile-google-link.png)
+![La partie Sécurité du profil, avec la ligne Compte Google et son bouton](/img/integrations/profile-google-link.png)
 
 :::info
-An Augias account can be linked to one Google account at a time. If a user wants to switch the linked Google identity, they need to unlink the current one through database access — there is currently no in-app unlink button.
+Un compte Augias ne se relie qu'à un compte Google à la fois. Pour changer de compte Google, il faut aujourd'hui délier l'actuel directement en base de données : aucun bouton ne le fait dans l'application.
 :::
 
-## Troubleshooting
+## Dépannage
 
-### `redirect_uri_mismatch` from Google
+### `redirect_uri_mismatch` renvoyé par Google
 
-The redirect URI configured in the Google Cloud Console does not exactly match the URL Augias is calling back on. Compare scheme, host, and path — the path must be `/oauth/check/google`, and the scheme and host must match the public URL of your installation.
+L'URI de redirection configurée dans la Google Cloud Console ne correspond pas exactement à l'adresse de retour d'Augias. Comparez le protocole, l'hôte et le chemin : le chemin doit être `/oauth/check/google`, le protocole et l'hôte ceux de l'adresse publique de votre installation.
 
-### Google buttons don't appear on the login or registration page
+### Les boutons Google n'apparaissent pas sur la page de connexion ou d'inscription
 
-Both `AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_ID` and `AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_SECRET` must be set and non-empty. After changing either variable, clear the application cache with `bin/console cache:clear` and reload the page.
+`AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_ID` et `AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_SECRET` doivent toutes deux être renseignées et non vides. Après un changement, videz le cache avec `bin/console cache:clear` et rechargez la page.
 
-### Authentication is rejected after the Google flow
+### L'authentification est refusée au retour de Google
 
-Public registration is disabled and the Google account's email is not associated with an existing Augias user. Either enable registration so the user can be created automatically, or have an admin create the user first with the matching email address.
+L'inscription publique est fermée et l'e-mail du compte Google ne correspond à aucun utilisateur Augias. Ouvrez l'inscription pour que l'utilisateur soit créé, ou faites créer l'utilisateur avec la même adresse e-mail par un administrateur.

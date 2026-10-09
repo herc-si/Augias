@@ -1,87 +1,88 @@
 ---
-title: Setting up accounting
-description: Choose your tax regime so Augias can keep your books and work out what you owe.
+title: Mettre en place la comptabilité
+description: Choisir votre régime fiscal pour qu'Augias tienne vos livres et calcule ce que vous devez.
 sidebar_position: 1
 ---
 
-# Setting up accounting
+# Mettre en place la comptabilité
 
-Accounting is off until you pick a tax regime. The regime decides which books you have to keep, which turnover limits apply to you, and how your contributions are worked out — so nothing else in this section does anything until it is set.
+La comptabilité est inactive tant que vous n'avez pas choisi de régime fiscal. Le régime fixe les livres à tenir, les seuils de chiffre d'affaires qui vous concernent et le calcul de vos cotisations : rien d'autre dans cette section ne fonctionne avant ce choix.
 
-Click `Accounting` in the sidebar. Until a regime is chosen the page shows `Accounting is not set up yet` and a `Go to settings` button.
+Cliquez sur `Comptabilité` dans le menu latéral. Tant qu'aucun régime n'est choisi, la page affiche `La comptabilité n'est pas encore configurée` et un bouton `Aller aux réglages`.
 
-## Choose a regime
+## Choisir un régime
 
-In the sidebar, expand `System`, click `Settings`, and open the `Accounting` tab.
+Dans le menu latéral, dépliez `Système`, cliquez sur `Paramètres` et ouvrez l'onglet `Comptabilité`.
 
-`Tax regime` is the only field that matters to begin with. One regime ships today:
+Au départ, seul le `Régime fiscal` compte. Deux régimes sont proposés :
 
-- `France — Micro-entreprise` — cash-basis bookkeeping: a revenue book, a purchase register for resale activities, and turnover declared to URSSAF.
+- `France — Micro-entreprise` : comptabilité de trésorerie, avec un livre des recettes, un registre des achats pour les activités de revente, et le chiffre d'affaires déclaré à l'URSSAF.
+- `France — Réel normal` : comptabilité de trésorerie avec TVA, avec un livre des recettes, un registre des achats, la TVA collectée sur les ventes et déduite sur les achats, déclarée sur la CA3. Les cotisations de ce régime portent sur le résultat, qu'Augias ne calcule pas : seule la TVA y est établie.
 
-The remaining fields have working defaults, so you can save after picking a regime and come back to the rest.
+Les autres champs ont des valeurs par défaut qui fonctionnent : vous pouvez enregistrer dès le régime choisi et revenir sur le reste plus tard.
 
-## When a regime is required
+## Quand un régime est obligatoire
 
-If you charge VAT (`Not liable for VAT` is unticked) and you invoice private customers, you have to choose a regime before you can record their payments.
+Si vous facturez la TVA (`Non assujetti à la TVA` décoché) et que vous avez des clients particuliers, vous devez choisir un régime avant de pouvoir enregistrer leurs paiements.
 
-French law treats any software that records payments outside the books as a cash register, and requires cash registers to be certified (article 286 of the French tax code). Augias is not a certified cash register. Once your books are kept in Augias, every payment you record goes into the revenue book straight away, without anyone having to do it by hand, and the obligation no longer applies.
+La loi française considère tout logiciel qui enregistre des paiements hors des livres comme un logiciel de caisse, et impose que les logiciels de caisse soient certifiés (article 286 du Code général des impôts). Augias n'est pas un logiciel de caisse certifié. Dès que vos livres sont tenus dans Augias, chaque paiement enregistré entre aussitôt dans le livre des recettes, sans intervention de quiconque, et l'obligation ne s'applique plus.
 
-Until a regime is chosen:
+Tant qu'aucun régime n'est choisi :
 
-- a client saved with no company name, which marks them as a private customer, is refused;
-- recording a payment from an existing private customer is refused, on the payment screen, through the API and through MCP;
-- the `Attention Required` card on the dashboard shows `Books to keep`.
+- un client enregistré sans nom d'entreprise, donc particulier, est refusé ;
+- l'enregistrement d'un paiement d'un client particulier existant est refusé, à l'écran de paiement, par l'API et par MCP ;
+- la carte `Nécessite votre attention` du tableau de bord affiche `Comptabilité à tenir`.
 
-Customers paying online are not turned away.
+Les clients qui paient en ligne ne sont pas bloqués.
 
 :::info
-This does not apply if you are not liable for VAT (franchise en base), or if all your customers are businesses.
+Rien de tout cela ne s'applique si vous n'êtes pas assujetti à la TVA (franchise en base), ou si tous vos clients sont des professionnels.
 :::
 
-## Fields on the Accounting tab
+## Les champs de l'onglet Comptabilité
 
-| Field | What it does |
-|---|---|
-| `Tax regime` | Decides which books you keep, which limits apply and how your contributions are worked out. |
-| `Main activity` | Used as the default for entries created automatically: `Sale of goods`, `Services (BIC)` or `Services (BNC)`. You can change it on any individual entry. |
-| `Start of activity` | Used to scale a first, partial year's limits down pro rata, and to work out how long ACRE runs. |
-| `Declaration frequency` | `Monthly` or `Quarterly`. Also the rhythm your books are closed on. |
-| `Not liable for VAT` | Suppresses VAT on invoices and quotes, and prints the legal wording below on them. |
-| `VAT exemption wording` | Printed on every invoice and quote while you are not liable for VAT. |
-| `Flat-rate income tax option` | Pay income tax as a percentage of turnover alongside your contributions, instead of on your annual return. |
-| `ACRE relief` | Reduces the social contribution rate for the first months of activity. |
-| `Pension fund` | `SSI` or `CIPAV`. The two charge different rates on the same BNC turnover. |
+| Champ | Rôle |
+| --- | --- |
+| `Régime fiscal` | Fixe les livres tenus, les seuils applicables et le calcul des cotisations. |
+| `Activité principale` | La valeur par défaut des écritures créées automatiquement : `Vente de marchandises`, `Prestations de services (BIC)` ou `Prestations de services (BNC)`. Modifiable sur chaque écriture. |
+| `Début d'activité` | Sert à proratiser les seuils d'une première année incomplète et à calculer la durée de l'ACRE. |
+| `Périodicité de déclaration` | `Mensuelle` ou `Trimestrielle`. C'est aussi le rythme de clôture de vos livres. |
+| `Non assujetti à la TVA` | Supprime la TVA des factures et des devis, et y imprime la mention ci-dessous. |
+| `Mention d'exonération de TVA` | Imprimée sur chaque facture et chaque devis tant que vous n'êtes pas assujetti à la TVA. |
+| `Option pour le versement libératoire` | Payer l'impôt sur le revenu en pourcentage du chiffre d'affaires avec vos cotisations, plutôt que sur votre déclaration annuelle. |
+| `Exonération ACRE` | Réduit le taux des cotisations sociales les premiers mois d'activité. |
+| `Caisse de retraite` | `SSI` ou `CIPAV`. Les deux n'appliquent pas le même taux au même chiffre d'affaires BNC. |
 
 :::info
-`Main activity` is a default, not a constraint. A business that sells goods *and* bills for services records the activity per entry, and each is measured against its own ceiling.
+L'`Activité principale` est une valeur par défaut, pas une contrainte. Une entreprise qui vend des marchandises *et* facture des prestations indique l'activité écriture par écriture, et chacune est comparée à son propre plafond.
 :::
 
 :::warning
-`ACRE relief` needs a `Start of activity` date to work out how long the relief runs. Leave the date blank and the relief cannot be applied.
+L'`Exonération ACRE` a besoin de la date de `Début d'activité` pour calculer sa durée. Sans cette date, l'exonération ne peut pas s'appliquer.
 :::
 
-## What changes once a regime is set
+## Ce qui change une fois le régime choisi
 
-- `Accounting` in the sidebar shows your turnover for the year, your books, and the period you are currently in.
-- Every payment you record from now on writes itself into the right book. See [Your books](./your-books.md).
-- Turnover is compared with the limits of your regime once a day, and you are told the first time you approach or pass one. See [Declaring your turnover](./declaring-your-turnover.md).
+- `Comptabilité` dans le menu latéral affiche votre chiffre d'affaires de l'année, vos livres et la période en cours.
+- Chaque paiement enregistré à partir de là s'écrit seul dans le bon livre. Voir [Vos livres](./your-books.md).
+- Le chiffre d'affaires est comparé chaque jour aux seuils de votre régime, et vous êtes prévenu la première fois que vous en approchez ou que vous en dépassez un. Voir [Déclarer votre chiffre d'affaires](./declaring-your-turnover.md).
 
-## Taking in documents from before
+## Reprendre les documents antérieurs
 
-Invoices, credit notes, payments and supplier invoices recorded in Augias *before* you set a regime are not in your books yet. While some from the current financial year are missing, the `Accounting` page says so and offers `Review and take in`. You can also open the page at any time with `Take in earlier documents`, at the bottom of the regime card.
+Les factures, avoirs, paiements et factures fournisseurs enregistrés dans Augias *avant* le choix du régime ne sont pas encore dans vos livres. Tant qu'il en manque pour l'exercice en cours, la page `Comptabilité` le signale et propose `Vérifier et reprendre`. Vous pouvez aussi ouvrir cette page à tout moment avec `Reprendre l'historique`, en bas du cadre du régime.
 
-1. Pick the day to start from. It defaults to the first day of your current financial year. It cannot be on or before the date your books are locked to.
-2. Click `Show` to list the entries that would be added, with their date, book, document and amount.
-3. Click `Add these entries` to write them into your books.
+1. Choisissez le jour à partir duquel reprendre. Par défaut, le premier jour de l'exercice en cours. Il ne peut pas être antérieur ou égal à la date de verrouillage de vos livres.
+2. Cliquez sur `Afficher` pour lister les écritures qui seraient ajoutées, avec leur date, leur livre, leur document et leur montant.
+3. Cliquez sur le bouton d'ajout pour les écrire dans vos livres.
 
-Each entry goes into the period its date falls in, as if it had been written on the day. Anything already in your books is left alone, so running it twice adds nothing.
+Chaque écriture va dans la période de sa date, comme si elle avait été écrite le jour même. Ce qui est déjà dans vos livres n'est pas touché : relancer la reprise n'ajoute rien.
 
 :::note
-This only covers what was recorded in Augias. Money received outside it — before you started using Augias, or never entered here — still has to be added by hand: see [Adding an entry by hand](./your-books.md#adding-an-entry-by-hand).
+Seul ce qui a été enregistré dans Augias est repris. L'argent reçu en dehors (avant que vous utilisiez Augias, ou jamais saisi ici) doit encore être ajouté à la main : voir [Ajouter une écriture à la main](./your-books.md#ajouter-une-écriture-à-la-main).
 :::
 
-## Related
+## Voir aussi
 
-- [Your books](./your-books.md)
-- [Closing a period](./closing-a-period.md)
-- [Setting up tax rates](../taxes/tax-rates.md)
+- [Vos livres](./your-books.md)
+- [Clôturer une période](./closing-a-period.md)
+- [Régler les taux de taxe](../taxes/tax-rates.md)

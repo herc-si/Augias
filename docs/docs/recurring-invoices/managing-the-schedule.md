@@ -1,52 +1,52 @@
 ---
-title: Managing the schedule
-description: Pause, resume, cancel, archive, or edit a recurring invoice.
+title: Gérer le calendrier
+description: Mettre en pause, reprendre, annuler, archiver ou modifier une facture récurrente.
 sidebar_position: 3
 ---
 
-# Managing the schedule
+# Gérer le calendrier
 
-Once a recurring invoice exists, you control its lifecycle from the view page — the green button at the top right is the primary action, and the `⋮` `More Actions` dropdown next to it holds the rest.
+Une fois la facture récurrente créée, son cycle de vie se pilote depuis sa page : le bouton principal, en haut à droite, porte l'action principale, et le menu `Plus d'actions` à côté contient les autres.
 
-![A recurring invoice's view page with the actions dropdown open](/img/recurring-invoices/recurring-invoice-actions-menu.png)
+![La page d'une facture récurrente avec le menu des actions ouvert](/img/recurring-invoices/recurring-invoice-actions-menu.png)
 
-## States
+## États
 
-A recurring invoice moves through these states:
+Une facture récurrente passe par ces états :
 
-- **`Draft`** — saved but not generating invoices yet. Editable.
-- **`Active`** — the scheduler will generate invoices on matching dates.
-- **`Paused`** — generation is temporarily stopped. The schedule is preserved and can be resumed.
-- **`Complete`** — the schedule reached its end date or occurrence count. Augias sets this automatically; see [Understanding the schedule](./understanding-the-schedule.md#end-conditions).
-- **`Cancelled`** — manually stopped. No more invoices will be generated.
-- **`Archived`** — hidden from the default list views. Archive when you no longer want to see a recurring invoice but don't want to delete its history.
+- **`Brouillon`** : enregistrée, mais ne génère pas encore de factures. Modifiable.
+- **Active** : le planificateur génère les factures aux dates prévues.
+- **`En pause`** : la génération est suspendue. Le calendrier est conservé et peut reprendre.
+- **`Terminé`** : le calendrier a atteint sa date de fin ou son nombre d'occurrences. Augias pose cet état seul ; voir [Comprendre le calendrier](./understanding-the-schedule.md#fin-du-calendrier).
+- **Annulée** : arrêtée à la main. Plus aucune facture ne sera générée.
+- **Archivée** : masquée des listes par défaut. Archivez quand vous ne voulez plus voir une facture récurrente sans perdre son historique.
 
-## Activate a draft
+## Activer un brouillon
 
-A draft recurring invoice has a green `Activate` button at the top right. Click it to move the recurring invoice from `Draft` to `Active`. The scheduler picks it up on its next run.
+Un brouillon a un bouton `Activer` en haut à droite. Cliquez dessus pour le faire passer de brouillon à active. Le planificateur la prend en compte à son prochain passage.
 
-## Pause and resume
+## Mettre en pause et reprendre
 
-While a recurring invoice is `Active`, the `More Actions` dropdown includes a `Pause` option. Pausing stops invoice generation immediately; the schedule, line items, and end condition are kept exactly as they were.
+Tant que la facture récurrente est active, le menu `Plus d'actions` propose `Mettre en pause`. La génération s'arrête aussitôt ; le calendrier, les lignes et la condition de fin restent tels quels.
 
-![A paused recurring invoice with the Resume button](/img/recurring-invoices/recurring-invoice-paused.png)
+![Une facture récurrente en pause avec le bouton Reprendre](/img/recurring-invoices/recurring-invoice-paused.png)
 
-While the recurring invoice is `Paused`, the green button at the top right changes to `Resume`. Clicking it puts the schedule back in `Active`. Generation picks up from the next matching date — there's no catch-up for missed dates while paused.
+En pause, le bouton principal devient `Reprendre`. Il remet le calendrier en route. La génération reprend à la prochaine date prévue : les dates manquées pendant la pause ne sont pas rattrapées.
 
-## Cancel
+## Annuler
 
-Cancelling permanently stops invoice generation. From `More Actions`, click `Cancel`. The recurring invoice moves to `Cancelled`. Already-generated invoices are not affected.
+L'annulation arrête définitivement la génération. Dans `Plus d'actions`, cliquez sur `Annuler`. Les factures déjà générées ne sont pas touchées.
 
-Use `Cancel` (rather than `Pause`) when you know the schedule should not continue — for example, the client has ended their subscription.
+Préférez `Annuler` à `Mettre en pause` quand le calendrier ne doit pas reprendre, par exemple quand le client a mis fin à son abonnement.
 
-## Archive
+## Archiver
 
-`Archive` (under `More Actions`) hides the recurring invoice from the default `Active` and `Completed` tabs on the list page. Archived recurring invoices stay in the system and appear under the `Archived` tab; their generated invoices are unaffected.
+`Archiver` (dans `Plus d'actions`) retire la facture récurrente des onglets `Actives` et `Terminées` de la liste. Elle reste dans le système, sous l'onglet `Archivées`, et ses factures générées ne sont pas touchées.
 
-## Edit
+## Modifier
 
-While a recurring invoice is `Draft`, `Active`, or `Paused`, click `Edit` from `More Actions` to change line items, the schedule, the start date, or the end condition. Saving an edit moves the recurring invoice back to `Draft` — you'll need to `Activate` it again afterward, which prevents an in-flight edit from accidentally generating an unintended invoice.
+En brouillon, active ou en pause, `Modifier` (dans `Plus d'actions`) permet de changer les lignes, le calendrier, la date de début ou la condition de fin. Enregistrer une modification repasse la facture récurrente en brouillon : il faut ensuite l'`Activer` de nouveau, ce qui évite qu'une modification en cours génère une facture par erreur.
 
-## Clone
+## Dupliquer
 
-`Clone` (under `More Actions`) creates a new recurring invoice pre-filled from the current one. Useful when you have a working template and want to set up a near-identical schedule for another client.
+`Dupliquer` (dans `Plus d'actions`) crée une nouvelle facture récurrente remplie à partir de celle-ci. Pratique pour reprendre un modèle qui fonctionne pour un autre client.
