@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Augias project.
  *
- * (c) HERC SI <opensource@herc-si.fr>
+ * (c) Pierre du Plessis <open-source@solidworx.co>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
@@ -20,9 +20,9 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
-use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Action\CreditNote\Send;
 use Augias\InvoiceBundle\Email\CreditNoteEmail;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\CreditReason;
