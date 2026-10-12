@@ -16,6 +16,7 @@ namespace Augias\ElectronicInvoicingBundle\Provider;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
 use Augias\ElectronicInvoicingBundle\Form\Type\Provider\TestProviderConfigType;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Brick\Math\BigInteger;
 use DateTimeImmutable;
@@ -44,7 +45,7 @@ final class TestProvider implements ElectronicInvoiceProviderInterface, Electron
     /**
      * @param array{reference_prefix?: string, simulate_failure?: bool} $config
      */
-    public function send(Invoice $invoice, array $config): ElectronicInvoiceSubmissionResult
+    public function send(Invoice | CreditNote $invoice, array $config): ElectronicInvoiceSubmissionResult
     {
         if ($config['simulate_failure'] ?? false) {
             return ElectronicInvoiceSubmissionResult::failure('einvoicing.provider.test.simulated_failure');

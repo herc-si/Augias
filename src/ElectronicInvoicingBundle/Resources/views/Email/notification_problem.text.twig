@@ -16,7 +16,7 @@
 
 {{ 'einvoicing.notification_problem.company'|trans({}, 'email') }}: {{ company.name }}
 {% if invoice -%}
-{{ 'einvoicing.notification_problem.invoice_number'|trans({}, 'email') }}: {{ invoice_number(invoice) ?? invoice.id }}
+{{ 'einvoicing.notification_problem.invoice_number'|trans({}, 'email') }}: {{ (number is defined and number ? number : (invoice_number(invoice) ?? invoice.id)) }}
 {{ 'einvoicing.notification_problem.client'|trans({}, 'email') }}: {{ invoice.client.name }}
 {% endif -%}
 {% if detail -%}
@@ -25,7 +25,7 @@
 
 {{ '-'|repeat(60) }}
 {% if invoice -%}
-{{ 'einvoicing.notification_problem.view_invoice'|trans({}, 'email') }}: {{ url('_invoices_view', {'id': invoice.id}) }}
+{{ 'einvoicing.notification_problem.view_invoice'|trans({}, 'email') }}: {{ (creditNote is defined and creditNote is not null ? url('_credit_notes_view', {'id': creditNote.id}) : url('_invoices_view', {'id': invoice.id})) }}
 {% else -%}
 {{ 'einvoicing.notification_problem.view_settings'|trans({}, 'email') }}: {{ url('_einvoicing_providers') }}
 {% endif -%}

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Manager;
 
+use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Entity\Company;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
@@ -26,6 +27,8 @@ use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdpProvider;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceSubmissionRepository;
+use Augias\InvoiceBundle\Entity\CreditNote;
+use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\NotificationBundle\Notification\NotificationManager;
 use DateTimeImmutable;
 use DateTimeZone;
@@ -238,8 +241,7 @@ final readonly class SuperPdpStatusRefresher
         try {
             $this->notificationManager->sendNotification(
                 new ElectronicInvoiceDisputedNotification([
-                    'invoice' => $submission->getInvoice(),
-                    'client' => $submission->getInvoice()->getClient(),
+                    ...$this->documentContext($submission),
                     'reason' => $reason?->translationKey() ?? $code,
                     'note' => $note,
                 ])
@@ -263,8 +265,7 @@ final readonly class SuperPdpStatusRefresher
         try {
             $this->notificationManager->sendNotification(
                 new ElectronicInvoiceRejectedNotification([
-                    'invoice' => $submission->getInvoice(),
-                    'client' => $submission->getInvoice()->getClient(),
+                    ...$this->documentContext($submission),
                     'submission' => $submission,
                     'statusCode' => $statusCode,
                 ])
@@ -275,5 +276,23 @@ final readonly class SuperPdpStatusRefresher
                 'exception' => $e->getMessage(),
             ]);
         }
+    }
+
+    /**
+     * What the notification e-mails name: the document sent, invoice or
+     * credit note, its number, its client, and which page to open.
+     *
+     * @return array{invoice: Invoice|CreditNote, client: ?Client, number: string, creditNote: ?CreditNote}
+     */
+    private function documentContext(ElectronicInvoiceSubmission $submission): array
+    {
+        $document = $submission->getDocument();
+
+        return [
+            'invoice' => $document,
+            'client' => $document->getClient(),
+            'number' => $submission->getDocumentNumber(),
+            'creditNote' => $document instanceof CreditNote ? $document : null,
+        ];
     }
 }

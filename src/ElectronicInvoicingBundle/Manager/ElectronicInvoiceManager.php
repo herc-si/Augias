@@ -18,6 +18,7 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Form\Type\TaxIdentifierType;
@@ -51,7 +52,7 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
     ) {
     }
 
-    public function isEligible(Invoice $invoice): bool
+    public function isEligible(Invoice | CreditNote $invoice): bool
     {
         if ($this->systemConfig->get(SystemConfig::ELECTRONIC_INVOICING_CONFIG_PATH) !== '1') {
             return false;
@@ -64,13 +65,13 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
         return $this->clientHasFrenchCompanyNumber($invoice);
     }
 
-    public function send(Invoice $invoice): ElectronicInvoiceSubmission
+    public function send(Invoice | CreditNote $invoice): ElectronicInvoiceSubmission
     {
         $activeSetting = $this->settingRepository->findActive();
 
-        if ($invoice->hasOnlyDisbursements()) {
-            $submission = new ElectronicInvoiceSubmission();
-            $submission->setInvoice($invoice)
+        if ($this->hasOnlyDisbursements($invoice)) {
+            $submission = $this->submissionFor($invoice);
+            $submission
                 ->setProvider($activeSetting instanceof ElectronicInvoiceProviderSetting ? $activeSetting->getProvider() : '')
                 ->setSuccess(false)
                 ->setMessage(self::ONLY_DISBURSEMENTS);
@@ -83,8 +84,8 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
 
         $result = $this->registry->send($invoice);
 
-        $submission = new ElectronicInvoiceSubmission();
-        $submission->setInvoice($invoice)
+        $submission = $this->submissionFor($invoice);
+        $submission
             ->setProvider($activeSetting instanceof ElectronicInvoiceProviderSetting ? $activeSetting->getProvider() : '')
             ->setSuccess($result->success)
             ->setExternalReference($result->externalReference)
@@ -96,7 +97,7 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
         // Sent from cron for a recurring invoice, or for a SaaS subscription,
         // nobody is there to see the page say so.
         if (! $result->success) {
-            $this->alerts->raise($invoice->getCompany(), ElectronicInvoicingProblem::SendFailed, $invoice, $result->message);
+            $this->alerts->raise($invoice->getCompany(), ElectronicInvoicingProblem::SendFailed, $invoice instanceof Invoice ? $invoice : null, $result->message);
         }
 
         return $submission;
@@ -107,7 +108,33 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
      * identifies the buyer by its SIREN anyway. A client with neither is a
      * private individual — reported, not invoiced electronically.
      */
-    private function clientHasFrenchCompanyNumber(Invoice $invoice): bool
+    private function submissionFor(Invoice | CreditNote $document): ElectronicInvoiceSubmission
+    {
+        $submission = new ElectronicInvoiceSubmission();
+
+        return $document instanceof Invoice ? $submission->setInvoice($document) : $submission->setCreditNote($document);
+    }
+
+    private function hasOnlyDisbursements(Invoice | CreditNote $document): bool
+    {
+        if ($document instanceof Invoice) {
+            return $document->hasOnlyDisbursements();
+        }
+
+        if ($document->getLines()->isEmpty()) {
+            return false;
+        }
+
+        foreach ($document->getLines() as $line) {
+            if (! $line->isDisbursement() && ! $line->isNote()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private function clientHasFrenchCompanyNumber(Invoice | CreditNote $invoice): bool
     {
         $client = $invoice->getClient();
 

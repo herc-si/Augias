@@ -15,6 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Provider;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
@@ -46,12 +47,12 @@ interface ElectronicInvoiceProviderInterface
     public function getForm(): string;
 
     /**
-     * Generate and transmit the electronic invoice for $invoice using this
+     * Generate and transmit the electronic invoice — or credit note — for $invoice using this
      * provider's own $config (ElectronicInvoiceProviderSetting::$settings).
      *
      * @param array<string, mixed> $config
      */
-    public function send(Invoice $invoice, array $config): ElectronicInvoiceSubmissionResult;
+    public function send(Invoice | CreditNote $invoice, array $config): ElectronicInvoiceSubmissionResult;
 
     /**
      * Classify $submission's provider-reported outcome (its `success` flag and,

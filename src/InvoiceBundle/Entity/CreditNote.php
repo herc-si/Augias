@@ -18,6 +18,7 @@ use Augias\ClientBundle\Entity\Contact;
 use Augias\CoreBundle\Enum\RecordKind;
 use Augias\CoreBundle\Journal\Journalled;
 use Augias\CoreBundle\Traits\Entity\TimeStampable;
+use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\CreditReason;
 use Augias\InvoiceBundle\Repository\CreditNoteRepository;
@@ -154,6 +155,16 @@ class CreditNote extends BaseInvoice implements Stringable, Journalled
     #[ORM\OneToMany(targetEntity: InvoiceTax::class, mappedBy: 'creditNote', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $invoiceTaxes;
 
+    /**
+     * Sent to a business client through the electronic invoicing platform,
+     * like an invoice, latest first.
+     *
+     * @var Collection<int, ElectronicInvoiceSubmission>
+     */
+    #[ORM\OneToMany(targetEntity: ElectronicInvoiceSubmission::class, mappedBy: 'creditNote', cascade: ['persist'], orphanRemoval: true)]
+    #[ORM\OrderBy(['created' => 'DESC'])]
+    private Collection $electronicInvoiceSubmissions;
+
     public function __construct()
     {
         parent::__construct();
@@ -162,6 +173,7 @@ class CreditNote extends BaseInvoice implements Stringable, Journalled
         $this->users = new ArrayCollection();
         $this->invoiceTaxes = new ArrayCollection();
         $this->allocations = new ArrayCollection();
+        $this->electronicInvoiceSubmissions = new ArrayCollection();
         $this->creditNoteDate = CarbonImmutable::now();
         $this->setUuid(Uuid::v7());
     }
@@ -177,6 +189,14 @@ class CreditNote extends BaseInvoice implements Stringable, Journalled
     public function getAllocations(): Collection
     {
         return $this->allocations;
+    }
+
+    /**
+     * @return Collection<int, ElectronicInvoiceSubmission>
+     */
+    public function getElectronicInvoiceSubmissions(): Collection
+    {
+        return $this->electronicInvoiceSubmissions;
     }
 
     public function addAllocation(CreditNoteAllocation $allocation): self

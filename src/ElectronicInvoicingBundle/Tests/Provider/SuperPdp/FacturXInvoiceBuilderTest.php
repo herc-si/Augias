@@ -21,8 +21,11 @@ use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\FacturXInvoiceBuilder;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use Augias\InvoiceBundle\Entity\CreditNote;
+use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
+use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\InvoiceTax;
@@ -504,6 +507,77 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         self::getContainer()->get(SystemConfig::class)->set(CompanyBankDetails::BIC, 'AGRIFRPP');
 
         self::assertStringNotContainsString('SpecifiedTradeSettlementPaymentMeans', $this->xmlFor(SupplyType::Services));
+    }
+
+    /**
+     * A credit note goes out as type 381, with positive amounts, naming the
+     * invoice it corrects (BG-3) and no transfer to the seller's account.
+     */
+    public function testACreditNoteIsType381AndNamesTheInvoiceItCorrects(): void
+    {
+        TaxIdentifierFactory::createOne(['company' => $this->company, 'client' => null, 'label' => 'SIRET', 'value' => '11111111100011']);
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+        TaxIdentifierFactory::createOne(['company' => $this->company, 'client' => $client, 'label' => 'SIRET', 'value' => '22222222200022']);
+
+        $invoice = new Invoice();
+        $invoice->setCompany($this->company);
+        $invoice->setClient($client);
+        $invoice->setInvoiceId('FACT-0042');
+        $invoice->setInvoiceDate(new DateTimeImmutable('2026-10-01'));
+        $invoice->setStatus(InvoiceStatus::Pending);
+        $invoice->addLine(new Line()->setDescription('Audit')->setPrice(50000)->setQty(1)->updateTotal());
+
+        $creditNote = new CreditNote();
+        $creditNote->setCompany($this->company);
+        $creditNote->setClient($client);
+        $creditNote->setCreditNoteId('AV-0007');
+        $creditNote->setCreditedInvoice($invoice);
+        $creditNote->setStatus(CreditNoteStatus::Issued);
+        $creditNote->setDiscount(new Discount());
+        $creditNote->addLine(new CreditNoteLine()->setDescription('Audit')->setPrice(50000)->setQty(1)->updateTotal());
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($invoice);
+        $entityManager->persist($creditNote);
+        $entityManager->flush();
+
+        $xml = self::getContainer()->get(FacturXInvoiceBuilder::class)->buildDocument($creditNote)->getContent();
+
+        self::assertStringContainsString('<ram:TypeCode>381</ram:TypeCode>', $xml);
+        self::assertStringContainsString('AV-0007', $xml);
+        self::assertStringContainsString('<ram:InvoiceReferencedDocument>', $xml);
+        self::assertStringContainsString('<ram:IssuerAssignedID>FACT-0042</ram:IssuerAssignedID>', $xml);
+        self::assertStringNotContainsString('SpecifiedTradeSettlementPaymentMeans', $xml);
+        self::assertStringNotContainsString('>-', $xml, 'Amounts stay positive: the type carries the meaning.');
+    }
+
+    /**
+     * The company register fills in both SIRET and SIREN. They name the same
+     * company: one global ID each side, or the platform refuses the document
+     * (FX-SCH-A-000164, BR-FR-CO-10).
+     */
+    public function testASiretAndASirenGiveOneGlobalIdEachSide(): void
+    {
+        TaxIdentifierFactory::createOne(['company' => $this->company, 'client' => null, 'label' => 'SIRET', 'value' => '11111111100011']);
+        TaxIdentifierFactory::createOne(['company' => $this->company, 'client' => null, 'label' => 'SIREN', 'value' => '111111111']);
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+        TaxIdentifierFactory::createOne(['company' => $this->company, 'client' => $client, 'label' => 'SIRET', 'value' => '22222222200022']);
+        TaxIdentifierFactory::createOne(['company' => $this->company, 'client' => $client, 'label' => 'SIREN', 'value' => '222222222']);
+
+        $invoice = new Invoice();
+        $invoice->setCompany($this->company);
+        $invoice->setClient($client);
+        $invoice->setInvoiceId('FACT-0043');
+        $invoice->setStatus(InvoiceStatus::Pending);
+        $invoice->addLine(new Line()->setDescription('Audit')->setPrice(50000)->setQty(1)->updateTotal());
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($invoice);
+        $entityManager->flush();
+
+        $xml = self::getContainer()->get(FacturXInvoiceBuilder::class)->buildDocument($invoice)->getContent();
+
+        self::assertSame(2, substr_count($xml, '<ram:GlobalID'), 'One for the seller, one for the buyer.');
     }
 
     private function xmlFor(SupplyType ...$types): string

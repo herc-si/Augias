@@ -16,7 +16,7 @@
 
 {{ 'einvoicing.notification_disputed.message'|trans({}, 'email') }}
 
-{{ 'einvoicing.notification_disputed.invoice_number'|trans({}, 'email') }}: {{ invoice_number(invoice) ?? invoice.id }}
+{{ 'einvoicing.notification_disputed.invoice_number'|trans({}, 'email') }}: {{ (number is defined and number ? number : (invoice_number(invoice) ?? invoice.id)) }}
 {% if client -%}
 {{ 'einvoicing.notification_disputed.client'|trans({}, 'email') }}: {{ client.name }}
 {% endif -%}
@@ -28,5 +28,5 @@
 {% endif %}
 
 {{ '-'|repeat(60) }}
-{{ 'einvoicing.notification_disputed.view_invoice'|trans({}, 'email') }}: {{ url('_invoices_view', {'id': invoice.id}) }}
+{{ 'einvoicing.notification_disputed.view_invoice'|trans({}, 'email') }}: {{ (creditNote is defined and creditNote is not null ? url('_credit_notes_view', {'id': creditNote.id}) : url('_invoices_view', {'id': invoice.id})) }}
 {% endautoescape %}

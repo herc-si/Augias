@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Manager;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use LogicException;
 
@@ -24,10 +25,10 @@ interface ElectronicInvoiceManagerInterface
      * not every client — so this must be true before showing the manual send
      * button or triggering the automatic send on publish.
      */
-    public function isEligible(Invoice $invoice): bool;
+    public function isEligible(Invoice | CreditNote $invoice): bool;
 
     /**
      * @throws LogicException if no active provider is configured, or it is unknown
      */
-    public function send(Invoice $invoice): ElectronicInvoiceSubmission;
+    public function send(Invoice | CreditNote $invoice): ElectronicInvoiceSubmission;
 }

@@ -31,7 +31,7 @@
     {{ email.spacer('sm') }}
 
     {# Invoice details #}
-    {{ email.info_row('einvoicing.notification_rejected.invoice_number'|trans({}, 'email'), invoice_number(invoice) ?? invoice.id) }}
+    {{ email.info_row('einvoicing.notification_rejected.invoice_number'|trans({}, 'email'), (number is defined and number ? number : (invoice_number(invoice) ?? invoice.id))) }}
 
     {% if client %}
         {{ email.spacer('xs') }}
@@ -50,7 +50,7 @@
     {{ email.divider('md') }}
 
     {# View button #}
-    {{ email.button('einvoicing.notification_rejected.view_invoice'|trans({}, 'email'), url('_invoices_view', {'id': invoice.id}), 'primary', 'large') }}
+    {{ email.button('einvoicing.notification_rejected.view_invoice'|trans({}, 'email'), (creditNote is defined and creditNote is not null ? url('_credit_notes_view', {'id': creditNote.id}) : url('_invoices_view', {'id': invoice.id})), 'primary', 'large') }}
 
     {{ email.spacer('md') }}
 {%- endblock -%}
