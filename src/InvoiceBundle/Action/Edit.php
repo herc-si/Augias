@@ -75,7 +75,9 @@ final readonly class Edit
                 [] === $blockers ? 'invoice.edit.paid' : $blockers[0]->getMessage(),
             );
 
-            return new RedirectResponse($this->router->generate('_invoices_index'));
+            // Back to the invoice rather than the list: the message points to
+            // the credit note, and the way to raise one is on that page.
+            return new RedirectResponse($this->router->generate('_invoices_view', ['id' => $invoice->getId()]));
         }
 
         $client = $invoice->getClient();

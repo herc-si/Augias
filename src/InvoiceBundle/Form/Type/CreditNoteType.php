@@ -17,11 +17,11 @@ use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\ClientBundle\Form\ClientAutocompleteType;
 use Augias\CoreBundle\Form\LineOrderFields;
-use Augias\CoreBundle\Form\Type\DiscountType;
 use Augias\InvoiceBundle\DTO\CreditNoteFormDTO;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Enum\CreditReason;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\MoneyBundle\Form\Type\HiddenMoneyType;
 use Augias\SettingsBundle\SystemConfig;
 use Doctrine\ORM\EntityRepository;
@@ -75,6 +75,11 @@ class CreditNoteType extends AbstractType
 
         // Only the chosen client's invoices, and the field stays optional: a
         // rebate or a gesture credits no single invoice.
+        //
+        // Only issued ones, paid or not. An issued invoice cannot be withdrawn,
+        // so a credit note is how it gets corrected, and an unpaid one is the
+        // commonest case. A draft has not been issued (and has no number to
+        // show here), a cancelled one was never owed.
         $builder->addDependent('creditedInvoice', 'client', function (DependentField $field, ?Client $client): void {
             if (! $client instanceof Client || ! $client->getId() instanceof Ulid) {
                 return;
@@ -89,7 +94,13 @@ class CreditNoteType extends AbstractType
                 'choice_label' => 'invoiceId',
                 'query_builder' => static fn (EntityRepository $repo) => $repo->createQueryBuilder('i')
                     ->where('i.client = :client')
+                    ->andWhere('i.status IN (:issued)')
                     ->setParameter('client', $clientId, UlidType::NAME)
+                    ->setParameter('issued', [
+                        InvoiceStatus::Pending->value,
+                        InvoiceStatus::Overdue->value,
+                        InvoiceStatus::Paid->value,
+                    ])
                     ->orderBy('i.invoiceDate', 'DESC'),
             ]);
         });
@@ -111,27 +122,8 @@ class CreditNoteType extends AbstractType
             ]);
         });
 
-        // Only on a credit note that mirrors an invoice.
-        //
-        // There it is not optional decoration: if the invoice carried a 10%
-        // discount the client was charged the discounted figure, so crediting
-        // the full one would give back more than they ever paid. The credit has
-        // to reproduce the invoice's arithmetic.
-        //
-        // On a credit that answers to no invoice — a gesture, a rebate — the
-        // field means nothing: the amount to give back is simply typed. Offering
-        // a discount on top of it invites a second reduction nobody intended.
-        $builder->addDependent('discount', 'creditedInvoice', static function (DependentField $field, ?Invoice $invoice) use ($options): void {
-            if (! $invoice instanceof Invoice) {
-                return;
-            }
-
-            $field->add(DiscountType::class, [
-                'required' => false,
-                'label' => 'billing.discount',
-                'currency' => $options['currency'],
-            ]);
-        });
+        // No discount field: a credit note carries the credited invoice's own
+        // discount, worked out from the lines credited (MirroredDiscount).
 
         // ItemType is shared with invoices; only the row's class differs, so a
         // line added here is a CreditNoteLine rather than a plain Line.
