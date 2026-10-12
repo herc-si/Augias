@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Tests\Repository;
 
+use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\CreditNote;
@@ -156,6 +158,29 @@ final class CreditNoteRepositoryTest extends KernelTestCase
      * SQLite ignores foreign key actions unless the pragma is switched on, so a
      * test that asserts ON DELETE behaviour has nothing to observe there.
      */
+    /**
+     * What an invoice has already been credited: the issued and settled credit
+     * notes against it, not the drafts.
+     */
+    public function testAddsUpTheCreditNotesIssuedAgainstAnInvoice(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+        $invoice = InvoiceFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => InvoiceStatus::Pending]);
+
+        foreach ([[CreditNoteStatus::Issued, 3_000], [CreditNoteStatus::Settled, 2_000], [CreditNoteStatus::Draft, 9_000]] as [$status, $price]) {
+            CreditNoteFactory::createOne([
+                'company' => $this->company,
+                'client' => $client,
+                'creditedInvoice' => $invoice,
+                'status' => $status,
+                'discount' => new Discount(),
+                'lines' => [new CreditNoteLine()->setDescription('Credited')->setPrice($price)->setQty(1)->updateTotal()],
+            ]);
+        }
+
+        self::assertSame('5000', (string) $this->repository->issuedTotalFor($invoice));
+    }
+
     private function foreignKeysAreEnforced(): bool
     {
         $connection = $this->entityManager->getConnection();

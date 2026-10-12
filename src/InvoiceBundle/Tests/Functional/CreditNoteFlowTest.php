@@ -23,6 +23,7 @@ use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\CreditReason;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Test\Factory\CreditNoteFactory;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Augias\UserBundle\Entity\User;
@@ -94,6 +95,33 @@ final class CreditNoteFlowTest extends WebTestCase
             ->visit('/invoices/credit-notes/create/' . $invoice->getId())
             ->assertSuccessful()
             ->assertSeeIn('body', 'Annual licence');
+    }
+
+    /**
+     * Opened from an invoice, the totals are there before anything is touched:
+     * they used to read zero until the first change on the form.
+     */
+    public function testOpensWithItsTotalsWorkedOut(): void
+    {
+        $invoice = InvoiceFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => InvoiceStatus::Pending,
+            'discount' => new Discount(),
+            'lines' => [
+                new \Augias\InvoiceBundle\Entity\Line()
+                    ->setDescription('Annual licence')
+                    ->setPrice(9900)
+                    ->setQty(1)
+                    ->updateTotal(),
+            ],
+        ]);
+
+        $this->browser()
+            ->actingAs($this->createUser())
+            ->visit('/invoices/credit-notes/create/' . $invoice->getId())
+            ->assertSuccessful()
+            ->assertSeeIn('.totals-row-total .totals-value', '99.00');
     }
 
     public function testShowsACreditNote(): void
