@@ -97,6 +97,10 @@ final class CashRegisterGateTest extends AccountingWidgetTestCase
         $client = new Client();
         $client->setName($private ? 'Jean Dupont' : 'Acme')->setIsCompany(! $private)->setCurrencyCode('EUR');
 
+        if (! $private) {
+            $client->setSiret('12345678900012');
+        }
+
         return $client;
     }
 

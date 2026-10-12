@@ -14,7 +14,7 @@ client:
         private_customer_needs_books: "Votre entreprise est assujettie à la TVA : pour enregistrer les paiements d'un particulier, elle doit tenir sa comptabilité dans Augias, faute de quoi l'application ferait office de logiciel de caisse non certifié (CGI, art. 286). Choisissez d'abord votre régime comptable, dans le menu Comptabilité."
         role_required: 'Une fiche doit être au moins un client ou un fournisseur.'
         tax_identifiers:
-            siret_required: 'La facturation électronique est activée : veuillez ajouter le numéro SIRET de ce client parmi ses identifiants fiscaux.'
+            siret_required: 'Un client professionnel a un numéro SIRET : renseignez-le, ou indiquez qu''il s''agit d''un particulier.'
         unique_name: 'Un client portant le nom « {{ value }} » existe déjà.'
 core:
     constraint:

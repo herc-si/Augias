@@ -24,14 +24,12 @@ use Augias\PaymentBundle\Entity\Payment;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Calculator\TaxCalculatorInterface;
 use Augias\TaxBundle\Enum\TaxDirection;
-use Augias\TaxBundle\Form\Type\TaxIdentifierType;
 use Brick\Math\BigDecimal;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;
 use function array_key_last;
 use function array_map;
 use function array_values;
-use function in_array;
 
 /**
  * What e-reporting declares for a sale to a private individual, and for the
@@ -63,23 +61,13 @@ final readonly class ReportDataBuilder
     }
 
     /**
-     * Whether the client is a private individual — no SIRET, no SIREN, no VAT
-     * number. A company without a French number is not one: that is an
-     * international sale, reported differently.
+     * Whether the client is a private individual: the box ticked on the
+     * client, nothing else. Guessing it from missing identifiers took a
+     * business abroad, or one whose SIRET was not typed yet, for a consumer.
      */
     public function isPrivateIndividual(?Client $client): bool
     {
-        if (! $client instanceof Client) {
-            return false;
-        }
-
-        foreach ($client->getTaxIdentifiers() as $identifier) {
-            if (in_array($identifier->getLabel(), TaxIdentifierType::PROMINENT_LABELS, true) && '' !== (string) $identifier->getValue()) {
-                return false;
-            }
-        }
-
-        return true;
+        return $client instanceof Client && ! $client->isCompany();
     }
 
     /**

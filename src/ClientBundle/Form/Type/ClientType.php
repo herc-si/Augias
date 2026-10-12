@@ -170,6 +170,23 @@ class ClientType extends AbstractType
             ]);
         }
 
+        // An individual's SIRET, SIREN and VAT number are hidden, not
+        // dropped: a record switched from business keeps them otherwise, and
+        // they would say a company where the box says a person.
+        $builder->addEventListener(FormEvents::SUBMIT, static function (FormEvent $event): void {
+            $client = $event->getData();
+
+            if (! $client instanceof Client || $client->isCompany()) {
+                return;
+            }
+
+            foreach ($client->getTaxIdentifiers()->toArray() as $identifier) {
+                if (in_array($identifier->getLabel(), TaxIdentifierType::PROMINENT_LABELS, true)) {
+                    $client->removeTaxIdentifier($identifier);
+                }
+            }
+        });
+
         // An individual can be added without typing a name twice: left empty,
         // it is filled in from the first contact's own name.
         $builder->addEventListener(FormEvents::SUBMIT, static function (FormEvent $event): void {

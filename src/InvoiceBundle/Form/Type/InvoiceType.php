@@ -38,6 +38,7 @@ use SolidWorx\Platform\PlatformBundle\Feature\FeatureGate;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\EnumType;
@@ -104,6 +105,36 @@ class InvoiceType extends AbstractType
                     [
                         'label' => 'client.name',
                         'allow_single_quotes' => true,
+                    ]
+                );
+            }
+        });
+
+        $builder->addDependent('newClientIsCompany', 'clientMode', function (DependentField $field, ?InvoiceClientMode $mode): void {
+            if ($mode === InvoiceClientMode::NewClient) {
+                $field->add(
+                    ChoiceType::class,
+                    [
+                        'label' => 'client.form.kind.label',
+                        'choices' => [
+                            'client.form.kind.company' => true,
+                            'client.form.kind.individual' => false,
+                        ],
+                        'expanded' => true,
+                        'empty_data' => '1',
+                    ]
+                );
+            }
+        });
+
+        $builder->addDependent('newClientSiret', 'clientMode', function (DependentField $field, ?InvoiceClientMode $mode): void {
+            if ($mode === InvoiceClientMode::NewClient) {
+                $field->add(
+                    TextType::class,
+                    [
+                        'label' => 'client.form.siret',
+                        'required' => false,
+                        'attr' => ['inputmode' => 'numeric', 'maxlength' => 14],
                     ]
                 );
             }

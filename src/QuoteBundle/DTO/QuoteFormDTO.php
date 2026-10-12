@@ -15,6 +15,8 @@ namespace Augias\QuoteBundle\DTO;
 
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
+use Augias\ClientBundle\Form\InlineClient;
+use Augias\ClientBundle\Validator\Constraints\InlineClientRules;
 use Augias\ClientBundle\Validator\Constraints\UniqueClientName;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\QuoteBundle\Entity\Line;
@@ -28,7 +30,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * DTO for Quote form data
  */
-final class QuoteFormDTO
+#[InlineClientRules(groups: ['new_client'])]
+final class QuoteFormDTO implements InlineClient
 {
     public QuoteClientMode $clientMode = QuoteClientMode::Existing;
 
@@ -41,6 +44,12 @@ final class QuoteFormDTO
     #[Assert\Length(max: 125, groups: ['new_client'])]
     #[UniqueClientName(groups: ['new_client'])]
     public ?string $newClientName = null;
+
+    // A business unless said otherwise, as on the client form.
+    public bool $newClientIsCompany = true;
+
+    #[Assert\Length(max: 14, groups: ['new_client'])]
+    public ?string $newClientSiret = null;
 
     #[Assert\NotBlank(groups: ['new_client'])]
     #[Assert\Length(max: 125, groups: ['new_client'])]
@@ -124,5 +133,20 @@ final class QuoteFormDTO
         return $this->newClientName !== null
             && $this->newContactFirstName !== null
             && $this->newContactEmail !== null;
+    }
+
+    public function isNewClient(): bool
+    {
+        return $this->clientMode === QuoteClientMode::NewClient;
+    }
+
+    public function isNewClientCompany(): bool
+    {
+        return $this->newClientIsCompany;
+    }
+
+    public function getNewClientSiret(): ?string
+    {
+        return $this->newClientSiret;
     }
 }

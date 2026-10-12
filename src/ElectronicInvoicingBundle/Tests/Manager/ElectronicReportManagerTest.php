@@ -273,7 +273,7 @@ final class ElectronicReportManagerTest extends KernelTestCase
      */
     public function testAnIssuedCreditNoteToAPrivateIndividualIsReportedOnce(): void
     {
-        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR', 'isCompany' => false]);
 
         foreach ([CreditNoteStatus::Issued, CreditNoteStatus::Draft] as $status) {
             $creditNote = new CreditNote();
@@ -306,7 +306,7 @@ final class ElectronicReportManagerTest extends KernelTestCase
 
     private function invoice(bool $private, string $date): Invoice
     {
-        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR', 'isCompany' => ! $private]);
 
         if (! $private) {
             $client->setSiret('12345678900012');

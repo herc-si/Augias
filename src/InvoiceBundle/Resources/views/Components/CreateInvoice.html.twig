@@ -67,8 +67,18 @@
 
                                     <div class="row g-3">
                                         <div class="col-12">
+                                            {{ form_row(form.newClientIsCompany) }}
+                                        </div>
+                                        <div class="col-12">
                                             {{ form_row(form.newClientName) }}
                                         </div>
+                                        {% if form.newClientIsCompany.vars.data is same as(false) %}
+                                            {% do form.newClientSiret.setRendered %}
+                                        {% else %}
+                                            <div class="col-12">
+                                                {{ form_row(form.newClientSiret) }}
+                                            </div>
+                                        {% endif %}
                                         <div class="col-md-6">
                                             {{ form_row(form.newContactFirstName) }}
                                         </div>

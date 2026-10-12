@@ -103,11 +103,6 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
         return $submission;
     }
 
-    /**
-     * A SIRET or a SIREN: either names a French company, and the Factur-X
-     * identifies the buyer by its SIREN anyway. A client with neither is a
-     * private individual — reported, not invoiced electronically.
-     */
     private function submissionFor(Invoice | CreditNote $document): ElectronicInvoiceSubmission
     {
         $submission = new ElectronicInvoiceSubmission();
@@ -134,11 +129,17 @@ final readonly class ElectronicInvoiceManager implements ElectronicInvoiceManage
         return true;
     }
 
+    /**
+     * A business with a SIRET or a SIREN: either names a French company, and
+     * the Factur-X identifies the buyer by its SIREN anyway. A private
+     * individual is reported, not invoiced electronically, whatever
+     * identifiers are left on the record.
+     */
     private function clientHasFrenchCompanyNumber(Invoice | CreditNote $invoice): bool
     {
         $client = $invoice->getClient();
 
-        if ($client === null) {
+        if ($client === null || ! $client->isCompany()) {
             return false;
         }
 

@@ -44,6 +44,7 @@ final class ClientTest extends ApiTestCase
     {
         $data = [
             'name' => 'Dummy User',
+            'taxIdentifiers' => [['label' => 'SIRET', 'value' => '12345678900012']],
             'contacts' => [],
             'credit' => '125.50',
         ];
@@ -52,7 +53,9 @@ final class ClientTest extends ApiTestCase
 
         self::assertArrayHasKey('id', $result);
         self::assertTrue(Ulid::isValid($result['id'], Ulid::FORMAT_BASE_32));
+        self::assertSame('12345678900012', $result['taxIdentifiers'][0]['value'] ?? null);
         unset($result['id'], $result['@id']);
+        $result['taxIdentifiers'] = [];
 
         self::assertEqualsCanonicalizing([
             '@context' => $this->getContextForResource(Client::class),
@@ -164,7 +167,7 @@ final class ClientTest extends ApiTestCase
      */
     public function testEdit(): void
     {
-        $client = ClientFactory::createOne();
+        $client = ClientFactory::createOne(['siret' => '12345678900012']);
         self::assertInstanceOf(Client::class, $client);
 
         $contacts = ContactFactory::new([
@@ -181,6 +184,9 @@ final class ClientTest extends ApiTestCase
                 'contacts' => $contactInfo,
             ]
         );
+
+        self::assertSame('12345678900012', $data['taxIdentifiers'][0]['value'] ?? null);
+        $data['taxIdentifiers'] = [];
 
         self::assertEqualsCanonicalizing([
             '@context' => $this->getContextForResource($client),
@@ -202,6 +208,30 @@ final class ClientTest extends ApiTestCase
             'credit' => 0,
             'customFields' => [],
         ], $data);
+    }
+
+    /**
+     * A business client has a SIRET: without one, its sales would be neither
+     * invoiced electronically nor e-reported.
+     */
+    public function testABusinessWithoutASiretIsRefused(): void
+    {
+        self::$client->request(
+            'POST',
+            '/api/clients',
+            [
+                'json' => [
+                    'name' => 'Nameless Ltd',
+                    'contacts' => [],
+                ],
+                'headers' => [
+                    'content-type' => 'application/ld+json',
+                    'accept' => 'application/ld+json',
+                ],
+            ]
+        );
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 
     /**

@@ -15,6 +15,8 @@ namespace Augias\InvoiceBundle\DTO;
 
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
+use Augias\ClientBundle\Form\InlineClient;
+use Augias\ClientBundle\Validator\Constraints\InlineClientRules;
 use Augias\ClientBundle\Validator\Constraints\UniqueClientName;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\InvoiceBundle\Entity\Line;
@@ -28,7 +30,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * DTO for Invoice form data
  */
-final class InvoiceFormDTO
+#[InlineClientRules(groups: ['new_client'])]
+final class InvoiceFormDTO implements InlineClient
 {
     public InvoiceClientMode $clientMode = InvoiceClientMode::Existing;
 
@@ -41,6 +44,12 @@ final class InvoiceFormDTO
     #[Assert\Length(max: 125, groups: ['new_client'])]
     #[UniqueClientName(groups: ['new_client'])]
     public ?string $newClientName = null;
+
+    // A business unless said otherwise, as on the client form.
+    public bool $newClientIsCompany = true;
+
+    #[Assert\Length(max: 14, groups: ['new_client'])]
+    public ?string $newClientSiret = null;
 
     #[Assert\NotBlank(groups: ['new_client'])]
     #[Assert\Length(max: 125, groups: ['new_client'])]
@@ -142,5 +151,20 @@ final class InvoiceFormDTO
         return $this->newClientName !== null
             && $this->newContactFirstName !== null
             && $this->newContactEmail !== null;
+    }
+
+    public function isNewClient(): bool
+    {
+        return $this->clientMode === InvoiceClientMode::NewClient;
+    }
+
+    public function isNewClientCompany(): bool
+    {
+        return $this->newClientIsCompany;
+    }
+
+    public function getNewClientSiret(): ?string
+    {
+        return $this->newClientSiret;
     }
 }

@@ -79,7 +79,8 @@ final readonly class ResourceWriteTools
      * @var array<string, list<string>>
      */
     private const array SETTABLE_FIELDS = [
-        Client::class => ['name', 'website', 'status', 'currency_code'],
+        // A business client has a SIRET; an individual is said with is_company false.
+        Client::class => ['name', 'website', 'status', 'currency_code', 'is_company', 'siret'],
         Contact::class => ['first_name', 'last_name', 'email'],
         Tax::class => ['name', 'rate', 'type'],
     ];
@@ -105,7 +106,7 @@ final readonly class ResourceWriteTools
      *
      * @return array<string, mixed>
      */
-    #[McpTool(name: 'create_resource', description: 'Create a new record of a safe, flat resource (client, contact, tax).')]
+    #[McpTool(name: 'create_resource', description: 'Create a new record of a safe, flat resource (client, contact, tax). A client is a business unless is_company is false; a business client needs a siret.')]
     #[McpScopeRequired(McpScope::Write)]
     public function createResource(string $resource, array $data): array
     {

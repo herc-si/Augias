@@ -17,8 +17,12 @@ use Attribute;
 use Override;
 use Symfony\Component\Validator\Constraint;
 
+/**
+ * A business client has a SIRET: a private individual is the box ticked on
+ * the client, so a business without one is a record half filled in.
+ */
 #[Attribute(Attribute::TARGET_CLASS)]
-final class RequiredFiscalIdentifierForElectronicInvoicing extends Constraint
+final class BusinessClientNeedsSiret extends Constraint
 {
     public string $message = 'client.constraint.tax_identifiers.siret_required';
 

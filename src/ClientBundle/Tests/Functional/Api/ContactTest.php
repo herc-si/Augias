@@ -32,7 +32,7 @@ final class ContactTest extends ApiTestCase
 
     public function testGetCollection(): void
     {
-        $client = ClientFactory::createOne();
+        $client = ClientFactory::createOne(['siret' => '12345678900012']);
         ContactFactory::createMany(3, ['client' => $client]);
 
         $data = $this->requestGetCollection($this->getIriFromResource($client) . '/contacts');
@@ -47,7 +47,7 @@ final class ContactTest extends ApiTestCase
     {
         $otherCompany = CompanyFactory::new()->create();
         self::getContainer()->get(CompanySelector::class)->switchCompany($otherCompany->getId());
-        $foreignClient = ClientFactory::createOne(['company' => $otherCompany]);
+        $foreignClient = ClientFactory::createOne(['company' => $otherCompany, 'siret' => '12345678900012']);
         self::getContainer()->get(CompanySelector::class)->switchCompany($this->company->getId());
 
         // ContactPersistProcessor uses findOneBy() which applies the CompanyFilter,
@@ -61,7 +61,7 @@ final class ContactTest extends ApiTestCase
 
     public function testCreate(): void
     {
-        $client = ClientFactory::createOne();
+        $client = ClientFactory::createOne(['siret' => '12345678900012']);
 
         $data = [
             'client' => $this->getIriFromResource($client),
@@ -88,7 +88,7 @@ final class ContactTest extends ApiTestCase
 
     public function testDelete(): void
     {
-        $client = ClientFactory::createOne();
+        $client = ClientFactory::createOne(['siret' => '12345678900012']);
         $contact = ContactFactory::createOne(['client' => $client]);
 
         $this->requestDelete($this->getIriFromResource($contact));
@@ -100,7 +100,7 @@ final class ContactTest extends ApiTestCase
         $lastName = $this->faker->firstName();
         $email = $this->faker->email();
 
-        $client = ClientFactory::createOne();
+        $client = ClientFactory::createOne(['siret' => '12345678900012']);
         $contact = ContactFactory::createOne([
             'firstName' => $firstName,
             'lastName' => $lastName,
@@ -126,7 +126,7 @@ final class ContactTest extends ApiTestCase
 
     public function testEdit(): void
     {
-        $client = ClientFactory::createOne();
+        $client = ClientFactory::createOne(['siret' => '12345678900012']);
         $contact = ContactFactory::createOne([
             'lastName' => null,
             'email' => 'test@example.com',

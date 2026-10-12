@@ -113,6 +113,38 @@ final class ClientTypeTest extends FormTestCase
         self::assertSame('Jane Do', $client->getName());
     }
 
+    /**
+     * A business switched to an individual loses its SIRET, SIREN and VAT
+     * number: hidden on the form, they would otherwise stay on the record.
+     */
+    public function testAnIndividualKeepsNoBusinessIdentifier(): void
+    {
+        $this->disabledFeatures = ['custom_fields'];
+
+        $client = new Client();
+        $client->setName('Doe Consulting');
+        $client->setSiret('12345678900012')->setSiren('123456789')->setVatNumber('FR12123456789');
+
+        $form = $this->factory->create(ClientType::class, $client);
+        $form->submit([
+            'isCompany' => '0',
+            'name' => 'Jane Doe',
+            'siret' => '12345678900012',
+            'siren' => '123456789',
+            'vatNumber' => 'FR12123456789',
+            'currencyCode' => 'USD',
+            'contacts' => [
+                ['firstName' => 'Jane', 'lastName' => 'Doe', 'email' => 'jane@example.com'],
+            ],
+            'addresses' => [],
+        ]);
+
+        self::assertFalse($client->isCompany());
+        self::assertNull($client->getSiret());
+        self::assertNull($client->getSiren());
+        self::assertNull($client->getVatNumber());
+    }
+
     public function testChoosingBusinessMakesItACompany(): void
     {
         $this->disabledFeatures = ['custom_fields'];
