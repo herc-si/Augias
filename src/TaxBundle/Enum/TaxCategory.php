@@ -21,6 +21,15 @@ enum TaxCategory: string
     case OutOfScope = 'OutOfScope';
     case ReverseCharge = 'ReverseCharge';
 
+    /**
+     * The translation key of the label, for anything a user reads. getLabel()
+     * stays the English name the API and the logs use.
+     */
+    public function labelKey(): string
+    {
+        return 'tax.category.' . $this->value;
+    }
+
     public function getLabel(): string
     {
         return match ($this) {

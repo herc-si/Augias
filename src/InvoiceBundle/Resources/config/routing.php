@@ -11,6 +11,7 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
+use Augias\InvoiceBundle\Action\ApplyCreditNotes;
 use Augias\InvoiceBundle\Action\CloneInvoice;
 use Augias\InvoiceBundle\Action\CloneRecurringInvoice;
 use Augias\InvoiceBundle\Action\Create;
@@ -122,6 +123,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->add('_invoices_disbursement_receipt_delete', '/disbursement/receipt/{id}/delete')
         ->methods(['POST'])
         ->controller(DisbursementReceiptDelete::class);
+
+    $routingConfigurator
+        ->add('_invoices_apply_credit_notes', '/apply-credit-notes/{id}')
+        ->methods(['POST'])
+        ->controller(ApplyCreditNotes::class);
 
     $routingConfigurator
         ->add('_action_invoice', '/action/{action}/{id}')

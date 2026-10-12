@@ -13,14 +13,19 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Repository;
 
+use Augias\ClientBundle\Entity\Client;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
+use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Enum\AllocationKind;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Brick\Math\BigInteger;
+use Brick\Math\BigNumber;
 use Brick\Math\Exception\MathException;
 use Doctrine\Persistence\ManagerRegistry;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
+use Symfony\Bridge\Doctrine\Types\UlidType;
+use Symfony\Component\Uid\Ulid;
 
 /**
  * @extends EntityRepository<CreditNote>
@@ -185,5 +190,64 @@ final class CreditNoteRepository extends EntityRepository
         }
 
         return $totals;
+    }
+
+    /**
+     * What credit notes already issued against an invoice add up to, so a new
+     * one can be checked against what is left to credit.
+     */
+    public function issuedTotalFor(Invoice $invoice, ?CreditNote $except = null): BigNumber
+    {
+        $id = $invoice->getId();
+
+        if (! $id instanceof Ulid) {
+            return BigInteger::zero();
+        }
+
+        $qb = $this->createQueryBuilder('c')
+            ->select('SUM(c.total)')
+            ->where('c.creditedInvoice = :invoice')
+            ->andWhere('c.status IN (:issued)')
+            ->setParameter('invoice', $id, UlidType::NAME)
+            ->setParameter('issued', [CreditNoteStatus::Issued->value, CreditNoteStatus::Settled->value]);
+
+        if ($except?->getId() instanceof Ulid) {
+            $qb->andWhere('c.id != :except')->setParameter('except', $except->getId(), UlidType::NAME);
+        }
+
+        $total = $qb->getQuery()->getSingleScalarResult();
+
+        return null === $total ? BigInteger::zero() : BigNumber::of((string) $total);
+    }
+
+    /**
+     * The client's issued credit notes, oldest first: the ones that may still
+     * have something left to set against an invoice.
+     *
+     * @return list<CreditNote>
+     */
+    public function issuedForClient(Client $client): array
+    {
+        $id = $client->getId();
+
+        if (! $id instanceof Ulid) {
+            return [];
+        }
+
+        /** @var list<CreditNote> $creditNotes */
+        $creditNotes = $this->createQueryBuilder('c')
+            ->where('c.client = :client')
+            ->andWhere('c.status = :issued')
+            ->setParameter('client', $id, UlidType::NAME)
+            ->setParameter('issued', CreditNoteStatus::Issued->value)
+            ->orderBy('c.creditNoteDate', 'ASC')
+            ->addOrderBy('c.created', 'ASC')
+            // ULIDs grow with time: the tie-break for two created in the
+            // same second, which "oldest first" would otherwise leave to chance.
+            ->addOrderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $creditNotes;
     }
 }

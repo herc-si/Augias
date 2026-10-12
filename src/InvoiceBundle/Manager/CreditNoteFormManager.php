@@ -20,6 +20,7 @@ use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Enum\CreditReason;
+use Augias\InvoiceBundle\Model\MirroredDiscount;
 use Carbon\CarbonImmutable;
 use InvalidArgumentException;
 
@@ -166,14 +167,14 @@ final readonly class CreditNoteFormManager
             $creditNote->setReason($dto->reason);
         }
 
-        if (null !== $dto->discount) {
-            $creditNote->setDiscount($dto->discount);
-        }
-
         $creditNote->getLines()->clear();
 
         foreach ($dto->lines as $line) {
             $creditNote->addLine($line);
         }
+
+        // Not typed: the credited invoice's own discount, shared out over the
+        // lines credited. See MirroredDiscount.
+        $creditNote->setDiscount(MirroredDiscount::for($dto->creditedInvoice, $creditNote->getLines()));
     }
 }

@@ -266,8 +266,8 @@ accounting:
             invoice_refund: 'Refund to client'
             manual: 'Manual entry'
     invoice:
-        cancel_blocked: 'This invoice has been issued and can no longer be cancelled. Raise a credit note against it instead.'
-        edit_blocked: 'This invoice has been issued and can no longer be edited. Raise a credit note against it instead.'
+        cancel_blocked: 'This invoice has been issued and can no longer be cancelled. Raise a credit note against it instead: More Actions, Raise a credit note.'
+        edit_blocked: 'This invoice has been issued and can no longer be edited. Raise a credit note against it instead: More Actions, Raise a credit note.'
     menu:
         bank: Bank
         declarations: Declarations
@@ -653,6 +653,9 @@ change_password:
         title: 'Update Your Password'
     submit: Save
     subtitle: 'Update your password to keep your account secure'
+client_mode:
+    existing: 'Existing client'
+    new: 'New client'
 client:
     address:
         add: 'Add Address'
@@ -717,6 +720,10 @@ client:
         has_issued_documents: "%name% has issued invoices or credit notes, which have to be kept: the client cannot be deleted. Archive it instead."
     delete_success: 'The client was deleted successfully'
     form:
+        kind:
+            label: 'Client type'
+            company: 'Business'
+            individual: 'Private individual'
         address_description: 'Add billing or shipping addresses'
         contact_description: 'Add at least one contact person'
         currency:
@@ -942,6 +949,20 @@ create_new: 'Create New'
 create_now: 'Create one now.'
 created: Created
 credit_note:
+    copy_lines:
+        help: 'Replaces the credit note lines with the invoice lines; then remove what you do not credit.'
+        label: 'Copy the invoice lines'
+    invoice_summary:
+        already_credited: 'Already credited'
+        balance: 'Still owed'
+        date: 'Invoice date'
+        title: 'Invoice %number%'
+        total: 'Total'
+        view: 'Open the invoice'
+    discount:
+        label: 'Original invoice discount'
+        mirrored_percent: 'Original invoice discount: %rate% %, applied to the lines credited, so the credit note gives back what was actually invoiced.'
+        mirrored_amount: 'Original invoice discount: %amount%, shared out over the lines credited, so the credit note gives back what was actually invoiced.'
     delete:
         issued: "Credit note %number% has been issued and has to be kept: it cannot be deleted."
     menu:
@@ -1043,6 +1064,24 @@ credit_note:
         heading: 'CREDIT NOTE'
         credits_invoice: 'Credit note relating to invoice %invoice%.'
 custom_field:
+    type:
+        text: Text
+        textarea: 'Long text'
+        number: Number
+        date: Date
+        email: Email
+        url: URL
+        checkbox: Checkbox
+        select: Single-select
+        multi_select: Multi-select
+    target:
+        client: Client
+        contact: Contact
+        invoice: Invoice
+        quote: Quote
+    visibility:
+        internal: 'Internal only'
+        client_visible: 'Visible to client'
     add: 'Add field'
     badge:
         client_visible: Client-visible
@@ -2046,6 +2085,16 @@ installation:
         locale_placeholder: 'Please select a locale'
 invalid_file: 'Invalid File'
 invoice:
+    credit_notes:
+        use_on_payment: 'Use them when recording the payment: "Pay Now".'
+        applied: '%amount% of credit notes set against this invoice.'
+        apply: 'Use the credit notes'
+        apply_help: 'Sets the client''s open credit notes against this invoice, oldest first, for at most what it still owes.'
+        available: 'Open credit notes'
+        invalid_token: 'The request expired. Please try again.'
+        none_available: 'This client has no open credit note.'
+        nothing_owed: 'Nothing is owed on this invoice.'
+        title: 'Credit notes'
     payment_details:
         bank: Bank
         reference: 'Reference to quote'
@@ -2300,6 +2349,10 @@ invoice:
         start_date: 'Start Date'
         total_generated: 'Total Generated'
         type:
+            daily: Daily
+            weekly: Weekly
+            monthly: Monthly
+            yearly: Yearly
             label: 'Recurring Type'
             placeholder: 'Select a recurring type'
         upcoming: 'Upcoming Occurrences'
@@ -2440,6 +2493,7 @@ invoice:
             archive: Archive
             cancel: Cancel
             clone: Clone
+            credit_note: 'Raise a credit note'
             edit: Edit
             mark_paid: 'Mark Paid'
             more_actions: 'More Actions'
@@ -2750,12 +2804,15 @@ payment:
         label: 'Process payment online'
     client: Client
     create:
+        credit_note_label: 'Credit note %number%'
+        credit_notes_help: 'Sets the client''s open credit notes against this invoice; then record the payment of what is left below.'
         balance: 'Outstanding balance'
         base_total: 'Base Total'
         cancel: Cancel
         credit: 'Credit:'
         discount: Discount
         exception:
+            use_credit_notes: 'This credit comes from credit notes: use them with "Use the credit notes", so each records what it paid.'
             books_required: 'Your company is VAT-registered: the payment of a private customer can only be recorded once your books are kept in Augias (French tax code, art. 286). Choose your accounting regime first, in the Accounting menu.'
             amount_exceeds_balance: 'Amount captured exceeds outstanding balance'
             invoice_cannot_be_paid: 'This invoice cannot be paid'
@@ -4070,6 +4127,7 @@ status:
     captured: Captured
     complete: Complete
     credit: Credit
+    credited: Credited
     declined: Declined
     disputed: Disputed
     draft: Draft
@@ -4089,6 +4147,16 @@ status:
     unknown: Unknown
 success: Success
 tax:
+    category:
+        Standard: Standard
+        ZeroRated: Zero-rated
+        Exempt: Exempt
+        OutOfScope: 'Out of scope'
+        ReverseCharge: 'Reverse charge'
+    choice:
+        label: '%name% (%rate%)'
+        compound: '%name% (%rate%, compound)'
+        with_category: '%label% [%category%]'
     company_identifiers:
         add: 'Add an identifier'
         description: 'Your company''s identifiers: they appear on the invoices and quotes you issue, and identify your e-invoices.'

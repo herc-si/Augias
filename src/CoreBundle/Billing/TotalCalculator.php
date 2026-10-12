@@ -15,6 +15,7 @@ namespace Augias\CoreBundle\Billing;
 
 use Augias\InvoiceBundle\Entity\BaseInvoice;
 use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\InvoiceBundle\Repository\CreditNoteAllocationRepository;
 use Augias\PaymentBundle\Repository\PaymentRepository;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\TaxBundle\Calculator\TaxCalculatorInterface;
@@ -33,6 +34,7 @@ class TotalCalculator
     public function __construct(
         private readonly PaymentRepository $paymentRepository,
         private readonly TaxCalculatorInterface $taxCalculator,
+        private readonly ?CreditNoteAllocationRepository $allocations = null,
     ) {
     }
 
@@ -48,7 +50,11 @@ class TotalCalculator
             $total = $entity->getTotal();
             assert($total instanceof BigDecimal || $total instanceof BigInteger);
 
-            $entity->setBalance($total->minus($totalPaid));
+            // Credit notes set against the invoice are no longer owed either.
+            $offset = $this->allocations?->offsetTotalForInvoice($entity) ?? 0;
+            $balance = $total->minus($totalPaid)->minus($offset);
+
+            $entity->setBalance($balance->isNegative() ? 0 : $balance);
         }
     }
 

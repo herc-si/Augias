@@ -15,6 +15,8 @@ namespace Augias\InvoiceBundle\Repository;
 
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
+use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\InvoiceBundle\Enum\AllocationKind;
 use Brick\Math\BigInteger;
 use Brick\Math\BigNumber;
 use Doctrine\Persistence\ManagerRegistry;
@@ -52,6 +54,57 @@ final class CreditNoteAllocationRepository extends EntityRepository
             ->select('SUM(a.amount)')
             ->where('a.creditNote = :creditNote')
             ->setParameter('creditNote', $id, UlidType::NAME)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return null === $total ? BigInteger::zero() : BigNumber::of((string) $total);
+    }
+
+    /**
+     * What credit notes have taken off an invoice: the offsets set against it.
+     * Not money, so not a payment, but no longer owed either.
+     */
+    public function offsetTotalForInvoice(Invoice $invoice): BigNumber
+    {
+        $id = $invoice->getId();
+
+        if (! $id instanceof Ulid) {
+            return BigInteger::zero();
+        }
+
+        $total = $this->createQueryBuilder('a')
+            ->select('SUM(a.amount)')
+            ->where('a.invoice = :invoice')
+            ->andWhere('a.kind = :offset')
+            ->setParameter('invoice', $id, UlidType::NAME)
+            ->setParameter('offset', AllocationKind::Offset)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return null === $total ? BigInteger::zero() : BigNumber::of((string) $total);
+    }
+
+    /**
+     * The part of the offsets on an invoice that comes from credit notes raised
+     * against that very invoice: its corrections, as opposed to credit carried
+     * over from other documents.
+     */
+    public function ownOffsetTotalForInvoice(Invoice $invoice): BigNumber
+    {
+        $id = $invoice->getId();
+
+        if (! $id instanceof Ulid) {
+            return BigInteger::zero();
+        }
+
+        $total = $this->createQueryBuilder('a')
+            ->select('SUM(a.amount)')
+            ->join('a.creditNote', 'c')
+            ->where('a.invoice = :invoice')
+            ->andWhere('a.kind = :offset')
+            ->andWhere('c.creditedInvoice = :invoice')
+            ->setParameter('invoice', $id, UlidType::NAME)
+            ->setParameter('offset', AllocationKind::Offset)
             ->getQuery()
             ->getSingleScalarResult();
 
