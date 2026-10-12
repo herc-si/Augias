@@ -19,8 +19,11 @@ use Augias\CoreBundle\Entity\Discount;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
+use Augias\InvoiceBundle\Entity\Invoice;
+use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\AllocationKind;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Exception\AllocationException;
 use Augias\InvoiceBundle\Model\CreditNoteGraph;
 use Augias\InvoiceBundle\Service\CreditNoteAllocator;
@@ -76,7 +79,7 @@ final class CreditNoteAllocatorTest extends KernelTestCase
     public function testSettingACreditAgainstAnInvoiceRecordsItAndTakesItOffTheBalance(): void
     {
         $creditNote = $this->issuedCreditNote(10_000);
-        $invoice = InvoiceFactory::createOne(['company' => $this->company, 'client' => $this->client()]);
+        $invoice = $this->pendingInvoice();
 
         $allocation = $this->allocator->allocate($creditNote, AllocationKind::Offset, 4_000, $invoice);
 
@@ -112,7 +115,7 @@ final class CreditNoteAllocatorTest extends KernelTestCase
     public function testUsingPartOfItLeavesItOpen(): void
     {
         $creditNote = $this->issuedCreditNote(10_000);
-        $invoice = InvoiceFactory::createOne(['company' => $this->company, 'client' => $this->client()]);
+        $invoice = $this->pendingInvoice();
 
         $this->allocator->allocate($creditNote, AllocationKind::Offset, 3_000, $invoice);
         $this->allocator->allocate($creditNote, AllocationKind::Refund, 2_000);
@@ -207,6 +210,22 @@ final class CreditNoteAllocatorTest extends KernelTestCase
      * listener recalculates it on every flush, so a credit note with no lines
      * is worth nothing however it was created.
      */
+    /**
+     * Pinned: the factory draws the status at random and leaves the invoice
+     * without lines, so its total is worked out to zero. Any offset then pays
+     * it, and the excess goes straight back to the client's credit.
+     */
+    private function pendingInvoice(): Invoice
+    {
+        return InvoiceFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => InvoiceStatus::Pending,
+            'discount' => new Discount(),
+            'lines' => [new Line()->setDescription('Service')->setPrice(10_000)->setQty(1)->updateTotal()],
+        ]);
+    }
+
     private function issuedCreditNote(int $total): CreditNote
     {
         $creditNote = CreditNoteFactory::createOne([
