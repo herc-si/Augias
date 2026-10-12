@@ -36,8 +36,8 @@ use SolidWorx\Platform\PlatformBundle\Attributes\Menu\MenuBuilder;
  * livre des recettes and nothing else, and a purchase register in their menu
  * would be an invitation to keep a book the law does not ask of them.
  *
- * Before a regime is chosen there is nothing to list, and the section stays a
- * single link to the page that asks for one.
+ * Before a regime is chosen there are no books to list: the section holds the
+ * page that asks for one, and e-reporting, which runs regardless.
  */
 final readonly class AccountingMenu
 {
@@ -53,18 +53,6 @@ final readonly class AccountingMenu
     {
         $books = $this->companyBooks();
 
-        if ($books === []) {
-            $menu->addChild(
-                'accounting.menu.main',
-                [
-                    'route' => '_accounting_index',
-                    'extras' => ['icon' => Icon::ACCOUNTING],
-                ],
-            );
-
-            return;
-        }
-
         $section = $menu->addChild(
             'accounting.menu.main',
             [
@@ -79,6 +67,14 @@ final readonly class AccountingMenu
                 'extras' => ['icon' => 'chart-line'],
             ],
         );
+
+        // Without a regime there are no books to list, but e-reporting does
+        // not wait for one: sales to private individuals are declared anyway.
+        if ($books === []) {
+            self::ereporting($section);
+
+            return;
+        }
 
         foreach ($books as $book) {
             $section->addChild(
@@ -104,6 +100,23 @@ final readonly class AccountingMenu
             [
                 'route' => '_accounting_declarations',
                 'extras' => ['icon' => 'file-text'],
+            ],
+        );
+
+        self::ereporting($section);
+    }
+
+    /**
+     * A declaration too: what the platform sends the tax administration of
+     * the sales to private individuals.
+     */
+    private static function ereporting(ItemInterface $section): void
+    {
+        $section->addChild(
+            'accounting.menu.ereporting',
+            [
+                'route' => '_einvoicing_ereporting',
+                'extras' => ['icon' => 'file-report'],
             ],
         );
     }

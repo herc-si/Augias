@@ -271,6 +271,7 @@ accounting:
     menu:
         bank: Bank
         declarations: Declarations
+        ereporting: E-reporting
         main: Accounting
         overview: Overview
     pension_fund:
@@ -2663,7 +2664,6 @@ menu:
         custom_fields: 'Custom Fields'
         dashboard: Dashboard
         einvoicing: 'Electronic Invoicing'
-        ereporting: E-reporting
         integrations: Integrations
         logout: Logout
         profile: Profile

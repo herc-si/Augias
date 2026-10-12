@@ -18,11 +18,11 @@
 {% endblock %}
 
 {% block content %}
-    <p class="text-muted">{{ 'einvoicing.ereporting.intro'|trans }}</p>
+    <p class="text-muted mb-4">{{ 'einvoicing.ereporting.intro'|trans }}</p>
 
     {% if setting is null or not reporting %}
         <twig:Ui:Card title="{{ 'einvoicing.ereporting.not_connected.title'|trans }}">
-            <p class="text-muted">{{ 'einvoicing.ereporting.not_connected.description'|trans }}</p>
+            <p class="text-muted mb-4">{{ 'einvoicing.ereporting.not_connected.description'|trans }}</p>
             {% if route_allowed('_einvoicing_providers') %}
                 <a href="{{ path('_einvoicing_providers') }}" class="btn btn-outline-primary">
                     {{ ux_icon('tabler:building-broadcast-tower', {width: 18, height: 18}) }}
@@ -33,7 +33,9 @@
     {% else %}
         {# 1. What the next declarations will carry. #}
         {% if showsDeclarations %}
-            <twig:Ui:Card title="{{ 'einvoicing.ereporting.current.title'|trans }}" subtitle="{{ 'einvoicing.ereporting.current.subtitle'|trans }}" class="mb-3">
+            <div class="mb-4"><twig:Ui:Card title="{{ 'einvoicing.ereporting.current.title'|trans }}">
+                <p class="text-muted mb-4">{{ 'einvoicing.ereporting.current.subtitle'|trans }}</p>
+
                 {% if previewError %}
                     <twig:Ui:Alert type="warning" icon="tabler:alert-triangle">
                         {{ 'einvoicing.ereporting.current.unreachable'|trans }} {{ previewError|trans }}
@@ -43,7 +45,7 @@
                 {% endif %}
 
                 {% for preview in previews %}
-                    <h4 class="mt-2 mb-2" id="ereporting-preview-{{ preview.kind }}">
+                    <h4 class="{{ loop.first ? 'mt-0' : 'mt-4' }} mb-3" id="ereporting-preview-{{ preview.kind }}">
                         {{ ('einvoicing.ereporting.kind.' ~ preview.kind)|trans }}
                         <span class="text-muted small fw-normal ms-1">
                             {{ 'einvoicing.ereporting.period'|trans({'%start%': preview.periodStart|date('d/m/Y'), '%end%': preview.periodEnd|date('d/m/Y')}) }}
@@ -90,10 +92,12 @@
                         <p class="text-muted small">{{ 'einvoicing.ereporting.current.invoices'|trans({'%count%': preview.invoices}) }}</p>
                     {% endif %}
                 {% endfor %}
-            </twig:Ui:Card>
+            </twig:Ui:Card></div>
 
             {# 2. What the platform sent the tax administration. #}
-            <twig:Ui:Card title="{{ 'einvoicing.ereporting.declarations.title'|trans }}" subtitle="{{ 'einvoicing.ereporting.declarations.subtitle'|trans }}" class="mb-3">
+            <div class="mb-4"><twig:Ui:Card title="{{ 'einvoicing.ereporting.declarations.title'|trans }}">
+                <p class="text-muted mb-4">{{ 'einvoicing.ereporting.declarations.subtitle'|trans }}</p>
+
                 {% if declarations is empty %}
                     <p class="text-muted mb-0" id="ereporting-no-declaration">{{ 'einvoicing.ereporting.declarations.empty'|trans }}</p>
                 {% else %}
@@ -124,11 +128,13 @@
                         </table>
                     </div>
                 {% endif %}
-            </twig:Ui:Card>
+            </twig:Ui:Card></div>
         {% endif %}
 
         {# 3. What Augias filed, document by document. #}
-        <twig:Ui:Card title="{{ 'einvoicing.ereporting.filed.title'|trans }}" subtitle="{{ 'einvoicing.ereporting.filed.subtitle'|trans }}">
+        <twig:Ui:Card title="{{ 'einvoicing.ereporting.filed.title'|trans }}">
+            <p class="text-muted mb-4">{{ 'einvoicing.ereporting.filed.subtitle'|trans }}</p>
+
             {% if reports is empty %}
                 <p class="text-muted mb-0" id="ereporting-nothing-filed">{{ 'einvoicing.ereporting.filed.empty'|trans }}</p>
             {% else %}
@@ -175,7 +181,7 @@
                         </tbody>
                     </table>
                 </div>
-                <p class="text-muted small mt-2 mb-0">{{ 'einvoicing.ereporting.filed.retry'|trans }}</p>
+                <p class="text-muted small mt-3 mb-0">{{ 'einvoicing.ereporting.filed.retry'|trans }}</p>
             {% endif %}
         </twig:Ui:Card>
     {% endif %}

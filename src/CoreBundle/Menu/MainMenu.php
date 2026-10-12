@@ -47,7 +47,6 @@ class MainMenu
         $this->tax($section);
         self::paymentMethods($section);
         self::einvoicing($section);
-        self::ereporting($section);
         self::api($section);
         self::users($section);
         self::accessLog($section);
@@ -180,21 +179,6 @@ class MainMenu
             [
                 'route' => '_einvoicing_providers',
                 'extras' => ['icon' => 'building-broadcast-tower'],
-            ],
-        );
-    }
-
-    /**
-     * What sales to private individuals became for the tax administration:
-     * the declarations the platform sent, and what Augias filed for them.
-     */
-    public static function ereporting(ItemInterface $item): ItemInterface
-    {
-        return $item->addChild(
-            'menu.top.ereporting',
-            [
-                'route' => '_einvoicing_ereporting',
-                'extras' => ['icon' => 'file-report'],
             ],
         );
     }

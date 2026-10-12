@@ -271,6 +271,7 @@ accounting:
     menu:
         bank: Banque
         declarations: Déclarations
+        ereporting: E-reporting
         main: Comptabilité
         overview: "Vue d'ensemble"
     pension_fund:
@@ -2663,7 +2664,6 @@ menu:
         custom_fields: 'Champs personnalisés'
         dashboard: 'Tableau de bord'
         einvoicing: 'Facturation électronique'
-        ereporting: E-reporting
         integrations: Intégrations
         logout: Déconnexion
         profile: Profil
