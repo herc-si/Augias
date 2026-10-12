@@ -22,7 +22,7 @@
                 {{ ux_icon('tabler:file-invoice', {width: 32, height: 32}) }}
             </div>
             <div class="doc-view-title-group">
-                <h1 class="doc-view-title">{{ (invoice.numbered ? "invoice.title"|trans({"%id%" : invoice.invoiceId}) : "invoice.title_draft"|trans) }}</h1>
+                <h1 class="doc-view-title">{{ (invoice.numbered ? "invoice.title"|trans({"%id%" : invoice.invoiceId}) : "invoice.title_draft"|trans) }}</h1>{% if invoice.subject is not empty %}<div class="doc-view-subject text-secondary mt-1" id="doc-subject">{{ invoice.subject }}</div>{% endif %}
                 <div class="doc-view-meta">
                     {{ invoice_label(invoice.status) }}
                     {% if invoice.due is not empty %}

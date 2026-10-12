@@ -53,6 +53,7 @@ final readonly class InvoiceFormManager
         $invoice->setDeliveryDate($dto->deliveryDate);
         $invoice->setDue($dto->due);
         $invoice->setDiscount($dto->discount);
+        $invoice->setSubject($dto->subject);
         $invoice->setTerms($dto->terms);
         $invoice->setNotes($dto->notes);
         $invoice->setTotal($dto->total);
@@ -97,6 +98,7 @@ final readonly class InvoiceFormManager
         $invoice->setDeliveryDate($dto->deliveryDate);
         $invoice->setDue($dto->due);
         $invoice->setDiscount($dto->discount);
+        $invoice->setSubject($dto->subject);
         $invoice->setTerms($dto->terms);
         $invoice->setNotes($dto->notes);
         $invoice->setTotal($dto->total);
@@ -157,6 +159,7 @@ final readonly class InvoiceFormManager
         $dto->deliveryDate = $invoice->getDeliveryDate();
         $dto->due = $invoice->getDue();
         $dto->discount = $invoice->getDiscount();
+        $dto->subject = $invoice->getSubject();
         $dto->terms = $invoice->getTerms();
         $dto->notes = $invoice->getNotes();
         $dto->total = (string) $invoice->getTotal();

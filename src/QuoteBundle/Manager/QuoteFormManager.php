@@ -50,6 +50,7 @@ final readonly class QuoteFormManager
         $quote->setQuoteId($dto->quoteId);
         $quote->setDue($dto->due);
         $quote->setDiscount($dto->discount);
+        $quote->setSubject($dto->subject);
         $quote->setTerms($dto->terms);
         $quote->setNotes($dto->notes);
         $quote->setTotal($dto->total);
@@ -92,6 +93,7 @@ final readonly class QuoteFormManager
         $quote->setQuoteId($dto->quoteId);
         $quote->setDue($dto->due);
         $quote->setDiscount($dto->discount);
+        $quote->setSubject($dto->subject);
         $quote->setTerms($dto->terms);
         $quote->setNotes($dto->notes);
         $quote->setTotal($dto->total);
@@ -150,6 +152,7 @@ final readonly class QuoteFormManager
         $dto->quoteId = $quote->getQuoteId();
         $dto->due = $quote->getDue();
         $dto->discount = $quote->getDiscount();
+        $dto->subject = $quote->getSubject();
         $dto->terms = $quote->getTerms();
         $dto->notes = $quote->getNotes();
         $dto->total = (string) $quote->getTotal();

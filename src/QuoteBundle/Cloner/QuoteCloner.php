@@ -54,6 +54,7 @@ final readonly class QuoteCloner
         $newQuote->setDiscount($quote->getDiscount());
         $newQuote->setNotes($quote->getNotes());
         $newQuote->setTotal($quote->getTotal());
+        $newQuote->setSubject($quote->getSubject());
         $newQuote->setTerms($quote->getTerms());
         $newQuote->setQuoteId($this->billingIdGenerator->generate($newQuote, ['field' => 'quoteId']));
 

@@ -149,6 +149,8 @@
 
                         {# Line Items Table #}
                         <div class="table-responsive">
+                            {{ include('@AugiasCore/Billing/_subject.html.twig', {subject: quote.subject}) }}
+
                             <table class="table ext-doc-items-table doc-lines doc-lines-stacked">
                                 <thead>
                                     <tr>

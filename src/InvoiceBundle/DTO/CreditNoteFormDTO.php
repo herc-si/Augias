@@ -57,6 +57,10 @@ final class CreditNoteFormDTO
 
     public ?Discount $discount = null;
 
+    /** What the document is about, in a few words. */
+    #[Assert\Length(max: 255)]
+    public ?string $subject = null;
+
     public ?string $terms = null;
 
     public ?string $notes = null;

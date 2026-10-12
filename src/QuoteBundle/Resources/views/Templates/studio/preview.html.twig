@@ -12,10 +12,13 @@
                 </div>
             </div>
 
+            {# The project's title is the document's subject; none given, no title made up. #}
+            {% if quote.subject is not empty %}
             <div class="p-4 mb-4 rounded" style="background: #f8fafc; border-left: 4px solid #2e963a;">
                 <div class="text-muted small text-uppercase mb-1" style="letter-spacing: 2px;">{{ 'invoice.template.studio.project_label'|trans }}</div>
-                <div class="display-6 fw-bold text-dark mb-0">{{ quote.client }} {{ 'invoice.template.studio.engagement'|trans }}</div>
+                <div class="display-6 fw-bold text-dark mb-0">{{ quote.subject }}</div>
             </div>
+            {% endif %}
 
             <div class="row mb-4">
                 <div class="col-md-4">

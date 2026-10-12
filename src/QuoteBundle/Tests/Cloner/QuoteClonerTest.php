@@ -76,6 +76,7 @@ final class QuoteClonerTest extends TestCase
         $quote->setQuoteId('bar-baz-foo');
         $quote->setTax(BigInteger::of(432));
         $quote->setTerms('Terms');
+        $quote->setSubject('Migration to Odoo');
         $quote->setTotal(BigInteger::of(987));
         $quote->setClient($client);
         $quote->addLine($item);
@@ -115,6 +116,7 @@ final class QuoteClonerTest extends TestCase
         self::assertSame($quote->getDiscount(), $newQuote->getDiscount());
         self::assertSame($quote->getNotes(), $newQuote->getNotes());
         self::assertSame($quote->getTerms(), $newQuote->getTerms());
+        self::assertSame('Migration to Odoo', $newQuote->getSubject());
         self::assertNotSame($quote->getQuoteId(), $newQuote->getQuoteId());
         self::assertSame('generatorfoo-bar-bazgenerator', $newQuote->getQuoteId());
         self::assertEquals($quote->getTax(), $newQuote->getTax());

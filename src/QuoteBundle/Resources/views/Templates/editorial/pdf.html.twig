@@ -45,6 +45,8 @@
 </table>
 
 <div class="editorial-marker" style="margin-bottom: 12px;">III. {{ 'quote.item.heading.description'|trans }}</div>
+{{ include('@AugiasCore/Billing/_subject.html.twig', {subject: quote.subject}) }}
+
 <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 16px;">
     {% for line in quote.lines %}
         {% if line.note|default(false) %}

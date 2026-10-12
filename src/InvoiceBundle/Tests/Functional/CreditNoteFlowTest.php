@@ -86,6 +86,7 @@ final class CreditNoteFlowTest extends WebTestCase
         $invoice = InvoiceFactory::createOne([
             'company' => $this->company,
             'client' => $this->client(),
+            'subject' => 'Annual licence 2026',
             'lines' => [
                 new \Augias\InvoiceBundle\Entity\Line()
                     ->setDescription('Annual licence')
@@ -99,7 +100,9 @@ final class CreditNoteFlowTest extends WebTestCase
             ->actingAs($this->createUser())
             ->visit('/invoices/credit-notes/create/' . $invoice->getId())
             ->assertSuccessful()
-            ->assertSeeIn('body', 'Annual licence');
+            ->assertSeeIn('body', 'Annual licence')
+            // It takes back that invoice's work: the same subject.
+            ->assertFieldEquals('credit_note[subject]', 'Annual licence 2026');
     }
 
     /**

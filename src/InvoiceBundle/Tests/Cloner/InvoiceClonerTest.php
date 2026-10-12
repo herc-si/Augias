@@ -73,6 +73,7 @@ final class InvoiceClonerTest extends TestCase
         $invoice->setNotes('Notes');
         $invoice->setTax(432);
         $invoice->setTerms('Terms');
+        $invoice->setSubject('Migration to Odoo');
         $invoice->setTotal(987);
         $invoice->setClient($client);
         $invoice->addLine($line);
@@ -91,6 +92,7 @@ final class InvoiceClonerTest extends TestCase
         self::assertSame($invoice->getDiscount(), $newInvoice->getDiscount());
         self::assertSame($invoice->getNotes(), $newInvoice->getNotes());
         self::assertSame($invoice->getTerms(), $newInvoice->getTerms());
+        self::assertSame('Migration to Odoo', $newInvoice->getSubject());
         self::assertEquals($invoice->getTax(), $newInvoice->getTax());
         self::assertSame($client, $newInvoice->getClient());
         self::assertNull($newInvoice->getStatus());
@@ -149,6 +151,7 @@ final class InvoiceClonerTest extends TestCase
         $invoice->setNotes('Notes');
         $invoice->setTax(432);
         $invoice->setTerms('Terms');
+        $invoice->setSubject('Migration to Odoo');
         $invoice->setTotal(987);
         $invoice->setClient($client);
         $invoice->addLine($line);
@@ -170,6 +173,7 @@ final class InvoiceClonerTest extends TestCase
         self::assertSame($invoice->getDiscount(), $newInvoice->getDiscount());
         self::assertSame($invoice->getNotes(), $newInvoice->getNotes());
         self::assertSame($invoice->getTerms(), $newInvoice->getTerms());
+        self::assertSame('Migration to Odoo', $newInvoice->getSubject());
         self::assertEquals($invoice->getTax(), $newInvoice->getTax());
         self::assertSame($client, $newInvoice->getClient());
         self::assertNull($newInvoice->getStatus());

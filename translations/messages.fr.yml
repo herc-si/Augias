@@ -513,6 +513,7 @@ bill:
         tax: 'TVA'
         total: Total
 billing:
+    subject: Objet
     disbursements: Débours
     discount: Remise
     due_date: 'Date d''échéance'
@@ -1914,6 +1915,8 @@ form:
         placeholder: "Glissez une image ici ou parcourez vos fichiers"
     address: Adresse
     field:
+        subject: "Objet"
+        subject_help: "En quelques mots, ce sur quoi porte le document : il s'affiche au-dessus des lignes."
         access_key: "Clé d'accès"
         access_secret: "Secret d'accès"
         access_token: "Jeton d'accès"
@@ -2522,7 +2525,6 @@ invoice:
         studio:
             client: Client
             deliverable: Livrable
-            engagement: mission
             project_label: Projet
             studio: Studio
     terms: 'Conditions'
@@ -3694,6 +3696,7 @@ saas:
                 city: Paris
                 zip: '75002'
                 country: FR
+                subject: 'Refonte du site vitrine'
                 invoice_prefix: FACT
                 terms: "Paiement à 14 jours par virement.\nPas d'escompte pour paiement anticipé."
                 line_identity: 'Création de l''identité visuelle'

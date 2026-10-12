@@ -24,6 +24,7 @@ use Brick\Math\Exception\MathException;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\MappedSuperclass]
 abstract class BaseInvoice
@@ -108,6 +109,16 @@ abstract class BaseInvoice
         ]
     )]
     protected Discount $discount;
+
+    /**
+     * What the document is about, in a few words ("Migration to Odoo"): shown
+     * above the lines, and as the project's title by the templates that have
+     * one. Optional — a template shows nothing rather than invent a title.
+     */
+    #[ORM\Column(name: 'subject', type: Types::STRING, length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    #[Groups(['invoice_api', 'recurring_invoice_api', 'client_api', 'create_invoice_api', 'create_recurring_invoice_api', 'invoice_api:read', 'invoice_api:write', 'recurring_invoice_api:read', 'recurring_invoice_api:write'])]
+    protected ?string $subject = null;
 
     #[ORM\Column(name: 'terms', type: Types::TEXT, nullable: true)]
     #[Groups(['invoice_api', 'recurring_invoice_api', 'client_api', 'create_invoice_api', 'create_recurring_invoice_api', 'invoice_api:read', 'invoice_api:write', 'recurring_invoice_api:read', 'recurring_invoice_api:write'])]
@@ -244,6 +255,19 @@ abstract class BaseInvoice
         $value = $this->discount->getValue();
 
         return BigNumber::of(is_float($value) ? (string) $value : $value)->isPositive();
+    }
+
+    public function getSubject(): ?string
+    {
+        return $this->subject;
+    }
+
+    public function setSubject(?string $subject): self
+    {
+        $subject = null === $subject ? null : trim($subject);
+        $this->subject = '' === $subject ? null : $subject;
+
+        return $this;
     }
 
     public function getTerms(): ?string
