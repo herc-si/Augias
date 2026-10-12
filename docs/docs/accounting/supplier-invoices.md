@@ -1,40 +1,40 @@
 ---
-title: Recording supplier invoices
-description: Record the invoices your suppliers send you, typed in or read from their Factur-X file.
+title: Enregistrer les factures fournisseurs
+description: Enregistrer les factures de vos fournisseurs, saisies à la main ou lues dans leur fichier Factur-X.
 sidebar_position: 6
 ---
 
-# Recording supplier invoices
+# Enregistrer les factures fournisseurs
 
-Record the invoices your suppliers send you so that what you owe, and the VAT you can deduct, are known. In the sidebar, open `Services`, click `Purchase Invoices`, then `Add Bill`.
+Enregistrez les factures de vos fournisseurs pour connaître ce que vous devez et la TVA que vous pouvez déduire. Dans le menu latéral, cliquez sur `Factures d'achat`, puis sur `Ajouter une facture`.
 
-Invoices your suppliers send through the electronic invoicing platform arrive on their own and need no typing. For the others, there are two ways in.
+Les factures que vos fournisseurs envoient par la plateforme de facturation électronique arrivent seules, sans rien à saisir. Pour les autres, deux possibilités.
 
-## From a Factur-X file
+## Depuis un fichier Factur-X
 
-Many suppliers already send a `Factur-X` PDF: an ordinary-looking PDF with the invoice's data embedded in it.
+Beaucoup de fournisseurs envoient déjà un PDF `Factur-X` : un PDF d'apparence ordinaire qui contient les données de la facture.
 
-1. At the top of the `Add Bill` page, in the `Import a Factur-X invoice` box, choose the supplier's PDF (or the invoice's XML file on its own).
-2. Click `Import`.
+1. En haut de la page `Ajouter une facture`, dans le cadre `Importer une facture Factur-X`, choisissez le PDF du fournisseur (ou le fichier XML de la facture seul).
+2. Cliquez sur `Importer`.
 
-Augias reads the supplier, the invoice number, the issue and due dates, the total and the VAT from the invoice itself, and nothing is guessed. The supplier is matched to an existing one by its SIREN or VAT number, then by its name, or created.
+Augias lit dans la facture elle-même le fournisseur, le numéro, les dates d'émission et d'échéance, le total et la TVA ; rien n'est deviné. Le fournisseur est retrouvé par son SIREN ou son numéro de TVA, puis par son nom, ou créé.
 
-The bill opens as a draft for you to check, with the file attached. Save it, then confirm it as you would any bill. The supplier's file stays available from the bill's page, under `See the supplier's invoice`.
+La facture s'ouvre en brouillon pour que vous la vérifiiez, avec le fichier joint. Enregistrez-la, puis validez-la comme toute facture fournisseur. Le fichier du fournisseur reste accessible depuis la page de la facture, avec `Voir la facture du fournisseur`.
 
 :::info
-A PDF without embedded data, such as a scan or a photo of a receipt, cannot be read this way. Augias says so, and you type the invoice in below.
+Un PDF sans données intégrées, comme un scan ou la photo d'un ticket, ne peut pas être lu ainsi. Augias le signale, et vous saisissez la facture ci-dessous.
 :::
 
-## Typed in
+## Saisie à la main
 
-Fill in the form: the supplier (pick one or type a new name), the invoice number and dates, the total and, if you charge VAT, the VAT amount and whether it is goods or services.
+Remplissez le formulaire : le fournisseur (choisissez-le ou tapez un nouveau nom), le numéro et les dates de la facture, le total et, si vous facturez la TVA, son montant et la nature de l'achat, bien ou service.
 
-## Troubleshooting
+## Dépannage
 
-### `This file holds no readable Factur-X invoice`
+### `Ce fichier ne contient pas de facture Factur-X lisible`
 
-The PDF carries no invoice data. Ask your supplier whether they can send Factur-X, which becomes the rule for French businesses in September 2027, or type the invoice in.
+Le PDF ne porte pas de données de facture. Demandez à votre fournisseur s'il peut envoyer du Factur-X, qui deviendra la règle pour les entreprises françaises en septembre 2027, ou saisissez la facture à la main.
 
-### `This file is a supplier credit note`
+### `Ce fichier est un avoir fournisseur`
 
-Supplier credit notes are not handled yet. Record the refund as a negative entry in your books, or lower the corresponding bill.
+Les avoirs fournisseurs ne sont pas encore gérés. Enregistrez le remboursement comme une écriture négative dans vos livres, ou diminuez la facture fournisseur correspondante.

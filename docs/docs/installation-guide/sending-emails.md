@@ -1,86 +1,86 @@
 ---
-title: Sending emails
-description: Configure how Augias sends invoices, reminders and notifications by email.
+title: Envoyer des e-mails
+description: Régler la façon dont Augias envoie factures, relances et notifications par e-mail.
 sidebar_position: 9
 ---
 
-# Sending emails
+# Envoyer des e-mails
 
-Augias sends invoices, quotes, payment reminders and account emails through a mail transport you configure: your own SMTP server or a delivery service. Until one is configured, nothing is sent.
+Augias envoie factures, devis, relances et e-mails de compte par le transport que vous configurez : votre propre serveur SMTP ou un service d'envoi. Tant qu'aucun n'est configuré, rien ne part.
 
-## Two levels
+## Deux niveaux
 
-- **A default for the whole server**, set with the `AUGIAS_MAILER_DSN` environment variable. Every company that has not configured its own delivery uses it.
-- **Per company**, in `Settings` > `Email`: the `Sender Information` (address and name shown in "From") and, optionally, an `Email Delivery` service with its credentials. A company's own delivery replaces the server default for its emails.
+- **Un réglage par défaut pour tout le serveur**, par la variable d'environnement `AUGIAS_MAILER_DSN`. Toute entreprise qui n'a pas configuré son propre envoi l'utilise.
+- **Par entreprise**, dans `Paramètres` > `E-mail` : les `Informations d'expéditeur` (l'adresse et le nom affichés dans « De ») et, si besoin, un service de `Livraison des e-mails` avec ses identifiants. L'envoi propre à une entreprise remplace celui du serveur pour ses e-mails.
 
-## The server default
+## Le réglage du serveur
 
-`AUGIAS_MAILER_DSN` takes a Symfony Mailer DSN. Some examples:
+`AUGIAS_MAILER_DSN` prend un DSN Symfony Mailer. Quelques exemples :
 
 ```ini
-# Any SMTP server — port 587 uses STARTTLS, port 465 implicit TLS
+# Tout serveur SMTP : le port 587 utilise STARTTLS, le port 465 le TLS implicite
 AUGIAS_MAILER_DSN=smtp://user:password@smtp.example.com:587
 
-# An address as the user name: write its @ as %40
-AUGIAS_MAILER_DSN=smtp://invoices%40example.com:password@mail.example.com:587
+# Une adresse comme nom d'utilisateur : écrivez son @ sous la forme %40
+AUGIAS_MAILER_DSN=smtp://factures%40example.com:password@mail.example.com:587
 
 # Amazon SES
 AUGIAS_MAILER_DSN=ses+smtp://ACCESS_KEY:SECRET_KEY@default?region=eu-west-3
 ```
 
-Characters such as `@`, `:` or `/` in the password must be URL-encoded too.
+Les caractères comme `@`, `:` ou `/` dans le mot de passe doivent aussi être encodés pour une URL.
 
-Set it where your installation reads its environment: the `environment` of the containers with Docker, the chart's values with Helm, or the server's environment. You can also keep it out of files entirely as a secret:
+Réglez-le là où votre installation lit son environnement : l'`environment` des conteneurs avec Docker, les valeurs du chart avec Helm, ou l'environnement du serveur. Vous pouvez aussi le garder hors de tout fichier, comme secret :
 
 ```bash
 bin/console secrets:set AUGIAS_MAILER_DSN
 ```
 
-## Per company
+## Par entreprise
 
-In `Settings` > `Email`:
+Dans `Paramètres` > `E-mail` :
 
-1. Under `Sender Information`, set the address emails are sent from and the name shown beside it. Replies go to that address.
-2. Under `Email Delivery`, leave the service empty to use the server default, or choose one — SMTP, Gmail, Mailgun, Mailchimp, Postmark, SendGrid or Amazon SES — and fill in its credentials.
+1. Sous `Informations d'expéditeur`, indiquez l'adresse d'envoi et le nom affiché à côté. Les réponses arrivent à cette adresse.
+2. Sous `Livraison des e-mails`, laissez le service vide pour utiliser le réglage du serveur, ou choisissez-en un (SMTP, Gmail, Mailgun, Mailchimp, Postmark, SendGrid ou Amazon SES) et renseignez ses identifiants.
 
 :::warning
-The sender address must belong to a domain that allows your transport to send for it, or your emails will land in spam. See below.
+L'adresse d'expédition doit appartenir à un domaine qui autorise votre transport à envoyer pour lui, sinon vos e-mails finiront en indésirables. Voir ci-dessous.
 :::
 
-## Getting emails delivered
+## Faire arriver les e-mails
 
-Receiving servers check that the sender's domain authorises the server that sent the email. On the domain of your sender address, publish:
+Les serveurs destinataires vérifient que le domaine de l'expéditeur autorise le serveur qui a envoyé l'e-mail. Sur le domaine de votre adresse d'expédition, publiez :
 
-- an **SPF** record listing your transport (your provider gives the `include:` to add);
-- the **DKIM** key your provider gives you, so emails are signed;
-- a **DMARC** policy, starting with `p=none` while you check the results.
+- un enregistrement **SPF** qui liste votre transport (votre fournisseur donne l'`include:` à ajouter) ;
+- la clé **DKIM** fournie par votre fournisseur, pour que les e-mails soient signés ;
+- une politique **DMARC**, en commençant par `p=none` le temps de vérifier les résultats.
 
-Then send an invoice to the address [mail-tester.com](https://www.mail-tester.com) gives you: it scores the email and says what is missing.
+Envoyez ensuite une facture à l'adresse que vous donne [mail-tester.com](https://www.mail-tester.com) : il note l'e-mail et dit ce qui manque.
 
-## Checking the configuration
+## Vérifier la configuration
 
-Send a test email with the server default:
+Envoyez un e-mail de test avec le réglage du serveur :
 
 ```bash
-bin/console mailer:test you@example.com --from=invoices@example.com
+bin/console mailer:test vous@example.com --from=factures@example.com
 ```
 
-Emails are sent by the background worker. If the test arrives but invoices do not, check that the worker (the `messenger:consume` process) is running.
+Les e-mails partent par le processus de fond. Si le test arrive mais pas les factures, vérifiez que le worker (le processus `messenger:consume`) tourne.
 
-## In development
+## En développement
 
-The development stack (`docker-compose.dev.yml`) runs [Mailpit](https://mailpit.axllent.org/), which catches every email the application sends and shows it at `http://localhost:8025`. Nothing reaches a real address. The tests send nothing at all.
+La pile de développement (`docker-compose.dev.yml`) fait tourner [Mailpit](https://mailpit.axllent.org/), qui intercepte chaque e-mail envoyé par l'application et l'affiche sur `http://localhost:8025`. Rien n'atteint une vraie adresse. Les tests n'envoient rien du tout.
 
-## Troubleshooting
+## Dépannage
 
-### Nothing is sent and there is no error
+### Rien ne part, et aucune erreur
 
-No transport is configured: `AUGIAS_MAILER_DSN` still has its default, `null://null`, which discards every email, and the company has no delivery service of its own. Set one of the two.
+Aucun transport n'est configuré : `AUGIAS_MAILER_DSN` a encore sa valeur par défaut, `null://null`, qui jette chaque e-mail, et l'entreprise n'a pas d'envoi à elle. Réglez l'un des deux.
 
-### Emails arrive in spam
+### Les e-mails arrivent en indésirables
 
-The sender's domain does not authorise your transport. Publish SPF, DKIM and DMARC records on that domain as above, or send from an address on a domain your transport is set up for.
+Le domaine de l'expéditeur n'autorise pas votre transport. Publiez des enregistrements SPF, DKIM et DMARC sur ce domaine comme ci-dessus, ou envoyez depuis une adresse d'un domaine configuré pour votre transport.
 
 ### `Connection could not be established with host`
 
-The host or port is wrong, or the server cannot reach it: many hosting providers block outgoing port 25. Use port 587 or 465, which your provider documents.
+L'hôte ou le port est faux, ou le serveur ne peut pas le joindre : beaucoup d'hébergeurs bloquent le port 25 sortant. Utilisez le port 587 ou 465 indiqué par votre fournisseur.

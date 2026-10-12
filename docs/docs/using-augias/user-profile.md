@@ -1,57 +1,57 @@
 ---
-title: User profile
-description: Update your personal details, change your password, and manage account settings.
+title: Votre profil
+description: Mettre à jour vos informations, changer votre mot de passe et gérer les réglages de votre compte.
 sidebar_position: 4
 ---
 
-# User profile
+# Votre profil
 
-Your profile page brings together your personal details and account settings in one place.
+Votre page de profil réunit vos informations personnelles et les réglages de votre compte.
 
-## Open your profile
+## Ouvrir votre profil
 
-Click your name or avatar in the left sidebar. The profile page shows your current information under two sections: **Personal Information** and **Security**.
+Cliquez sur votre nom ou votre avatar dans le menu latéral. La page présente vos informations en deux parties : **Informations personnelles** et **Sécurité**.
 
-## Update personal details
+## Modifier vos informations
 
-Click `Update Profile` to open the edit form.
+Cliquez sur `Mettre à jour le profil` pour ouvrir le formulaire.
 
-| Field | Notes |
+| Champ | Remarques |
 | --- | --- |
-| `First Name` | Appears in the UI and on outgoing emails. |
-| `Last Name` | Appears in the UI and on outgoing emails. |
-| `Email` | Your login email. Changing it triggers a new [verification email](./email-verification.md). |
-| `Mobile` | Optional contact number. |
-| `Current Password` | Required to confirm any change to the form. |
+| `Prénom` | Affiché dans l'application et dans les e-mails envoyés. |
+| `Nom` | Affiché dans l'application et dans les e-mails envoyés. |
+| `E-mail` | L'adresse de connexion. La changer déclenche un nouvel [e-mail de vérification](./email-verification.md). |
+| `Mobile` | Un numéro de contact, facultatif. |
+| `Mot de passe actuel` | Obligatoire pour valider toute modification. |
 
-Click `Save` when done. You are returned to the profile page with a confirmation message.
+Cliquez sur `Enregistrer`. Vous revenez sur votre profil avec un message de confirmation.
 
-## Change your password
+## Changer votre mot de passe
 
-From the **Security** section, click `Change Password`. This opens a dedicated form where you enter your current password and choose a new one.
+Dans la partie **Sécurité**, cliquez sur `Changer le mot de passe`. Un formulaire dédié demande votre mot de passe actuel et le nouveau.
 
-## Two-factor authentication
+## Authentification à deux facteurs
 
-The **Security** section shows whether 2FA is active on your account. Click `Enable` or `Manage` to open the [Two-Factor Authentication](./two-factor-authentication.md) settings.
+La partie **Sécurité** indique si la double authentification est active. Cliquez sur `Activer` ou `Gérer` pour ouvrir les réglages de l'[authentification à deux facteurs](./two-factor-authentication.md).
 
-## Notification preferences
+## Notifications
 
-From the sidebar, choose `Notifications` under your profile. You can choose which events trigger notifications and which channels receive them (email is always available; other channels depend on your configured integrations).
+Dans le menu latéral, choisissez `Notifications` sous votre profil. Vous y choisissez les événements qui déclenchent une notification et les canaux qui la reçoivent (l'e-mail est toujours disponible ; les autres dépendent de vos intégrations).
 
-## API tokens
+## Clés API
 
-From the sidebar, choose `API Keys` to create, view, and revoke personal API tokens used to authenticate requests to the [REST API](../api/rest-api.md).
+Dans le menu latéral, `Clés API` permet de créer, consulter et révoquer les jetons personnels qui authentifient vos appels à l'[API REST](../api/rest-api.md).
 
-## Connected apps
+## Applications connectées
 
-From the sidebar, choose `Connected Apps` to see and revoke OAuth applications that have been granted access to your account.
+Dans le menu latéral, `Applications connectées` liste les applications OAuth qui ont accès à votre compte, et permet de leur retirer cet accès.
 
-## Data export
+## Export de données
 
-From the sidebar, choose `Data Export` to request a full export of your company data. See [Exporting data](./exporting-data.md) for details.
+Dans le menu latéral, `Export de données` permet de demander un export complet des données de votre entreprise. Voir [Exporter vos données](./exporting-data.md).
 
-## Related
+## Voir aussi
 
-- [Two-factor authentication](./two-factor-authentication.md)
-- [Email verification](./email-verification.md)
-- [Exporting data](./exporting-data.md)
+- [Authentification à deux facteurs](./two-factor-authentication.md)
+- [Vérifier son adresse e-mail](./email-verification.md)
+- [Exporter vos données](./exporting-data.md)

@@ -1,38 +1,38 @@
 ---
-title: Cron job setup
-description: Schedule the Augias background worker on your platform — systemd, cron, Plesk, cPanel, or Windows.
+title: Tâches planifiées
+description: "Planifier le processus de fond d'Augias sur votre plateforme : systemd, cron, Plesk, cPanel ou Windows."
 sidebar_position: 2
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Cron job setup
+# Tâches planifiées
 
-Augias uses a single background worker for both async messages (email, webhooks) and scheduled tasks (recurring invoices, reminders, overdue checks). The command is the same in every case:
+Augias utilise un seul processus de fond pour les messages asynchrones (e-mails, webhooks) et les tâches planifiées (factures récurrentes, relances, passage en retard). La commande est la même partout :
 
 ```bash
 bin/console messenger:consume --all --time-limit=3600 --memory-limit=128M
 ```
 
-The platform-specific configurations below are alternative ways to keep that command running. Pick whichever fits your environment.
+Les configurations ci-dessous sont autant de façons de garder cette commande en marche. Choisissez celle qui convient à votre environnement.
 
 :::warning
-Without a worker running, async features and scheduled tasks won't fire — emails won't send and recurring invoices won't generate.
+Sans ce processus, ni les fonctions asynchrones ni les tâches planifiées ne s'exécutent : les e-mails ne partent pas et les factures récurrentes ne sont pas générées.
 :::
 
 :::info
-You only need to set up a worker when running from the [distribution package](./index.mdx) or from [Git](../git.md). The [quick install](../quick-install.mdx), [Homebrew](../homebrew.md), and [Docker](../docker.md) installs run the worker automatically.
+Ce processus n'est à mettre en place qu'avec le [paquet de distribution](./index.mdx) ou une installation depuis [Git](../git.md). L'[installation rapide](../quick-install.mdx), [Homebrew](../homebrew.md) et [Docker](../docker.md) le lancent automatiquement.
 :::
 
-## Pick a platform
+## Choisir une plateforme
 
 <Tabs groupId="cron-platform">
   <TabItem value="systemd" label="systemd" default>
 
-  A long-running systemd service is the most reliable option on a Linux server.
+  Un service systemd de longue durée est la solution la plus fiable sur un serveur Linux.
 
-  Create a unit file at `/etc/systemd/system/augias-worker.service`:
+  Créez un fichier d'unité `/etc/systemd/system/augias-worker.service` :
 
   ```ini title="/etc/systemd/system/augias-worker.service"
   [Unit]
@@ -51,22 +51,22 @@ You only need to set up a worker when running from the [distribution package](./
   WantedBy=multi-user.target
   ```
 
-  Reload, enable, and start it:
+  Rechargez, activez et démarrez-le :
 
   ```bash
   sudo systemctl daemon-reload
   sudo systemctl enable --now augias-worker.service
   ```
 
-  For higher throughput, run multiple copies via a systemd template (`augias-worker@.service`) and start `augias-worker@1`, `augias-worker@2`, etc.
+  Pour plus de débit, lancez plusieurs copies avec un modèle systemd (`augias-worker@.service`) et démarrez `augias-worker@1`, `augias-worker@2`, etc.
 
   </TabItem>
 
   <TabItem value="supervisord" label="Supervisord">
 
-  Use [Supervisord](http://supervisord.org/) on systems without systemd (or when your stack already manages other services with it).
+  Utilisez [Supervisord](http://supervisord.org/) sur un système sans systemd (ou si vous gérez déjà d'autres services avec lui).
 
-  Create a program file at `/etc/supervisor/conf.d/augias-worker.conf`:
+  Créez un fichier de programme `/etc/supervisor/conf.d/augias-worker.conf` :
 
   ```ini title="/etc/supervisor/conf.d/augias-worker.conf"
   [program:augias-worker]
@@ -85,7 +85,7 @@ You only need to set up a worker when running from the [distribution package](./
   stderr_logfile=/var/log/supervisor/augias-worker.err.log
   ```
 
-  Reload Supervisord and start the worker:
+  Rechargez Supervisord et démarrez le processus :
 
   ```bash
   sudo supervisorctl reread
@@ -93,97 +93,97 @@ You only need to set up a worker when running from the [distribution package](./
   sudo supervisorctl start augias-worker:*
   ```
 
-  Increase `numprocs` to run multiple workers in parallel — Supervisord will append the process number to `process_name` automatically.
+  Augmentez `numprocs` pour faire tourner plusieurs processus en parallèle : Supervisord ajoute lui-même le numéro de processus à `process_name`.
 
   :::tip
-  `stopwaitsecs=30` gives the worker time to finish the message it's currently handling before being killed. Keep it higher than the slowest message you expect to process.
+  `stopwaitsecs=30` laisse au processus le temps de finir le message en cours avant d'être arrêté. Gardez une valeur supérieure au message le plus lent que vous attendez.
   :::
 
   </TabItem>
 
-  <TabItem value="cron" label="Linux cron">
+  <TabItem value="cron" label="Cron Linux">
 
-  Use cron when you can't run a long-running service (for example on shared hosting that blocks daemons). The `--time-limit=55` flag makes the worker self-terminate before the next cron tick:
+  Utilisez cron quand un service de longue durée est impossible (par exemple sur un hébergement mutualisé qui bloque les démons). L'option `--time-limit=55` fait s'arrêter le processus avant le passage suivant de cron :
 
   ```bash title="crontab -e"
   * * * * * /usr/bin/php /opt/augias/bin/console messenger:consume --all --limit=10 --time-limit=55 --memory-limit=128M
   ```
 
   :::note
-  This approach introduces up to a 60-second delay before async messages and scheduled tasks start processing. For most self-hosted setups this is fine — but use the **systemd** option if you have it.
+  Cette méthode ajoute jusqu'à 60 secondes de délai avant le traitement des messages asynchrones et des tâches planifiées. C'est acceptable pour la plupart des installations, mais préférez **systemd** si vous l'avez.
   :::
 
-  Replace `/opt/augias` with the actual path to your installation.
+  Remplacez `/opt/augias` par le chemin réel de votre installation.
 
   </TabItem>
 
   <TabItem value="cpanel" label="cPanel">
 
-  1. Log in to cPanel.
-  2. Go to **Advanced → Cron Jobs**.
-  3. Add a new cron job:
-     - **Common Settings:** `Once per minute (* * * * *)`
-     - **Command:**
+  1. Connectez-vous à cPanel.
+  2. Ouvrez **Avancé → Tâches cron**.
+  3. Ajoutez une tâche :
+     - **Paramètres courants :** `Une fois par minute (* * * * *)`
+     - **Commande :**
 
        ```bash
-       /usr/bin/php /home/yourusername/path/to/augias/bin/console messenger:consume --all --limit=10 --time-limit=55 --memory-limit=128M
+       /usr/bin/php /home/votreutilisateur/chemin/vers/augias/bin/console messenger:consume --all --limit=10 --time-limit=55 --memory-limit=128M
        ```
 
-  4. Save.
+  4. Enregistrez.
 
-  Replace `/home/yourusername/path/to/augias` with the actual path to your installation.
+  Remplacez `/home/votreutilisateur/chemin/vers/augias` par le chemin réel de votre installation.
 
   </TabItem>
 
   <TabItem value="plesk" label="Plesk">
 
-  1. Log in to the Plesk panel.
-  2. Go to **Tools & Settings → Scheduled Tasks** (or **Scheduled Tasks** under your domain).
-  3. Click **Add Task** and configure:
-     - **Task type:** Run a command
-     - **Run:** `Cron style — * * * * *`
-     - **Command:**
+  1. Connectez-vous au panneau Plesk.
+  2. Ouvrez **Outils & paramètres → Tâches planifiées** (ou **Tâches planifiées** sous votre domaine).
+  3. Cliquez sur **Ajouter une tâche** et réglez :
+     - **Type de tâche :** Exécuter une commande
+     - **Exécuter :** `Style cron : * * * * *`
+     - **Commande :**
 
        ```bash
-       /usr/bin/php /path/to/augias/bin/console messenger:consume --all --limit=10 --time-limit=55 --memory-limit=128M
+       /usr/bin/php /chemin/vers/augias/bin/console messenger:consume --all --limit=10 --time-limit=55 --memory-limit=128M
        ```
 
-  4. Save the task.
+  4. Enregistrez la tâche.
 
   </TabItem>
 
   <TabItem value="windows" label="Windows">
 
-  Use Task Scheduler to run the worker every minute.
+  Utilisez le Planificateur de tâches pour lancer le processus chaque minute.
 
-  1. Open **Task Scheduler** and select **Create Task**.
-  2. **General** — name the task `Augias worker`.
-  3. **Triggers** — add a new trigger:
-     - Begin the task: **On a schedule**
-     - **Daily**, recur every `1` day
-     - **Repeat task every:** `1 minute` for a duration of `Indefinitely`
-  4. **Actions** — add a new action:
-     - **Action:** Start a program
-     - **Program/script:** `php.exe`
-     - **Add arguments:**
+  1. Ouvrez le **Planificateur de tâches** et choisissez **Créer une tâche**.
+  2. **Général** : nommez la tâche `Augias worker`.
+  3. **Déclencheurs** : ajoutez un déclencheur :
+     - Lancer la tâche : **À l'heure programmée**
+     - **Quotidien**, tous les `1` jours
+     - **Répéter la tâche toutes les :** `1 minute` pendant `Indéfiniment`
+  4. **Actions** : ajoutez une action :
+     - **Action :** Démarrer un programme
+     - **Programme/script :** `php.exe`
+     - **Ajouter des arguments :**
 
        ```text
-       C:\path\to\augias\bin\console messenger:consume --all --limit=10 --time-limit=55 --memory-limit=128M
+       C:\chemin\vers\augias\bin\console messenger:consume --all --limit=10 --time-limit=55 --memory-limit=128M
        ```
 
-  5. Save the task.
+  5. Enregistrez la tâche.
 
-  Replace `C:\path\to\augias` with the actual path to your installation.
+  Remplacez `C:\chemin\vers\augias` par le chemin réel de votre installation.
 
   </TabItem>
 </Tabs>
 
-## Verifying the worker is running
+## Vérifier que le processus tourne
 
-Tail the application log or check the messenger queue:
+Suivez le journal de l'application ou consultez la file des messages :
 
 ```bash
 bin/console messenger:stats
 ```
 
-A healthy setup keeps the queue counts low — messages are processed within seconds (systemd) or up to a minute (cron).
+Une installation saine garde des files courtes : les messages sont traités en quelques secondes (systemd) ou en une minute au plus (cron).

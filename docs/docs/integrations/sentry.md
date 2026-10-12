@@ -1,106 +1,106 @@
 ---
 title: Sentry
-description: Send Augias errors, logs, and performance data to Sentry.
+description: Envoyer les erreurs, les journaux et les mesures de performance d'Augias vers Sentry.
 sidebar_position: 1
 ---
 
 # Sentry
 
-Augias integrates with [Sentry](https://sentry.io/) so you can monitor errors, logs, and performance for your installation. The integration is built in — you only need to provide a DSN to enable it.
+Augias s'intègre à [Sentry](https://sentry.io/) pour surveiller les erreurs, les journaux et les performances de votre installation. L'intégration est fournie : il suffit d'un DSN pour l'activer.
 
-## What gets captured
+## Ce qui est envoyé
 
-When a DSN is configured, Augias sends the following to Sentry:
+Avec un DSN configuré, Augias envoie à Sentry :
 
-- **Errors** — uncaught exceptions and any log entry at level `ERROR` or higher, buffered using Monolog's *fingers crossed* handler so each error ships with the surrounding context (up to 50 prior log records).
-- **Logs** — log records at `INFO` level and above, excluding the `doctrine`, `request`, `security`, `event`, and `console` channels (these are noisy and rarely useful at scale).
-- **Performance traces** *(opt-in)* — HTTP requests, console commands, Doctrine SQL queries, Twig renders, Symfony Cache hits/misses, and outgoing HttpClient requests.
-- **Profiles** *(opt-in, requires the `excimer` PHP extension)* — CPU profiles for traced requests.
+- **Les erreurs** : exceptions non interceptées et toute entrée de journal de niveau `ERROR` ou plus, mises en mémoire par le gestionnaire *fingers crossed* de Monolog pour que chaque erreur parte avec son contexte (jusqu'à 50 entrées précédentes).
+- **Les journaux** : les entrées de niveau `INFO` et plus, sauf les canaux `doctrine`, `request`, `security`, `event` et `console` (bruyants et rarement utiles à grande échelle).
+- **Les traces de performance** *(sur option)* : requêtes HTTP, commandes console, requêtes SQL Doctrine, rendus Twig, accès au cache Symfony et requêtes HttpClient sortantes.
+- **Les profils** *(sur option, avec l'extension PHP `excimer`)* : profils CPU des requêtes tracées.
 
-Errors with HTTP status codes `401`, `404`, and `405` are excluded by default to reduce noise.
+Les erreurs de statut HTTP `401`, `404` et `405` sont exclues par défaut pour limiter le bruit.
 
-## Setting up Sentry
+## Mettre en place Sentry
 
-1. Create a project in Sentry and copy its [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/).
-2. Set the `AUGIAS_SENTRY_DSN` environment variable for your Augias instance (see the platform-specific instructions below).
-3. Restart the application so the new environment is loaded.
+1. Créez un projet dans Sentry et copiez son [DSN](https://docs.sentry.io/product/sentry-basics/dsn-explainer/).
+2. Réglez la variable d'environnement `AUGIAS_SENTRY_DSN` de votre instance (voir les instructions par plateforme ci-dessous).
+3. Redémarrez l'application pour qu'elle charge le nouvel environnement.
 
-That's all that's required to start receiving errors. Performance tracing and profiling are opt-in and configured separately (see [Performance monitoring](#performance-monitoring)).
+C'est tout ce qu'il faut pour recevoir les erreurs. Le suivi des performances et le profilage sont facultatifs et se règlent à part (voir [Suivi des performances](#suivi-des-performances)).
 
 ### Docker
 
-If you're running Augias using Docker, pass the DSN as an environment variable:
+Avec Docker, passez le DSN comme variable d'environnement :
 
 ```bash
 docker run -e AUGIAS_SENTRY_DSN=https://<key>@o0.ingest.sentry.io/<project-id> augias/augias
 ```
 
-### Distribution package
+### Paquet de distribution
 
-When running Augias from the distribution package or from source, add the DSN to the `.env` file at the root of the application. Create the file if it doesn't exist:
+Avec le paquet de distribution ou une installation depuis les sources, ajoutez le DSN au fichier `.env` à la racine de l'application. Créez le fichier s'il n'existe pas :
 
 ```ini title=".env"
 AUGIAS_SENTRY_DSN=https://<key>@o0.ingest.sentry.io/<project-id>
 ```
 
-## Configuration options
+## Options de configuration
 
-All Sentry-related settings are environment variables prefixed with `AUGIAS_SENTRY_`. Set them the same way you set the DSN.
+Tous les réglages Sentry sont des variables d'environnement préfixées par `AUGIAS_SENTRY_`. Elles se règlent comme le DSN.
 
-| Variable | Default | Description |
+| Variable | Défaut | Description |
 | --- | --- | --- |
-| `AUGIAS_SENTRY_DSN` | *(empty)* | Your Sentry project DSN. Leave empty to disable the integration. |
-| `AUGIAS_SENTRY_RELEASE` | Application version | Release name used to tag events. Useful for spotting regressions across upgrades. |
-| `AUGIAS_SENTRY_SEND_DEFAULT_PII` | `0` | When `1`, attaches the request user, IP address, and cookies to events. Leave at `0` unless you've reviewed the privacy implications for your users. |
-| `AUGIAS_SENTRY_TRACES_SAMPLE_RATE` | `0` | Fraction of requests to capture as performance traces, between `0.0` and `1.0`. `0` disables tracing entirely. |
-| `AUGIAS_SENTRY_PROFILES_SAMPLE_RATE` | `0` | Fraction of *traced* requests to also profile. Requires the `excimer` PHP extension. |
-| `AUGIAS_SENTRY_HTTP_TIMEOUT` | `2` | HTTP read timeout (in seconds) for sending events to Sentry. |
-| `AUGIAS_SENTRY_HTTP_CONNECT_TIMEOUT` | `2` | HTTP connect timeout (in seconds) for sending events to Sentry. |
+| `AUGIAS_SENTRY_DSN` | *(vide)* | Le DSN de votre projet Sentry. Vide, l'intégration est désactivée. |
+| `AUGIAS_SENTRY_RELEASE` | Version de l'application | Le nom de version attaché aux événements. Utile pour repérer une régression d'une mise à jour à l'autre. |
+| `AUGIAS_SENTRY_SEND_DEFAULT_PII` | `0` | À `1`, joint aux événements l'utilisateur, l'adresse IP et les cookies de la requête. Laissez `0` tant que vous n'avez pas examiné les conséquences pour la vie privée de vos utilisateurs. |
+| `AUGIAS_SENTRY_TRACES_SAMPLE_RATE` | `0` | La part des requêtes tracées, entre `0.0` et `1.0`. `0` désactive les traces. |
+| `AUGIAS_SENTRY_PROFILES_SAMPLE_RATE` | `0` | La part des requêtes *tracées* également profilées. Demande l'extension PHP `excimer`. |
+| `AUGIAS_SENTRY_HTTP_TIMEOUT` | `2` | Délai de lecture HTTP (en secondes) pour l'envoi des événements. |
+| `AUGIAS_SENTRY_HTTP_CONNECT_TIMEOUT` | `2` | Délai de connexion HTTP (en secondes) pour l'envoi des événements. |
 
 :::info
-`AUGIAS_SENTRY_SEND_DEFAULT_PII` accepts boolean-ish values — `1`/`0`, `true`/`false`. The sample-rate variables expect a decimal between `0` and `1` (e.g. `0.1` for 10%).
+`AUGIAS_SENTRY_SEND_DEFAULT_PII` accepte `1`/`0` ou `true`/`false`. Les taux d'échantillonnage attendent un nombre décimal entre `0` et `1` (par exemple `0.1` pour 10 %).
 :::
 
-## Performance monitoring
+## Suivi des performances
 
-Tracing is wired up but disabled by default. To enable it, set a sample rate above `0`:
+Les traces sont prêtes mais désactivées par défaut. Pour les activer, donnez un taux supérieur à `0` :
 
 ```ini title=".env"
 AUGIAS_SENTRY_TRACES_SAMPLE_RATE=0.1
 ```
 
-Recommended starting points:
+Points de départ conseillés :
 
-- **Low-traffic / self-hosted single tenant:** `1.0` (capture everything).
-- **Medium traffic:** `0.1` (capture 10% of requests).
-- **High traffic:** `0.01` (capture 1%).
+- **Peu de trafic, auto-hébergement pour une seule entreprise** : `1.0` (tout capturer).
+- **Trafic moyen** : `0.1` (10 % des requêtes).
+- **Fort trafic** : `0.01` (1 %).
 
-Once enabled, traces include child spans for every Doctrine query, Twig render, cache lookup, and outbound HttpClient call, plus console commands. Long-running workers (`messenger:consume`, `schedule:run`, `cron:run`) are excluded from tracing — they would otherwise produce a single trace spanning the worker's entire lifetime.
+Une fois activées, les traces détaillent chaque requête Doctrine, rendu Twig, accès au cache et appel HttpClient sortant, ainsi que les commandes console. Les processus de longue durée (`messenger:consume`, `schedule:run`, `cron:run`) sont exclus : ils produiraient sinon une seule trace couvrant toute leur vie.
 
 :::tip
-Start with a low sample rate in production and raise it only if you need more data. Sentry bills by event volume, and tracing produces far more events than error tracking.
+Commencez en production avec un taux bas et augmentez-le seulement si vous manquez de données. Sentry facture au volume d'événements, et les traces en produisent bien plus que le suivi des erreurs.
 :::
 
-### Profiling
+### Profilage
 
-Profiling captures CPU samples for traced requests and requires the [`excimer` PHP extension](https://github.com/wikimedia/php-excimer). To enable:
+Le profilage capture des échantillons CPU des requêtes tracées et demande l'[extension PHP `excimer`](https://github.com/wikimedia/php-excimer). Pour l'activer :
 
 ```ini title=".env"
 AUGIAS_SENTRY_TRACES_SAMPLE_RATE=0.1
 AUGIAS_SENTRY_PROFILES_SAMPLE_RATE=1.0
 ```
 
-The profile sample rate is *relative to* the trace sample rate. With the values above, 10% of requests are traced and 100% of those traces are profiled — i.e. 10% of all requests are profiled.
+Le taux de profilage est *relatif* au taux de traces. Avec les valeurs ci-dessus, 10 % des requêtes sont tracées et toutes ces traces sont profilées : 10 % des requêtes sont donc profilées.
 
 :::warning
-If `excimer` is not installed, leave `AUGIAS_SENTRY_PROFILES_SAMPLE_RATE` at `0`. The static binary distribution of Augias ships with `excimer` included; if you've built PHP yourself, you'll need to install it via PECL.
+Si `excimer` n'est pas installée, laissez `AUGIAS_SENTRY_PROFILES_SAMPLE_RATE` à `0`. Le binaire statique d'Augias inclut `excimer` ; si vous avez compilé PHP vous-même, installez-la par PECL.
 :::
 
-## Using a Sentry Relay
+## Passer par un relais Sentry
 
-[Sentry Relay](https://docs.sentry.io/product/relay/) is a lightweight proxy that buffers events locally and forwards them to Sentry asynchronously. It's worth using when you want predictable latency, scrub sensitive data before it leaves your network, or run Augias in environments with restricted egress.
+[Sentry Relay](https://docs.sentry.io/product/relay/) est un petit proxy qui garde les événements localement et les transmet à Sentry en différé. Il est utile pour une latence prévisible, pour nettoyer les données sensibles avant qu'elles ne quittent votre réseau, ou quand Augias tourne dans un environnement aux sorties restreintes.
 
-To send events through Relay, point the DSN at your Relay instance and keep the default short timeouts:
+Pour passer par le relais, faites pointer le DSN vers lui et gardez les délais courts par défaut :
 
 ```ini title=".env"
 AUGIAS_SENTRY_DSN=http://<key>@localhost:3000/<project-id>
@@ -108,28 +108,28 @@ AUGIAS_SENTRY_HTTP_TIMEOUT=2
 AUGIAS_SENTRY_HTTP_CONNECT_TIMEOUT=2
 ```
 
-When sending events directly to `sentry.io` (no Relay), consider raising both timeouts to `5`–`10` seconds to tolerate occasional latency.
+En envoi direct vers `sentry.io` (sans relais), envisagez de porter les deux délais à `5` à `10` secondes pour absorber une latence occasionnelle.
 
-## Tagging releases
+## Nommer les versions
 
-By default, events are tagged with Augias's application version. If you deploy from source or run a customised build, set `AUGIAS_SENTRY_RELEASE` to a value that uniquely identifies the deployment — typically a Git SHA or semver tag:
+Par défaut, les événements portent la version d'Augias. Si vous déployez depuis les sources ou une version modifiée, réglez `AUGIAS_SENTRY_RELEASE` sur une valeur propre au déploiement, en général un SHA Git ou une étiquette de version :
 
 ```ini title=".env"
-AUGIAS_SENTRY_RELEASE=3.0.0-rc1
+AUGIAS_SENTRY_RELEASE=4.1.0
 ```
 
-This makes it possible to spot regressions introduced by a specific release in Sentry's release health view.
+Vous repérez ainsi dans Sentry les régressions apportées par une version précise.
 
-## Verifying the integration
+## Vérifier l'intégration
 
-To confirm events are reaching Sentry, send a test event from the command line:
+Pour vérifier que les événements arrivent dans Sentry, envoyez un événement de test en ligne de commande :
 
 ```bash
 bin/console sentry:test
 ```
 
-The command sends a synthetic event using your configured DSN. It should appear in Sentry's *Issues* view within a few seconds.
+La commande envoie un événement factice avec le DSN configuré. Il doit apparaître dans la vue *Issues* de Sentry en quelques secondes.
 
-## Disabling Sentry
+## Désactiver Sentry
 
-Leave `AUGIAS_SENTRY_DSN` empty (or remove it from `.env`) and restart the application. With no DSN configured, no events are sent, and the integration adds negligible overhead.
+Videz `AUGIAS_SENTRY_DSN` (ou retirez-la du `.env`) et redémarrez l'application. Sans DSN, rien n'est envoyé et l'intégration ne coûte quasiment rien.

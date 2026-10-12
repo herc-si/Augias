@@ -1,68 +1,68 @@
 ---
-title: Setting up tax rates
-description: Create and manage the tax rates you can apply to invoices and quotes.
+title: Régler les taux de taxe
+description: Créer et gérer les taux de taxe à appliquer aux factures et aux devis.
 sidebar_position: 1
 ---
 
-# Setting up tax rates
+# Régler les taux de taxe
 
-Tax rates define the percentages or flat amounts that Augias uses when calculating tax on invoice and quote line items, and for invoice-level adjustments such as withholding tax. You must create at least one tax rate before the tax column appears on invoices.
+Les taux de taxe définissent les pourcentages ou les montants fixes qu'Augias applique aux lignes des factures et des devis, et aux ajustements sur toute la facture comme une retenue à la source. Il faut au moins un taux pour que la colonne des taxes apparaisse sur les factures.
 
-## Navigate to Tax Rates
+## Ouvrir les taux de taxe
 
-In the sidebar, expand **System** and click **Tax Rates**. The list shows every rate configured for your company.
+Dans le menu latéral, dépliez **Système** et cliquez sur **Taux de taxe**. La liste montre tous les taux de votre entreprise.
 
-## Add a tax rate
+## Ajouter un taux
 
-Click **Add Tax Rate** to open the creation form.
+Cliquez sur **Ajouter un taux de taxe** pour ouvrir le formulaire.
 
-### Name
+### Nom
 
-A short label that identifies this rate (e.g. `VAT`, `GST`, `Sales Tax`). Names must be unique within your company and cannot exceed 32 characters.
+Un libellé court qui identifie le taux (par exemple `TVA 20 %`, `TVA 5,5 %`). Le nom est unique dans l'entreprise et compte 32 caractères au plus.
 
-### Rate
+### Taux
 
-The numeric value of the tax. For percentage-based types enter a number such as `20` (for 20%). For the Flat Rate type enter the fixed currency amount.
+La valeur de la taxe. Pour un pourcentage, saisissez par exemple `20` (pour 20 %). Pour un forfait, saisissez le montant fixe.
 
 ### Type
 
-Controls how the rate is calculated relative to the item price:
+Fixe le calcul par rapport au prix de l'article :
 
-| Type | Behaviour |
-|---|---|
-| **Inclusive** | Tax is already included in the item price — it is extracted during calculation and shown separately. |
-| **Exclusive** | Tax is calculated on top of the item price and added to the total. |
-| **Flat Rate** | A fixed amount is charged regardless of the item price or quantity. |
+| Type | Comportement |
+| --- | --- |
+| **Incluse** | La taxe est déjà comprise dans le prix : elle en est extraite au calcul et affichée à part. |
+| **Exclusive** | La taxe s'ajoute au prix de l'article et au total. |
+| **Forfait** | Un montant fixe, quels que soient le prix et la quantité. |
 
-### Category
+### Catégorie
 
-The tax category determines how the rate appears on output documents and affects how totals are presented. Available categories:
+La catégorie détermine la présentation du taux sur les documents et celle des totaux :
 
-| Category | When to use |
-|---|---|
-| **Standard** | The default for most taxable goods and services. |
-| **Zero-Rated** | Taxable at 0% (e.g. basic food items under some VAT regimes). |
-| **Exempt** | Not subject to tax. The rate is still shown for transparency. |
-| **Out of Scope** | Outside the tax system entirely (e.g. inter-company transactions). |
-| **Reverse Charge** | The customer accounts for the tax rather than the supplier. |
+| Catégorie | Quand l'utiliser |
+| --- | --- |
+| **Normale** | Le cas général des biens et services taxables. |
+| **Taux zéro** | Taxable à 0 %. |
+| **Exonérée** | Non soumis à la taxe. Le taux reste affiché par transparence. |
+| **Hors champ** | Hors du champ de la taxe. |
+| **Autoliquidation** | Le client déclare la taxe à la place du fournisseur. |
 
-### Compound
+### Taxe composée
 
-Check **Compound** to apply this rate on top of already-taxed subtotals rather than on the original price. Use this for tax-on-tax scenarios required by certain jurisdictions.
+Cochez **Taxe composée** pour calculer ce taux sur le sous-total majoré des autres taxes plutôt que sur le prix d'origine : une taxe sur la taxe, que certains pays exigent.
 
-## Save
+## Enregistrer
 
-Click **Save** to create the rate. It is immediately available for selection on invoices and quotes.
+Cliquez sur **Enregistrer**. Le taux est aussitôt proposé sur les factures et les devis.
 
-## Edit or delete a rate
+## Modifier ou supprimer un taux
 
-From the Tax Rates list, use the row actions to edit or delete an existing rate.
+Dans la liste des taux, utilisez les actions de la ligne pour modifier ou supprimer un taux.
 
 :::warning
-Editing a rate changes it for future use only. Tax amounts on invoices and quotes that have already been issued are snapshotted at the rate in effect at the time of issue and are not retroactively updated.
+Modifier un taux ne vaut que pour la suite. Les montants de taxe des factures et devis déjà émis sont figés au taux en vigueur à l'émission et ne changent pas.
 :::
 
-## Related
+## Voir aussi
 
-- [Adding company tax identifiers](./company-tax-identifiers.md)
-- [Applying taxes to invoices](./applying-tax-to-invoices.md)
+- [Identifiants fiscaux de l'entreprise](./company-tax-identifiers.md)
+- [Appliquer les taxes aux factures](./applying-tax-to-invoices.md)

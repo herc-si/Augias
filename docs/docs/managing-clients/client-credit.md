@@ -1,77 +1,82 @@
 ---
-title: Client credit
-description: Hold a prepaid balance on a client's account and apply it against their invoices.
+title: Crédit client
+description: Tenir un solde créditeur sur le compte d'un client et l'utiliser pour payer ses factures.
 sidebar_position: 4
 ---
 
-# Client credit
+# Crédit client
 
-Client credit is a prepaid balance held on a client's account that you can later apply against one of their invoices instead of capturing a fresh payment. It's useful for retainer arrangements, deposits, refunds you'd rather keep on file than refund out, or anywhere you take money before a specific invoice exists.
+Le crédit client est un solde tenu sur le compte d'un client, qu'il peut utiliser plus tard pour payer l'une de ses factures au lieu d'un nouveau paiement. Il vient surtout des [avoirs](../invoices/credit-notes.md) émis, des trop-perçus et des factures annulées après paiement.
 
-Every client has exactly one credit balance, denominated in the client's currency.
+Chaque client a un seul solde créditeur, dans sa devise.
 
-## Where it lives
+## Où le trouver
 
-Open any client's view page (`/clients/view/{id}`) and look for the `Credit Balance` card sitting below the financial metrics row:
+Sur la fiche du client (`/clients/view/{id}`), la carte `Solde créditeur` se trouve sous les indicateurs financiers :
 
-![The Credit Balance card showing the current balance and an Add Credit button](/img/managing-clients/client-view-overview.png)
+![La carte Solde créditeur avec le solde et le bouton Ajouter un crédit](/img/managing-clients/client-view-overview.png)
 
-The card always shows the client's current balance — `$0.00` (or the equivalent in the client's currency) when no credit has been added.
+Elle affiche toujours le solde du moment, à zéro tant qu'aucun crédit n'a été ajouté.
 
-## Adding credit
+## D'où vient le crédit
 
-Click `+ Add Credit` on the card to open the modal:
+Le solde bouge tout seul dans ces cas :
 
-![The Add Credit modal with an Amount field and the tip about negative amounts](/img/managing-clients/add-credit-modal.png)
+- **Avoir émis** : le montant de l'avoir s'ajoute au solde, puis chaque règlement de l'avoir (imputation ou remboursement) le retire.
+- **Trop-perçu** : quand un client paie plus que le montant d'une facture, la différence s'ajoute au solde.
+- **Facture annulée après paiement** : les paiements déjà enregistrés deviennent du crédit.
 
-- `Amount` *(required)* — the amount to add to the balance. The currency symbol shown is the client's currency.
-- The tip below the field reads: `To subtract an amount, add a '-' before the amount, E.G -20`.
+## Ajouter du crédit à la main
 
-Click `Save`. The modal closes and the `Credit Balance` card updates immediately to show the new total.
+Cliquez sur `Ajouter un crédit` dans la carte pour ouvrir la fenêtre :
 
-## Deducting credit
+![La fenêtre Ajouter un crédit avec le champ Montant et l'astuce sur les montants négatifs](/img/managing-clients/add-credit-modal.png)
 
-Use the same `+ Add Credit` modal. Type a negative number — `-20` to remove `20` from the balance, for example.
+- `Montant` *(obligatoire)* : le montant à ajouter, dans la devise du client.
+- L'astuce sous le champ rappelle que, pour soustraire un montant, il suffit d'ajouter un « - » devant.
+
+Cliquez sur `Enregistrer`. La fenêtre se ferme et la carte affiche aussitôt le nouveau solde.
+
+:::warning[Ceci n'est pas un paiement]
+Un crédit accordé ici n'est pas de l'argent encaissé : il n'entre ni dans vos recettes ni dans vos livres. Si le client vous a réellement versé quelque chose (espèces, acompte, virement), enregistrez plutôt un paiement sur sa facture, sinon cette somme n'est comptée nulle part.
+:::
+
+## Retirer du crédit
+
+Utilisez la même fenêtre avec un montant négatif : `-20` retire 20 du solde.
 
 :::warning
-Augias does not stop you from going below zero this way. If you enter a deduction larger than the current balance, the resulting balance will be negative. There is no separate "deduct" form — negative amounts are the only way to reduce credit manually.
+Augias ne vous empêche pas de passer sous zéro de cette façon. Si vous retirez plus que le solde, il devient négatif. Il n'y a pas d'autre moyen de réduire le crédit à la main.
 :::
 
-## Applying credit to an invoice
+## Utiliser le crédit sur une facture
 
-Credit is **applied at payment time**, not automatically when an invoice is created. To pay an invoice using a client's credit balance:
+Le crédit s'utilise **au moment du paiement**, jamais automatiquement à la création d'une facture. Pour payer une facture avec le crédit du client :
 
-1. Open the invoice you want to settle.
-2. Click `Pay`.
-3. On the payment form, choose `Credit` as the payment method.
-4. Enter the amount to pay (up to the smaller of the invoice balance and the available credit) and confirm.
+1. Ouvrez la facture à régler.
+2. Cliquez sur `Payer maintenant`.
+3. Dans le formulaire de paiement, choisissez le moyen de paiement `Crédit`.
+4. Saisissez le montant, au plus le plus petit du solde de la facture et du crédit disponible, puis validez.
 
-When the payment captures, the client's credit balance is automatically reduced by the payment amount, and the invoice's balance moves toward `Paid` like any other payment.
+Une fois le paiement enregistré, le solde créditeur du client baisse d'autant, et la facture avance vers **Payée** comme avec tout autre paiement.
 
 :::info
-You don't have to use the entire credit balance on a single invoice — pay a portion, leave the rest on the account, and apply it later. Likewise, an invoice can be partly paid with credit and partly paid via another method (Stripe, PayPal, manual cash, etc.) using two payment entries.
+Rien n'oblige à utiliser tout le crédit sur une seule facture : payez une partie, gardez le reste sur le compte et utilisez-le plus tard. Une facture peut aussi être payée en partie par le crédit et en partie par un autre moyen (Stripe, PayPal, espèces…), avec deux paiements.
 :::
 
-If the amount entered exceeds either limit:
+Augias refuse un paiement par crédit qui dépasse le crédit disponible ou le solde de la facture.
 
-- More than the **available credit** → Augias rejects the payment with `Not enough credit available on this client's account`.
-- More than the **invoice balance** → Augias rejects the payment with `Amount exceeds invoice balance`.
+## Historique du crédit
 
-## Tracking credit history
+Le solde créditeur est un nombre unique. Augias garde le détail de deux de ses mouvements :
 
-The credit balance is a single rolling number. Augias does not currently store a history of every adjustment — you can see *what the balance is now*, but not *every time it changed*.
+- **Paiements par crédit** : chaque utilisation crée un paiement au moyen `Crédit`, visible dans l'onglet `Paiements` du client et compté dans `Revenu total`.
+- **Avoirs** : chaque avoir garde l'historique de ses règlements, dans son cadre `Règlement`.
 
-If you need an audit trail, record each adjustment in your accounting system or in the client's notes externally. Two indirect signals exist inside Augias:
+Les ajustements manuels (fenêtre `Ajouter un crédit`) ne laissent pas de trace au-delà du solde obtenu. Si vous avez besoin d'une piste d'audit, notez-les ailleurs.
 
-- **Payments using credit** — every time credit is applied to an invoice, a `Payment` row is created with method `Credit`. These are visible on the client's `Payments` tab and contribute to `Total Income`.
-- **Manual adjustments** (the `+ Add Credit` modal) leave no per-transaction record beyond the resulting balance.
+## Quand utiliser le crédit
 
-## When to use credit vs other tools
+Le crédit sert quand le client **a déjà droit à une somme** qui n'est pas encore rattachée à une facture : un avoir à déduire de ses prochaines factures, un trop-perçu qu'il souhaite garder sur son compte.
 
-Credit is the right tool when you've **already received the money** but haven't matched it to an invoice yet. Common cases:
-
-- A retainer or deposit paid before any invoice exists.
-- An overpayment on a previous invoice that the client wants kept on account.
-- A refund you'd prefer to credit back to the account rather than send out.
-
-It's **not** the right tool for discounts (use line-item discounts on the invoice) or for unpaid balances you're carrying as informal IOU (issue an invoice and leave it open).
+Ce n'est **pas** le bon outil pour une remise (utilisez la remise de la facture ou d'une ligne), pour un acompte encaissé (enregistrez un paiement), ni pour une somme que le client vous doit (établissez une facture et laissez-la ouverte).

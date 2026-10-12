@@ -1,9 +1,10 @@
 {
-  "label": "🔄 Recurring Invoices",
+  "label": "🔄 Factures récurrentes",
   "position": 9,
   "link": {
     "type": "generated-index",
-    "title": "Recurring Invoices",
-    "description": "Automate billing with recurring invoices on daily, weekly, monthly, or yearly schedules."
+    "title": "Factures récurrentes",
+    "description": "Automatiser la facturation avec des factures récurrentes quotidiennes, hebdomadaires, mensuelles ou annuelles.",
+    "slug": "/category/recurring-invoices"
   }
 }

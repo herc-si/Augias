@@ -1,56 +1,56 @@
 ---
-title: Bank details
-description: Enter your bank, IBAN and BIC once, so clients can pay your invoices by transfer.
+title: Coordonnées bancaires
+description: Saisir une fois votre banque, votre IBAN et votre BIC pour que vos clients règlent vos factures par virement.
 sidebar_position: 6
 ---
 
-# Bank details
+# Coordonnées bancaires
 
-Give your bank details once, and every invoice your clients still have to pay tells them how to pay you by transfer.
+Saisissez vos coordonnées bancaires une fois : chaque facture que vos clients doivent encore payer leur indique comment vous régler par virement.
 
-## Enter your bank details
+## Saisir vos coordonnées
 
-1. Open `Settings` and the `Company` tab.
-2. In the `Bank details` box, fill in:
-   - `Bank`: your bank's name, such as `Crédit Agricole`. Optional.
-   - `IBAN`: your account number. Paste it with or without spaces; it is checked and kept in groups of four, as on a bank statement.
-   - `BIC`: your bank's identifier, 8 or 11 characters. Optional, but recommended for transfers from abroad.
-3. Click `Save settings`.
+1. Ouvrez `Paramètres`, onglet `Société`.
+2. Dans le cadre `Coordonnées bancaires`, renseignez :
+   - `Banque` : le nom de votre banque, par exemple `Crédit Agricole`. Facultatif.
+   - `IBAN` : votre numéro de compte. Collez-le avec ou sans espaces ; il est vérifié et conservé par groupes de quatre, comme sur un relevé.
+   - `BIC` : l'identifiant de votre banque, 8 ou 11 caractères. Facultatif, mais conseillé pour les virements depuis l'étranger.
+3. Cliquez sur `Enregistrer les paramètres`.
 
-An IBAN with a typing mistake is refused when you save: the check digits are verified.
+Un IBAN mal saisi est refusé à l'enregistrement : la clé de contrôle est vérifiée.
 
-## Where they appear
+## Où elles apparaissent
 
-Once an invoice is finalised and until it is paid, its PDF carries a `Payment by bank transfer` box next to the totals: your bank, IBAN, BIC, and the invoice number your client should quote as the reference of the transfer, so the payment finds its invoice.
+Dès qu'une facture est finalisée et jusqu'à son paiement, son PDF porte un cadre `Règlement par virement` près des totaux : votre banque, votre IBAN, votre BIC et le numéro de facture que le client doit indiquer en référence du virement, pour que le paiement retrouve sa facture.
 
-The box is not printed on:
+Le cadre n'est pas imprimé sur :
 
-- a draft, which has no number yet;
-- an invoice already paid or cancelled;
-- quotes and credit notes.
+- un brouillon, qui n'a pas encore de numéro ;
+- une facture déjà payée ou annulée ;
+- les devis et les avoirs.
 
-A disbursement note still to be paid carries the same box, with its own number as the reference.
+Une note de débours à payer porte le même cadre, avec son propre numéro en référence.
 
-When you send invoices electronically, the same details travel in the Factur-X data as a SEPA credit transfer, so your client's software can prepare the payment on its own.
+Quand vous envoyez vos factures par voie électronique, ces coordonnées voyagent aussi dans les données Factur-X comme virement SEPA, pour que le logiciel de votre client prépare seul le paiement.
 
-Leave the IBAN empty to print nothing.
+Laissez l'IBAN vide pour ne rien imprimer.
 
-## Use an account from the bank page
+## Utiliser un compte de la page Banque
 
-If you import statements under `Accounting` › `Bank`:
+Si vous importez vos relevés dans `Comptabilité` › `Banque` :
 
-- the form to add an account is filled in with the bank details of your invoices, as long as no account has that IBAN yet;
-- the account whose IBAN is on your invoices is marked `On your invoices`;
-- on another account with an IBAN, `Put on my invoices` makes it the one your invoices print. Its name becomes the bank's name and, since the BIC belongs to the bank, the BIC is cleared: check it under the `Company` tab, where you are taken.
+- le formulaire d'ajout d'un compte est prérempli avec les coordonnées de vos factures, tant qu'aucun compte n'a cet IBAN ;
+- le compte dont l'IBAN figure sur vos factures est marqué `Sur vos factures` ;
+- sur un autre compte qui a un IBAN, `Mettre sur mes factures` en fait celui qu'impriment vos factures. Son nom devient celui de la banque et, le BIC étant propre à la banque, le BIC est vidé : vérifiez-le dans l'onglet `Société`, où vous êtes conduit.
 
-Only members allowed to change the settings can do this.
+Seuls les membres autorisés à modifier les paramètres peuvent le faire.
 
-## Troubleshooting
+## Dépannage
 
-### My bank details are not on an invoice
+### Mes coordonnées bancaires ne figurent pas sur une facture
 
-Check that the invoice is finalised, not a draft, and that it is not paid yet. Check also that the IBAN is filled in: without it nothing is printed, even if the bank and BIC are.
+Vérifiez que la facture est finalisée (pas un brouillon) et qu'elle n'est pas encore payée. Vérifiez aussi que l'IBAN est renseigné : sans lui, rien n'est imprimé, même si la banque et le BIC le sont.
 
-### I used to enter my IBAN under Design
+### Je saisissais mon IBAN dans l'onglet Design
 
-Your IBAN and BIC have moved to the `Company` tab with their values. Nothing to enter again.
+Votre IBAN et votre BIC ont été déplacés dans l'onglet `Société` avec leurs valeurs. Rien à ressaisir.

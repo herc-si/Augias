@@ -3,60 +3,132 @@
     "message": "Next",
     "description": "The label for version current"
   },
-  "sidebar.docsSidebar.category.📥 Installation Guide": {
+  "sidebar.docsSidebar.category.📥 Guide d'installation": {
     "message": "📥 Installation Guide",
-    "description": "The label for category '📥 Installation Guide' in sidebar 'docsSidebar'"
+    "description": "The label for category '📥 Guide d'installation' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.Distribution package": {
+  "sidebar.docsSidebar.category.Paquet de distribution": {
     "message": "Distribution package",
-    "description": "The label for category 'Distribution package' in sidebar 'docsSidebar'"
+    "description": "The label for category 'Paquet de distribution' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.🏢 Companies": {
+  "sidebar.docsSidebar.category.🧭 Utiliser Augias": {
+    "message": "🧭 Using Augias",
+    "description": "The label for category '🧭 Utiliser Augias' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🧭 Utiliser Augias.link.generated-index.title": {
+    "message": "Using Augias",
+    "description": "The generated-index page title for category '🧭 Utiliser Augias' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🧭 Utiliser Augias.link.generated-index.description": {
+    "message": "General usage tips for navigating Augias.",
+    "description": "The generated-index page description for category '🧭 Utiliser Augias' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🏢 Entreprises": {
     "message": "🏢 Companies",
-    "description": "The label for category '🏢 Companies' in sidebar 'docsSidebar'"
+    "description": "The label for category '🏢 Entreprises' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.🏢 Companies.link.generated-index.title": {
+  "sidebar.docsSidebar.category.🏢 Entreprises.link.generated-index.title": {
     "message": "Companies",
-    "description": "The generated-index page title for category '🏢 Companies' in sidebar 'docsSidebar'"
+    "description": "The generated-index page title for category '🏢 Entreprises' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.🏢 Companies.link.generated-index.description": {
+  "sidebar.docsSidebar.category.🏢 Entreprises.link.generated-index.description": {
     "message": "Manage one or more companies in Augias.",
-    "description": "The generated-index page description for category '🏢 Companies' in sidebar 'docsSidebar'"
+    "description": "The generated-index page description for category '🏢 Entreprises' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.👥 Managing Clients": {
+  "sidebar.docsSidebar.category.👥 Clients": {
     "message": "👥 Managing Clients",
-    "description": "The label for category '👥 Managing Clients' in sidebar 'docsSidebar'"
+    "description": "The label for category '👥 Clients' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.👥 Managing Clients.link.generated-index.title": {
+  "sidebar.docsSidebar.category.👥 Clients.link.generated-index.title": {
     "message": "Managing Clients",
-    "description": "The generated-index page title for category '👥 Managing Clients' in sidebar 'docsSidebar'"
+    "description": "The generated-index page title for category '👥 Clients' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.👥 Managing Clients.link.generated-index.description": {
+  "sidebar.docsSidebar.category.👥 Clients.link.generated-index.description": {
     "message": "Add and manage your clients.",
-    "description": "The generated-index page description for category '👥 Managing Clients' in sidebar 'docsSidebar'"
+    "description": "The generated-index page description for category '👥 Clients' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.🤖 AI": {
+  "sidebar.docsSidebar.category.🧾 Factures": {
+    "message": "🧾 Invoices",
+    "description": "The label for category '🧾 Factures' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🧾 Factures.link.generated-index.title": {
+    "message": "Invoices",
+    "description": "The generated-index page title for category '🧾 Factures' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🧾 Factures.link.generated-index.description": {
+    "message": "Create, manage, and track invoices for your clients.",
+    "description": "The generated-index page description for category '🧾 Factures' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.💰 Taxes": {
+    "message": "💰 Taxes",
+    "description": "The label for category '💰 Taxes' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.💰 Taxes.link.generated-index.title": {
+    "message": "Taxes",
+    "description": "The generated-index page title for category '💰 Taxes' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.💰 Taxes.link.generated-index.description": {
+    "message": "Configure tax rates, add tax identifiers for your business and clients, and apply taxes to invoices.",
+    "description": "The generated-index page description for category '💰 Taxes' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.📒 Comptabilité": {
+    "message": "📒 Accounting",
+    "description": "The label for category '📒 Comptabilité' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.📒 Comptabilité.link.generated-index.title": {
+    "message": "Accounting",
+    "description": "The generated-index page title for category '📒 Comptabilité' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.📒 Comptabilité.link.generated-index.description": {
+    "message": "Keep your statutory books, watch your turnover against the limits of your tax regime, and prepare your declarations.",
+    "description": "The generated-index page description for category '📒 Comptabilité' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🔄 Factures récurrentes": {
+    "message": "🔄 Recurring Invoices",
+    "description": "The label for category '🔄 Factures récurrentes' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🔄 Factures récurrentes.link.generated-index.title": {
+    "message": "Recurring Invoices",
+    "description": "The generated-index page title for category '🔄 Factures récurrentes' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🔄 Factures récurrentes.link.generated-index.description": {
+    "message": "Automate billing with recurring invoices on daily, weekly, monthly, or yearly schedules.",
+    "description": "The generated-index page description for category '🔄 Factures récurrentes' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🛠️ API": {
+    "message": "🛠️ API",
+    "description": "The label for category '🛠️ API' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🛠️ API.link.generated-index.title": {
+    "message": "API",
+    "description": "The generated-index page title for category '🛠️ API' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🛠️ API.link.generated-index.description": {
+    "message": "Integrate with Augias programmatically via REST or GraphQL.",
+    "description": "The generated-index page description for category '🛠️ API' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.🤖 IA": {
     "message": "🤖 AI",
-    "description": "The label for category '🤖 AI' in sidebar 'docsSidebar'"
+    "description": "The label for category '🤖 IA' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.🤖 AI.link.generated-index.title": {
+  "sidebar.docsSidebar.category.🤖 IA.link.generated-index.title": {
     "message": "AI",
-    "description": "The generated-index page title for category '🤖 AI' in sidebar 'docsSidebar'"
+    "description": "The generated-index page title for category '🤖 IA' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.🤖 AI.link.generated-index.description": {
+  "sidebar.docsSidebar.category.🤖 IA.link.generated-index.description": {
     "message": "Use Augias with AI agents and assistants.",
-    "description": "The generated-index page description for category '🤖 AI' in sidebar 'docsSidebar'"
+    "description": "The generated-index page description for category '🤖 IA' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.🔌 Integrations": {
+  "sidebar.docsSidebar.category.🔌 Intégrations": {
     "message": "🔌 Integrations",
-    "description": "The label for category '🔌 Integrations' in sidebar 'docsSidebar'"
+    "description": "The label for category '🔌 Intégrations' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.🔌 Integrations.link.generated-index.title": {
+  "sidebar.docsSidebar.category.🔌 Intégrations.link.generated-index.title": {
     "message": "Integrations",
-    "description": "The generated-index page title for category '🔌 Integrations' in sidebar 'docsSidebar'"
+    "description": "The generated-index page title for category '🔌 Intégrations' in sidebar 'docsSidebar'"
   },
-  "sidebar.docsSidebar.category.🔌 Integrations.link.generated-index.description": {
+  "sidebar.docsSidebar.category.🔌 Intégrations.link.generated-index.description": {
     "message": "Connect Augias with external services.",
-    "description": "The generated-index page description for category '🔌 Integrations' in sidebar 'docsSidebar'"
+    "description": "The generated-index page description for category '🔌 Intégrations' in sidebar 'docsSidebar'"
   }
 }

@@ -1,27 +1,31 @@
 ---
-title: Overview
-description: How companies work in Augias.
+title: Vue d'ensemble
+description: Le fonctionnement des entreprises dans Augias.
 sidebar_position: 1
 ---
 
-# Overview
+# Vue d'ensemble
 
-A company in Augias is a self-contained workspace. Everything you do in the app — adding clients, sending quotes, issuing invoices, tracking payments — happens inside one company at a time.
+Dans Augias, une entreprise est un espace de travail indépendant. Tout ce que vous faites dans l'application (ajouter des clients, envoyer des devis, émettre des factures, suivre les paiements) se passe dans une entreprise à la fois.
 
-## What lives in a company
+## Ce que contient une entreprise
 
-Clients, contacts, quotes, invoices, recurring invoices, payments, tax rates, payment methods, settings, and templates are all scoped to a single company. Data from one company is never visible to another, even when the same user belongs to both.
+Clients, contacts, devis, factures, factures récurrentes, avoirs, paiements, taux de taxe, moyens de paiement, paramètres et modèles appartiennent tous à une seule entreprise. Les données d'une entreprise ne sont jamais visibles depuis une autre, même pour un utilisateur membre des deux.
 
-Each company has its own currency. It's set when you create the company and is used as the company-wide default for invoices, quotes, and payments. (Individual clients can override the currency on a per-client basis.)
+Chaque entreprise a sa devise. Choisie à la création, elle sert de devise par défaut pour les factures, les devis et les paiements. Chaque client peut en avoir une autre.
 
-## How users and companies relate
+## Utilisateurs et entreprises
 
-- A user can create as many companies as they like. There is no limit on the self-hosted version.
-- A user can be invited into a company that already exists. Invited users see all data in that company.
-- Switching between the companies you belong to happens in-app — you don't sign out and back in.
+- Un utilisateur peut créer autant d'entreprises qu'il le souhaite. Il n'y a pas de limite en auto-hébergement.
+- Un utilisateur peut être invité dans une entreprise existante, avec un rôle qui fixe ce qu'il peut y faire :
+  - **Propriétaire** : tous les droits, y compris fermer l'entreprise et en transférer la propriété ;
+  - **Administrateur** : tout sauf fermer l'entreprise (paramètres, membres, facturation, comptabilité) ;
+  - **Facturation** : clients, devis, factures, avoirs, paiements et achats, sans paramètres ni comptabilité ;
+  - **Comptable** : consulte tout, tient la comptabilité et exporte les données, sans créer ni modifier aucun document.
+- On passe d'une entreprise à l'autre dans l'application, sans se déconnecter.
 
-## Next steps
+## Pour continuer
 
-- [Create a company](./creating-a-company.md)
-- [Switch between companies](./switching-between-companies.md)
-- [Close a company](./deleting-a-company.md)
+- [Créer une entreprise](./creating-a-company.md)
+- [Passer d'une entreprise à l'autre](./switching-between-companies.md)
+- [Fermer une entreprise](./deleting-a-company.md)

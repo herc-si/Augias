@@ -1,56 +1,54 @@
 ---
-title: Client currency
-description: How the per-client currency choice flows through to quotes, invoices, payments, and credit.
+title: Devise du client
+description: L'effet de la devise de chaque client sur ses devis, ses factures, ses paiements et son crédit.
 sidebar_position: 5
 ---
 
-# Client currency
+# Devise du client
 
-Each client in Augias has a currency. The currency determines what unit you bill the client in — every quote, invoice, payment, and credit adjustment for that client is denominated in their chosen currency.
+Chaque client a une devise : celle dans laquelle vous le facturez. Ses devis, ses factures, ses paiements et son crédit sont tous libellés dans cette devise.
 
-## Where it's set
+## Où la régler
 
-The client's currency is set on the [create](./create-new-client.md) and edit forms, in the `Client Info` card, as the `Currency code` dropdown.
+La devise se choisit dans le formulaire de [création](./create-new-client.md) ou de modification du client, avec la liste `Code de devise`.
 
-The dropdown lists [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency codes (USD, EUR, GBP, ZAR, JPY, etc.). The placeholder option is `System Default`, which is what you'll see if you haven't picked a currency for the client yet.
+La liste propose les codes [ISO 4217](https://fr.wikipedia.org/wiki/ISO_4217) (EUR, USD, GBP, CHF, JPY…). Le choix vide, `Par défaut du système`, s'affiche tant qu'aucune devise n'a été choisie pour le client.
 
-## System default vs explicit choice
+## Devise par défaut ou devise choisie
 
-- **`System Default`** *(no explicit selection)* — the client inherits your company's default currency at the moment a quote, invoice, or payment is created. If you change the company default later, future documents for this client will use the new default.
-- **An explicit currency** *(USD, EUR, …)* — the client is locked to that currency regardless of the company default. Useful when most of your clients pay in your local currency but a handful pay in another.
+- **`Par défaut du système`** *(aucun choix)* : le client prend la devise par défaut de votre entreprise au moment où un devis, une facture ou un paiement est créé. Si vous changez plus tard cette devise par défaut, ses prochains documents suivront.
+- **Une devise choisie** *(EUR, USD…)* : le client garde cette devise, quelle que soit celle de l'entreprise. Pratique quand la plupart de vos clients paient dans votre devise et que quelques-uns paient dans une autre.
 
-The company default is configured in `System` → `Settings` → `Currency`. Pick the value that fits the majority of your clients there, then only override on the individual clients that differ.
+La devise par défaut de l'entreprise se règle dans `Paramètres`, onglet `Société`. Choisissez celle de la majorité de vos clients, puis ne la changez que sur les clients qui font exception.
 
 :::info
-Clients without an explicit currency follow your company default *dynamically*. If you change the default from USD to EUR, every client still on `System Default` will start using EUR for new documents. Existing invoices and quotes keep their original currency — only future documents are affected.
+Les clients sans devise choisie suivent la devise par défaut *au fil de l'eau*. Si vous passez de l'USD à l'EUR, tous les clients restés sur `Par défaut du système` utiliseront l'EUR pour leurs nouveaux documents. Les factures et devis existants gardent leur devise d'origine.
 :::
 
-## What the currency drives
+## Ce que la devise détermine
 
-Once set, the client's currency surfaces in several places:
+- **Devis et factures** : le symbole et le code affichés sur le document, l'unité des lignes, des taxes, des remises et du total.
+- **Paiements** : chaque paiement enregistré pour le client, y compris ceux qui utilisent son [crédit](./client-credit.md), est dans sa devise.
+- **Solde créditeur** : le crédit tenu pour le client est dans sa devise.
+- **La liste des clients** : la colonne `Devise` de `/clients` affiche la devise retenue (celle du client, sinon celle par défaut).
+- **Indicateurs et totaux** : `Revenu total`, `Impayé` et les totaux par client du tableau de bord et de la fiche sont dans la devise du client.
 
-- **Quotes and invoices** — the currency symbol and code shown on the document, the unit for line items, taxes, discounts, and the total.
-- **Payments** — every payment recorded against the client (including those that apply [credit](./client-credit.md)) is in the client's currency.
-- **Credit balance** — the prepaid credit you hold for the client is denominated in their currency.
-- **The client list** — the `Currency` column on `/clients` shows the resolved currency (the client's explicit choice if set, otherwise the system default).
-- **Stats and totals** — the `Total Income`, `Outstanding`, and per-client totals on the dashboard and the client view page are in the client's currency.
+## Changer la devise d'un client
 
-## Changing a client's currency
-
-Currency can be changed from the client's edit form, but **be careful**:
+La devise se change depuis le formulaire de modification du client, mais **avec prudence** :
 
 :::warning
-Changing the currency on a client that already has invoices, quotes, or a credit balance does **not** convert any historical amounts. Existing documents keep their original currency, while everything created from that point forward uses the new currency. You can end up with a client whose history mixes two currencies — confusing to reconcile.
+Changer la devise d'un client qui a déjà des factures, des devis ou du crédit ne convertit **aucun** montant passé. Les documents existants gardent leur devise et tout ce qui suit prend la nouvelle. L'historique du client mélange alors deux devises, ce qui complique les rapprochements.
 
-If you genuinely need to switch a client to a new currency, archive the old client and create a new one in the new currency.
+Si vous devez vraiment passer un client à une autre devise, archivez l'ancienne fiche et créez-en une nouvelle dans la nouvelle devise.
 :::
 
-## Multi-currency in one workspace
+## Plusieurs devises dans une entreprise
 
-You can have clients in different currencies inside a single Augias company — there's no requirement to keep everyone on the same one. Each client's documents and stats are kept in their own currency. Augias does **not** convert between currencies on dashboards or reports — totals are shown per currency rather than aggregated into a single number.
+Une même entreprise peut avoir des clients dans des devises différentes. Les documents et les indicateurs de chaque client restent dans sa devise. Augias **ne convertit pas** d'une devise à l'autre dans les tableaux de bord et les rapports : les totaux sont présentés devise par devise.
 
-If you operate in materially different currencies and want clean per-currency books, the cleanest separation is to use [companies](../companies/overview.md) — one company per currency — and switch between them as needed.
+Si vous travaillez dans des devises très différentes et voulez des comptes séparés par devise, le plus net est d'utiliser des [entreprises](../companies/overview.md) distinctes, une par devise, et de passer de l'une à l'autre.
 
-## Custom currency codes
+## Codes de devise personnalisés
 
-The currency dropdown is fixed to the published ISO 4217 list. Cryptocurrencies, in-house tokens, and other non-ISO codes are not supported — the field validates that the value is exactly three characters and matches a known currency code.
+La liste est limitée aux codes ISO 4217 publiés. Les cryptomonnaies, jetons maison et autres codes hors norme ne sont pas pris en charge : le champ vérifie que la valeur fait trois caractères et correspond à une devise connue.

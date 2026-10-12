@@ -2,6 +2,7 @@ import type {ReactNode} from 'react';
 import clsx from 'clsx';
 import Link from '@docusaurus/Link';
 import Heading from '@theme/Heading';
+import {translate} from '@docusaurus/Translate';
 import styles from './styles.module.css';
 
 type FeatureItem = {
@@ -62,69 +63,51 @@ const ShieldIcon = () => (
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Quotes & Invoices',
+    title: translate({id: 'home.feature.quotes.title', message: "Devis et factures"}),
     href: '/intro',
     Icon: InvoiceIcon,
     description: (
-      <>
-        Create professional quotes and invoices, send them to clients, and track
-        their status from draft to paid.
-      </>
+      <>{translate({id: 'home.feature.quotes.description', message: "Créez des devis et des factures, envoyez-les à vos clients et suivez-les du brouillon au paiement."})}</>
     ),
   },
   {
-    title: 'Recurring Billing',
+    title: translate({id: 'home.feature.recurring.title', message: "Facturation récurrente"}),
     href: '/intro',
     Icon: RecurringIcon,
     description: (
-      <>
-        Automate retainer and subscription billing with flexible recurring
-        invoice schedules.
-      </>
+      <>{translate({id: 'home.feature.recurring.description', message: "Automatisez les forfaits et les abonnements avec des factures récurrentes au calendrier souple."})}</>
     ),
   },
   {
-    title: 'Multi-Currency & Tax',
+    title: translate({id: 'home.feature.currency.title', message: "Devises et TVA"}),
     href: '/intro',
     Icon: CurrencyIcon,
     description: (
-      <>
-        Bill in any currency, configure tax rates per region, and apply
-        discounts at line-item or invoice level.
-      </>
+      <>{translate({id: 'home.feature.currency.description', message: "Facturez dans toutes les devises, réglez vos taux de TVA et appliquez des remises par ligne ou sur la facture."})}</>
     ),
   },
   {
-    title: 'Self-Hosted',
+    title: translate({id: 'home.feature.selfHosted.title', message: "Auto-hébergé"}),
     href: '/installation-guide',
     Icon: ServerIcon,
     description: (
-      <>
-        Run on your own server with Docker, Symfony, or pre-built binaries.
-        Full control over your data.
-      </>
+      <>{translate({id: 'home.feature.selfHosted.description', message: "Installez-le sur votre serveur avec Docker, Symfony ou un binaire prêt à l’emploi. Vos données restent chez vous."})}</>
     ),
   },
   {
-    title: 'REST API',
+    title: translate({id: 'home.feature.api.title', message: "API REST"}),
     href: '/intro',
     Icon: ApiIcon,
     description: (
-      <>
-        Integrate with your existing tools via the JSON-LD/HAL/JSON REST API
-        powered by API Platform.
-      </>
+      <>{translate({id: 'home.feature.api.description', message: "Reliez vos outils grâce à l’API REST JSON-LD/HAL/JSON propulsée par API Platform."})}</>
     ),
   },
   {
-    title: 'Open Source',
+    title: translate({id: 'home.feature.openSource.title', message: "Libre"}),
     href: 'https://github.com/herc-si/Augias',
     Icon: ShieldIcon,
     description: (
-      <>
-        MIT-licensed and built in the open. No per-client limits, no vendor
-        lock-in, no surprises.
-      </>
+      <>{translate({id: 'home.feature.openSource.description', message: "Sous licence MIT et développé en public. Sans limite de clients, sans enfermement, sans surprise."})}</>
     ),
   },
 ];
@@ -151,10 +134,10 @@ export default function HomepageFeatures(): ReactNode {
       <div className="container">
         <div className={styles.sectionHeader}>
           <Heading as="h2" className={styles.sectionTitle}>
-            Built for freelancers and small businesses
+            {translate({id: 'home.features.title', message: "Pensé pour les indépendants et les petites entreprises"})}
           </Heading>
           <p className={styles.sectionSubtitle}>
-            Everything you need to manage clients, send invoices, and get paid.
+            {translate({id: 'home.features.subtitle', message: "Tout pour gérer vos clients, envoyer vos factures et être payé."})}
           </p>
         </div>
         <div className="row">

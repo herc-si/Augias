@@ -1,63 +1,63 @@
 ---
-title: Overdue invoices
-description: Automatically mark invoices as overdue and notify clients with escalating payment reminders.
+title: Factures en retard
+description: Passer automatiquement les factures impayées en retard et relancer les clients de plus en plus fermement.
 sidebar_position: 6
 ---
 
-# Overdue invoices
+# Factures en retard
 
-Augias can automatically mark unpaid invoices as overdue once their due date passes, and send escalating reminder emails to clients at configurable intervals.
+Augias fait passer seules les factures impayées en retard une fois l'échéance dépassée, et peut envoyer aux clients des relances de plus en plus fermes, à intervalles réguliers.
 
-## How it works
+## Fonctionnement
 
-A background task runs every hour and checks all pending invoices. Any invoice whose due date has passed is transitioned to the **Overdue** status automatically. When that happens, Augias also sends an internal notification to users who subscribe to invoice alerts.
+Une tâche de fond passe toutes les heures sur les factures en attente. Toute facture dont l'échéance est dépassée passe au statut **En retard**. Augias envoie alors aussi une notification interne aux utilisateurs abonnés aux alertes de factures.
 
 :::info
-An invoice must have a due date set for the automation to act on it. Invoices with no due date are never marked overdue.
+Seule une facture qui a une échéance peut passer en retard. Une facture sans date d'échéance ne passe jamais en retard.
 :::
 
-## Set a due date on an invoice
+## Donner une échéance à une facture
 
-When creating or editing an invoice, fill in the `Due Date` field. The date appears on the PDF and on the client-facing invoice page, and is used by both the overdue check and the reminder schedule.
+À la création ou à la modification d'une facture, remplissez le champ `Date d'échéance`. La date figure sur le PDF et sur la page de la facture vue par le client ; elle sert au passage en retard comme au calendrier des relances.
 
-See [Creating an invoice](./creating-an-invoice.md) for the full invoice form reference.
+Le détail du formulaire est dans [Créer une facture](./creating-an-invoice.md).
 
-## Payment reminders
+## Relances de paiement
 
-In addition to marking invoices overdue, Augias can send reminder emails to clients on a schedule. Reminders are sent to the contacts on the invoice at three intervals after the due date:
+En plus du passage en retard, Augias peut relancer les clients par e-mail. Les relances partent vers les contacts de la facture à trois moments après l'échéance :
 
-| Days overdue | Email subject |
+| Jours de retard | Objet de l'e-mail |
 | --- | --- |
-| 1 day | Payment Reminder: Invoice `{id}` |
-| 7 days | Payment Overdue: Invoice `{id}` |
-| 14 days | URGENT: Invoice `{id}` — Immediate Action Required |
+| 1 jour | Rappel de paiement : facture `{id}` |
+| 7 jours | Paiement en retard : facture `{id}` |
+| 14 jours | URGENT : facture `{id}`, règlement immédiat demandé |
 
-A pre-due reminder can also be sent a configurable number of days *before* the due date.
+Une relance peut aussi partir quelques jours *avant* l'échéance.
 
-For full details on configuring reminders, see [Payment reminders](./payment-reminders.md).
+Le détail du réglage est dans [Relances de paiement](./payment-reminders.md).
 
-## Configure the reminder settings
+## Régler les relances
 
-Go to **Settings → Invoice** to control the reminder behaviour.
+Ouvrez `Paramètres`, onglet `Factures`, cadre `Rappels de paiement`.
 
-| Setting | Default | Description |
+| Réglage | Par défaut | Description |
 | --- | --- | --- |
-| **Enable automatic invoice payment reminders** | On | Master switch for all automated reminders |
-| **Send reminder before invoice is due** | On | Send the pre-due reminder email |
-| **Days before due date to send pre-due reminder** | 3 | Set to `0` to disable the pre-due reminder |
+| **Activer les rappels automatiques** | Activé | Interrupteur général de toutes les relances automatiques. |
+| **Activer les rappels avant échéance** | Activé | Envoie une relance avant l'échéance. |
+| **Jours avant l'échéance** | 3 | Le nombre de jours avant l'échéance où part la relance. |
 
 :::note
-Reminder features are available on paid plans. Trial accounts can view the settings but cannot enable them.
+Les relances font partie des offres payantes. Pendant l'essai, les réglages sont visibles mais ne peuvent pas être activés.
 :::
 
-## Invoice statuses
+## Statuts
 
-Once marked overdue, the invoice status changes to **Overdue** in the grid and on the invoice detail page. Recording a payment for an overdue invoice transitions it to **Paid**.
+Une facture passée en retard affiche le statut **En retard** dans la liste et sur sa page. Un paiement enregistré sur une facture en retard la fait passer **Payée**.
 
-See [Invoice statuses](./invoice-statuses.md) for the full status lifecycle.
+Le cycle complet est décrit dans [Statuts des factures](./invoice-statuses.md).
 
-## Related
+## Voir aussi
 
-- [Payment reminders](./payment-reminders.md)
-- [Invoice statuses](./invoice-statuses.md)
-- [Creating an invoice](./creating-an-invoice.md)
+- [Relances de paiement](./payment-reminders.md)
+- [Statuts des factures](./invoice-statuses.md)
+- [Créer une facture](./creating-an-invoice.md)

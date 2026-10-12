@@ -1,55 +1,55 @@
 ---
-title: Default terms
-description: Set the terms new invoices and quotes open with, one text for business clients and one for private individuals, and the text of credit notes.
+title: Conditions par défaut
+description: Régler les conditions dont s'ouvrent les nouvelles factures et les nouveaux devis, un texte pour les professionnels et un pour les particuliers, et le texte des avoirs.
 sidebar_position: 7
 ---
 
-# Default terms
+# Conditions par défaut
 
-The **Terms** of an invoice or quote carry what the client must know about paying: the payment term, late payment penalties and, for a business, the fixed recovery fee. Write them once: every new invoice or quote opens with them.
+Les **Conditions** d'une facture ou d'un devis disent au client ce qu'il doit savoir pour payer : le délai de paiement, les pénalités de retard et, pour un professionnel, l'indemnité forfaitaire de recouvrement. Écrivez-les une fois : chaque nouvelle facture ou chaque nouveau devis s'ouvre avec elles.
 
-## Two texts, one per client type
+## Deux textes, un par type de client
 
-French law does not ask the same of a document sent to a business and to a private individual. Each document type therefore has two texts:
+La loi française n'exige pas la même chose d'un document adressé à un professionnel et à un particulier. Chaque type de document a donc deux textes :
 
-- **Business client**: payment term, early payment discount, late payment penalties (at least three times the legal interest rate) and the €40 fixed compensation for recovery costs (Commercial Code, art. L441-9 and L441-10).
-- **Private individual**: payment term and late payment interest. No €40 compensation. On a quote, the 14-day withdrawal period when the quote is accepted at a distance or off-premises (Consumer Code, art. L221-18).
+- **Client professionnel** : délai de paiement, escompte pour paiement anticipé, pénalités de retard (au moins trois fois le taux d'intérêt légal) et indemnité forfaitaire de 40 € pour frais de recouvrement (Code de commerce, art. L441-9 et L441-10).
+- **Client particulier** : délai de paiement et intérêts de retard. Pas d'indemnité de 40 €. Sur un devis, le délai de rétractation de 14 jours quand le devis est accepté à distance ou hors établissement (Code de la consommation, art. L221-18).
 
-Whether a client is a business or a private individual is set on the client's record.
+Un client est professionnel ou particulier selon ce qu'indique sa fiche.
 
-## Set your texts
+## Régler vos textes
 
-1. Open `Settings`, then the `Invoices` tab (or `Quotes`).
-2. Under `Default terms`, edit the `Business client` and `Private individual` texts.
-3. Click `Save settings`.
+1. Ouvrez `Paramètres`, puis l'onglet `Factures` (ou `Devis`).
+2. Sous `Conditions par défaut`, modifiez les textes `Client professionnel` et `Client particulier`.
+3. Cliquez sur `Enregistrer les paramètres`.
 
-Both texts start with a suggested wording in your company's language. Adapt the payment term to yours, and when you sell to private individuals, add your consumer mediator: naming one is required.
+Les deux textes partent d'une rédaction proposée dans la langue de votre entreprise. Adaptez le délai de paiement au vôtre et, si vous vendez à des particuliers, ajoutez votre médiateur de la consommation : le nommer est obligatoire.
 
-Leave a text empty for documents to open without terms.
+Laissez un texte vide pour que les documents s'ouvrent sans conditions.
 
-## Credit notes
+## Avoirs
 
-A credit note gives money back: no payment term or penalties on it. It has a single text, whoever the client, saying how the amount comes back, by default "Amount to be deducted from your next invoices". Change it under `Settings`, `Credit notes` tab, `Default terms`; leave it empty for credit notes to open without terms.
+Un avoir rend de l'argent : ni délai de paiement ni pénalités. Il a un seul texte, quel que soit le client, qui dit comment le montant revient au client, par défaut « Montant à déduire de vos prochaines factures. ». Modifiez-le dans `Paramètres`, onglet `Avoirs`, `Conditions par défaut` ; laissez-le vide pour que les avoirs s'ouvrent sans conditions.
 
-A credit note that cancels an invoice opens with this text, not with the invoice's terms.
+Un avoir qui annule une facture s'ouvre avec ce texte, et non avec les conditions de la facture.
 
-## On a new document
+## Sur un nouveau document
 
-- The terms fill in as soon as the form opens, with the business text while no client is chosen.
-- When you pick a client, they switch to the text for that client's type.
-- Once you edit them, they are yours: changing the client no longer touches them. Emptied, they stay empty.
-- Editing an existing document never changes its terms.
+- Les conditions se remplissent dès l'ouverture du formulaire, avec le texte professionnel tant qu'aucun client n'est choisi.
+- Quand vous choisissez un client, elles passent au texte de son type.
+- Dès que vous les modifiez, elles sont à vous : changer de client ne les touche plus. Vidées, elles restent vides.
+- Modifier un document existant ne change jamais ses conditions.
 
-## From a quote to an invoice
+## D'un devis à une facture
 
-An invoice created from a quote takes the **invoice** default terms when the quote still had its default terms, since "valid for 30 days" means nothing on an invoice. Terms you wrote for that quote come along as they are.
+Une facture créée depuis un devis prend les conditions par défaut des **factures** quand le devis avait encore ses conditions par défaut, puisque « valable 30 jours » n'a pas de sens sur une facture. Les conditions que vous aviez écrites pour ce devis sont reprises telles quelles.
 
-## Troubleshooting
+## Dépannage
 
-### The terms did not change when I picked another client
+### Les conditions n'ont pas changé quand j'ai choisi un autre client
 
-They had been edited, even by a single character: edited terms are left alone. Paste the text you want from the settings, or start the document again.
+Elles avaient été modifiées, même d'un seul caractère : des conditions modifiées ne sont plus touchées. Collez le texte voulu depuis les paramètres, ou recommencez le document.
 
-### My terms are on one line
+### Mes conditions sont sur une seule ligne
 
-Terms keep their line breaks on the PDF. If yours run together, check that each item is on its own line in the field.
+Les conditions gardent leurs retours à la ligne sur le PDF. Si les vôtres se suivent sans coupure, vérifiez que chaque élément est sur sa propre ligne dans le champ.

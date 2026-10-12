@@ -4,6 +4,7 @@
   "link": {
     "type": "generated-index",
     "title": "API",
-    "description": "Integrate with Augias programmatically via REST or GraphQL."
+    "description": "Échanger avec Augias par programme, en REST ou en GraphQL.",
+    "slug": "/category/api"
   }
 }

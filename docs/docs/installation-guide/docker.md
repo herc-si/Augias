@@ -1,33 +1,33 @@
 ---
 title: Docker
-description: Run Augias as a Docker container, optionally alongside a database via Docker Compose.
+description: Faire tourner Augias en conteneur Docker, éventuellement avec une base de données par Docker Compose.
 sidebar_position: 6
 ---
 
 # Docker
 
-The official Docker image runs the same self-contained build used in the [quick install](./quick-install.mdx). Multi-architecture images are published — Docker pulls the right one for your host automatically.
+L'image Docker officielle contient la même version autonome que l'[installation rapide](./quick-install.mdx). Les images sont publiées pour plusieurs architectures : Docker récupère la bonne pour votre machine.
 
-## System requirements
+## Configuration requise
 
-- [Docker](https://www.docker.com/get-started/) installed on the host.
-- [Docker Compose](https://docs.docker.com/compose/) if you want to use the bundled compose example.
+- [Docker](https://www.docker.com/get-started/) installé sur la machine.
+- [Docker Compose](https://docs.docker.com/compose/) pour utiliser l'exemple de composition ci-dessous.
 
-## Quick start
+## Démarrage rapide
 
 ```bash
 docker run -d -p 8765:8765 -v augias_data:/etc/augias augias/augias
 ```
 
-The application starts on `http://127.0.0.1:8765`. Continue with the [first-run wizard](./system-installation.md).
+L'application démarre sur `http://127.0.0.1:8765`. Poursuivez avec l'[assistant de premier démarrage](./system-installation.md).
 
 :::tip
-Change `8765` on the left side of the `-p` flag to expose Augias on a different host port (e.g. `-p 80:8765`).
+Changez le `8765` de gauche dans l'option `-p` pour exposer Augias sur un autre port de la machine (par exemple `-p 80:8765`).
 :::
 
 ## Docker Compose
 
-For a complete stack (app + database), use a `docker-compose.yml` like the one shipped with the repository:
+Pour une pile complète (application et base de données), utilisez un `docker-compose.yml` comme celui fourni dans le dépôt :
 
 ```yaml title="docker-compose.yml"
 services:
@@ -65,47 +65,47 @@ volumes:
   attachments_data: {}
 ```
 
-Choose the database password first, in a `.env` file beside `docker-compose.yml`:
+Choisissez d'abord le mot de passe de la base, dans un fichier `.env` à côté de `docker-compose.yml` :
 
 ```bash title=".env"
-AUGIAS_DB_PASSWORD=a-long-random-password
+AUGIAS_DB_PASSWORD=un-long-mot-de-passe-aleatoire
 ```
 
-Then bring the stack up:
+Puis lancez la pile :
 
 ```bash
 docker compose up -d
 ```
 
 :::info
-The stack uses PostgreSQL. MySQL and MariaDB are supported too — the [first-run wizard](./system-installation.md) asks which one you are connecting to — so change the `db` service if you already run one of those.
+La pile utilise PostgreSQL. MySQL et MariaDB sont aussi pris en charge (l'[assistant de premier démarrage](./system-installation.md) demande lequel vous utilisez) : changez le service `db` si vous en avez déjà un.
 :::
 
 :::warning
-There is no default for `AUGIAS_DB_PASSWORD` on purpose. Without it `docker compose up` stops and tells you to set it, rather than starting a database with no password on it.
+`AUGIAS_DB_PASSWORD` n'a volontairement pas de valeur par défaut. Sans elle, `docker compose up` s'arrête et vous demande de la régler, plutôt que de démarrer une base sans mot de passe.
 :::
 
-Supporting documents attached to accounting entries are kept on their own volume, because the obligation to keep them is counted in years — longer than any container.
+Les justificatifs joints aux écritures comptables ont leur propre volume : leur obligation de conservation se compte en années, plus longtemps que la vie d'un conteneur.
 
-## Persisting data
+## Conserver les données
 
-Mount a volume (or bind mount) at `/etc/augias` so application data survives container restarts and image upgrades:
+Montez un volume (ou un dossier) sur `/etc/augias` pour que les données survivent aux redémarrages et aux mises à jour de l'image :
 
 ```bash
 docker run -d -p 8765:8765 -v augias_data:/etc/augias augias/augias
 ```
 
-## Image source
+## Source de l'image
 
-Pull from [Docker Hub](https://hub.docker.com/r/augias/augias).
+L'image se récupère sur [Docker Hub](https://hub.docker.com/r/augias/augias).
 
 :::info
-Recurring tasks and async work (email sending) run automatically inside the container — no separate cron job or messenger consumer to set up.
+Les tâches récurrentes et le travail en arrière-plan (envoi des e-mails) tournent seuls dans le conteneur : pas de tâche cron ni de consommateur de messages à mettre en place.
 :::
 
-## Update
+## Mettre à jour
 
 ```bash
 docker pull augias/augias:latest
-docker compose up -d   # or `docker stop` + `docker run` again
+docker compose up -d   # ou `docker stop` puis `docker run` de nouveau
 ```

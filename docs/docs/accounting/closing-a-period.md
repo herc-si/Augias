@@ -1,67 +1,65 @@
 ---
-title: Closing a period
-description: Seal a month or quarter of bookkeeping so its entries can no longer be changed.
+title: Clôturer une période
+description: Sceller un mois ou un trimestre de comptabilité pour que ses écritures ne puissent plus être modifiées.
 sidebar_position: 3
 ---
 
-# Closing a period
+# Clôturer une période
 
-Closing is what turns a list of entries into books you can stand behind. It numbers them, seals them and freezes the totals — and it cannot be undone.
+La clôture transforme une liste d'écritures en livres sur lesquels vous pouvez vous appuyer. Elle les numérote, les scelle et fige les totaux, et elle est définitive.
 
-Periods follow your `Declaration frequency`: monthly or quarterly. They are created by the first entry filed into them, so a company that has booked nothing has no periods at all.
+Les périodes suivent votre `Périodicité de déclaration` : mensuelle ou trimestrielle. Une période naît avec la première écriture qui y est rangée : une entreprise qui n'a rien enregistré n'a aucune période.
 
-## Close the current period
+## Clôturer une période terminée
 
-Click `Accounting` in the sidebar. The `Current period` card shows the period you are in — `2026-Q1`, `2026-03` and so on — with its state, `Open` or `Closed`.
+Une période ne se clôture qu'une fois terminée : l'argent reçu avant sa date de fin lui appartient encore. Fermez-la quand la dernière recette de la période est enregistrée.
 
-While it is open you get a `Close 2026-Q1` button, under the warning *Closing numbers the entries, seals them and freezes the totals. It cannot be undone.*
-
-Close it once the last receipt of the period is in.
+Cliquez sur `Comptabilité` dans le menu latéral. La carte `Période en cours` montre la période (`2026-Q1`, `2026-03`, etc.) et son état, ouverte ou clôturée. Une fois la période terminée, la carte affiche un bouton `Clôturer` suivi du nom de la période, sous l'avertissement *La clôture numérote les écritures, les scelle et fige les totaux. C'est définitif.* Le même bouton figure sur la page de déclaration de chaque période terminée. Voir [Déclarer votre chiffre d'affaires](./declaring-your-turnover.md).
 
 :::danger
-There is no reopening. After closing, a mistake can only be corrected by a reversing entry in a later period — see [Correcting a sealed entry](#correcting-a-sealed-entry).
+Une période clôturée ne se rouvre pas. Une erreur ne se corrige ensuite que par une écriture d'extourne dans une période ultérieure : voir [Corriger une écriture scellée](#corriger-une-écriture-scellée).
 :::
 
-## What closing does
+## Ce que fait la clôture
 
-- Every entry gets a gapless `No.` within its book, in date order.
-- Each entry is fingerprinted, and each fingerprint includes the one before it, so the entries form a chain that cannot be reordered or added to.
-- The entries are locked. Editing or deleting one is refused from that point on, whatever it is attempted from.
-- The period's totals are stored as they stood at that moment, rather than recalculated later.
+- Chaque écriture reçoit un `N°` sans trou dans son livre, par ordre de date.
+- Chaque écriture reçoit une empreinte, et chaque empreinte inclut la précédente : les écritures forment une chaîne qu'on ne peut ni réordonner ni compléter.
+- Les écritures sont verrouillées. Toute modification ou suppression est refusée, d'où qu'elle vienne.
+- Les totaux de la période sont conservés tels qu'ils étaient à ce moment, au lieu d'être recalculés.
 
-Open a sealed entry and you are sent back to the book with *This entry belongs to a closed period and can no longer be changed. Record a reversing entry in an open period instead.*
+Ouvrir une écriture scellée vous renvoie au livre avec le message *Cette écriture appartient à une période clôturée : elle ne peut plus être modifiée. Passez une écriture d'extourne dans une période ouverte.*
 
-## Periods close in order
+## Les périodes se clôturent dans l'ordre
 
-A period cannot be closed while an earlier one is still open — that would leave a hole in the numbering and break the chain. Attempting it gives *This period cannot be closed: it already is, or an earlier one is still open.*
+Une période ne peut pas être clôturée tant qu'une période antérieure est ouverte : cela laisserait un trou dans la numérotation et casserait la chaîne. La tentative donne *Cette période ne peut pas être clôturée : elle l'est déjà, ou une période antérieure est encore ouverte.*
 
-Close the earlier period first.
+Clôturez d'abord la période antérieure.
 
-## A payment that arrives late
+## Un paiement qui arrive en retard
 
-A payment dated inside a period you have already closed cannot go into that period. Augias keeps the true date, files the entry into the earliest period still open, and flags it as late. Nothing is silently dropped and no date is quietly rewritten.
+Un paiement daté d'une période déjà clôturée ne peut pas y entrer. Augias garde la vraie date, range l'écriture dans la plus ancienne période encore ouverte et la signale comme tardive. Rien n'est perdu, et aucune date n'est réécrite en douce.
 
-## Correcting a sealed entry
+## Corriger une écriture scellée
 
-Add a reversing entry in an open period:
+Ajoutez une écriture d'extourne dans une période ouverte :
 
-1. Open the book and click `New entry`.
-2. Enter the amount that cancels the mistake — negative to undo a receipt.
-3. Say what it reverses in `Nature of the operation`, and name the original entry's number in `Notes`.
+1. Ouvrez le livre et cliquez sur `Nouvelle écriture`.
+2. Saisissez le montant qui annule l'erreur, négatif pour annuler une recette.
+3. Dites ce qu'elle annule dans `Nature de l'opération`, et indiquez le numéro de l'écriture d'origine dans `Notes`.
 
-Both the original and its reversal stay visible, which is the point.
+L'écriture d'origine et son extourne restent toutes deux visibles : c'est voulu.
 
-## Checking the books are intact
+## Vérifier que les livres sont intacts
 
-Self-hosters can re-walk every sealed book and confirm that nothing has changed underneath the application:
+En auto-hébergement, vous pouvez reparcourir tous les livres scellés et vérifier que rien n'a changé dans la base :
 
 ```bash
 bin/console augias:accounting:verify-ledger
 ```
 
-It prints one row per company and book with the number of entries checked and the result, and exits with an error if any book no longer matches what it was sealed as — naming the entry where the chain breaks. It only reads and reports; it never repairs, because rewriting a fingerprint is exactly what sealing exists to prevent.
+La commande affiche une ligne par entreprise et par livre, avec le nombre d'écritures vérifiées et le résultat, et se termine en erreur si un livre ne correspond plus à ce qu'il était au scellement, en nommant l'écriture où la chaîne se rompt. Elle se contente de lire et de signaler, sans jamais réparer : réécrire une empreinte est précisément ce que le scellement empêche.
 
-## Related
+## Voir aussi
 
-- [Your books](./your-books.md)
-- [Declaring your turnover](./declaring-your-turnover.md)
+- [Vos livres](./your-books.md)
+- [Déclarer votre chiffre d'affaires](./declaring-your-turnover.md)

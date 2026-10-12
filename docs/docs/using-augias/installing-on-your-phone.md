@@ -1,37 +1,37 @@
 ---
-title: Installing Augias on your phone
-description: Add Augias to your phone's home screen so it opens like an app.
+title: Installer Augias sur votre téléphone
+description: Ajouter Augias à l'écran d'accueil de votre téléphone pour l'ouvrir comme une application.
 sidebar_position: 6
 ---
 
-# Installing Augias on your phone
+# Installer Augias sur votre téléphone
 
-Add Augias to your home screen so it opens full screen, like an app, with its own icon. There is nothing to download from a store.
+Ajoutez Augias à votre écran d'accueil : il s'ouvre en plein écran, comme une application, avec sa propre icône. Rien à télécharger dans une boutique d'applications.
 
-## On Android
+## Sur Android
 
-1. Open Augias in Chrome and sign in.
-2. Tap the `⋮` menu, then `Install app` (or `Add to home screen`).
-3. Confirm. The Augias icon appears on your home screen and in your app drawer.
+1. Ouvrez Augias dans Chrome et connectez-vous.
+2. Touchez le menu `⋮`, puis `Installer l'application` (ou `Ajouter à l'écran d'accueil`).
+3. Confirmez. L'icône d'Augias apparaît sur votre écran d'accueil et parmi vos applications.
 
-## On iPhone and iPad
+## Sur iPhone et iPad
 
-1. Open Augias in Safari and sign in.
-2. Tap the share button, then `Add to Home Screen`.
-3. Confirm with `Add`.
+1. Ouvrez Augias dans Safari et connectez-vous.
+2. Touchez le bouton de partage, puis `Sur l'écran d'accueil`.
+3. Confirmez avec `Ajouter`.
 
-## What it does and does not do
+## Ce qu'elle fait, et ce qu'elle ne fait pas
 
-The installed app is Augias itself, opened without the browser's address bar. It is always up to date: there is nothing to update.
+L'application installée, c'est Augias lui-même, ouvert sans la barre d'adresse du navigateur. Elle est toujours à jour : il n'y a rien à mettre à jour.
 
-It needs a network connection. Without one, it shows a message rather than an error page. Augias deliberately keeps no copy of your invoices or clients on the phone, so nothing can be read on a lost or shared device once you are signed out.
+Elle a besoin d'une connexion. Sans réseau, elle affiche un message plutôt qu'une page d'erreur. Augias ne garde volontairement aucune copie de vos factures ni de vos clients sur le téléphone : rien ne peut être lu sur un appareil perdu ou partagé une fois déconnecté.
 
-## Troubleshooting
+## Dépannage
 
-### `Install app` does not appear in Chrome's menu
+### `Installer l'application` n'apparaît pas dans le menu de Chrome
 
-The browser only offers to install a site served over HTTPS. A hosted Augias always is. A self-hosted instance reached by a plain `http://` address, such as a local network or VPN address, cannot be installed: put it behind HTTPS, or use `Add to home screen`, which adds a shortcut without the full-screen window.
+Le navigateur ne propose l'installation que pour un site servi en HTTPS. Un Augias hébergé l'est toujours. Une instance auto-hébergée ouverte par une adresse `http://` simple, comme une adresse de réseau local ou de VPN, ne peut pas être installée : passez-la en HTTPS, ou utilisez `Ajouter à l'écran d'accueil`, qui pose un raccourci sans la fenêtre plein écran.
 
-### The app still shows an old version
+### L'application affiche encore une ancienne version
 
-Close it completely and open it again. If that is not enough, open Augias once in the browser itself: the app picks up the change on its next start.
+Fermez-la complètement et rouvrez-la. Si cela ne suffit pas, ouvrez une fois Augias dans le navigateur lui-même : l'application prendra le changement à son prochain démarrage.

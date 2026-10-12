@@ -1,22 +1,22 @@
 ---
-title: Linux packages
-description: Install Augias natively on Debian, Ubuntu, RHEL, Fedora, CentOS, or Alpine Linux using apt, dnf, or apk.
+title: Paquets Linux
+description: Installer Augias nativement sur Debian, Ubuntu, RHEL, Fedora, CentOS ou Alpine Linux avec apt, dnf ou apk.
 sidebar_position: 5
 ---
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# Linux packages
+# Paquets Linux
 
-Native packages for Debian, Ubuntu, RHEL, Fedora, CentOS, and Alpine Linux are available from the [Augias repository on Cloudsmith](https://cloudsmith.io/~solidworx/repos/augias/packages/). Installing a package sets up a systemd service, places the binary at `/usr/bin/augias`, and creates a dedicated service user — nothing else to configure to get started.
+Des paquets natifs pour Debian, Ubuntu, RHEL, Fedora, CentOS et Alpine Linux sont disponibles dans le [dépôt Augias sur Cloudsmith](https://cloudsmith.io/~solidworx/repos/augias/packages/). Le paquet installe un service systemd, place le binaire dans `/usr/bin/augias` et crée un utilisateur dédié : rien d'autre à configurer pour démarrer.
 
-## Install
+## Installer
 
 <Tabs groupId="pkg-manager">
   <TabItem value="apt" label="Debian / Ubuntu" default>
 
-  Add the Augias APT repository and install:
+  Ajoutez le dépôt APT d'Augias et installez :
 
   ```bash
   curl -1sLf 'https://dl.cloudsmith.io/public/solidworx/augias/setup.deb.sh' | sudo -E bash
@@ -26,7 +26,7 @@ Native packages for Debian, Ubuntu, RHEL, Fedora, CentOS, and Alpine Linux are a
   </TabItem>
   <TabItem value="dnf" label="RHEL / Fedora / CentOS">
 
-  Add the Augias RPM repository and install:
+  Ajoutez le dépôt RPM d'Augias et installez :
 
   ```bash
   curl -1sLf 'https://dl.cloudsmith.io/public/solidworx/augias/setup.rpm.sh' | sudo -E bash
@@ -34,13 +34,13 @@ Native packages for Debian, Ubuntu, RHEL, Fedora, CentOS, and Alpine Linux are a
   ```
 
   :::note
-  On CentOS 7 or RHEL 7, substitute `yum` for `dnf`.
+  Sur CentOS 7 ou RHEL 7, remplacez `dnf` par `yum`.
   :::
 
   </TabItem>
   <TabItem value="apk" label="Alpine">
 
-  Add the Augias Alpine repository and install:
+  Ajoutez le dépôt Alpine d'Augias et installez :
 
   ```bash
   curl -1sLf 'https://dl.cloudsmith.io/public/solidworx/augias/setup.alpine.sh' | sudo -E sh
@@ -51,61 +51,61 @@ Native packages for Debian, Ubuntu, RHEL, Fedora, CentOS, and Alpine Linux are a
 </Tabs>
 
 :::info
-Packages are GPG-signed. The setup scripts configure the signing key automatically — no manual key import needed.
+Les paquets sont signés GPG. Les scripts d'installation configurent la clé de signature : aucune importation manuelle.
 :::
 
-## Start the service
+## Démarrer le service
 
-Enable and start the systemd service:
+Activez et démarrez le service systemd :
 
 ```bash
 sudo systemctl enable augias --now
 ```
 
-Augias listens on `http://localhost:8765`. Open that URL in your browser and finish setup with the [first-run wizard](./system-installation.md).
+Augias écoute sur `http://localhost:8765`. Ouvrez cette adresse dans votre navigateur et terminez avec l'[assistant de premier démarrage](./system-installation.md).
 
 :::info
-The service runs over plain HTTP by default. For production, place Augias behind a reverse proxy (Nginx, Caddy, Traefik) that handles TLS termination.
+Le service sert en HTTP simple par défaut. En production, placez Augias derrière un proxy inverse (Nginx, Caddy, Traefik) qui gère le TLS.
 :::
 
 ## Configuration
 
-The service reads configuration from `/etc/augias/augias.env`. Edit this file to change the port, set the database URL, or override any other option:
+Le service lit sa configuration dans `/etc/augias/augias.env`. Modifiez ce fichier pour changer le port, régler l'adresse de la base de données ou toute autre option :
 
 ```ini title="/etc/augias/augias.env"
-# Port to listen on (default: 8765)
+# Port d'écoute (défaut : 8765)
 #AUGIAS_PORT=8765
 
-# Database connection string
+# Connexion à la base de données
 #DATABASE_URL=mysql://user:password@localhost:3306/augias
 ```
 
-After editing, restart the service to apply changes:
+Après modification, redémarrez le service :
 
 ```bash
 sudo systemctl restart augias
 ```
 
-## Manage the service
+## Piloter le service
 
 ```bash
-sudo systemctl start augias     # start
-sudo systemctl stop augias      # stop
-sudo systemctl restart augias   # restart
-sudo systemctl status augias    # check status
-journalctl -u augias -f         # follow logs
+sudo systemctl start augias     # démarrer
+sudo systemctl stop augias      # arrêter
+sudo systemctl restart augias   # redémarrer
+sudo systemctl status augias    # état
+journalctl -u augias -f         # suivre les journaux
 ```
 
-## File locations
+## Emplacement des fichiers
 
-| Path | Contents |
+| Chemin | Contenu |
 | --- | --- |
-| `/usr/bin/augias` | Binary |
+| `/usr/bin/augias` | Binaire |
 | `/etc/augias/augias.env` | Configuration |
-| `/var/lib/augias/` | Application data |
-| `/usr/lib/systemd/system/augias.service` | systemd unit |
+| `/var/lib/augias/` | Données de l'application |
+| `/usr/lib/systemd/system/augias.service` | Unité systemd |
 
-## Update
+## Mettre à jour
 
 <Tabs groupId="pkg-manager">
   <TabItem value="apt" label="Debian / Ubuntu" default>

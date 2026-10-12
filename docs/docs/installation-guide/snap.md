@@ -1,56 +1,56 @@
 ---
 title: Snap
-description: Install Augias from the Snap Store on Ubuntu or any Linux distribution with snapd.
+description: Installer Augias depuis le Snap Store sur Ubuntu ou toute distribution Linux avec snapd.
 sidebar_position: 4
 ---
 
 # Snap
 
-Augias is available on the [Snap Store](https://snapcraft.io/augias). The snap bundles the self-contained binary and registers it as a background service — no PHP, webserver, or cron job required.
+Augias est disponible sur le [Snap Store](https://snapcraft.io/augias). Le snap contient le binaire autonome et l'enregistre comme service d'arrière-plan : ni PHP, ni serveur web, ni tâche cron.
 
-## System requirements
+## Configuration requise
 
-- Linux with [snapd](https://snapcraft.io/docs/installing-snapd) installed. Ubuntu 16.04 and later include snapd out of the box.
+- Linux avec [snapd](https://snapcraft.io/docs/installing-snapd). Ubuntu l'inclut depuis la version 16.04.
 
-## Install
+## Installer
 
 ```bash
 sudo snap install augias
 ```
 
-The service starts automatically after installation and listens on `http://localhost:8765`. Open that URL in your browser and finish setup with the [first-run wizard](./system-installation.md).
+Le service démarre de lui-même après l'installation et écoute sur `http://localhost:8765`. Ouvrez cette adresse dans votre navigateur et terminez avec l'[assistant de premier démarrage](./system-installation.md).
 
 :::info
-The snap runs over plain HTTP. For production, place Augias behind a reverse proxy (Nginx, Caddy, Traefik) that terminates TLS.
+Le snap sert en HTTP simple. En production, placez Augias derrière un proxy inverse (Nginx, Caddy, Traefik) qui gère le TLS.
 :::
 
-## Manage the service
+## Piloter le service
 
 ```bash
-sudo snap start augias    # start
-sudo snap stop augias     # stop
-sudo snap restart augias  # restart
-snap logs augias          # view logs
-snap logs -n 100 augias   # view last 100 lines
+sudo snap start augias    # démarrer
+sudo snap stop augias     # arrêter
+sudo snap restart augias  # redémarrer
+snap logs augias          # voir les journaux
+snap logs -n 100 augias   # voir les 100 dernières lignes
 ```
 
-## CLI
+## Ligne de commande
 
-The snap exposes a `cli` app for running console commands:
+Le snap fournit une application `cli` pour lancer les commandes console :
 
 ```bash
 augias.cli console cache:clear
 augias.cli version
 ```
 
-## Data
+## Données
 
-Application data is stored in `/var/snap/augias/common/`.
+Les données de l'application sont dans `/var/snap/augias/common/`.
 
-## Update
+## Mettre à jour
 
 ```bash
 sudo snap refresh augias
 ```
 
-Snaps update automatically in the background by default. Run the above to force an immediate refresh.
+Les snaps se mettent à jour seuls en arrière-plan par défaut. La commande ci-dessus force une mise à jour immédiate.

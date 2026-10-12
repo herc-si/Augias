@@ -3,37 +3,37 @@
     "message": "Documentation",
     "description": "The title of the footer links column with title=Documentation in the footer"
   },
-  "link.title.Community": {
+  "link.title.Communauté": {
     "message": "Community",
-    "description": "The title of the footer links column with title=Community in the footer"
+    "description": "The title of the footer links column with title=Communauté in the footer"
   },
-  "link.title.More": {
+  "link.title.Plus": {
     "message": "More",
-    "description": "The title of the footer links column with title=More in the footer"
+    "description": "The title of the footer links column with title=Plus in the footer"
   },
-  "link.item.label.Get Started": {
+  "link.item.label.Bien démarrer": {
     "message": "Get Started",
-    "description": "The label of footer link with label=Get Started linking to /intro"
+    "description": "The label of footer link with label=Bien démarrer linking to /intro"
   },
   "link.item.label.Installation": {
     "message": "Installation",
     "description": "The label of footer link with label=Installation linking to /installation-guide"
   },
-  "link.item.label.Companies": {
+  "link.item.label.Entreprises": {
     "message": "Companies",
-    "description": "The label of footer link with label=Companies linking to /companies/overview"
+    "description": "The label of footer link with label=Entreprises linking to /companies/overview"
   },
-  "link.item.label.Integrations": {
+  "link.item.label.Intégrations": {
     "message": "Integrations",
-    "description": "The label of footer link with label=Integrations linking to /integrations/sentry"
+    "description": "The label of footer link with label=Intégrations linking to /integrations/sentry"
   },
-  "link.item.label.GitHub Discussions": {
+  "link.item.label.Discussions GitHub": {
     "message": "GitHub Discussions",
-    "description": "The label of footer link with label=GitHub Discussions linking to https://github.com/herc-si/Augias/discussions"
+    "description": "The label of footer link with label=Discussions GitHub linking to https://github.com/herc-si/Augias/discussions"
   },
-  "link.item.label.Report an Issue": {
+  "link.item.label.Signaler un problème": {
     "message": "Report an Issue",
-    "description": "The label of footer link with label=Report an Issue linking to https://github.com/herc-si/Augias/issues"
+    "description": "The label of footer link with label=Signaler un problème linking to https://github.com/herc-si/Augias/issues"
   },
   "link.item.label.X (Twitter)": {
     "message": "X (Twitter)",
@@ -42,6 +42,18 @@
   "link.item.label.GitHub": {
     "message": "GitHub",
     "description": "The label of footer link with label=GitHub linking to https://github.com/herc-si/Augias"
+  },
+  "link.item.label.Mentions légales": {
+    "message": "Legal notice",
+    "description": "The label of footer link with label=Mentions légales linking to /legal/mentions-legales"
+  },
+  "link.item.label.Conditions générales": {
+    "message": "Terms and conditions",
+    "description": "The label of footer link with label=Conditions générales linking to /legal/conditions-generales"
+  },
+  "link.item.label.Politique de confidentialité": {
+    "message": "Privacy policy",
+    "description": "The label of footer link with label=Politique de confidentialité linking to /legal/politique-de-confidentialite"
   },
   "copyright": {
     "message": "Copyright © 2026 Augias. Built with Docusaurus.",

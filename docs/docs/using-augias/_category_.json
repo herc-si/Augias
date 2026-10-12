@@ -1,9 +1,10 @@
 {
-  "label": "🧭 Using Augias",
+  "label": "🧭 Utiliser Augias",
   "position": 3,
   "link": {
     "type": "generated-index",
-    "title": "Using Augias",
-    "description": "General usage tips for navigating Augias."
+    "title": "Utiliser Augias",
+    "description": "Repères pour se déplacer dans Augias.",
+    "slug": "/category/using-augias"
   }
 }

@@ -1,84 +1,84 @@
 ---
-title: Searching
-description: Find clients, invoices, quotes, and payments using the global search bar.
+title: Rechercher
+description: Retrouver clients, factures, devis et paiements avec la barre de recherche.
 sidebar_position: 1
 ---
 
-# Searching
+# Rechercher
 
-The search bar at the top of every Augias page is a single entry point for finding any record across your account — clients, contacts, invoices, recurring invoices, quotes, and payments. Type a few characters, and matching records group by type in a dropdown. Hit `↵` (or click a row) to jump straight to a record.
+La barre de recherche, en haut de chaque page, retrouve n'importe quelle fiche de votre compte : clients, contacts, factures, factures récurrentes, devis et paiements. Tapez quelques caractères : les résultats s'affichent groupés par type. `↵` (ou un clic sur une ligne) ouvre directement la fiche.
 
-You can focus the search bar from anywhere with the keyboard shortcut `Ctrl+K` (or `Cmd+K` on macOS), and there's a `?` icon at the right edge of the bar that opens a quick syntax reference modal.
+Le raccourci `Ctrl+K` (`Cmd+K` sur macOS) place le curseur dans la barre depuis n'importe où, et l'icône `?` au bout de la barre ouvre un rappel de la syntaxe.
 
-:::info[Hosted vs self-hosted]
-Search requires Meilisearch; see the [Meilisearch integration](../integrations/meilisearch.md) guide to enable it.
+:::info[Hébergé ou auto-hébergé]
+La recherche s'appuie sur Meilisearch.
 
-If you're **self-hosting**, search is optional and needs to be enabled by configuring a search engine. See the [Meilisearch integration](../integrations/meilisearch.md) for the setup steps. Without it, the search bar is hidden and the rest of Augias runs normally.
+En **auto-hébergement**, elle est facultative et s'active en configurant un moteur de recherche : voir l'[intégration Meilisearch](../integrations/meilisearch.md). Sans moteur, la barre est masquée et le reste d'Augias fonctionne normalement.
 :::
 
-## What's searchable
+## Ce qui se recherche
 
-The search bar covers six record types, scoped to the company you're currently working in:
+La barre couvre six types de fiches, dans l'entreprise où vous travaillez :
 
-- `Clients` — by name, website.
-- `Contacts` — by name and email.
-- `Invoices` — by number, client name, status, total.
-- `Recurring invoices` — same fields as invoices.
-- `Quotes` — by number, client name, status, total.
-- `Payments` — by reference, client name, status, total.
+- `Clients` : par nom, site web.
+- `Contacts` : par nom et e-mail.
+- `Factures` : par numéro, nom du client, statut, total.
+- `Factures récurrentes` : mêmes champs que les factures.
+- `Devis` : par numéro, nom du client, statut, total.
+- `Paiements` : par référence, nom du client, statut, total.
 
-Results from other companies you belong to are never shown — switch companies first if you need to find a record on another account.
+Les résultats des autres entreprises dont vous êtes membre n'apparaissent jamais : changez d'entreprise d'abord pour chercher dans une autre.
 
-## Free-text search
+## Recherche libre
 
-Plain words like `acme` or `invoice 1024` do a fuzzy, typo-tolerant match across all six record types. A few practical notes:
+Des mots simples, comme `acme` ou `facture 1024`, sont recherchés dans les six types, en tolérant les fautes de frappe. Quelques repères :
 
-- **Multiple words** are AND-matched within a record type — `klein 5000` shows clients/invoices/etc. that match both terms.
-- **Typos and partial matches** are handled — `klien` will still find `Klein-Lehner`.
-- **Quotes around a phrase** force an exact-phrase match — `"Acme Corp"` won't match `Acme Holdings`.
-- The search runs as you type, with a short debounce. Results refresh on every keystroke.
+- **Plusieurs mots** doivent tous correspondre dans un même type : `klein 5000` montre les clients, factures, etc. qui contiennent les deux.
+- **Fautes de frappe et mots partiels** sont acceptés : `klien` trouve encore `Klein-Lehner`.
+- **Des guillemets autour d'une expression** imposent l'expression exacte : `"Acme Corp"` ne trouve pas `Acme Holdings`.
+- La recherche se lance pendant la saisie, avec un court délai, et se met à jour à chaque frappe.
 
-## Qualifiers
+## Filtres
 
-Beyond plain text, the search bar understands a small qualifier syntax — similar to GitHub's search — that maps to filters on each record type. Qualifiers have the form `key:value` and can be combined with free-text terms.
+Au-delà du texte libre, la barre comprend une petite syntaxe de filtres, proche de celle de GitHub, sous la forme `clé:valeur`, que l'on peut combiner avec du texte libre. Les clés et les valeurs restent en anglais.
 
-| Qualifier | What it does | Example |
+| Filtre | Effet | Exemple |
 | --- | --- | --- |
-| `in:` | Limit results to one or more record types: `clients`, `contacts`, `invoices`, `recurring_invoices`, `quotes`, `payments`. | `in:invoices,quotes overdue` |
-| `status:` | Filter by status (e.g. `paid`, `pending`, `draft`, `overdue`). | `status:paid acme` |
-| `client:` | Filter by client name. Use quotes for multi-word names. | `client:"Acme Corp"` |
-| `amount:` | Filter by total amount. | `amount:1000` |
-| `created:` | Filter by creation date. | `created:2026-01-15` |
-| `sort:` | Sort the results. Accepts `amount`, `amount_desc`, `date`, `date_desc`. | `unpaid sort:amount_desc` |
+| `in:` | Limite les résultats à un ou plusieurs types : `clients`, `contacts`, `invoices`, `recurring_invoices`, `quotes`, `payments`. | `in:invoices,quotes overdue` |
+| `status:` | Filtre par statut (par exemple `paid`, `pending`, `draft`, `overdue`). | `status:paid acme` |
+| `client:` | Filtre par nom de client. Guillemets pour un nom en plusieurs mots. | `client:"Acme Corp"` |
+| `amount:` | Filtre par montant total. | `amount:1000` |
+| `created:` | Filtre par date de création. | `created:2026-01-15` |
+| `sort:` | Trie les résultats : `amount`, `amount_desc`, `date`, `date_desc`. | `unpaid sort:amount_desc` |
 
-Qualifiers that don't apply to a given record type are silently ignored for it. For example, `client:Acme` filters invoices, quotes, payments, and recurring invoices, but has no effect on the contacts results — there, `client:Acme` falls through and is treated as part of the free-text query instead.
+Un filtre qui ne s'applique pas à un type est ignoré pour ce type. Par exemple, `client:Acme` filtre les factures, les devis, les paiements et les factures récurrentes, mais pas les contacts : là, `client:Acme` est traité comme du texte libre.
 
-A few worked examples:
+Quelques exemples :
 
 ```text
 in:invoices status:overdue sort:date_desc
 client:"Acme Corp" amount:5000
-in:clients,contacts john
+in:clients,contacts jean
 ```
 
-The first finds the most recently created overdue invoices. The second finds anything (across all types) for the client `Acme Corp` with a total of `5000`. The third searches only the `clients` and `contacts` indexes for `john`.
+Le premier trouve les factures en retard les plus récentes. Le deuxième trouve tout ce qui concerne le client `Acme Corp` pour un total de `5000`, tous types confondus. Le troisième cherche `jean` dans les clients et les contacts seulement.
 
-## Real-time updates
+## Mise à jour en temps réel
 
-When you create, edit, or delete records — through the UI, the API, or any integration — search updates immediately. There's no scheduled re-index and nothing to refresh; a record you just created is searchable on the very next keystroke.
+Quand vous créez, modifiez ou supprimez une fiche, par l'application, l'API ou une intégration, la recherche est mise à jour aussitôt. Pas de réindexation programmée ni rien à rafraîchir : une fiche créée se retrouve dès la frappe suivante.
 
-If results ever look out of sync (for example, after a database restore on a self-hosted instance), the search engine indexes can be rebuilt — see [Meilisearch integration → Initial indexing](../integrations/meilisearch.md#initial-indexing).
+Si les résultats semblent décalés (par exemple après la restauration d'une base en auto-hébergement), les index peuvent être reconstruits : voir [Intégration Meilisearch → Indexation initiale](../integrations/meilisearch.md#indexation-initiale).
 
-## Troubleshooting
+## Dépannage
 
-### The search bar isn't visible
+### La barre de recherche n'apparaît pas
 
-This means the search engine isn't configured for your installation. On the hosted plan this shouldn't happen — contact support if you're on the hosted plan and the search bar is missing. On a self-hosted instance, follow the [Meilisearch integration](../integrations/meilisearch.md) guide to configure and connect a search engine. After setting the environment variables, clear the application cache and reload.
+Le moteur de recherche n'est pas configuré pour votre installation. Sur le service hébergé, cela ne devrait pas arriver : contactez le support. En auto-hébergement, suivez le guide [Intégration Meilisearch](../integrations/meilisearch.md) pour configurer et relier un moteur. Après avoir réglé les variables d'environnement, videz le cache de l'application et rechargez la page.
 
-### A record I just created or edited isn't showing up
+### Une fiche que je viens de créer ou de modifier n'apparaît pas
 
-Indexing happens immediately on save, so this should be rare. If it does happen — typically after a manual database change or a backup restore — re-run the search engine import from the command line to rebuild the indexes from the database. The exact command and options are documented at [Meilisearch integration → Initial indexing](../integrations/meilisearch.md#initial-indexing).
+L'indexation se fait dès l'enregistrement, ce cas devrait donc être rare. S'il se produit, en général après une modification directe de la base ou une restauration de sauvegarde, relancez l'import du moteur de recherche en ligne de commande pour reconstruire les index. La commande et ses options sont dans [Intégration Meilisearch → Indexation initiale](../integrations/meilisearch.md#indexation-initiale).
 
-### My free-text search returns nothing
+### Ma recherche libre ne renvoie rien
 
-Double-check you're in the right company (the company switcher is in the top right of the navigation). Search results are scoped to the active company only — a record on a different company won't appear until you switch to that company.
+Vérifiez que vous êtes dans la bonne entreprise (le sélecteur est en haut à droite). Les résultats se limitent à l'entreprise active : une fiche d'une autre entreprise n'apparaît qu'après être passé sur celle-ci.

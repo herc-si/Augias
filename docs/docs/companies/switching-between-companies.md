@@ -1,25 +1,25 @@
 ---
-title: Switching between companies
-description: Move between the companies you belong to.
+title: Passer d'une entreprise à l'autre
+description: Naviguer entre les entreprises dont vous êtes membre.
 sidebar_position: 3
 ---
 
-# Switching between companies
+# Passer d'une entreprise à l'autre
 
-Two places to switch: at login (when you have more than one company), and any time after, from the topbar.
+Deux endroits pour changer d'entreprise : à la connexion, si vous en avez plusieurs, et à tout moment ensuite, depuis la barre du haut.
 
-## At login
+## À la connexion
 
-If you belong to a single company, login takes you straight to its dashboard. If you belong to two or more, login lands on the company picker.
+Si vous n'appartenez qu'à une entreprise, la connexion vous mène directement à son tableau de bord. Si vous en avez deux ou plus, elle vous mène à la page de choix.
 
-![The company picker shown after login](/img/companies/company-picker.png)
+![La page de choix de l'entreprise après la connexion](/img/companies/company-picker.png)
 
-Click any card to enter that company. You stay signed in — there's no second login.
+Cliquez sur une carte pour entrer dans l'entreprise. Vous restez connecté : pas de seconde connexion.
 
-## While using the app
+## En cours d'utilisation
 
-Open the company dropdown in the top right. The dropdown lists every other company you belong to (the current one is excluded). Click any of them to switch.
+Ouvrez le menu des entreprises en haut à droite. Il liste toutes les autres entreprises dont vous êtes membre (l'entreprise en cours n'y figure pas). Cliquez sur l'une d'elles pour y passer.
 
-![The topbar dropdown showing other companies you can switch to](/img/companies/topbar-switch.png)
+![Le menu de la barre du haut avec les autres entreprises](/img/companies/topbar-switch.png)
 
-You'll land on the dashboard of the chosen company. Switching changes which company's data you're viewing — your user account and login session are unchanged.
+Vous arrivez sur le tableau de bord de l'entreprise choisie. Seules changent les données affichées : votre compte et votre session restent les mêmes.

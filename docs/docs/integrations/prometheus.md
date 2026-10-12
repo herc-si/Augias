@@ -1,42 +1,42 @@
 ---
-title: Prometheus metrics
-description: Expose Caddy HTTP and FrankenPHP worker metrics for Prometheus scraping.
+title: Métriques Prometheus
+description: Exposer les métriques HTTP de Caddy et celles des workers FrankenPHP pour Prometheus.
 sidebar_position: 4
 ---
 
-# Prometheus metrics
+# Métriques Prometheus
 
-When running the Augias [distribution package](../installation-guide/distribution-package/index.mdx) (single binary), you can expose a Prometheus-compatible metrics endpoint that reports Caddy HTTP metrics and FrankenPHP worker and thread statistics.
+Avec le [paquet de distribution](../installation-guide/distribution-package/index.mdx) d'Augias (le binaire unique), vous pouvez exposer un point de collecte compatible Prometheus, qui publie les métriques HTTP de Caddy et les statistiques des workers et des threads FrankenPHP.
 
 :::info
-Prometheus metrics are only available with the distribution package (the `augias` single binary). Docker and Helm deployments do not expose this endpoint by default.
+Les métriques Prometheus ne sont disponibles qu'avec le paquet de distribution (le binaire `augias`). Les déploiements Docker et Helm n'exposent pas ce point de collecte par défaut.
 :::
 
-## Enable metrics
+## Activer les métriques
 
-Pass `--enable-metrics` to the `run` command:
+Passez `--enable-metrics` à la commande `run` :
 
 ```bash
 augias run --enable-metrics
 ```
 
-The metrics endpoint starts on port **9090** by default. Augias prints a note at startup confirming the address:
+Le point de collecte écoute par défaut sur le port **9090**. Augias confirme l'adresse au démarrage :
 
-```
+```text
 Metrics: Prometheus metrics available at http://localhost:9090/metrics
 ```
 
-## Change the metrics port
+## Changer de port
 
-Use `--metrics-port` to listen on a different port:
+Utilisez `--metrics-port` pour écouter sur un autre port :
 
 ```bash
 augias run --enable-metrics --metrics-port 9100
 ```
 
-## Configure Prometheus to scrape
+## Configurer la collecte Prometheus
 
-Add a scrape job to your `prometheus.yml`:
+Ajoutez une tâche de collecte à votre `prometheus.yml` :
 
 ```yaml
 scrape_configs:
@@ -46,13 +46,13 @@ scrape_configs:
           - localhost:9090
 ```
 
-Replace `localhost` with the host or IP where Augias is running, and adjust the port if you used `--metrics-port`.
+Remplacez `localhost` par l'hôte ou l'adresse IP d'Augias, et changez le port si vous avez utilisé `--metrics-port`.
 
-## What's exposed
+## Ce qui est publié
 
-The `/metrics` endpoint reports standard Caddy HTTP server metrics (request counts, response sizes, latencies by status code and route) and FrankenPHP worker and thread pool statistics (active workers, idle threads, PHP execution times).
+Le point `/metrics` publie les métriques habituelles du serveur HTTP Caddy (nombre de requêtes, tailles de réponse, latences par code de statut et par route) et les statistiques des workers et du pool de threads FrankenPHP (workers actifs, threads inactifs, temps d'exécution PHP).
 
-## Related
+## Voir aussi
 
-- [Distribution package installation](../installation-guide/distribution-package/index.mdx)
-- [Sentry integration](./sentry.md)
+- [Installation du paquet de distribution](../installation-guide/distribution-package/index.mdx)
+- [Intégration Sentry](./sentry.md)

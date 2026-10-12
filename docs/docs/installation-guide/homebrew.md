@@ -1,41 +1,41 @@
 ---
 title: Homebrew
-description: Install Augias from the SolidWorx Homebrew tap on macOS or Linux.
+description: Installer Augias depuis le dépôt Homebrew de SolidWorx sur macOS ou Linux.
 sidebar_position: 3
 ---
 
 # Homebrew
 
-The Homebrew tap installs the same self-contained build used in the [quick install](./quick-install.mdx) under a managed path and keeps it up to date with `brew upgrade`.
+Le dépôt Homebrew installe la même version autonome que l'[installation rapide](./quick-install.mdx), dans un emplacement géré, et la tient à jour avec `brew upgrade`.
 
-## System requirements
+## Configuration requise
 
-- macOS or Linux with [Homebrew](https://brew.sh/) installed.
-- A database — SQLite works out of the box; MySQL, MariaDB, or PostgreSQL are also supported.
+- macOS ou Linux avec [Homebrew](https://brew.sh/).
+- Une base de données : SQLite fonctionne d'emblée ; MySQL, MariaDB et PostgreSQL sont aussi pris en charge.
 
-No PHP, webserver, or cron job is required.
+Ni PHP, ni serveur web, ni tâche cron ne sont nécessaires.
 
-## Install
+## Installer
 
 ```bash
 brew install solidworx/tap/augias
 ```
 
-## Run
+## Lancer
 
 ```bash
 augias run
 ```
 
-The application starts on `https://localhost:8765` with a self-signed certificate. Open the URL in your browser and finish setup with the [first-run wizard](./system-installation.md).
+L'application démarre sur `https://localhost:8765` avec un certificat auto-signé. Ouvrez l'adresse dans votre navigateur et terminez avec l'[assistant de premier démarrage](./system-installation.md).
 
-For SSL, custom domains, worker mode, and the full list of `run` flags, see the [quick install guide](./quick-install.mdx#ssl).
+Pour le SSL, un domaine personnalisé, le mode worker et toutes les options de `run`, voir l'[installation rapide](./quick-install.mdx#ssl).
 
 :::info
-Recurring tasks and async work (email sending) run automatically — there is no separate cron job or messenger consumer to set up.
+Les tâches récurrentes et le travail en arrière-plan (envoi des e-mails) tournent seuls : pas de tâche cron ni de consommateur de messages à mettre en place.
 :::
 
-## Update
+## Mettre à jour
 
 ```bash
 brew upgrade solidworx/tap/augias

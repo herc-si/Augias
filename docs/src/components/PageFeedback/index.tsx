@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useState, type ReactNode} from 'react';
 import {useLocation} from '@docusaurus/router';
 import {track} from '@site/src/lib/analytics';
+import {translate} from '@docusaurus/Translate';
 import styles from './styles.module.css';
 
 type Sentiment = 'up' | 'down';
@@ -56,31 +57,31 @@ export default function PageFeedback(): ReactNode {
     <div className={styles.feedback}>
       {submitted === null ? (
         <>
-          <span className={styles.prompt}>Was this page helpful?</span>
+          <span className={styles.prompt}>{translate({id: 'feedback.prompt', message: "Cette page vous a-t-elle aidé ?"})}</span>
           <div className={styles.buttons}>
             <button
               type="button"
               className={styles.button}
               onClick={() => handleClick('up')}
-              aria-label="Yes, this page was helpful">
+              aria-label={translate({id: 'feedback.yes.label', message: "Oui, cette page m’a aidé"})}>
               <ThumbsUpIcon />
-              <span>Yes</span>
+              <span>{translate({id: 'feedback.yes', message: "Oui"})}</span>
             </button>
             <button
               type="button"
               className={styles.button}
               onClick={() => handleClick('down')}
-              aria-label="No, this page was not helpful">
+              aria-label={translate({id: 'feedback.no.label', message: "Non, cette page ne m’a pas aidé"})}>
               <ThumbsDownIcon />
-              <span>No</span>
+              <span>{translate({id: 'feedback.no', message: "Non"})}</span>
             </button>
           </div>
         </>
       ) : (
         <span className={styles.thanks}>
           {submitted === 'up'
-            ? 'Thanks — glad it helped!'
-            : 'Thanks — we’ll work on improving this page.'}
+            ? translate({id: 'feedback.thanks.up', message: "Merci, ravis que cela vous ait aidé !"})
+            : translate({id: 'feedback.thanks.down', message: "Merci, nous allons améliorer cette page."})}
         </span>
       )}
     </div>

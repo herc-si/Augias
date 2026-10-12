@@ -1,9 +1,10 @@
 {
-  "label": "🤖 AI",
+  "label": "🤖 IA",
   "position": 11,
   "link": {
     "type": "generated-index",
-    "title": "AI",
-    "description": "Use Augias with AI agents and assistants."
+    "title": "IA",
+    "description": "Utiliser Augias avec des agents et des assistants d'IA.",
+    "slug": "/category/ai"
   }
 }

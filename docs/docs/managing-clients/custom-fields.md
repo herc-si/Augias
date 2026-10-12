@@ -1,88 +1,90 @@
 ---
-title: Custom fields
-description: Add extra fields to clients, contacts, invoices, and quotes to capture information specific to your business.
+title: Champs personnalisés
+description: Ajouter vos propres champs aux clients, aux contacts, aux factures et aux devis.
 sidebar_position: 6
 ---
 
-# Custom fields
+# Champs personnalisés
 
-Custom fields let you store additional information on clients, contacts, invoices, and quotes — things like account numbers, project codes, or any other data your business needs.
+Les champs personnalisés gardent des informations en plus sur les clients, les contacts, les factures et les devis : un numéro de compte, un code projet, ou toute autre donnée propre à votre activité.
 
-## Manage custom field definitions
+## Gérer les champs
 
-Go to **Settings → Custom Fields** to see all defined fields. From here you can add, edit, reorder, and delete fields.
+Ouvrez la page `Champs personnalisés` depuis les paramètres. Un onglet par type de fiche (`Champs client`, `Champs contact`, `Champs facture`, `Champs devis`) liste les champs définis ; vous pouvez en ajouter, les modifier, les réordonner et les supprimer.
 
-## Add a custom field
+## Ajouter un champ
 
-Click `Add Custom Field` to open the creation form.
+Cliquez sur `Ajouter un champ` pour ouvrir le formulaire.
 
-### Applies to
+### S'applique à
 
-Choose which record type the field appears on:
+Choisissez la fiche sur laquelle le champ apparaît :
 
-- **Client** — shown on the client create and edit forms
-- **Contact** — shown when adding or editing a contact
-- **Invoice** — shown on invoice create and edit forms
-- **Quote** — shown on quote create and edit forms
+- **Client** : formulaires de création et de modification d'un client ;
+- **Contact** : ajout et modification d'un contact ;
+- **Facture** : formulaires de création et de modification d'une facture ;
+- **Devis** : formulaires de création et de modification d'un devis.
 
-### Label
+### Libellé
 
-The name shown next to the field in the UI and on PDFs. Maximum 125 characters.
+Le nom affiché à côté du champ dans l'application et sur les PDF. 125 caractères au plus.
 
 ### Type
 
 | Type | Description |
 | --- | --- |
-| **Text** | Single-line text |
-| **Long text** | Multi-line textarea |
-| **Number** | Numeric input |
-| **Date** | Date picker |
-| **Email** | Email address with format validation |
-| **URL** | Web address with format validation |
-| **Checkbox** | True/false toggle |
-| **Single-select** | Drop-down with one choice |
-| **Multi-select** | Drop-down with multiple choices |
+| **Texte** | Une ligne de texte |
+| **Texte long** | Une zone de texte sur plusieurs lignes |
+| **Nombre** | Une valeur numérique |
+| **Date** | Un sélecteur de date |
+| **E-mail** | Une adresse e-mail, au format vérifié |
+| **URL** | Une adresse web, au format vérifié |
+| **Case à cocher** | Oui ou non |
+| **Choix unique** | Une liste déroulante, un seul choix |
+| **Choix multiple** | Une liste déroulante, plusieurs choix |
 
-For **Single-select** and **Multi-select**, add the available options below the type selector using the options list. Each option gets a label and an auto-generated value.
+Pour un choix unique ou multiple, ajoutez les options proposées sous le type avec `Ajouter une option`. Chaque option a un libellé et une valeur générée automatiquement.
 
-### Required
+Un champ qui a déjà des valeurs ne peut plus changer de type : supprimez-le et recréez-le.
 
-Check **Required** to make the field mandatory when creating or editing the record.
+### Obligatoire
 
-### Visibility
+Cochez **Obligatoire** pour rendre le champ indispensable à la création et à la modification de la fiche.
 
-Available for **Invoice** and **Quote** fields only:
+### Visibilité
 
-| Option | Where the field appears |
+Pour les champs de **facture** et de **devis** seulement :
+
+| Option | Où le champ apparaît |
 | --- | --- |
-| **Internal** | Admin views only — not shown on PDFs or the client-facing invoice/quote page |
-| **Client-visible** | Admin views and PDFs and the client-facing page |
+| **Interne uniquement** | Dans l'application seulement : ni sur les PDF, ni sur la page vue par le client |
+| **Visible par le client** | Dans l'application, sur les PDF et sur la page vue par le client |
 
-### Default value
+### Valeur par défaut
 
-Optionally pre-fill new records with this value.
+Facultatif : préremplit les nouvelles fiches avec cette valeur.
 
-## Filling in custom field values
+## Remplir les champs
 
-Once a field is defined, it appears on the relevant create and edit forms automatically. For **Invoice** and **Quote** fields, client-visible values are printed on the generated PDF.
+Une fois défini, le champ apparaît de lui-même dans les formulaires concernés. Sur les factures et les devis, les valeurs visibles client sont imprimées sur le PDF.
 
-## Reordering fields
+## Réordonner les champs
 
-Drag and drop the fields in the list to change the order they appear in forms and on PDFs.
+Faites glisser la poignée à gauche de chaque ligne pour changer l'ordre des champs dans les formulaires et sur les PDF.
 
-## Deleting a field
+## Supprimer un champ
 
-Click the delete action on a field in the list. Deleting a field removes its definition and all stored values across all records — this cannot be undone.
+Utilisez l'action de suppression du champ dans la liste. Augias indique combien de fiches ont une valeur pour ce champ avant de confirmer.
 
 :::danger
-Deleting a custom field permanently removes all stored values for that field. There is no way to recover them.
+Supprimer un champ efface sa définition et toutes ses valeurs, sur toutes les fiches. Elles ne peuvent pas être récupérées.
 :::
 
-## Custom fields are per-company
+## Des champs propres à chaque entreprise
 
-Each company in Augias has its own set of custom fields. Fields created in one company are not shared with other companies.
+Chaque entreprise a ses propres champs personnalisés. Un champ créé dans une entreprise n'apparaît pas dans les autres.
 
-## Related
+## Voir aussi
 
-- [Creating a new client](./create-new-client.md)
-- [Creating an invoice](../invoices/creating-an-invoice.md)
+- [Créer un client](./create-new-client.md)
+- [Créer une facture](../invoices/creating-an-invoice.md)

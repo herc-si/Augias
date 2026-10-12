@@ -1,84 +1,84 @@
 ---
-title: Declaring your turnover
-description: Watch your turnover against the limits of your regime and prepare the figures you have to file.
+title: Déclarer votre chiffre d'affaires
+description: Suivre votre chiffre d'affaires face aux seuils de votre régime et préparer les montants à déclarer.
 sidebar_position: 4
 ---
 
-# Declaring your turnover
+# Déclarer votre chiffre d'affaires
 
-Augias works out what you have to report and what it will cost you. It files nothing on your behalf — you copy the figures onto the collecting body's own site, then record here that you did.
+Augias calcule ce que vous avez à déclarer et ce que cela vous coûtera. Il ne déclare rien à votre place : vous recopiez les montants sur le site de l'organisme collecteur, puis vous enregistrez ici que c'est fait.
 
-## Where you stand this year
+## Où vous en êtes cette année
 
-Click `Accounting` in the sidebar. The turnover card, headed with the current year (`2026 turnover`), shows what you have received since 1 January, split by activity when there is more than one, and a bar for every limit that has something to measure.
+Cliquez sur `Comptabilité` dans le menu latéral. La carte du chiffre d'affaires, titrée avec l'année (`Chiffre d'affaires 2026`), montre ce que vous avez encaissé depuis le 1er janvier, par activité quand il y en a plusieurs, et une barre pour chaque seuil qui a quelque chose à mesurer.
 
-Three limits apply under the French micro-entreprise regime:
+Trois seuils s'appliquent en micro-entreprise :
 
-| Limit | What it means |
-|---|---|
-| `Regime ceiling` | Pass it two years running and you leave the micro regime. |
-| `VAT threshold` | Pass it and you become liable for VAT. |
-| `VAT threshold (upper limit)` | The tolerance above the threshold. |
+| Seuil | Signification |
+| --- | --- |
+| `Plafond du régime` | Dépassé deux années de suite, il vous fait sortir du régime micro. |
+| `Seuil de TVA` | Dépassé, il vous rend redevable de la TVA. |
+| `Seuil de TVA (majoré)` | La tolérance au-dessus du seuil. |
 
-A limit marked `pro rata` has been scaled down because you started trading part-way through the year — that only applies to the regime ceiling, never to the VAT thresholds.
+Un seuil marqué `proratisé` a été réduit parce que votre activité a commencé en cours d'année. Cela ne vaut que pour le plafond du régime, jamais pour les seuils de TVA.
 
 :::warning
-The rates and thresholds shipped with Augias have not been verified against an official source. Check them on the collecting body's site before acting on them. Every screen that shows a figure repeats this.
+Les taux et les seuils fournis avec Augias n'ont pas tous été vérifiés auprès d'une source officielle. Contrôlez-les sur le site de l'organisme collecteur avant d'agir. Chaque écran qui affiche un montant le rappelle.
 :::
 
-## Threshold alerts
+## Alertes de seuil
 
-Once a day, Augias compares your turnover for the year with each limit and raises an alert the first time you reach 80% of one, and again the first time you pass it. Alerts appear on the accounting page, under a card headed with the year (`2026 threshold alerts`), and are emailed to anyone who has subscribed to the `Turnover Threshold Reached` notification in their profile.
+Une fois par jour, Augias compare votre chiffre d'affaires de l'année à chaque seuil et lève une alerte la première fois que vous en atteignez 80 %, puis la première fois que vous le dépassez. Les alertes apparaissent sur la page de comptabilité, dans une carte titrée avec l'année (`Alertes de seuil 2026`), et partent par e-mail à ceux qui se sont abonnés à la notification `Seuil de chiffre d'affaires atteint` dans leur profil.
 
-Each milestone is raised once per year. Falling back below a limit clears nothing — annual turnover does not go down, and the crossing happened.
+Chaque étape n'est signalée qu'une fois par an. Repasser sous un seuil n'efface rien : le chiffre d'affaires annuel ne baisse pas, et le franchissement a bien eu lieu.
 
 :::info
-The daily check runs as a scheduled task. On Docker and the single binary it runs by itself; on a manual installation, set up the [background worker](../installation-guide/distribution-package/cron-job-setup.md) or the alerts will never fire.
+La vérification quotidienne est une tâche planifiée. Avec Docker et le binaire, elle tourne seule ; dans une installation manuelle, mettez en place le [processus de fond](../installation-guide/distribution-package/cron-job-setup.md), sinon les alertes ne partiront jamais.
 :::
 
-## Open a declaration
+## Ouvrir une déclaration
 
-Click `Declarations` at the top of the accounting page. The list shows every period of the current year with:
+Cliquez sur `Déclarations` en haut de la page de comptabilité. La liste montre chaque période de l'année en cours avec :
 
-- `Books` — whether the period is `Open` or `Closed`.
-- `Declaration` — `Not computed`, `Draft`, `Ready to file` or `Filed`.
-- `Due` — what the period will cost.
+- `Livres` : la période est ouverte ou clôturée ;
+- `Déclaration` : `Non calculée`, `Brouillon`, `Prête à déclarer` ou `Déclarée` ;
+- `À payer` : ce que la période vous coûtera.
 
-The list is of periods rather than declarations, so a quarter you closed and then forgot is visible as one you have not declared.
+La liste porte sur les périodes, pas sur les déclarations : un trimestre clôturé puis oublié apparaît comme non déclaré.
 
-Click `Open` on a period to see its figures.
+Cliquez sur `Ouvrir` sur une période pour voir ses montants.
 
-## The figures to report
+## Les montants à déclarer
 
-The declaration itemises what you owe rather than giving one total, because that is how you have to type it into the collecting body's form:
+La déclaration détaille ce que vous devez au lieu de donner un seul total, parce que c'est ainsi que le formulaire de l'organisme collecteur le demande :
 
-| Column | Meaning |
-|---|---|
-| `Line` | The charge — `Social contributions`, `Professional training levy`, `Flat-rate income tax`. |
-| `Base` | The turnover the rate was applied to. |
-| `Rate` | The percentage used. |
-| `Amount` | What that line costs. |
+| Colonne | Signification |
+| --- | --- |
+| `Ligne` | Le prélèvement : `Cotisations sociales`, `Contribution à la formation professionnelle`, `Versement libératoire de l'impôt sur le revenu`. |
+| `Base` | Le chiffre d'affaires auquel le taux s'applique. |
+| `Taux` | Le pourcentage appliqué. |
+| `Montant` | Ce que coûte la ligne. |
 
-`Turnover for the period` sits above them and `Total due` below. When ACRE applies, the social line reads `Social contributions (ACRE relief applied)`.
+Le `Chiffre d'affaires de la période` figure au-dessus et le `Total dû` en dessous. Quand l'ACRE s'applique, la ligne sociale devient `Cotisations sociales (exonération ACRE appliquée)`.
 
-A period with no receipts says so: *Nothing was received in this period, so there is nothing to declare.*
+Une période sans encaissement le dit : *Aucun encaissement sur cette période : il n'y a rien à déclarer.*
 
-## File it, then record that you did
+## Déclarer, puis l'enregistrer
 
-While the period is still open the declaration is a `Draft` that refreshes as entries arrive, and the page tells you *The period is still open — close it to freeze the figures before filing.*
+Tant que la période est ouverte, la déclaration est un `Brouillon` qui se met à jour au fil des écritures, et la page indique *La période est encore ouverte : clôturez-la pour figer les montants avant de déclarer.*
 
-[Close the period](./closing-a-period.md) and the declaration becomes `Ready to file`. The `Filing` card then offers `File online`, which opens the collecting body's site, and a short form:
+[Clôturez la période](./closing-a-period.md) : la déclaration passe `Prête à déclarer`. La carte `Déclaration` propose alors `Déclarer en ligne`, qui ouvre le site de l'organisme collecteur, et un court formulaire :
 
-1. Copy the figures onto that site.
-2. Enter the `Reference` it gave you back.
-3. Add `Notes` if you want to.
-4. Click `Record as filed`.
+1. Recopiez les montants sur ce site.
+2. Saisissez la `Référence` qu'il vous a donnée.
+3. Ajoutez des `Notes` si vous le souhaitez.
+4. Cliquez sur `Enregistrer la déclaration`.
 
 :::info
-Recording a filing is one-way. From that point the declaration is the record of what you actually sent, and Augias stops recalculating it — so later entries, or a change of rates, can never rewrite a return that has already gone in.
+L'enregistrement d'une déclaration est sans retour. La déclaration devient la trace de ce que vous avez réellement envoyé, et Augias cesse de la recalculer : des écritures ultérieures ou un changement de taux ne peuvent jamais réécrire une déclaration déjà faite.
 :::
 
-## Related
+## Voir aussi
 
-- [Closing a period](./closing-a-period.md)
-- [Setting up accounting](./setting-up-accounting.md)
+- [Clôturer une période](./closing-a-period.md)
+- [Mettre en place la comptabilité](./setting-up-accounting.md)

@@ -1,69 +1,69 @@
 ---
-title: Two-factor authentication
-description: Protect your Augias account with a second verification step at login.
+title: Authentification à deux facteurs
+description: Protéger votre compte Augias par une seconde vérification à la connexion.
 sidebar_position: 2
 ---
 
-# Two-factor authentication
+# Authentification à deux facteurs
 
-Two-factor authentication (2FA) adds a second verification step after your password. Even if someone learns your password, they still need your phone or email to sign in.
+L'authentification à deux facteurs ajoute une seconde vérification après le mot de passe. Même si quelqu'un connaît votre mot de passe, il lui faut encore votre téléphone ou votre messagerie pour se connecter.
 
-## Open 2FA settings
+## Ouvrir les réglages
 
-In the left sidebar, click your name or avatar to open the profile menu, then choose `Two-Factor Authentication`. You can also navigate directly to `/profile/2fa`.
+Dans le menu latéral, cliquez sur votre nom ou votre avatar pour ouvrir le menu du profil, puis choisissez `Authentification à deux facteurs`. L'adresse directe est `/profile/2fa`.
 
-## Choose an authentication method
+## Choisir une méthode
 
-Augias supports two independent 2FA methods. You can enable one or both.
+Augias propose deux méthodes indépendantes. Vous pouvez activer l'une, l'autre ou les deux.
 
-### Email authentication
+### Par e-mail
 
-When enabled, Augias emails you a 6-digit code each time you log in. Codes are sent to your account's email address.
+Augias vous envoie un code à 6 chiffres à chaque connexion, à l'adresse e-mail de votre compte.
 
-Click `Enable` under **Email Authentication** to turn it on. The status badge next to the method changes to `Enabled`.
+Cliquez sur `Activer` sous **Authentification par e-mail**. Le badge à côté de la méthode passe à `Activé`.
 
-### Authenticator app (TOTP)
+### Par application d'authentification (TOTP)
 
-When enabled, you generate 6-digit codes in an app like Google Authenticator, Authy, or any TOTP-compatible app — no internet needed once set up.
+Vous générez les codes à 6 chiffres dans une application comme Google Authenticator, Authy ou toute application compatible TOTP, sans connexion internet une fois configurée.
 
-1. Click `Enable` under **Authenticator App**. A **Set Up Authenticator App** dialog opens.
-2. Open your authenticator app and scan the QR code shown. If you can't scan it, click `Can't scan? Enter manually` to reveal the secret key — type it into your app instead.
-3. Your app generates a 6-digit code. Enter it in the `Enter the 6-digit code from your app` field.
-4. Click `Verify & Enable`.
+1. Cliquez sur `Activer` sous **Application d'authentification**. La fenêtre **Configurer l'application d'authentification** s'ouvre.
+2. Ouvrez votre application et scannez le QR code affiché. Si vous ne pouvez pas le scanner, cliquez sur `Impossible de scanner ? Saisissez-le manuellement` pour afficher la clé secrète et tapez-la dans l'application.
+3. L'application affiche un code à 6 chiffres. Saisissez-le dans le champ `Saisissez le code à 6 chiffres depuis votre application`.
+4. Cliquez sur `Vérifier et activer`.
 
-## Backup codes
+## Codes de secours
 
-When you enable any 2FA method, Augias generates a set of single-use backup codes. Use one if you lose access to your phone or email.
+Quand vous activez une méthode, Augias génère une série de codes de secours à usage unique, pour le jour où vous n'avez plus accès à votre téléphone ou à votre messagerie.
 
-The **Backup Codes** section shows how many codes remain. From there you can:
+La partie **Codes de secours** indique combien il en reste. Vous pouvez :
 
-- **View Codes** — display all remaining codes.
-- **Download** — save them as a text file (`augias-backup-codes-YYYY-MM-DD.txt`). Store this somewhere safe.
-- **Regenerate Codes** — invalidates all existing codes and creates a fresh set.
+- **Voir les codes** : afficher les codes restants ;
+- **Télécharger** : les enregistrer dans un fichier texte (`augias-backup-codes-AAAA-MM-JJ.txt`), à garder en lieu sûr ;
+- **Régénérer les codes** : invalider tous les codes existants et en créer une nouvelle série.
 
 :::warning
-Each backup code can only be used once. Regenerating codes permanently invalidates any you haven't used yet.
+Chaque code de secours ne sert qu'une fois. Régénérer les codes invalide définitivement ceux que vous n'avez pas utilisés.
 :::
 
-## Signing in with 2FA
+## Se connecter avec la double authentification
 
-After entering your password on the login page, you are redirected to a verification screen. Enter the 6-digit code from your email or authenticator app.
+Après le mot de passe, une page de vérification s'affiche. Saisissez le code à 6 chiffres reçu par e-mail ou affiché par votre application.
 
-Check `Trust this device for 30 days` if you're on a personal computer you use regularly — you won't be asked for a code on that device for 30 days.
+Cochez `Faire confiance à cet appareil pendant 30 jours` sur un ordinateur personnel que vous utilisez souvent : aucun code ne vous sera demandé sur cet appareil pendant 30 jours.
 
-### Using a backup code
+### Avec un code de secours
 
-On the verification screen, choose the alternative method and enter one of your backup codes instead of a 6-digit code.
+Sur la page de vérification, choisissez l'autre méthode et saisissez un code de secours à la place du code à 6 chiffres.
 
-## Trusted devices
+## Appareils de confiance
 
-If you ticked `Trust this device` during login, the **Trusted Device** section appears in your 2FA settings. Click `Revoke Trust` to require 2FA on this device again immediately.
+Si vous avez fait confiance à un appareil à la connexion, la partie **Appareil de confiance** apparaît dans les réglages. Cliquez sur `Révoquer la confiance` pour que la double authentification soit de nouveau demandée sur cet appareil.
 
-## Disabling 2FA
+## Désactiver la double authentification
 
-Click `Disable` next to the method you want to turn off. If you disable all methods, your backup codes are also cleared.
+Cliquez sur `Désactiver` à côté de la méthode à couper. Si vous désactivez toutes les méthodes, vos codes de secours sont effacés aussi.
 
-## Related
+## Voir aussi
 
-- [Updating your profile](./user-profile.md)
-- [Google OAuth login](../integrations/google-oauth.md)
+- [Votre profil](./user-profile.md)
+- [Connexion avec Google](../integrations/google-oauth.md)

@@ -1,77 +1,66 @@
 ---
-title: GraphQL API
-description: Query and mutate Augias data using the GraphQL API.
+title: API GraphQL
+description: Interroger et modifier les données d'Augias avec l'API GraphQL.
 sidebar_position: 2
 ---
 
-# GraphQL API
+# API GraphQL
 
-Augias's GraphQL API gives you a flexible, typed interface to the same data as the REST API. Instead of calling multiple fixed endpoints, you write a single query that describes exactly what you need — and the server returns precisely that, nothing more.
+L'API GraphQL d'Augias donne une interface souple et typée aux mêmes données que l'API REST. Au lieu d'appeler plusieurs points d'accès fixes, vous écrivez une seule requête qui décrit exactement ce dont vous avez besoin, et le serveur renvoie précisément cela, rien de plus.
 
-The GraphQL endpoint is available at `/api/graphql` on your Augias installation.
-
-:::info[Hosted vs self-hosted]
-If you're on the **hosted Augias plan**, the endpoint is:
+Le point d'accès GraphQL est `/api/graphql` sur votre installation, par exemple :
 
 ```text
-https://augias.app/api/graphql
+https://votre-instance.example/api/graphql
 ```
-
-For a **self-hosted instance**, replace the domain with your own:
-
-```text
-https://your-domain.example/api/graphql
-```
-
-:::
 
 :::tip
-Not sure whether to use REST or GraphQL? Use **REST** if you're integrating with automation tools like Zapier or n8n, or calling simple individual resources. Use **GraphQL** when you need to fetch related data in one request, or want fine-grained control over the response shape.
+REST ou GraphQL ? Choisissez **REST** pour un outil d'automatisation comme Zapier ou n8n, ou pour des ressources simples une à une. Choisissez **GraphQL** pour récupérer des données liées en une seule requête, ou pour maîtriser finement la forme de la réponse.
 :::
 
-## Interactive explorer (GraphiQL)
+## Explorateur interactif (GraphiQL)
 
-Opening `/api/graphql` in a browser loads **GraphiQL**, an in-browser IDE for building and testing queries. On the hosted plan that's [augias.app/api/graphql](https://augias.app/api/graphql); on a self-hosted instance use your own domain. It includes:
+Ouvrir `/api/graphql` dans un navigateur charge **GraphiQL**, un environnement de travail dans le navigateur pour écrire et tester des requêtes. Il comprend :
 
-- A query editor with syntax highlighting and autocomplete
-- Inline documentation for every type and field
-- A history panel showing your recent queries
-- Variable and header editors
+- un éditeur de requêtes avec coloration et complétion ;
+- la documentation de chaque type et de chaque champ ;
+- un historique de vos requêtes récentes ;
+- des éditeurs de variables et d'en-têtes.
 
-GraphiQL is the fastest way to explore what's available — use the `Docs` panel on the right to browse all types, queries, and mutations.
+GraphiQL est le moyen le plus rapide de découvrir ce qui est disponible : le panneau `Docs`, à droite, parcourt tous les types, requêtes et mutations.
 
-## Authentication
+## Authentification
 
-GraphQL uses the same API token authentication as the REST API. Create a token at `Settings` → `API Keys` (see [Creating an API token](./rest-api.md#creating-an-api-token)), then send it in the `X-API-TOKEN` header on every request.
+GraphQL utilise les mêmes jetons d'API que l'API REST. Créez un jeton dans `Clés API` (voir [Créer un jeton d'API](./rest-api.md#créer-un-jeton-dapi)), puis envoyez-le dans l'en-tête `X-API-TOKEN` de chaque requête.
 
 ```bash
-curl -X POST https://augias.app/api/graphql \
-     -H "X-API-TOKEN: <your-token>" \
+curl -X POST https://votre-instance.example/api/graphql \
+     -H "X-API-TOKEN: <votre-jeton>" \
      -H "Content-Type: application/json" \
      -d '{"query": "{ invoices { edges { node { id status } } } }"}'
 ```
 
-In GraphiQL, add the header under the `Headers` tab at the bottom of the editor:
+Dans GraphiQL, ajoutez l'en-tête dans l'onglet `Headers`, en bas de l'éditeur :
 
 ```json
 {
-  "X-API-TOKEN": "<your-token>"
+  "X-API-TOKEN": "<votre-jeton>"
 }
 ```
 
-Requests without a valid token receive a `401 Unauthorized` response.
+Une requête sans jeton valide reçoit `401 Unauthorized`.
 
 :::info
-Tokens are scoped to one user and one company. If your account has multiple companies, generate a separate token for each by switching companies before creating the token.
+Un jeton vaut pour un utilisateur et une entreprise. Si votre compte a plusieurs entreprises, créez un jeton par entreprise en passant sur chacune avant de créer son jeton.
 :::
 
-## Querying data
+## Lire des données
 
-GraphQL queries are sent as HTTP `POST` requests to `/api/graphql` with a JSON body containing a `query` field.
+Les requêtes GraphQL partent en `POST` HTTP vers `/api/graphql`, avec un corps JSON qui contient un champ `query`.
 
-### Fetching a collection
+### Une collection
 
-Use the plural resource name to fetch a list. Each collection returns a [Relay-style connection](#pagination) with an `edges` wrapper:
+Le nom de ressource au pluriel renvoie une liste. Chaque collection renvoie une [connexion de type Relay](#pagination), enveloppée dans `edges` :
 
 ```graphql
 query {
@@ -88,17 +77,17 @@ query {
 ```
 
 ```bash
-curl -X POST https://augias.app/api/graphql \
-     -H "X-API-TOKEN: <your-token>" \
+curl -X POST https://votre-instance.example/api/graphql \
+     -H "X-API-TOKEN: <votre-jeton>" \
      -H "Content-Type: application/json" \
      -d '{
        "query": "{ invoices { edges { node { id status total } } } }"
      }'
 ```
 
-### Fetching a single item
+### Un seul élément
 
-Use the singular resource name with an `id` argument. The ID must be the full IRI string (e.g. `/api/invoices/01J...`):
+Le nom de ressource au singulier, avec un argument `id`. L'identifiant est l'IRI complète (par exemple `/api/invoices/01J...`) :
 
 ```graphql
 query {
@@ -113,9 +102,9 @@ query {
 }
 ```
 
-### Fetching related data
+### Des données liées
 
-One of GraphQL's key advantages is requesting related resources in a single round-trip. The following query fetches invoices together with their client name and line items in one request:
+L'un des grands atouts de GraphQL est de demander des ressources liées en un seul aller-retour. Cette requête récupère les factures avec le nom de leur client et leurs lignes, en une fois :
 
 ```graphql
 query {
@@ -144,11 +133,11 @@ query {
 }
 ```
 
-## Filtering collections
+## Filtrer les collections
 
-Pass filter arguments directly to the collection query. The available filters match those on the REST API for each resource.
+Passez les filtres directement à la requête de collection. Les filtres disponibles sont ceux de l'API REST pour chaque ressource.
 
-### Filter invoices by status
+### Factures par statut
 
 ```graphql
 query {
@@ -164,7 +153,7 @@ query {
 }
 ```
 
-### Filter clients by name
+### Clients par nom
 
 ```graphql
 query {
@@ -179,9 +168,9 @@ query {
 }
 ```
 
-### Using variables
+### Avec des variables
 
-For dynamic queries, pass filter values as GraphQL variables rather than inlining them:
+Pour des requêtes dynamiques, passez les valeurs des filtres en variables GraphQL plutôt que de les écrire dans la requête :
 
 ```graphql
 query GetInvoicesByStatus($status: String) {
@@ -197,11 +186,11 @@ query GetInvoicesByStatus($status: String) {
 }
 ```
 
-Send the variables in the `variables` field of the request body:
+Envoyez les variables dans le champ `variables` du corps de la requête :
 
 ```bash
-curl -X POST https://augias.app/api/graphql \
-     -H "X-API-TOKEN: <your-token>" \
+curl -X POST https://votre-instance.example/api/graphql \
+     -H "X-API-TOKEN: <votre-jeton>" \
      -H "Content-Type: application/json" \
      -d '{
        "query": "query GetInvoicesByStatus($status: String) { invoices(status: $status) { edges { node { id status total } } } }",
@@ -211,23 +200,23 @@ curl -X POST https://augias.app/api/graphql \
 
 ## Mutations
 
-Mutations create, update, or delete resources. They follow a consistent naming pattern:
+Les mutations créent, modifient ou suppriment des ressources. Leurs noms suivent un même modèle :
 
-| Operation | Mutation name pattern | Example |
+| Opération | Modèle de nom | Exemple |
 | --- | --- | --- |
-| Create | `create{Resource}` | `createClient` |
-| Update | `update{Resource}` | `updateInvoice` |
-| Delete | `delete{Resource}` | `deleteQuote` |
+| Créer | `create{Resource}` | `createClient` |
+| Modifier | `update{Resource}` | `updateInvoice` |
+| Supprimer | `delete{Resource}` | `deleteQuote` |
 
-### Creating a resource
+### Créer une ressource
 
-Pass the fields in an `input` argument. The mutation returns the created resource:
+Passez les champs dans un argument `input`. La mutation renvoie la ressource créée :
 
 ```graphql
 mutation {
   createClient(input: {
     name: "Acme Corp"
-    currency: "USD"
+    currency: "EUR"
     website: "https://acme.example"
   }) {
     client {
@@ -238,9 +227,9 @@ mutation {
 }
 ```
 
-### Updating a resource
+### Modifier une ressource
 
-Provide the `id` (full IRI) and only the fields you want to change:
+Donnez l'`id` (IRI complète) et seulement les champs à changer :
 
 ```graphql
 mutation {
@@ -256,7 +245,7 @@ mutation {
 }
 ```
 
-### Deleting a resource
+### Supprimer une ressource
 
 ```graphql
 mutation {
@@ -271,12 +260,12 @@ mutation {
 ```
 
 :::warning
-Deletion is immediate and cannot be undone through the API. Make sure you have the correct `id` before running a delete mutation.
+La suppression est immédiate et ne s'annule pas par l'API. Vérifiez l'`id` avant de lancer une mutation de suppression. Une facture ou un avoir émis ne se supprime pas : la demande est refusée.
 :::
 
 ## Pagination
 
-GraphQL collections use **cursor-based pagination** via the Relay connection spec. Each collection query accepts `first`, `last`, `before`, and `after` arguments, and returns `pageInfo` alongside the edges:
+Les collections GraphQL sont paginées **par curseur**, selon la spécification des connexions Relay. Chaque requête de collection accepte les arguments `first`, `last`, `before` et `after`, et renvoie `pageInfo` à côté des `edges` :
 
 ```graphql
 query {
@@ -299,13 +288,13 @@ query {
 }
 ```
 
-To page forward through results:
+Pour avancer page par page :
 
-1. Run the query without `after` to get the first page.
-2. Check `pageInfo.hasNextPage`. If `true`, pass `pageInfo.endCursor` as the `after` argument in your next request.
-3. Repeat until `hasNextPage` is `false`.
+1. Lancez la requête sans `after` pour obtenir la première page.
+2. Regardez `pageInfo.hasNextPage`. S'il vaut `true`, passez `pageInfo.endCursor` comme argument `after` à la requête suivante.
+3. Recommencez jusqu'à ce que `hasNextPage` vaille `false`.
 
-The default page size is **30 items**. Pass a `first` argument to request fewer (maximum 30 per page):
+La taille de page par défaut est de **30 éléments**. Passez un argument `first` pour en demander moins (30 au plus par page) :
 
 ```graphql
 query {
@@ -317,30 +306,30 @@ query {
 }
 ```
 
-## Available resources
+## Ressources disponibles
 
-All core resources are available via GraphQL. API token management is REST-only and cannot be accessed through the GraphQL API.
+Toutes les ressources principales sont accessibles en GraphQL. La gestion des jetons d'API n'existe qu'en REST.
 
-| Resource | Query (collection) | Query (single) | Mutations |
+| Ressource | Requête (collection) | Requête (élément) | Mutations |
 | --- | --- | --- | --- |
 | Clients | `clients` | `client(id:)` | `createClient`, `updateClient`, `deleteClient` |
 | Contacts | `contacts` | `contact(id:)` | `createContact`, `updateContact`, `deleteContact` |
-| Addresses | `addresses` | `address(id:)` | `createAddress`, `updateAddress`, `deleteAddress` |
-| Invoices | `invoices` | `invoice(id:)` | `createInvoice`, `updateInvoice`, `deleteInvoice` |
-| Invoice lines | `invoiceLines` | `invoiceLine(id:)` | `createInvoiceLine`, `updateInvoiceLine`, `deleteInvoiceLine` |
-| Recurring invoices | `recurringInvoices` | `recurringInvoice(id:)` | `createRecurringInvoice`, `updateRecurringInvoice`, `deleteRecurringInvoice` |
-| Quotes | `quotes` | `quote(id:)` | `createQuote`, `updateQuote`, `deleteQuote` |
-| Quote lines | `quoteLines` | `quoteLine(id:)` | `createQuoteLine`, `updateQuoteLine`, `deleteQuoteLine` |
-| Payments | `payments` | `payment(id:)` | `createPayment` |
+| Adresses | `addresses` | `address(id:)` | `createAddress`, `updateAddress`, `deleteAddress` |
+| Factures | `invoices` | `invoice(id:)` | `createInvoice`, `updateInvoice`, `deleteInvoice` |
+| Lignes de facture | `invoiceLines` | `invoiceLine(id:)` | `createInvoiceLine`, `updateInvoiceLine`, `deleteInvoiceLine` |
+| Factures récurrentes | `recurringInvoices` | `recurringInvoice(id:)` | `createRecurringInvoice`, `updateRecurringInvoice`, `deleteRecurringInvoice` |
+| Devis | `quotes` | `quote(id:)` | `createQuote`, `updateQuote`, `deleteQuote` |
+| Lignes de devis | `quoteLines` | `quoteLine(id:)` | `createQuoteLine`, `updateQuoteLine`, `deleteQuoteLine` |
+| Paiements | `payments` | `payment(id:)` | `createPayment` |
 | Taxes | `taxes` | `tax(id:)` | `createTax`, `updateTax`, `deleteTax` |
 
 :::info
-Monetary amounts (totals, prices, balances) are always integers in the **smallest currency unit** — cents for USD/EUR, pence for GBP, etc. For example, `1000` represents `$10.00`. The currency itself comes from the associated client.
+Les montants (totaux, prix, soldes) sont toujours des entiers dans la **plus petite unité de la devise** : les centimes pour l'euro, les pence pour la livre, etc. Par exemple, `1000` représente `10,00 €`. La devise vient du client concerné.
 :::
 
 ## Introspection
 
-GraphQL's introspection system lets you query the schema itself to discover all available types, fields, and operations. GraphiQL uses introspection automatically, but you can also query it directly:
+L'introspection de GraphQL permet d'interroger le schéma lui-même pour découvrir tous les types, champs et opérations. GraphiQL s'en sert automatiquement, mais vous pouvez aussi l'interroger directement :
 
 ```graphql
 query {
@@ -353,7 +342,7 @@ query {
 }
 ```
 
-To inspect a specific type:
+Pour examiner un type précis :
 
 ```graphql
 query {
@@ -369,19 +358,19 @@ query {
 }
 ```
 
-## Troubleshooting
+## Dépannage
 
 ### `401 Unauthorized`
 
-The `X-API-TOKEN` header is missing, incorrect, or the token has been revoked. Verify the header name and value — the header must be `X-API-TOKEN` (not `Authorization` or `Bearer`). If the token no longer works, generate a new one from `Settings` → `API Keys`.
+L'en-tête `X-API-TOKEN` manque, est faux, ou le jeton a été révoqué. Vérifiez le nom et la valeur de l'en-tête : il doit s'appeler `X-API-TOKEN` (et non `Authorization` ou `Bearer`). Si le jeton ne fonctionne plus, créez-en un autre dans `Clés API`.
 
-### Query returns `null` for a resource
+### Une requête renvoie `null` pour une ressource
 
-The resource either doesn't exist, was deleted, or the token's company doesn't own it. Tokens are company-scoped — if you have multiple companies, make sure the token was created while the correct company was active.
+La ressource n'existe pas, a été supprimée, ou n'appartient pas à l'entreprise du jeton. Les jetons sont propres à une entreprise : si vous en avez plusieurs, vérifiez que le jeton a été créé quand la bonne était active.
 
-### Mutation fails with a validation error
+### Une mutation échoue sur une erreur de validation
 
-Check the `errors` array in the response. Each error includes a `message` and an `extensions.violations` array listing the specific field that failed validation and why:
+Regardez le tableau `errors` de la réponse. Chaque erreur a un `message` et un tableau `extensions.violations` qui indique le champ refusé et pourquoi :
 
 ```json
 {
@@ -396,10 +385,10 @@ Check the `errors` array in the response. Each error includes a `message` and an
 }
 ```
 
-### GraphiQL shows a blank page or won't load
+### GraphiQL affiche une page blanche ou ne se charge pas
 
-GraphiQL is served at `/api/graphql` and requires a browser. If you're getting a blank page, check your browser console for JavaScript errors and make sure the page is not being blocked by a content security policy on your Augias instance.
+GraphiQL est servi sur `/api/graphql` et demande un navigateur. Devant une page blanche, regardez la console du navigateur pour des erreurs JavaScript, et vérifiez qu'aucune politique de sécurité du contenu de votre instance ne bloque la page.
 
-### API token management operations fail
+### La gestion des jetons d'API échoue
 
-API token management (listing, creating, and revoking tokens) is not available via GraphQL — use the [REST API](./rest-api.md) or the `Settings` → `API Keys` page in the UI instead.
+La gestion des jetons (lister, créer, révoquer) n'existe pas en GraphQL : utilisez l'[API REST](./rest-api.md) ou la page `Clés API` de l'application.
