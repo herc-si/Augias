@@ -72,7 +72,12 @@
                 </div>
 
                 <div class="section-content">
+                    {% set isIndividual = form.isCompany.vars.value is same as('0') %}
+                    <div class="mb-3 client-kind-picker">
+                        {{ form_row(form.isCompany) }}
+                    </div>
                     <div class="form-grid">
+                        {% if not isIndividual %}
                         {# The French register: a name or a SIREN fills in the name, the
                          # identifiers and the head office address. See CompanyRegistry. #}
                         <div class="form-field form-field-wide company-registry-search">
@@ -94,6 +99,7 @@
                                 <small class="d-block text-muted mt-2">{{ 'client.registry.none'|trans }}</small>
                             {% endif %}
                         </div>
+                        {% endif %}
 
                         <div class="form-field form-field-wide">
                             {{ form_row(form.name, {
@@ -171,7 +177,8 @@
             {# Section: Fiscal identifiers — always open. SIRET, SIREN and VAT number
              # are what every French business has, and what an e-invoice needs;
              # they used to be hidden in a collapsed list behind a dropdown. #}
-            <section class="form-page-section" id="client-fiscal-identifiers">
+            {# An individual has no SIREN, SIRET or VAT number to give. #}
+            <section class="form-page-section{{ isIndividual ? ' d-none' }}" id="client-fiscal-identifiers">
                 <div class="section-header">
                     <div class="section-icon">
                         {{ ux_icon('tabler:receipt-tax', {width: 20, height: 20}) }}

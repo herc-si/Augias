@@ -69,6 +69,7 @@ final class ClientTypeTest extends FormTestCase
         $this->disabledFeatures = ['custom_fields'];
 
         $formData = [
+            'isCompany' => '0',
             'name' => '',
             'currencyCode' => 'USD',
             'contacts' => [
@@ -82,6 +83,78 @@ final class ClientTypeTest extends FormTestCase
 
         self::assertTrue($form->isSynchronized());
         self::assertSame('Jane Doe', $form->getData()->getName());
+    }
+
+    /**
+     * The type is said, not guessed: an individual saved again with a name, or
+     * with a typo in it, stays an individual.
+     */
+    public function testAnIndividualStaysOneWhateverTheirName(): void
+    {
+        $this->disabledFeatures = ['custom_fields'];
+
+        $client = new Client();
+        $client->setName('Jane Doe');
+        $client->setIsCompany(false);
+
+        $form = $this->factory->create(ClientType::class, $client);
+        $form->submit([
+            'isCompany' => '0',
+            'name' => 'Jane Do',
+            'currencyCode' => 'USD',
+            'contacts' => [
+                ['firstName' => 'Jane', 'lastName' => 'Doe', 'email' => 'jane@example.com'],
+            ],
+            'addresses' => [],
+        ]);
+
+        self::assertTrue($form->isSynchronized());
+        self::assertFalse($client->isCompany());
+        self::assertSame('Jane Do', $client->getName());
+    }
+
+    public function testChoosingBusinessMakesItACompany(): void
+    {
+        $this->disabledFeatures = ['custom_fields'];
+
+        $client = new Client();
+        $client->setName('Jane Doe');
+        $client->setIsCompany(false);
+
+        $form = $this->factory->create(ClientType::class, $client);
+        $form->submit([
+            'isCompany' => '1',
+            'name' => 'Doe Consulting',
+            'currencyCode' => 'USD',
+            'contacts' => [
+                ['firstName' => 'Jane', 'lastName' => 'Doe', 'email' => 'jane@example.com'],
+            ],
+            'addresses' => [],
+        ]);
+
+        self::assertTrue($client->isCompany());
+    }
+
+    /**
+     * A business left without a name is not given its contact's: that is the
+     * individual's shortcut, and a business has to be named.
+     */
+    public function testABusinessIsNotNamedAfterItsContact(): void
+    {
+        $this->disabledFeatures = ['custom_fields'];
+
+        $form = $this->factory->create(ClientType::class, new Client());
+        $form->submit([
+            'isCompany' => '1',
+            'name' => '',
+            'currencyCode' => 'USD',
+            'contacts' => [
+                ['firstName' => 'Jane', 'lastName' => 'Doe', 'email' => 'jane@example.com'],
+            ],
+            'addresses' => [],
+        ]);
+
+        self::assertNull($form->getData()->getName());
     }
 
     public function testSubmitWithMultiCurrencyGatedOverridesEntityCurrency(): void
