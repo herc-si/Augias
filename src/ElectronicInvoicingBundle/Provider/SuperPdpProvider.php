@@ -21,6 +21,7 @@ use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
 use Augias\ElectronicInvoicingBundle\Form\Type\Provider\SuperPdpConfigType;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\ElectronicAddressResolver;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\EreportingPreviewParser;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\FacturXInvoiceBuilder;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpAccessTokens;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApiException;
@@ -55,7 +56,7 @@ use function usort;
  * @see \Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdpProviderTest
  */
 #[AsTaggedItem('super_pdp')]
-final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface, ElectronicInvoiceAccountCheckerInterface, ElectronicInvoiceResponderInterface, ElectronicReporterInterface
+final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface, ElectronicInvoiceAccountCheckerInterface, ElectronicInvoiceResponderInterface, ElectronicReporterInterface, ElectronicDeclarationsInterface
 {
     /**
      * BT-8 values meaning the supplier's VAT falls due on the invoice date —
@@ -105,6 +106,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
         private SystemConfig $systemConfig,
         private ElectronicAddressResolver $addressResolver,
         private SuperPdpAccessTokens $tokens,
+        private EreportingPreviewParser $previewParser,
     ) {
     }
 
@@ -556,6 +558,106 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
                 'date' => $date->format('Y-m-d'),
             ]],
         )]]);
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     *
+     * @return list<DeclaredReport>
+     *
+     * @throws SuperPdpApiException
+     */
+    public function declarations(array $config): array
+    {
+        $token = $this->authorised($config);
+        $declarations = [];
+        $after = null;
+
+        do {
+            $page = $this->client->listEreportings($token, $after);
+            $rows = is_array($page['data'] ?? null) ? $page['data'] : [];
+
+            foreach ($rows as $row) {
+                if (! is_array($row) || ! is_int($row['id'] ?? null)) {
+                    continue;
+                }
+
+                $after = $row['id'];
+                $declaration = $this->declaration($row);
+
+                if ($declaration instanceof DeclaredReport) {
+                    $declarations[] = $declaration;
+                }
+            }
+        } while (true === ($page['has_more'] ?? false) && [] !== $rows);
+
+        return $declarations;
+    }
+
+    /**
+     * @param array<string, mixed>    $config
+     * @param 'transaction'|'payment' $kind
+     *
+     * @throws SuperPdpApiException
+     */
+    public function preview(array $config, string $kind, DateTimeImmutable $date): ?ReportPreview
+    {
+        return $this->previewParser->parse($kind, $this->client->previewEreporting($this->authorised($config), $kind, $date));
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    private function declaration(array $row): ?DeclaredReport
+    {
+        $kind = $row['kind'] ?? null;
+        $start = is_string($row['start_period'] ?? null) ? DateTimeImmutable::createFromFormat('!Y-m-d', $row['start_period']) : false;
+        $end = is_string($row['end_period'] ?? null) ? DateTimeImmutable::createFromFormat('!Y-m-d', $row['end_period']) : false;
+
+        if (! in_array($kind, ['transaction', 'payment'], true) || false === $start || false === $end) {
+            return null;
+        }
+
+        // The latest event is where the declaration stands.
+        $status = null;
+        $statusAt = null;
+
+        foreach (is_array($row['events'] ?? null) ? $row['events'] : [] as $event) {
+            if (! is_array($event) || ! is_string($event['status_code'] ?? null)) {
+                continue;
+            }
+
+            try {
+                $at = new DateTimeImmutable(is_string($event['created_at'] ?? null) ? $event['created_at'] : 'now');
+            } catch (Throwable) {
+                continue;
+            }
+
+            if (null === $statusAt || $at >= $statusAt) {
+                $status = $event['status_code'];
+                $statusAt = $at;
+            }
+        }
+
+        return new DeclaredReport((string) $row['id'], $kind, $start, $end, $status, $statusAt);
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     *
+     * @throws SuperPdpApiException
+     */
+    private function authorised(array $config): string
+    {
+        if (! $this->tokens->hasCredentials($config)) {
+            throw new SuperPdpApiException('einvoicing.provider.super_pdp.missing_credentials');
+        }
+
+        try {
+            return $this->tokens->accessToken($config);
+        } catch (SuperPdpApiException $e) {
+            throw new SuperPdpApiException($this->forbiddenReason($config, $e), $e->getApiCode(), $e);
+        }
     }
 
     /**

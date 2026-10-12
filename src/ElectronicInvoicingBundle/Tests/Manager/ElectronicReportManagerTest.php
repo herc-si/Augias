@@ -113,6 +113,19 @@ final class ElectronicReportManagerTest extends KernelTestCase
     }
 
     /**
+     * Credited before the hourly run, the sale still happened: it is reported,
+     * and the credit note that took it back is reported on its own.
+     */
+    public function testACreditedSaleIsStillReported(): void
+    {
+        $invoice = $this->invoice(private: true, date: 'today');
+        $invoice->setStatus(InvoiceStatus::Credited);
+        self::getContainer()->get('doctrine')->getManager()->flush();
+
+        self::assertSame(['reported' => 1, 'failed' => 0], $this->manager()->reportPending($this->company));
+    }
+
+    /**
      * A business is invoiced electronically, and a sale from before
      * reporting started is not the platform's to receive.
      */

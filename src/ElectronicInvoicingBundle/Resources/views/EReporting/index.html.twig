@@ -1,0 +1,182 @@
+{#
+# This file is part of Augias package.
+#
+# (c) HERC SI <opensource@herc-si.fr>
+#
+# This source file is subject to the MIT license that is bundled
+# with this source code in the file LICENSE.
+#}
+
+{% extends '@AugiasCore/Layout/default.html.twig' %}
+
+{% block title %}{{ ux_icon('tabler:file-report', {width: 24, height: 24, class: 'me-2'}) }}{{ 'einvoicing.ereporting.title'|trans }}{% endblock %}
+
+{% block heading %}
+    {% if setting %}
+        {{ include('@AugiasElectronicInvoicing/_sync_button.html.twig') }}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    <p class="text-muted">{{ 'einvoicing.ereporting.intro'|trans }}</p>
+
+    {% if setting is null or not reporting %}
+        <twig:Ui:Card title="{{ 'einvoicing.ereporting.not_connected.title'|trans }}">
+            <p class="text-muted">{{ 'einvoicing.ereporting.not_connected.description'|trans }}</p>
+            {% if route_allowed('_einvoicing_providers') %}
+                <a href="{{ path('_einvoicing_providers') }}" class="btn btn-outline-primary">
+                    {{ ux_icon('tabler:building-broadcast-tower', {width: 18, height: 18}) }}
+                    {{ 'einvoicing.ereporting.not_connected.action'|trans }}
+                </a>
+            {% endif %}
+        </twig:Ui:Card>
+    {% else %}
+        {# 1. What the next declarations will carry. #}
+        {% if showsDeclarations %}
+            <twig:Ui:Card title="{{ 'einvoicing.ereporting.current.title'|trans }}" subtitle="{{ 'einvoicing.ereporting.current.subtitle'|trans }}" class="mb-3">
+                {% if previewError %}
+                    <twig:Ui:Alert type="warning" icon="tabler:alert-triangle">
+                        {{ 'einvoicing.ereporting.current.unreachable'|trans }} {{ previewError|trans }}
+                    </twig:Ui:Alert>
+                {% elseif previews is empty %}
+                    <p class="text-muted mb-0">{{ 'einvoicing.ereporting.current.empty'|trans }}</p>
+                {% endif %}
+
+                {% for preview in previews %}
+                    <h4 class="mt-2 mb-2" id="ereporting-preview-{{ preview.kind }}">
+                        {{ ('einvoicing.ereporting.kind.' ~ preview.kind)|trans }}
+                        <span class="text-muted small fw-normal ms-1">
+                            {{ 'einvoicing.ereporting.period'|trans({'%start%': preview.periodStart|date('d/m/Y'), '%end%': preview.periodEnd|date('d/m/Y')}) }}
+                        </span>
+                    </h4>
+                    <div class="table-responsive mb-3">
+                        <table class="table card-table table-vcenter">
+                            <thead>
+                                <tr>
+                                    <th class="table-date">{{ 'einvoicing.ereporting.column.date'|trans }}</th>
+                                    {% if preview.kind == 'transaction' %}
+                                        <th>{{ 'einvoicing.ereporting.column.category'|trans }}</th>
+                                        <th class="table-amount text-end">{{ 'einvoicing.ereporting.column.tax_exclusive'|trans }}</th>
+                                        <th class="table-amount text-end">{{ 'einvoicing.ereporting.column.tax'|trans }}</th>
+                                    {% else %}
+                                        <th>{{ 'einvoicing.ereporting.column.rate'|trans }}</th>
+                                        <th class="table-amount text-end">{{ 'einvoicing.ereporting.column.received'|trans }}</th>
+                                    {% endif %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in preview.rows %}
+                                    {% if preview.kind == 'transaction' %}
+                                        <tr>
+                                            <td class="table-date">{{ row.date|date('d/m/Y') }}</td>
+                                            <td>{{ ('einvoicing.ereporting.category.' ~ row.category)|trans }}</td>
+                                            <td class="table-amount text-end">{{ row.taxExclusiveAmount|format_currency('EUR') }}</td>
+                                            <td class="table-amount text-end">{{ row.taxTotal|format_currency('EUR') }}</td>
+                                        </tr>
+                                    {% else %}
+                                        {% for rate, amount in row.byRate %}
+                                            <tr>
+                                                <td class="table-date">{{ row.date|date('d/m/Y') }}</td>
+                                                <td>{{ rate }} %</td>
+                                                <td class="table-amount text-end">{{ amount|format_currency('EUR') }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% if preview.invoices > 0 %}
+                        <p class="text-muted small">{{ 'einvoicing.ereporting.current.invoices'|trans({'%count%': preview.invoices}) }}</p>
+                    {% endif %}
+                {% endfor %}
+            </twig:Ui:Card>
+
+            {# 2. What the platform sent the tax administration. #}
+            <twig:Ui:Card title="{{ 'einvoicing.ereporting.declarations.title'|trans }}" subtitle="{{ 'einvoicing.ereporting.declarations.subtitle'|trans }}" class="mb-3">
+                {% if declarations is empty %}
+                    <p class="text-muted mb-0" id="ereporting-no-declaration">{{ 'einvoicing.ereporting.declarations.empty'|trans }}</p>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table card-table table-vcenter">
+                            <thead>
+                                <tr>
+                                    <th>{{ 'einvoicing.ereporting.column.period'|trans }}</th>
+                                    <th>{{ 'einvoicing.ereporting.column.kind'|trans }}</th>
+                                    <th>{{ 'einvoicing.ereporting.column.status'|trans }}</th>
+                                    <th class="table-date">{{ 'einvoicing.ereporting.column.since'|trans }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for declaration in declarations %}
+                                    <tr>
+                                        <td>{{ 'einvoicing.ereporting.period'|trans({'%start%': declaration.periodStart|date('d/m/Y'), '%end%': declaration.periodEnd|date('d/m/Y')}) }}</td>
+                                        <td>{{ ('einvoicing.ereporting.kind.' ~ declaration.kind)|trans }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ declaration.rejected ? 'red' : (declaration.accepted ? 'green' : 'blue') }}-lt">
+                                                {{ ('einvoicing.ereporting.status.' ~ (declaration.status ?? 'none'))|trans }}
+                                            </span>
+                                        </td>
+                                        <td class="table-date">{{ declaration.statusAt ? declaration.statusAt|date('d/m/Y H:i') : '' }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </twig:Ui:Card>
+        {% endif %}
+
+        {# 3. What Augias filed, document by document. #}
+        <twig:Ui:Card title="{{ 'einvoicing.ereporting.filed.title'|trans }}" subtitle="{{ 'einvoicing.ereporting.filed.subtitle'|trans }}">
+            {% if reports is empty %}
+                <p class="text-muted mb-0" id="ereporting-nothing-filed">{{ 'einvoicing.ereporting.filed.empty'|trans }}</p>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table card-table table-vcenter">
+                        <thead>
+                            <tr>
+                                <th class="table-date">{{ 'einvoicing.ereporting.column.date'|trans }}</th>
+                                <th>{{ 'einvoicing.ereporting.column.what'|trans }}</th>
+                                <th>{{ 'einvoicing.ereporting.column.document'|trans }}</th>
+                                <th>{{ 'einvoicing.ereporting.column.status'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in reports %}
+                                {% set report = row.report %}
+                                <tr>
+                                    <td class="table-date">{{ report.updated|date('d/m/Y H:i') }}</td>
+                                    <td>{{ ('einvoicing.ereporting.report_kind.' ~ report.kind.value)|trans }}</td>
+                                    <td>
+                                        {% if row.invoice %}
+                                            <a href="{{ path('_invoices_view', {'id': row.invoice.id}) }}">{{ invoice_number(row.invoice) ?? '—' }}</a>
+                                            <span class="text-muted small">{{ row.invoice.client.name }}</span>
+                                        {% elseif row.creditNote %}
+                                            <a href="{{ path('_credit_notes_view', {'id': row.creditNote.id}) }}">{{ credit_note_number(row.creditNote) ?? '—' }}</a>
+                                            <span class="text-muted small">{{ row.creditNote.client.name }}</span>
+                                        {% elseif row.bill %}
+                                            <a href="{{ path('_bills_view', {'id': row.bill.id}) }}">{{ row.bill.billNumber ?? '—' }}</a>
+                                            <span class="text-muted small">{{ row.bill.supplier.name }}</span>
+                                        {% else %}
+                                            <span class="text-muted">{{ 'einvoicing.ereporting.filed.gone'|trans }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if report.success %}
+                                            <span class="badge bg-green-lt">{{ 'einvoicing.ereporting.filed.done'|trans }}</span>
+                                        {% else %}
+                                            <span class="badge bg-red-lt">{{ 'einvoicing.ereporting.filed.failed'|trans }}</span>
+                                            <div class="text-muted small">{{ report.message|trans }}</div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <p class="text-muted small mt-2 mb-0">{{ 'einvoicing.ereporting.filed.retry'|trans }}</p>
+            {% endif %}
+        </twig:Ui:Card>
+    {% endif %}
+{% endblock %}

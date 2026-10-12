@@ -1551,6 +1551,74 @@ document_line:
     note_placeholder: 'Note ou intertitre, par exemple « Phase 2 — Développement »'
 edit_client: 'Modifier la fiche'
 einvoicing:
+    ereporting:
+        title: E-reporting
+        intro: "Les ventes à des particuliers ne passent pas par la facture électronique : Augias les déclare à votre plateforme, qui les regroupe et les transmet à l'administration fiscale selon le calendrier de votre régime de TVA."
+        period: 'du %start% au %end%'
+        not_connected:
+            title: 'Aucune plateforme branchée'
+            description: "L'e-reporting passe par votre plateforme de facturation électronique. Branchez-en une pour que vos ventes aux particuliers soient déclarées."
+            action: 'Choisir une plateforme'
+        current:
+            title: 'Période en cours'
+            subtitle: "Ce que la plateforme transmettra à la prochaine échéance, d'après ce qu'Augias lui a déclaré jusqu'ici."
+            empty: 'Rien à déclarer pour la période en cours.'
+            unreachable: "La plateforme n'a pas pu être interrogée :"
+            invoices: '%count% facture(s) déclarée(s) une à une (ventes à des entreprises hors du réseau de facturation électronique).'
+        declarations:
+            title: 'Déclarations transmises'
+            subtitle: "Ce que la plateforme a envoyé à l'administration fiscale, et ce qu'elle en a dit. Mis à jour toutes les heures."
+            empty: "Aucune déclaration transmise pour l'instant. La plateforme les envoie à la fin de chaque période."
+            period: '%kind%, %start% au %end%'
+        filed:
+            title: "Ce qu'Augias a déclaré"
+            subtitle: 'Chaque vente, avoir, encaissement ou remboursement déposé auprès de la plateforme.'
+            empty: "Rien n'a encore été déclaré. Seuls les documents établis après le branchement de la plateforme le sont."
+            done: Déposé
+            failed: Échec
+            gone: 'Document supprimé'
+            retry: "Un dépôt en échec est retenté toutes les heures, ou tout de suite avec « Synchroniser maintenant »."
+        kind:
+            transaction: Ventes
+            payment: Encaissements
+        category:
+            TLB1: Biens
+            TPS1: Services
+            TNT1: 'Non soumis à la TVA'
+            TMA1: 'Régime de la marge'
+        status:
+            none: 'En cours'
+            ppf:ereporting: "Envoyée à l'administration"
+            ppf:ereporting-ack: Reçue
+            ppf:ereporting-ack-error: Illisible
+            ppf:ereporting-rejected: Rejetée
+            ppf:ereporting-response-ok: Acceptée
+        report_kind:
+            transaction: Vente
+            payment: Encaissement
+            credit_note: Avoir
+            refund: Remboursement
+            payment_received: 'Facture payée (B2B)'
+            payment_sent: 'Achat payé (B2B)'
+        column:
+            date: Date
+            category: Catégorie
+            tax_exclusive: 'Montant HT'
+            tax: TVA
+            rate: 'Taux de TVA'
+            received: 'Montant encaissé TTC'
+            period: Période
+            kind: Nature
+            status: État
+            since: Depuis
+            what: Déclaration
+            document: Document
+        invoice:
+            title: E-reporting
+            done: 'Déclarée le %date%'
+            failed: "Le dépôt a échoué : %message%. Augias réessaie toutes les heures."
+            pending: "Sera déclarée lors du prochain passage, dans l'heure."
+            view: 'Voir le suivi'
     account:
         held: "Enregistré, mais la plateforme n'a pas vérifié l'identité de l'entreprise : la facturation électronique reste à l'arrêt jusqu'à ce qu'elle le fasse."
         check: 'Vérifier le compte'
@@ -1739,7 +1807,7 @@ einvoicing:
         success: "La facture électronique a été envoyée avec succès."
     sync:
         button: 'Synchroniser maintenant'
-        done: 'Synchronisé : %received% facture(s) reçue(s), %refreshed% statut(s) mis à jour, %failed% erreur(s).'
+        done: 'Synchronisé : %received% facture(s) reçue(s), %refreshed% statut(s) mis à jour, %reported% déclaration(s) e-reporting, %failed% erreur(s).'
         invalid_token: 'La page a expiré : rechargez-la, puis synchronisez à nouveau.'
         too_soon: "Déjà synchronisé il y a moins d'une minute : réessayez dans un instant."
     view:
@@ -2595,6 +2663,7 @@ menu:
         custom_fields: 'Champs personnalisés'
         dashboard: 'Tableau de bord'
         einvoicing: 'Facturation électronique'
+        ereporting: E-reporting
         integrations: Intégrations
         logout: Déconnexion
         profile: Profil

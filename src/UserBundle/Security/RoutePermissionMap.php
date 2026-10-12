@@ -99,6 +99,7 @@ final class RoutePermissionMap
         '_credit_notes_view' => CompanyPermission::BillingRead,
         '_einvoicing_incoming' => CompanyPermission::BillingRead,
         '_einvoicing_incoming_download' => CompanyPermission::BillingRead,
+        '_einvoicing_ereporting' => CompanyPermission::BillingRead,
         '_invoices_disbursement_note' => CompanyPermission::BillingRead,
         '_invoices_disbursement_receipt_download' => CompanyPermission::BillingRead,
         '_invoices_get_fields' => CompanyPermission::BillingRead,

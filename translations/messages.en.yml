@@ -1551,6 +1551,74 @@ document_line:
     note_placeholder: 'Note or heading, such as “Phase 2 — Development”'
 edit_client: 'Edit Record'
 einvoicing:
+    ereporting:
+        title: E-reporting
+        intro: 'Sales to private individuals do not go through electronic invoicing: Augias reports them to your platform, which aggregates them and sends them to the tax administration on the schedule of your VAT regime.'
+        period: 'from %start% to %end%'
+        not_connected:
+            title: 'No platform connected'
+            description: 'E-reporting goes through your electronic invoicing platform. Connect one so your sales to private individuals are reported.'
+            action: 'Choose a platform'
+        current:
+            title: 'Current period'
+            subtitle: 'What the platform will send at the next deadline, from what Augias has reported so far.'
+            empty: 'Nothing to report for the current period.'
+            unreachable: 'The platform could not be reached:'
+            invoices: '%count% invoice(s) reported one by one (sales to businesses outside the electronic invoicing network).'
+        declarations:
+            title: 'Declarations sent'
+            subtitle: 'What the platform sent the tax administration, and what it said. Updated every hour.'
+            empty: 'No declaration sent yet. The platform sends them at the end of each period.'
+            period: '%kind%, %start% to %end%'
+        filed:
+            title: 'What Augias reported'
+            subtitle: 'Each sale, credit note, payment or refund filed with the platform.'
+            empty: 'Nothing reported yet. Only documents issued after the platform was connected are.'
+            done: Filed
+            failed: Failed
+            gone: 'Document deleted'
+            retry: 'A failed filing is tried again every hour, or right away with "Synchronise now".'
+        kind:
+            transaction: Sales
+            payment: Payments
+        category:
+            TLB1: Goods
+            TPS1: Services
+            TNT1: 'Not subject to VAT'
+            TMA1: 'Margin scheme'
+        status:
+            none: 'In progress'
+            ppf:ereporting: 'Sent to the administration'
+            ppf:ereporting-ack: Received
+            ppf:ereporting-ack-error: Unreadable
+            ppf:ereporting-rejected: Rejected
+            ppf:ereporting-response-ok: Accepted
+        report_kind:
+            transaction: Sale
+            payment: Payment
+            credit_note: 'Credit note'
+            refund: Refund
+            payment_received: 'Invoice paid (B2B)'
+            payment_sent: 'Purchase paid (B2B)'
+        column:
+            date: Date
+            category: Category
+            tax_exclusive: 'Amount excl. VAT'
+            tax: VAT
+            rate: 'VAT rate'
+            received: 'Amount received incl. VAT'
+            period: Period
+            kind: Kind
+            status: Status
+            since: Since
+            what: Report
+            document: Document
+        invoice:
+            title: E-reporting
+            done: 'Reported on %date%'
+            failed: 'Filing failed: %message%. Augias tries again every hour.'
+            pending: 'Will be reported on the next run, within the hour.'
+            view: 'See the reporting'
     account:
         held: 'Saved, but the platform has not verified the company''s identity: electronic invoicing stays stopped until it does.'
         check: 'Check the account'
@@ -1739,7 +1807,7 @@ einvoicing:
         success: 'The electronic invoice was sent successfully.'
     sync:
         button: 'Synchronise now'
-        done: 'Synchronised: %received% invoice(s) received, %refreshed% status(es) updated, %failed% error(s).'
+        done: 'Synchronised: %received% invoice(s) received, %refreshed% status(es) updated, %reported% e-reporting filing(s), %failed% error(s).'
         invalid_token: 'The page has expired: reload it, then synchronise again.'
         too_soon: 'Already synchronised less than a minute ago: try again in a moment.'
     view:
@@ -2595,6 +2663,7 @@ menu:
         custom_fields: 'Custom Fields'
         dashboard: Dashboard
         einvoicing: 'Electronic Invoicing'
+        ereporting: E-reporting
         integrations: Integrations
         logout: Logout
         profile: Profile

@@ -45,6 +45,9 @@ einvoicing:
             heading: 'Plateforme de facturation électronique déconnectée'
             message: "La connexion à la plateforme de facturation électronique a été perdue : aucune facture ne part ni n'arrive tant que le compte n'est pas reconnecté. Reconnectez-le dans les réglages."
         invoice_number: 'Numéro de facture'
+        declaration_rejected:
+            heading: 'Déclaration e-reporting rejetée'
+            message: "L'administration fiscale a rejeté une déclaration e-reporting envoyée par votre plateforme. Vérifiez la période indiquée ci-dessous sur la page E-reporting, puis voyez avec votre plateforme ce qu'il faut corriger."
         payment_sent_failed:
             heading: 'Paiement non signalé au fournisseur'
             message: "Le paiement d'un achat reçu par la facturation électronique n'a pas pu être signalé au fournisseur (statut « paiement transmis »). Augias réessaie toutes les heures ; si cela dure, vérifiez le compte dans les réglages."
@@ -61,6 +64,7 @@ einvoicing:
             heading: 'Facture électronique suspendue'
             message: "La plateforme de votre client a suspendu une facture : il lui manque quelque chose, une référence de commande ou une pièce jointe par exemple. Voyez avec votre client ce qu'il attend."
         view_invoice: 'Voir la facture'
+        view_ereporting: "Voir l'e-reporting"
         view_settings: 'Voir les réglages'
     notification_rejected:
         alert: 'Facture électronique rejetée'

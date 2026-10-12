@@ -709,6 +709,9 @@
             {# Electronic Invoice Submissions Card (if any) #}
             {{ include('@AugiasElectronicInvoicing/_submissions_card.html.twig', {submissions: invoice.electronicInvoiceSubmissions}) }}
 
+            {# A sale to a private individual: reported, not sent #}
+            {{ include('@AugiasElectronicInvoicing/_ereporting_card.html.twig', {document: invoice}) }}
+
             {# Related Quote Card (if exists) #}
             {% if invoice.quote is not null and invoice.quote.valid %}
                 <div class="doc-sidebar-card doc-sidebar-card-muted">

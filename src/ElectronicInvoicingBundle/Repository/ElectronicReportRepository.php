@@ -45,4 +45,23 @@ final class ElectronicReportRepository extends EntityRepository
             ->getQuery()
             ->getOneOrNullResult();
     }
+
+    /**
+     * Latest first.
+     *
+     * @return list<ElectronicReport>
+     */
+    public function latestForCompany(Ulid $companyId, int $limit = 100): array
+    {
+        /** @var list<ElectronicReport> $reports */
+        $reports = $this->createQueryBuilder('r')
+            ->andWhere('r.company = :company')
+            ->setParameter('company', $companyId, UlidType::NAME)
+            ->orderBy('r.updated', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        return $reports;
+    }
 }
