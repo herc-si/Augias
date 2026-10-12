@@ -98,6 +98,33 @@ final class CreditNoteFlowTest extends WebTestCase
     }
 
     /**
+     * Opened from an invoice, the totals are there before anything is touched:
+     * they used to read zero until the first change on the form.
+     */
+    public function testOpensWithItsTotalsWorkedOut(): void
+    {
+        $invoice = InvoiceFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => InvoiceStatus::Pending,
+            'discount' => new Discount(),
+            'lines' => [
+                new \Augias\InvoiceBundle\Entity\Line()
+                    ->setDescription('Annual licence')
+                    ->setPrice(9900)
+                    ->setQty(1)
+                    ->updateTotal(),
+            ],
+        ]);
+
+        $this->browser()
+            ->actingAs($this->createUser())
+            ->visit('/invoices/credit-notes/create/' . $invoice->getId())
+            ->assertSuccessful()
+            ->assertSeeIn('.totals-row-total .totals-value', '99.00');
+    }
+
+    /**
      * An issued invoice is corrected by a credit note, never withdrawn, so its
      * page has to lead to one: the credit note form, this invoice mirrored.
      */
