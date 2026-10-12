@@ -124,6 +124,7 @@ final class RoutePermissionMap
         '_accounting_bank_reconcile' => CompanyPermission::BillingWrite,
         '_action_credit_note' => CompanyPermission::BillingWrite,
         '_action_invoice' => CompanyPermission::BillingWrite,
+        '_invoices_apply_credit_notes' => CompanyPermission::BillingWrite,
         '_action_recurring_invoice' => CompanyPermission::BillingWrite,
         '_bills_action' => CompanyPermission::BillingWrite,
         '_bills_add' => CompanyPermission::BillingWrite,

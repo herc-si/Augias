@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Repository;
 
+use Augias\ClientBundle\Entity\Client;
 use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
 use Augias\InvoiceBundle\Entity\Invoice;
@@ -217,5 +218,36 @@ final class CreditNoteRepository extends EntityRepository
         $total = $qb->getQuery()->getSingleScalarResult();
 
         return null === $total ? BigInteger::zero() : BigNumber::of((string) $total);
+    }
+
+    /**
+     * The client's issued credit notes, oldest first: the ones that may still
+     * have something left to set against an invoice.
+     *
+     * @return list<CreditNote>
+     */
+    public function issuedForClient(Client $client): array
+    {
+        $id = $client->getId();
+
+        if (! $id instanceof Ulid) {
+            return [];
+        }
+
+        /** @var list<CreditNote> $creditNotes */
+        $creditNotes = $this->createQueryBuilder('c')
+            ->where('c.client = :client')
+            ->andWhere('c.status = :issued')
+            ->setParameter('client', $id, UlidType::NAME)
+            ->setParameter('issued', CreditNoteStatus::Issued->value)
+            ->orderBy('c.creditNoteDate', 'ASC')
+            ->addOrderBy('c.created', 'ASC')
+            // ULIDs grow with time: the tie-break for two created in the
+            // same second, which "oldest first" would otherwise leave to chance.
+            ->addOrderBy('c.id', 'ASC')
+            ->getQuery()
+            ->getResult();
+
+        return $creditNotes;
     }
 }

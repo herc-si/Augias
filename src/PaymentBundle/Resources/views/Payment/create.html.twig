@@ -121,6 +121,24 @@
                                 </div>
                             </div>
 
+                            {# The client's open credit notes: used here, where the
+                             # invoice is settled, and the rest is paid below. #}
+                            {% if availableCreditNotes|default('0') != '0' and route_allowed('_invoices_apply_credit_notes') %}
+                                <div class="summary-section" id="payment-credit-notes">
+                                    <div class="summary-section-label">
+                                        {{ ux_icon('tabler:receipt-refund', {width: 16, height: 16}) }}
+                                        {{ 'invoice.credit_notes.available'|trans }}
+                                        <strong class="ms-auto">{{ availableCreditNotes|formatCurrency(invoice.client.currency) }}</strong>
+                                    </div>
+                                    {# Its form sits after the payment form: forms do not nest. #}
+                                    <button type="submit" form="apply-credit-notes-form" class="btn btn-outline-primary w-100" id="payment-apply-credit-notes">
+                                        {{ ux_icon('tabler:receipt-refund', {width: 16, height: 16}) }}
+                                        {{ 'invoice.credit_notes.apply'|trans }}
+                                    </button>
+                                    <small class="d-block text-muted mt-2">{{ 'payment.create.credit_notes_help'|trans }}</small>
+                                </div>
+                            {% endif %}
+
                             {# Totals #}
                             <div class="summary-totals">
                                 <div class="totals-row">
@@ -139,7 +157,7 @@
                                         <span class="totals-value">{{ invoice.tax|formatCurrency(invoice.client.currency) }}</span>
                                     </div>
                                 {% endif %}
-                                {% if invoice.payments|length > 0 and not invoice.balance.isZero %}
+                                {% if (invoice.payments|length > 0 or invoice.creditNoteAllocations|length > 0) and not invoice.balance.isZero %}
                                     {% for payment in invoice.payments|filter((v) => v.status == enum('Augias\\PaymentBundle\\Enum\\PaymentStatus').Captured) %}
                                         <div class="totals-row totals-row-payment">
                                             <span class="totals-label">
@@ -149,16 +167,22 @@
                                         </div>
                                     {% endfor %}
                                 {% endif %}
+                                {% for offset in invoice.creditNoteAllocations|filter(a => a.kind.value == 'offset') %}
+                                    <div class="totals-row totals-row-payment">
+                                        <span class="totals-label">{{ 'payment.create.credit_note_label'|trans({'%number%': credit_note_number(offset.creditNote)}) }}</span>
+                                        <span class="totals-value">-{{ offset.amount|formatCurrency(invoice.client.currency) }}</span>
+                                    </div>
+                                {% endfor %}
                                 <div class="totals-row totals-row-balance">
                                     <span class="totals-label">
-                                        {% if invoice.payments|length > 0 and not invoice.balance.isZero %}
+                                        {% if (invoice.payments|length > 0 or invoice.creditNoteAllocations|length > 0) and not invoice.balance.isZero %}
                                             {{ 'invoice.balance'|trans }}
                                         {% else %}
                                             {{ 'invoice.total'|trans }}
                                         {% endif %}
                                     </span>
                                     <span class="totals-value">
-                                        {% if invoice.payments|length > 0 and not invoice.balance.isZero %}
+                                        {% if (invoice.payments|length > 0 or invoice.creditNoteAllocations|length > 0) and not invoice.balance.isZero %}
                                             {{ invoice.balance|formatCurrency(invoice.client.currency) }}
                                         {% else %}
                                             {{ invoice.total|formatCurrency(invoice.client.currency) }}
@@ -349,5 +373,12 @@
         </div>
 
         {{ form_end(form) }}
+
+        {% if availableCreditNotes|default('0') != '0' and route_allowed('_invoices_apply_credit_notes') %}
+            <form method="post" action="{{ path('_invoices_apply_credit_notes', {'id': invoice.id}) }}" id="apply-credit-notes-form" class="d-none">
+                <input type="hidden" name="_token" value="{{ csrf_token('apply_credit_notes' ~ invoice.id) }}">
+                <input type="hidden" name="_return" value="payment">
+            </form>
+        {% endif %}
     </div>
 {% endblock %}

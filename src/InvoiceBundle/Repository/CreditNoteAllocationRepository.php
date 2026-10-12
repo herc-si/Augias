@@ -83,4 +83,31 @@ final class CreditNoteAllocationRepository extends EntityRepository
 
         return null === $total ? BigInteger::zero() : BigNumber::of((string) $total);
     }
+
+    /**
+     * The part of the offsets on an invoice that comes from credit notes raised
+     * against that very invoice: its corrections, as opposed to credit carried
+     * over from other documents.
+     */
+    public function ownOffsetTotalForInvoice(Invoice $invoice): BigNumber
+    {
+        $id = $invoice->getId();
+
+        if (! $id instanceof Ulid) {
+            return BigInteger::zero();
+        }
+
+        $total = $this->createQueryBuilder('a')
+            ->select('SUM(a.amount)')
+            ->join('a.creditNote', 'c')
+            ->where('a.invoice = :invoice')
+            ->andWhere('a.kind = :offset')
+            ->andWhere('c.creditedInvoice = :invoice')
+            ->setParameter('invoice', $id, UlidType::NAME)
+            ->setParameter('offset', AllocationKind::Offset)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return null === $total ? BigInteger::zero() : BigNumber::of((string) $total);
+    }
 }
