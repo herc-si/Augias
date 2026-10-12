@@ -25,6 +25,7 @@ use Augias\TaxBundle\Entity\Tax;
 use Augias\TaxBundle\Enum\TaxCategory;
 use Augias\TaxBundle\Repository\TaxRepository;
 use Override;
+use Symfony\Component\Translation\TranslatableMessage;
 
 #[AsDataGrid(name: 'tax_grid', title: 'Tax Rates')]
 final class TaxGrid extends Grid
@@ -50,8 +51,8 @@ final class TaxGrid extends Grid
                 ->label('tax.grid.type'),
             StringColumn::new('category')
                 ->label('tax.grid.category')
-                ->formatValue(static fn (mixed $value) => $value instanceof TaxCategory ? $value->getLabel() : (string) $value)
-                ->filter(ChoiceFilter::new('category', array_column(array_map(static fn (TaxCategory $c) => [$c->value, $c->getLabel()], TaxCategory::cases()), 1, 0))->multiple()),
+                ->formatValue(static fn (mixed $value) => $value instanceof TaxCategory ? new TranslatableMessage($value->labelKey()) : (string) $value)
+                ->filter(ChoiceFilter::new('category', array_column(array_map(static fn (TaxCategory $c) => [$c->value, $c->labelKey()], TaxCategory::cases()), 1, 0))->multiple()),
             DateTimeColumn::new('created')
                 ->label('tax.grid.created')
                 ->width('long'),

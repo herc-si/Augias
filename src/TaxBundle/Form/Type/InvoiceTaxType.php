@@ -15,8 +15,8 @@ namespace Augias\TaxBundle\Form\Type;
 
 use Augias\TaxBundle\Entity\InvoiceTax;
 use Augias\TaxBundle\Entity\Tax;
-use Augias\TaxBundle\Enum\TaxCategory;
 use Augias\TaxBundle\Enum\TaxDirection;
+use Augias\TaxBundle\Model\TaxChoiceLabel;
 use Override;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
@@ -27,6 +27,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Translation\TranslatableMessage;
 
 /**
  * @extends AbstractType<InvoiceTax>
@@ -41,20 +42,9 @@ final class InvoiceTaxType extends AbstractType
                 'class' => Tax::class,
                 'placeholder' => 'tax.invoice_tax.tax.placeholder',
                 'required' => true,
-                'choice_label' => static function (Tax $tax): string {
-                    $rate = $tax->getRate() ?? 0;
-                    $category = $tax->getCategory();
-                    $rateLabel = $tax->getType() === Tax::TYPE_FLAT_RATE ? (string) $rate : $rate . '%';
-                    $base = sprintf('%s (%s)', $tax->getName() ?? '', $rateLabel);
-
-                    return match ($category) {
-                        TaxCategory::Exempt => $base . ' [exempt]',
-                        TaxCategory::OutOfScope => $base . ' [out of scope]',
-                        TaxCategory::ZeroRated => $base . ' [zero-rated]',
-                        TaxCategory::ReverseCharge => $base . ' [reverse charge]',
-                        TaxCategory::Standard => $base,
-                    };
-                },
+                'choice_label' => static fn (Tax $tax): TranslatableMessage => TaxChoiceLabel::for($tax),
+                // EntityType does not translate its choices unless told to.
+                'choice_translation_domain' => 'messages',
                 'attr' => [
                     'class' => 'invoice-tax-select',
                     'data-invoice-tax-target' => 'tax',

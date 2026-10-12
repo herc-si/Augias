@@ -140,6 +140,6 @@ final class CreditNoteGrid extends Grid
     #[Override]
     public function getCreateLabel(): TranslatableMessage
     {
-        return new TranslatableMessage('Create Credit Note');
+        return new TranslatableMessage('credit_note.action.create');
     }
 }

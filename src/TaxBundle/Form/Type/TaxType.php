@@ -52,7 +52,7 @@ class TaxType extends AbstractType
             [
                 'label' => 'tax.form.category.label',
                 'class' => TaxCategory::class,
-                'choice_label' => static fn (TaxCategory $c) => $c->getLabel(),
+                'choice_label' => static fn (TaxCategory $c) => $c->labelKey(),
                 'placeholder' => false,
             ]
         );

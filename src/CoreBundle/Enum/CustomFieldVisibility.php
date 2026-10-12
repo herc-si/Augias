@@ -20,9 +20,7 @@ enum CustomFieldVisibility: string
 
     public function label(): string
     {
-        return match ($this) {
-            self::INTERNAL => 'Internal only',
-            self::CLIENT_VISIBLE => 'Visible to client',
-        };
+        // A translation key: the settings screen shows it in the user's language.
+        return 'custom_field.visibility.' . strtolower($this->value);
     }
 }

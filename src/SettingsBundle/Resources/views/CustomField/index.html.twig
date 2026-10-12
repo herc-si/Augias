@@ -75,7 +75,7 @@
                                     </span>
                                     <div class="flex-fill">
                                         <strong>{{ row.field.label }}</strong>
-                                        <span class="badge bg-secondary-lt ms-2">{{ row.field.type.label }}</span>
+                                        <span class="badge bg-secondary-lt ms-2">{{ row.field.type.label|trans }}</span>
                                         {% if row.field.required %}<span class="badge bg-yellow-lt ms-1">{{ 'label.required'|trans }}</span>{% endif %}
                                         {% if row.field.visibility is not null %}
                                             {% if row.field.visibility.value == 'CLIENT_VISIBLE' %}

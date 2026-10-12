@@ -21,7 +21,7 @@ use Augias\AccountingBundle\Service\AttachmentStorage;
 use Augias\AccountingBundle\Service\LedgerTaxSplitter;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\Tax;
-use Augias\TaxBundle\Enum\TaxCategory;
+use Augias\TaxBundle\Model\TaxChoiceLabel;
 use Augias\TaxBundle\Repository\TaxRepository;
 use Brick\Math\BigDecimal;
 use Doctrine\ORM\EntityRepository;
@@ -41,11 +41,11 @@ use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Translation\TranslatableMessage;
 use Symfony\Component\Validator\Constraints\All;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use function array_keys;
-use function sprintf;
 use function trim;
 
 /**
@@ -174,7 +174,9 @@ final class LedgerEntryType extends AbstractType
                     ->andWhere('t.type != :flat')
                     ->setParameter('flat', Tax::TYPE_FLAT_RATE)
                     ->orderBy('t.rate', 'ASC'),
-                'choice_label' => static fn (Tax $tax): string => self::rateLabel($tax),
+                'choice_label' => static fn (Tax $tax): TranslatableMessage => TaxChoiceLabel::for($tax),
+                // EntityType does not translate its choices unless told to.
+                'choice_translation_domain' => 'messages',
                 'required' => false,
                 'placeholder' => '',
                 'mapped' => false,
@@ -259,16 +261,6 @@ final class LedgerEntryType extends AbstractType
         }
 
         return ['tax' => null, 'unresolved' => true];
-    }
-
-    private static function rateLabel(Tax $tax): string
-    {
-        $label = sprintf('%s (%s%%)', $tax->getName() ?? '', $tax->getRate() ?? 0);
-
-        return match ($tax->getCategory()) {
-            TaxCategory::Standard => $label,
-            default => sprintf('%s [%s]', $label, $tax->getCategory()->getLabel()),
-        };
     }
 
     public function configureOptions(OptionsResolver $resolver): void
