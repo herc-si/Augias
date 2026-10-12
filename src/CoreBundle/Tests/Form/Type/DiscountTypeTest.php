@@ -73,6 +73,25 @@ final class DiscountTypeTest extends FormTestCase
     }
 
     /**
+     * An emptied value field means no discount, not a crash. The credit note
+     * form adds this field blank the moment an invoice is picked, so the very
+     * next re-render submitted an empty value and Discount::setValue(null)
+     * threw a TypeError: a 500 on the credit note form.
+     */
+    public function testAnEmptyValueReadsAsNoDiscount(): void
+    {
+        foreach ([Discount::TYPE_PERCENTAGE, Discount::TYPE_MONEY] as $type) {
+            $form = $this->factory->create(DiscountType::class);
+            $form->submit(['type' => $type, 'value' => '']);
+
+            self::assertTrue($form->isSynchronized());
+            $discount = $form->getData();
+            self::assertInstanceOf(Discount::class, $discount);
+            self::assertTrue(BigDecimal::of((string) $discount->getValue())->isZero(), $type);
+        }
+    }
+
+    /**
      * The display half of the money scaling: stored in minor units, shown in
      * major ones. It used to come from a view transformer on the value field,
      * which had no way of telling a money discount from a percentage and so

@@ -149,6 +149,18 @@
                             </li>
                         {% endif %}
 
+                        {# An issued invoice is corrected by a credit note, never withdrawn.
+                         # The form opens with this invoice's lines mirrored. #}
+                        {% if invoice.status in [enum('Augias\\InvoiceBundle\\Enum\\InvoiceStatus').Pending, enum('Augias\\InvoiceBundle\\Enum\\InvoiceStatus').Overdue, enum('Augias\\InvoiceBundle\\Enum\\InvoiceStatus').Paid] and route_allowed('_credit_notes_create') %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item" href="{{ path('_credit_notes_create', {'invoice' : invoice.id}) }}" id="invoice-credit-note">
+                                    {{ ux_icon('tabler:receipt-refund', {width: 16, height: 16}) }}
+                                    {{ "invoice.view.toolbar.credit_note"|trans }}
+                                </a>
+                            </li>
+                        {% endif %}
+
                         {% if workflow_can(invoice, 'cancel') %}
                             <li><hr class="dropdown-divider"></li>
                             <li>

@@ -84,6 +84,10 @@ class DiscountType extends AbstractType
             TextType::class,
             [
                 'label' => 'form.field.value',
+                // An emptied field is no discount. Without this it maps null
+                // onto Discount::setValue(), which does not take one: a 500 the
+                // moment the credit note form adds this field blank.
+                'empty_data' => '0',
                 'attr' => [
                     'class' => 'discount-value',
                 ],

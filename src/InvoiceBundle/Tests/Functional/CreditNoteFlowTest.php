@@ -98,6 +98,91 @@ final class CreditNoteFlowTest extends WebTestCase
     }
 
     /**
+     * Opened from an invoice, the totals are there before anything is touched:
+     * they used to read zero until the first change on the form.
+     */
+    public function testOpensWithItsTotalsWorkedOut(): void
+    {
+        $invoice = InvoiceFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => InvoiceStatus::Pending,
+            'discount' => new Discount(),
+            'lines' => [
+                new \Augias\InvoiceBundle\Entity\Line()
+                    ->setDescription('Annual licence')
+                    ->setPrice(9900)
+                    ->setQty(1)
+                    ->updateTotal(),
+            ],
+        ]);
+
+        $this->browser()
+            ->actingAs($this->createUser())
+            ->visit('/invoices/credit-notes/create/' . $invoice->getId())
+            ->assertSuccessful()
+            ->assertSeeIn('.totals-row-total .totals-value', '99.00');
+    }
+
+    /**
+     * An issued invoice is corrected by a credit note, never withdrawn, so its
+     * page has to lead to one: the credit note form, this invoice mirrored.
+     */
+    public function testAnIssuedInvoiceLeadsToACreditNote(): void
+    {
+        foreach ([InvoiceStatus::Pending, InvoiceStatus::Overdue, InvoiceStatus::Paid] as $status) {
+            $invoice = InvoiceFactory::createOne([
+                'company' => $this->company,
+                'client' => $this->client(),
+                'status' => $status,
+            ]);
+
+            $this->browser()
+                ->actingAs($this->createUser('credit-notes-' . $status->value . '@example.com'))
+                ->visit('/invoices/view/' . $invoice->getId())
+                ->assertSuccessful()
+                ->assertElementAttributeContains('#invoice-credit-note', 'href', '/invoices/credit-notes/create/' . $invoice->getId());
+        }
+    }
+
+    /**
+     * A refused edit lands on the invoice, not on the list: the message says
+     * to raise a credit note, and the way to raise one is on that page.
+     */
+    public function testARefusedEditLandsOnTheInvoice(): void
+    {
+        $invoice = InvoiceFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => InvoiceStatus::Paid,
+        ]);
+
+        $this->browser()
+            ->actingAs($this->createUser())
+            ->interceptRedirects()
+            ->visit('/invoices/edit/' . $invoice->getId())
+            ->assertRedirectedTo('/invoices/view/' . $invoice->getId());
+    }
+
+    /**
+     * A draft has not been issued: it is edited or cancelled, not credited.
+     */
+    public function testADraftOffersNoCreditNote(): void
+    {
+        $invoice = InvoiceFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => InvoiceStatus::Draft,
+        ]);
+
+        $this->browser()
+            ->actingAs($this->createUser())
+            ->visit('/invoices/view/' . $invoice->getId())
+            ->assertSuccessful()
+            ->assertNotSeeElement('#invoice-credit-note');
+    }
+
+    /**
      * A credit note left over from another invoice is used where the invoice
      * is settled, the payment page: one button, and the invoice is paid.
      */
