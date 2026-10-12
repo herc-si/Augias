@@ -16,6 +16,7 @@ namespace Augias\InvoiceBundle\Listener;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Credit;
 use Augias\ClientBundle\Repository\CreditRepository;
+use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Repository\PaymentRepository;
@@ -60,8 +61,11 @@ class InvoicePaidListener implements EventSubscriberInterface
 
         $em->persist($invoice);
 
+        // Credit notes set against the invoice count as settled: only what was
+        // paid beyond the rest is a real overpayment.
         $totalPaid = $paymentRepository->getTotalPaidForInvoice($invoice)
-            ->toBigDecimal();
+            ->toBigDecimal()
+            ->plus($em->getRepository(CreditNoteAllocation::class)->offsetTotalForInvoice($invoice));
 
         if ($totalPaid->isGreaterThan($invoice->getTotal())) {
             /** @var Client $client */

@@ -54,6 +54,7 @@ return App::config([
                         InvoiceStatus::Cancelled->value,
                         InvoiceStatus::Archived->value,
                         InvoiceStatus::Paid->value,
+                        InvoiceStatus::Credited->value,
                     ],
                     'transitions' => [
                         [
@@ -82,13 +83,20 @@ return App::config([
                             'to' => [InvoiceStatus::Paid->value],
                         ],
                         [
+                            // An issued invoice is not cancelled, it is credited:
+                            // a credit note set against it for what was still owed.
+                            'name' => InvoiceGraph::TRANSITION_CREDIT,
+                            'from' => [InvoiceStatus::Pending->value, InvoiceStatus::Overdue->value],
+                            'to' => [InvoiceStatus::Credited->value],
+                        ],
+                        [
                             'name' => InvoiceGraph::TRANSITION_REOPEN,
                             'from' => [InvoiceStatus::Cancelled->value],
                             'to' => [InvoiceStatus::Draft->value],
                         ],
                         [
                             'name' => InvoiceGraph::TRANSITION_ARCHIVE,
-                            'from' => [InvoiceStatus::New->value, InvoiceStatus::Draft->value, InvoiceStatus::Cancelled->value, InvoiceStatus::Paid->value],
+                            'from' => [InvoiceStatus::New->value, InvoiceStatus::Draft->value, InvoiceStatus::Cancelled->value, InvoiceStatus::Paid->value, InvoiceStatus::Credited->value],
                             'to' => [InvoiceStatus::Archived->value],
                         ],
                         [

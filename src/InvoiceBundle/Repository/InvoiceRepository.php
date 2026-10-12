@@ -15,6 +15,7 @@ namespace Augias\InvoiceBundle\Repository;
 
 use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Exception\DocumentMustBeKept;
+use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\InvoiceReminder;
 use Augias\InvoiceBundle\Entity\ReminderType;
@@ -289,7 +290,10 @@ class InvoiceRepository extends EntityRepository
 
         $totalPaid = $this->getEntityManager()
             ->getRepository(Payment::class)
-            ->getTotalPaidForInvoice($invoice);
+            ->getTotalPaidForInvoice($invoice)
+            ->toBigDecimal()
+            // What credit notes took off it is no longer owed either.
+            ->plus($this->getEntityManager()->getRepository(CreditNoteAllocation::class)->offsetTotalForInvoice($invoice));
 
         return $totalPaid->isEqualTo($invoiceTotal) || $totalPaid->isGreaterThan($invoiceTotal);
     }

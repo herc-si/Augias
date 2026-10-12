@@ -4084,6 +4084,7 @@ status:
     captured: Captured
     complete: Complete
     credit: Credit
+    credited: Credited
     declined: Declined
     disputed: Disputed
     draft: Draft

@@ -15,6 +15,7 @@ namespace Augias\PaymentBundle\Listener;
 
 use Augias\ClientBundle\Entity\Credit;
 use Augias\CoreBundle\Response\FlashResponse;
+use Augias\InvoiceBundle\Entity\CreditNoteAllocation;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Model\Graph;
 use Augias\PaymentBundle\Entity\Payment;
@@ -73,7 +74,8 @@ class PaymentCompleteListener implements EventSubscriberInterface
                 $paymentRepository = $this->registry->getRepository(Payment::class);
                 $invoiceTotal = $invoice->getTotal();
                 $totalPaid = $paymentRepository->getTotalPaidForInvoice($invoice);
-                $invoice->setBalance($invoiceTotal->toBigDecimal()->minus($totalPaid));
+                $offset = $this->registry->getRepository(CreditNoteAllocation::class)->offsetTotalForInvoice($invoice);
+                $invoice->setBalance($invoiceTotal->toBigDecimal()->minus($totalPaid)->minus($offset));
 
                 $em = $this->registry->getManager();
                 $em->persist($invoice);
