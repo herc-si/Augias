@@ -17,6 +17,7 @@ use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\CoreBundle\Test\LiveComponentTest;
 use Augias\InvoiceBundle\DTO\CreditNoteFormDTO;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
 use Augias\InvoiceBundle\Twig\Components\CreateCreditNote;
 use Carbon\CarbonImmutable;
@@ -97,7 +98,7 @@ final class CreateCreditNoteTest extends LiveComponentTest
     public function testOffersTheDiscountWhenMirroringAnInvoice(): void
     {
         $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
-        $invoice = InvoiceFactory::createOne(['company' => $this->company, 'client' => $client]);
+        $invoice = InvoiceFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => InvoiceStatus::Pending]);
 
         $dto = new CreditNoteFormDTO();
         $dto->client = $client;
@@ -109,6 +110,67 @@ final class CreateCreditNoteTest extends LiveComponentTest
             ->actingAs($this->getUser());
 
         self::assertStringContainsString('credit_note[discount]', $component->render()->toString());
+    }
+
+    /**
+     * The gesture behind a 500 seen on app-test: a blank credit note, a client,
+     * then an invoice. Picking the invoice adds the discount field blank, and
+     * the next re-render submitted its empty value.
+     */
+    public function testSurvivesPickingAnInvoiceOnABlankCreditNote(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+        $invoice = InvoiceFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => InvoiceStatus::Pending]);
+
+        $component = $this->createLiveComponent(CreateCreditNote::class, ['dto' => new CreditNoteFormDTO()])
+            ->actingAs($this->getUser());
+
+        $component->submitForm(['credit_note' => ['client' => (string) $client->getId()]]);
+        $component->submitForm(['credit_note' => [
+            'client' => (string) $client->getId(),
+            'creditedInvoice' => (string) $invoice->getId(),
+        ]]);
+        $component->submitForm(['credit_note' => [
+            'client' => (string) $client->getId(),
+            'creditedInvoice' => (string) $invoice->getId(),
+            'discount' => ['type' => 'percentage', 'value' => ''],
+        ]]);
+
+        self::assertStringContainsString('credit_note[discount]', $component->render()->toString());
+    }
+
+    /**
+     * The invoices a credit note can answer to are the issued ones, paid or
+     * not: an issued invoice is corrected by a credit note, never withdrawn.
+     * A draft was never issued, a cancelled one never owed.
+     */
+    public function testOffersOnlyIssuedInvoices(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+
+        $offered = [];
+        foreach ([InvoiceStatus::Pending, InvoiceStatus::Overdue, InvoiceStatus::Paid] as $status) {
+            $offered[] = (string) InvoiceFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => $status])->getId();
+        }
+
+        $withheld = [];
+        foreach ([InvoiceStatus::Draft, InvoiceStatus::Cancelled] as $status) {
+            $withheld[] = (string) InvoiceFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => $status])->getId();
+        }
+
+        $component = $this->createLiveComponent(CreateCreditNote::class, ['dto' => new CreditNoteFormDTO()])
+            ->actingAs($this->getUser());
+        $component->submitForm(['credit_note' => ['client' => (string) $client->getId()]]);
+
+        $html = $component->render()->toString();
+
+        foreach ($offered as $id) {
+            self::assertStringContainsString('value="' . $id . '"', $html);
+        }
+
+        foreach ($withheld as $id) {
+            self::assertStringNotContainsString('value="' . $id . '"', $html);
+        }
     }
 
     private function dto(): CreditNoteFormDTO
