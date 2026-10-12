@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Augias project.
  *
- * (c) Pierre du Plessis <open-source@solidworx.co>
+ * (c) HERC SI <opensource@herc-si.fr>
  *
  * This source file is subject to the MIT license that is bundled
  * with this source code in the file LICENSE.
@@ -15,11 +15,14 @@ namespace Augias\InvoiceBundle\Tests\Functional;
 
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\ClientBundle\Test\Factory\ContactFactory;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Entity\CreditNote;
+use Augias\InvoiceBundle\Action\CreditNote\Send;
+use Augias\InvoiceBundle\Email\CreditNoteEmail;
 use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\CreditReason;
@@ -29,6 +32,8 @@ use Augias\UserBundle\Entity\User;
 use PHPUnit\Framework\Attributes\Group;
 use SensitiveParameter;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Zenstruck\Browser\Test\HasBrowser;
 use function assert;
@@ -174,6 +179,48 @@ final class CreditNoteFlowTest extends WebTestCase
         self::assertInstanceOf(CreditNote::class, $reloaded);
         self::assertSame(CreditNoteStatus::Issued, $reloaded->getStatus());
         self::assertNotNull($reloaded->getIssuedAt());
+    }
+
+    /**
+     * Sending reached the mailer with no recipient at all: nothing put the
+     * credit note's contacts on the message, and the mailer refused it with a
+     * 500 once the credit note was already issued.
+     */
+    public function testSendsTheCreditNoteToItsContacts(): void
+    {
+        $contact = ContactFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'email' => 'accounts@example.com',
+            'firstName' => 'Ada',
+            'lastName' => 'Lovelace',
+        ]);
+
+        $creditNote = CreditNoteFactory::createOne([
+            'company' => $this->company,
+            'client' => $this->client(),
+            'status' => CreditNoteStatus::Draft,
+            'users' => [$contact],
+        ]);
+
+        $response = self::getContainer()->get(Send::class)(Request::create('/'), $creditNote);
+
+        self::assertStringEndsWith('/invoices/credit-notes/view/' . $creditNote->getId(), (string) $response->getTargetUrl());
+
+        // Each message is logged once queued and once handed to the transport.
+        $sent = [];
+
+        foreach (self::getMailerEvents() as $event) {
+            $message = $event->getMessage();
+
+            if (! $event->isQueued() && $message instanceof CreditNoteEmail) {
+                $sent[] = $message;
+            }
+        }
+
+        self::assertCount(1, $sent);
+        self::assertEquals([new Address('accounts@example.com', 'Ada Lovelace')], $sent[0]->getTo());
+        self::assertCount(1, $sent[0]->getAttachments());
     }
 
     /**
