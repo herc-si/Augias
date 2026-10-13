@@ -36,6 +36,8 @@
 
     <div class="card border-0 mt-2" style="background: #ffffff;">
         <div class="card-body p-5">
+            {{ include('@AugiasCore/Billing/_subject.html.twig', {subject: invoice.subject}) }}
+
             <table class="table doc-lines doc-lines-stacked">
                 <thead>
                     <tr style="border-bottom: 1px solid #e0d8c8;">

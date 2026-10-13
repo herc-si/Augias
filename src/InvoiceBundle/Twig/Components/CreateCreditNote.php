@@ -298,6 +298,11 @@ final class CreateCreditNote extends AbstractController
         }
 
         $this->formValues['lines'] = $lines;
+
+        // The invoice's subject too, unless one was typed already.
+        if (($this->formValues['subject'] ?? '') === '' && null !== $invoice->getSubject()) {
+            $this->formValues['subject'] = $invoice->getSubject();
+        }
     }
 
     #[ExposeInTemplate]

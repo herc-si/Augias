@@ -226,6 +226,12 @@ class InvoiceType extends AbstractType
         // (NumberOnFinaliseListener), and one typed or taken here left gaps.
 
         // Several lines: payment term, penalties, recovery fee… each kept on its own.
+        $builder->add('subject', TextType::class, [
+            'label' => 'form.field.subject',
+            'help' => 'form.field.subject_help',
+            'required' => false,
+            'attr' => ['maxlength' => 255],
+        ]);
         $builder->add('terms', TextareaType::class, ['label' => 'form.field.terms', 'required' => false, 'attr' => ['rows' => 4]]);
         $builder->add('notes', null, ['help' => 'billing.notes_help']);
         $builder->add('total', HiddenMoneyType::class, ['currency' => $options['currency']]);

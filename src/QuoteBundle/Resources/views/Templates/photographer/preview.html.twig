@@ -38,6 +38,8 @@
                 </div>
             </div>
 
+            {{ include('@AugiasCore/Billing/_subject.html.twig', {subject: quote.subject}) }}
+
             <table class="table doc-lines" style="background: transparent;">
                 <tbody>
                     {% for line in quote.lines %}

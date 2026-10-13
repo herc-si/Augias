@@ -151,6 +151,7 @@ final class InvoiceManagerTest extends KernelTestCase
         $quote->setNotes('Notes');
         $quote->setTax(432);
         $quote->setTerms('Terms');
+        $quote->setSubject('Migration to Odoo');
         $quote->setTotal(987);
         $quote->setClient($client);
         $quote->addLine($line);
@@ -163,6 +164,7 @@ final class InvoiceManagerTest extends KernelTestCase
         self::assertSame($quote->getDiscount(), $invoice->getDiscount());
         self::assertSame($quote->getNotes(), $invoice->getNotes());
         self::assertSame($quote->getTerms(), $invoice->getTerms());
+        self::assertSame('Migration to Odoo', $invoice->getSubject());
         self::assertEquals($quote->getTax(), $invoice->getTax());
         self::assertSame($client, $invoice->getClient());
         self::assertNull($invoice->getStatus());
@@ -327,6 +329,7 @@ final class InvoiceManagerTest extends KernelTestCase
         $recurringInvoice->setNotes('Notes');
         $recurringInvoice->setTax(432);
         $recurringInvoice->setTerms('Terms');
+        $recurringInvoice->setSubject('Monthly maintenance');
         $recurringInvoice->setTotal(987);
         $recurringInvoice->setClient($client);
         $recurringInvoice->addLine($line);
@@ -339,6 +342,7 @@ final class InvoiceManagerTest extends KernelTestCase
         self::assertSame($recurringInvoice->getDiscount(), $invoice->getDiscount());
         self::assertSame($recurringInvoice->getNotes(), $invoice->getNotes());
         self::assertSame($recurringInvoice->getTerms(), $invoice->getTerms());
+        self::assertSame('Monthly maintenance', $invoice->getSubject());
         self::assertEquals($recurringInvoice->getTax(), $invoice->getTax());
         self::assertSame($client, $invoice->getClient());
         self::assertNull($invoice->getStatus());

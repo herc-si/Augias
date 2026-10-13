@@ -77,6 +77,8 @@ final readonly class PreviewInvoiceFactory
         $invoice->setClient($client);
         $invoice->setInvoiceDate(CarbonImmutable::parse('first day of this month'));
         $invoice->setDue(CarbonImmutable::now()->addDays(14));
+        // A subject, so that a design with a project title shows it.
+        $invoice->setSubject($this->sample('subject'));
         $invoice->setTerms($this->sample('terms'));
         // A discount, so that choosing a design shows where it puts one.
         $invoice->setDiscount(new Discount()->setType(Discount::TYPE_PERCENTAGE)->setValuePercentage(10.0));

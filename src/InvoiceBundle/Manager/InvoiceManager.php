@@ -139,6 +139,7 @@ class InvoiceManager
         $invoice->setClient($object->getClient());
         $invoice->setBaseTotal($object->getBaseTotal());
         $invoice->setDiscount($object->getDiscount());
+        $invoice->setSubject($object->getSubject());
         $invoice->setNotes($object->getNotes());
         $invoice->setTotal($object->getTotal());
         $invoice->setTerms($this->termsFrom($object));

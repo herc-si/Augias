@@ -62,6 +62,7 @@ final readonly class InvoiceCloner
         $newInvoice->setDiscount($invoice->getDiscount());
         $newInvoice->setNotes($invoice->getNotes());
         $newInvoice->setTotal($invoice->getTotal());
+        $newInvoice->setSubject($invoice->getSubject());
         $newInvoice->setTerms($invoice->getTerms());
 
         foreach ($invoice->getUsers() as $user) {

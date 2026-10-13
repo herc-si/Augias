@@ -35,6 +35,8 @@
                     </div>
                 </div>
 
+                {{ include('@AugiasCore/Billing/_subject.html.twig', {subject: quote.subject}) }}
+
                 <table class="table doc-lines doc-lines-stacked table-sm table-striped mb-3">
                     <thead style="background: #334155; color: #ffffff;">
                         <tr>

@@ -5,6 +5,8 @@
     {% apply inky_to_html %}
         <row>
             <columns>
+                {# The project's title is the document's subject; none given, no title made up. #}
+                {% if invoice.subject is not empty %}
                 <table role="presentation" style="width: 100%; background: #f8fafc; border-left: 4px solid #2e963a; padding: 18px; border-radius: 4px;">
                     <tr>
                         <td>
@@ -12,11 +14,12 @@
                                 {{ 'invoice.template.studio.project_label'|trans }}
                             </p>
                             <p style="color: #0f172a; font-size: 22px; font-weight: 700; line-height: 1.2; margin: 0; Margin: 0;">
-                                {{ invoice.client }} {{ 'invoice.template.studio.engagement'|trans }}
+                                {{ invoice.subject }}
                             </p>
                         </td>
                     </tr>
                 </table>
+                {% endif %}
                 <p style="color: #475569; font-size: 14px; line-height: 1.6; margin: 16px 0 0 0; Margin: 16px 0 0 0;">
                     {{ 'invoice.info'|trans({'%company%': company_name(), '%created%': invoice.created|date}, 'email') }}
                 </p>

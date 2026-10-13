@@ -78,6 +78,8 @@
 
 {# Ledger card — white paper for line items, totals, terms #}
 <div style="background-color: #ffffff; padding: 14px 22px;">
+    {{ include('@AugiasCore/Billing/_subject.html.twig', {subject: invoice.subject}) }}
+
     <table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
         <thead>
             <tr>

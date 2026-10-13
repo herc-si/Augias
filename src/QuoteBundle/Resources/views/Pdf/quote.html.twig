@@ -200,6 +200,8 @@
 {# ============================================================================
    LINE ITEMS TABLE
 ============================================================================ #}
+{{ include('@AugiasCore/Billing/_subject.html.twig', {subject: quote.subject}) }}
+
 <table class="items-table" cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 14px; border: 1px solid #e2e8f0;">
     <thead>
         <tr style="background-color: #f8fafc;">

@@ -1,0 +1,18 @@
+{#
+# This file is part of Augias package.
+#
+# (c) HERC SI <opensource@herc-si.fr>
+#
+# This source file is subject to the MIT license that is bundled
+# with this source code in the file LICENSE.
+#}
+
+{# What the document is about, above its lines. Inline styles: the same block
+   goes into the PDF (mPDF) and into the page the client opens. Nothing when no
+   subject was given. #}
+{% if subject is not empty %}
+    <div style="margin: 0 0 12px 0;">
+        <span style="font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px; color: {{ brand_color() ?: '#64748b' }};">{{ 'billing.subject'|trans }}</span>
+        <span style="font-size: 10pt; color: #0f172a; margin-left: 6px;">{{ subject }}</span>
+    </div>
+{% endif %}

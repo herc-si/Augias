@@ -513,6 +513,7 @@ bill:
         tax: 'VAT'
         total: Total
 billing:
+    subject: Subject
     disbursements: Disbursements
     discount: Discount
     due_date: 'Due Date'
@@ -1914,6 +1915,8 @@ form:
         placeholder: "Drag and drop an image or browse"
     address: Address
     field:
+        subject: "Subject"
+        subject_help: "In a few words, what the document is about: shown above the lines."
         access_key: "Access key"
         access_secret: "Access secret"
         access_token: "Access token"
@@ -2522,7 +2525,6 @@ invoice:
         studio:
             client: Client
             deliverable: Deliverable
-            engagement: engagement
             project_label: Project
             studio: Studio
     terms: Terms
@@ -3694,6 +3696,7 @@ saas:
                 city: Springfield
                 zip: '49007'
                 country: US
+                subject: 'Showcase website redesign'
                 invoice_prefix: INV
                 terms: "Payment due within 14 days.\nBank transfer or card accepted."
                 line_identity: 'Brand identity design'

@@ -33,6 +33,8 @@
             </div>
 
             <div style="color: #94704a; font-style: italic;" class="mb-2">III. {{ 'quote.item.heading.description'|trans }}</div>
+            {{ include('@AugiasCore/Billing/_subject.html.twig', {subject: quote.subject}) }}
+
             <table class="table doc-lines" style="background: transparent;">
                 <tbody>
                     {% for line in quote.lines %}

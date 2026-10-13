@@ -30,6 +30,8 @@
             </div>
 
             <div style="color: #94704a; font-style: italic;" class="mb-2">III. {{ 'invoice.item.heading.description'|trans }}</div>
+            {{ include('@AugiasCore/Billing/_subject.html.twig', {subject: invoice.subject}) }}
+
             <table class="table doc-lines" style="background: transparent;">
                 <tbody>
                     {% for line in invoice.feeLines %}

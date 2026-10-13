@@ -267,6 +267,14 @@ class Quote implements Journalled
     )]
     private Discount $discount;
 
+    /**
+     * What the quote is about, in a few words; carried onto the invoice.
+     */
+    #[ORM\Column(name: 'subject', type: Types::STRING, length: 255, nullable: true)]
+    #[Assert\Length(max: 255)]
+    #[Groups(['quote_api:read', 'quote_api:write'])]
+    private ?string $subject = null;
+
     #[ORM\Column(name: 'terms', type: Types::TEXT, nullable: true)]
     #[Groups(['quote_api:read', 'quote_api:write'])]
     private ?string $terms = null;
@@ -484,6 +492,19 @@ class Quote implements Journalled
     public function getLines(): Collection
     {
         return $this->lines;
+    }
+
+    public function getSubject(): ?string
+    {
+        return $this->subject;
+    }
+
+    public function setSubject(?string $subject): self
+    {
+        $subject = null === $subject ? null : trim($subject);
+        $this->subject = '' === $subject ? null : $subject;
+
+        return $this;
     }
 
     public function getTerms(): ?string

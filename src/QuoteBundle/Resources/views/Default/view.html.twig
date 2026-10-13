@@ -25,7 +25,7 @@
                 {{ ux_icon('tabler:file-text', {width: 32, height: 32}) }}
             </div>
             <div class="doc-view-title-group">
-                <h1 class="doc-view-title">{{ "quote.title"|trans({"%id%" : quote.quoteId}) }}</h1>
+                <h1 class="doc-view-title">{{ "quote.title"|trans({"%id%" : quote.quoteId}) }}</h1>{% if quote.subject is not empty %}<div class="doc-view-subject text-secondary mt-1" id="doc-subject">{{ quote.subject }}</div>{% endif %}
                 <div class="doc-view-meta">
                     {{ quote_label(quote.status) }}
                     <span class="doc-view-meta-item">

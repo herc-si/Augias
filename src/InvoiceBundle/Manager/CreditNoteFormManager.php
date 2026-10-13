@@ -91,6 +91,7 @@ final readonly class CreditNoteFormManager
         $dto->creditNoteId = $creditNote->getCreditNoteId();
         $dto->creditNoteDate = $creditNote->getCreditNoteDate();
         $dto->discount = $creditNote->getDiscount();
+        $dto->subject = $creditNote->getSubject();
         $dto->terms = $creditNote->getTerms();
         $dto->notes = $creditNote->getNotes();
         $dto->total = (string) $creditNote->getTotal();
@@ -119,6 +120,8 @@ final readonly class CreditNoteFormManager
         $dto->creditedInvoice = $invoice;
         $dto->reason = CreditReason::Cancellation;
         $dto->creditNoteDate = CarbonImmutable::now();
+        // It takes back that invoice's work: same subject.
+        $dto->subject = $invoice->getSubject();
         // Not the invoice's: its payment term and late payment penalties mean
         // nothing on a document that gives money back.
         $dto->terms = $this->defaultTerms?->for(TermsDocument::CreditNote, true);
@@ -157,6 +160,7 @@ final readonly class CreditNoteFormManager
         $creditNote->setCreditNoteId($dto->creditNoteId);
         $creditNote->setCreditNoteDate($dto->creditNoteDate ?? CarbonImmutable::now());
         $creditNote->setCreditedInvoice($dto->creditedInvoice);
+        $creditNote->setSubject($dto->subject);
         $creditNote->setTerms($dto->terms);
         $creditNote->setNotes($dto->notes);
         $creditNote->setTotal($dto->total);
