@@ -1,0 +1,36 @@
+{#
+# This file is part of Augias package.
+#
+# (c) HERC SI <opensource@herc-si.fr>
+#
+# This source file is subject to the MIT license that is bundled
+# with this source code in the file LICENSE.
+#}
+
+{#- A document to a private individual: not sent, reported. Nothing for anything else. -#}
+{%- set state = ereporting_state(document) -%}
+{%- if state is not null -%}
+    <div class="doc-sidebar-card" id="ereporting-card">
+        <div class="doc-sidebar-card-header">
+            <div class="doc-sidebar-card-icon">
+                {{ ux_icon('tabler:file-report', {width: 18, height: 18}) }}
+            </div>
+            <h3 class="doc-sidebar-card-title">{{ 'einvoicing.ereporting.invoice.title'|trans }}</h3>
+        </div>
+        <div class="doc-sidebar-card-body">
+            {% if state.report is null %}
+                <p class="text-muted small mb-2">{{ 'einvoicing.ereporting.invoice.pending'|trans }}</p>
+            {% elseif state.report.success %}
+                <p class="small mb-2">
+                    <span class="badge bg-green-lt">{{ 'einvoicing.ereporting.filed.done'|trans }}</span>
+                    {{ 'einvoicing.ereporting.invoice.done'|trans({'%date%': state.report.updated|format_datetime('medium', 'short')}) }}
+                </p>
+            {% else %}
+                <p class="text-danger small mb-2">{{ 'einvoicing.ereporting.invoice.failed'|trans({'%message%': state.report.message|trans}) }}</p>
+            {% endif %}
+            {% if route_allowed('_einvoicing_ereporting') %}
+                <a href="{{ path('_einvoicing_ereporting') }}" class="small">{{ 'einvoicing.ereporting.invoice.view'|trans }}</a>
+            {% endif %}
+        </div>
+    </div>
+{%- endif -%}

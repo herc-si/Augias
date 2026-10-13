@@ -15,6 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Command;
 
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicDeclarationSync;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicReportManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
@@ -27,7 +28,8 @@ use function sprintf;
 
 /**
  * Files e-reporting data — sales to private individuals and the payments
- * for them — for every company whose platform takes it.
+ * for them — for every company whose platform takes it, and copies the
+ * declarations the platform sent the tax administration from it.
  *
  * @see \Augias\ElectronicInvoicingBundle\Manager\ElectronicReportManager
  */
@@ -42,6 +44,7 @@ final class ReportToTaxAdministrationCommand extends Command
         private readonly ManagerRegistry $registry,
         private readonly CompanyRepository $companyRepository,
         private readonly ElectronicReportManager $reportManager,
+        private readonly ElectronicDeclarationSync $declarationSync,
     ) {
         parent::__construct();
     }
@@ -67,6 +70,9 @@ final class ReportToTaxAdministrationCommand extends Command
                     $stats = $this->reportManager->reportPending($company);
                     $reported += $stats['reported'];
                     $failed += $stats['failed'];
+
+                    // Then what the platform made of it, sent on its own schedule.
+                    $this->declarationSync->refresh($company);
                 } catch (Throwable $e) {
                     ++$failed;
                     $this->io->error(sprintf('Could not report for company %s: %s', (string) $company->getId(), $e->getMessage()));

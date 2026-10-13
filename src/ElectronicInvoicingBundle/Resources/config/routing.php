@@ -12,6 +12,7 @@ declare(strict_types=1);
  */
 
 use Augias\ElectronicInvoicingBundle\Action\DownloadIncomingInvoice;
+use Augias\ElectronicInvoicingBundle\Action\EReporting;
 use Augias\ElectronicInvoicingBundle\Action\IncomingInvoices;
 use Augias\ElectronicInvoicingBundle\Action\Providers;
 use Augias\ElectronicInvoicingBundle\Action\RespondToIncomingInvoice;
@@ -50,6 +51,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->add('_einvoicing_incoming_respond', '/incoming/respond/{id}')
         ->controller(RespondToIncomingInvoice::class)
         ->methods(['GET', 'POST']);
+
+    $routingConfigurator
+        ->add('_einvoicing_ereporting', '/ereporting')
+        ->controller(EReporting::class)
+        ->methods(['GET']);
 
     $routingConfigurator
         ->add('_einvoicing_sync', '/sync')

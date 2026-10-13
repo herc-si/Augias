@@ -43,6 +43,9 @@ enum ElectronicInvoicingProblem: string
     /** A purchase received electronically was paid, and its supplier could not be told (fr:211). */
     case PaymentSentFailed = 'payment_sent_failed';
 
+    /** The tax administration rejected an e-reporting declaration the platform sent. */
+    case DeclarationRejected = 'declaration_rejected';
+
     public function translationKey(string $part): string
     {
         return sprintf('einvoicing.notification_problem.%s.%s', $this->value, $part);

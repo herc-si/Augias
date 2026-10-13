@@ -58,7 +58,11 @@ use function implode;
  */
 final readonly class ElectronicReportManager
 {
-    private const array ISSUED = [InvoiceStatus::Pending, InvoiceStatus::Overdue, InvoiceStatus::Paid];
+    /**
+     * Every invoice that was handed over: a credited one too — the sale was
+     * made, and the credit note that took it back is reported on its own.
+     */
+    public const array ISSUED = [InvoiceStatus::Pending, InvoiceStatus::Overdue, InvoiceStatus::Paid, InvoiceStatus::Credited];
 
     public function __construct(
         private ElectronicInvoiceProviderSettingRepository $settings,

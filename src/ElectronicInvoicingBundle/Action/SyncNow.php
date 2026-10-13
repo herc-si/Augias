@@ -70,6 +70,7 @@ final class SyncNow extends AbstractController
         $this->addFlash($result['failed'] > 0 ? 'warning' : 'success', $this->translator->trans('einvoicing.sync.done', [
             '%received%' => $result['received'],
             '%refreshed%' => $result['refreshed'],
+            '%reported%' => $result['reported'],
             '%failed%' => $result['failed'],
         ]));
 

@@ -48,6 +48,8 @@
 
     {% if invoice %}
         {{ email.button('einvoicing.notification_problem.view_invoice'|trans({}, 'email'), (creditNote is defined and creditNote is not null ? url('_credit_notes_view', {'id': creditNote.id}) : url('_invoices_view', {'id': invoice.id})), 'primary', 'large') }}
+    {% elseif problem.value in ['report_failed', 'declaration_rejected'] %}
+        {{ email.button('einvoicing.notification_problem.view_ereporting'|trans({}, 'email'), url('_einvoicing_ereporting'), 'primary', 'large') }}
     {% else %}
         {{ email.button('einvoicing.notification_problem.view_settings'|trans({}, 'email'), url('_einvoicing_providers'), 'primary', 'large') }}
     {% endif %}

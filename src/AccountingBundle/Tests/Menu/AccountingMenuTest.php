@@ -39,14 +39,17 @@ final class AccountingMenuTest extends KernelTestCase
 {
     use DoctrineTestTrait;
 
-    public function testWithoutARegimeTheSectionIsASingleLink(): void
+    /**
+     * No books until a regime is chosen, but e-reporting runs regardless.
+     */
+    public function testWithoutARegimeTheSectionHoldsTheOverviewAndEReporting(): void
     {
         $this->selectCompany();
 
-        $accounting = $this->accounting();
-
-        self::assertFalse($accounting->hasChildren(), 'Nothing to list until a regime is chosen.');
-        self::assertNotNull($accounting->getUri());
+        self::assertSame(
+            ['accounting.menu.overview', 'accounting.menu.ereporting'],
+            array_keys($this->accounting()->getChildren()),
+        );
     }
 
     public function testAServiceMicroEntrepriseGetsTheRevenueBookOnly(): void
@@ -65,6 +68,8 @@ final class AccountingMenuTest extends KernelTestCase
                 // Statements imported by hand, matched to the payments.
                 'accounting.menu.bank',
                 'accounting.menu.declarations',
+                // A declaration too, sent by the platform.
+                'accounting.menu.ereporting',
             ],
             array_keys($this->accounting()->getChildren()),
         );

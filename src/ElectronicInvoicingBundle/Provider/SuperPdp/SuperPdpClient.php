@@ -240,6 +240,44 @@ final readonly class SuperPdpClient
     }
 
     /**
+     * The e-reporting declarations SUPER PDP built from what it was given and
+     * sent to the tax administration, as the seller, oldest first.
+     *
+     * @return array<string, mixed> `data` (list) and `has_more`
+     *
+     * @throws SuperPdpApiException
+     */
+    public function listEreportings(string $accessToken, ?int $startingAfterId = null): array
+    {
+        return $this->request('GET', '/v1.beta/ereportings', [
+            'auth_bearer' => $accessToken,
+            'query' => array_filter([
+                'role_code' => 'SE',
+                'order' => 'asc',
+                'limit' => 1000,
+                'starting_after_id' => $startingAfterId,
+            ], static fn (mixed $value): bool => null !== $value),
+        ]);
+    }
+
+    /**
+     * What the next declaration of this kind will carry, for the period that
+     * holds $date: the XML report as it would go out, or an empty string when
+     * there is nothing in it yet.
+     *
+     * @param 'transaction'|'payment' $kind
+     *
+     * @throws SuperPdpApiException
+     */
+    public function previewEreporting(string $accessToken, string $kind, DateTimeImmutable $date): string
+    {
+        return $this->requestRaw('GET', '/v1.beta/ereportings/preview', [
+            'auth_bearer' => $accessToken,
+            'query' => ['kind' => $kind, 'role_code' => 'SE', 'date' => $date->format('Y-m-d')],
+        ])['content'];
+    }
+
+    /**
      * The e-invoicing addresses registered for the company behind the
      * credentials, e.g. "0225:315143296_92568".
      *
