@@ -14,7 +14,7 @@ client:
         private_customer_needs_books: 'Your company is VAT-registered: to record the payments of a private customer it must keep its books in Augias, or the application would act as an uncertified cash register (French tax code, art. 286). Choose your accounting regime first, in the Accounting menu.'
         role_required: 'A client record needs to be at least a client or a supplier.'
         tax_identifiers:
-            siret_required: 'Electronic invoicing is enabled: please add this client''s SIRET number to their tax identifiers.'
+            siret_required: 'A business client has a SIRET number: enter it, or say the client is a private individual.'
         unique_name: 'A client with the name "{{ value }}" already exists.'
 core:
     constraint:

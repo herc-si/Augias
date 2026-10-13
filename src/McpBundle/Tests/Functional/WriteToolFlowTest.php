@@ -65,6 +65,7 @@ final class WriteToolFlowTest extends KernelTestCase
         $result = $tool->createResource('client', [
             'name' => 'Acme Corp',
             'currency_code' => 'USD',
+            'siret' => '12345678900012',
         ]);
 
         self::assertSame('Acme Corp', $result['name']);
@@ -90,6 +91,7 @@ final class WriteToolFlowTest extends KernelTestCase
         $result = $tool->createResource('client', [
             'name' => 'Spoofy',
             'currency_code' => 'EUR',
+            'siret' => '12345678900012',
             'company' => $forgedCompanyId,
             'company_id' => $forgedCompanyId,
         ]);
@@ -101,6 +103,25 @@ final class WriteToolFlowTest extends KernelTestCase
             $client->getCompany()->getId()->toRfc4122(),
             'Client must be bound to the active company, not the one supplied in input.',
         );
+    }
+
+    /**
+     * A business client has a SIRET: the agent is told so, and can say the
+     * client is an individual instead.
+     */
+    public function testCreateClientAsksForASiretOrAnIndividual(): void
+    {
+        $this->setActiveScopes([McpScope::Write->value]);
+
+        $tool = self::getContainer()->get(ResourceWriteTools::class);
+        self::assertInstanceOf(ResourceWriteTools::class, $tool);
+
+        try {
+            $tool->createResource('client', ['name' => 'Nameless Ltd', 'currency_code' => 'EUR']);
+            self::fail('A business without a SIRET was created.');
+        } catch (ToolCallException $exception) {
+            self::assertStringContainsString('taxIdentifiers', $exception->getMessage());
+        }
     }
 
     public function testCreateResourceRejectsUnknownResource(): void
@@ -121,7 +142,7 @@ final class WriteToolFlowTest extends KernelTestCase
     {
         $this->setActiveScopes([McpScope::Write->value]);
 
-        $client = ClientFactory::createOne(['company' => $this->company, 'name' => 'Before']);
+        $client = ClientFactory::createOne(['company' => $this->company, 'name' => 'Before', 'siret' => '12345678900012']);
 
         $tool = self::getContainer()->get(ResourceWriteTools::class);
         self::assertInstanceOf(ResourceWriteTools::class, $tool);

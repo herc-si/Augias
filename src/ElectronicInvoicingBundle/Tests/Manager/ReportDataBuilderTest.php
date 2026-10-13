@@ -47,14 +47,19 @@ final class ReportDataBuilderTest extends KernelTestCase
 {
     use EnsureApplicationInstalled;
 
-    public function testAClientWithoutAFrenchNumberOrAVatNumberIsAPrivateIndividual(): void
+    /**
+     * The box on the client decides, not the identifiers: a business abroad
+     * has none, and an individual's record may keep the SIRET it had as a
+     * business.
+     */
+    public function testAPrivateIndividualIsTheBoxTickedOnTheClient(): void
     {
         $builder = $this->builder();
-        $individual = ClientFactory::createOne(['company' => $this->company]);
-        $business = ClientFactory::createOne(['company' => $this->company])->setSiren('123456789');
+        $individual = ClientFactory::createOne(['company' => $this->company, 'isCompany' => false])->setSiret('12345678900012');
+        $businessAbroad = ClientFactory::createOne(['company' => $this->company, 'isCompany' => true]);
 
         self::assertTrue($builder->isPrivateIndividual($individual));
-        self::assertFalse($builder->isPrivateIndividual($business));
+        self::assertFalse($builder->isPrivateIndividual($businessAbroad));
     }
 
     /**

@@ -97,7 +97,9 @@ final class InvoiceTypeTest extends FormTestCase
 
         $formData = [
             'clientMode' => 'new',
+            'newClientIsCompany' => '1',
             'newClientName' => 'New Client',
+            'newClientSiret' => '12345678900012',
             'newContactFirstName' => 'John',
             'newContactLastName' => 'Doe',
             'newContactEmail' => 'john@example.com',
@@ -117,6 +119,7 @@ final class InvoiceTypeTest extends FormTestCase
         $dto = new InvoiceFormDTO();
         $dto->clientMode = InvoiceClientMode::NewClient;
         $dto->newClientName = 'New Client';
+        $dto->newClientSiret = '12345678900012';
         $dto->newContactFirstName = 'John';
         $dto->newContactLastName = 'Doe';
         $dto->newContactEmail = 'john@example.com';

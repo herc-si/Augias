@@ -209,6 +209,11 @@ final readonly class InvoiceFormManager
 
         $client = new Client();
         $client->setName($dto->newClientName);
+        $client->setIsCompany($dto->newClientIsCompany);
+
+        if ($dto->newClientIsCompany) {
+            $client->setSiret($dto->newClientSiret);
+        }
 
         // Set currency from system config
         $currency = $this->systemConfig->getCurrency();

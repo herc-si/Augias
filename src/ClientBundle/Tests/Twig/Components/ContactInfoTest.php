@@ -26,7 +26,7 @@ final class ContactInfoTest extends LiveComponentTest
 {
     public function testSaveExistingContactPersistsCustomFieldValue(): void
     {
-        $client = ClientFactory::createOne(['company' => $this->company]);
+        $client = ClientFactory::createOne(['company' => $this->company, 'siret' => '12345678900012']);
         $contact = ContactFactory::createOne([
             'firstName' => 'Jane',
             'lastName' => 'Smith',

@@ -44,6 +44,8 @@ final class ElectronicInvoiceEligibilityTest extends KernelTestCase
         yield 'SIREN alone' => [static fn (Client $client): Client => $client->setSiren('123456789'), true];
         yield 'VAT number alone' => [static fn (Client $client): Client => $client->setVatNumber('DE123456789'), false];
         yield 'nothing' => [static fn (Client $client): Client => $client, false];
+        // The box decides: an individual's record keeps the SIRET it had as a business.
+        yield 'individual with a SIRET' => [static fn (Client $client): Client => $client->setSiret('12345678900012')->setIsCompany(false), false];
     }
 
     /**

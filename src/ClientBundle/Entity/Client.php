@@ -42,7 +42,7 @@ use Augias\PaymentBundle\Entity\Payment;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\TaxBundle\Entity\TaxIdentifier;
 use Augias\TaxBundle\Form\Type\TaxIdentifierType;
-use Augias\TaxBundle\Validator\Constraints\RequiredFiscalIdentifierForElectronicInvoicing;
+use Augias\TaxBundle\Validator\Constraints\BusinessClientNeedsSiret;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -92,7 +92,7 @@ use function trim;
 #[ORM\AssociationOverrides([new ORM\AssociationOverride(name: 'company', inversedBy: 'clients')])]
 #[WithinPlanClientLimit]
 #[PrivateCustomerNeedsBooks]
-#[RequiredFiscalIdentifierForElectronicInvoicing]
+#[BusinessClientNeedsSiret]
 class Client implements Stringable, Journalled
 {
     final public const string TABLE_NAME = 'clients';
@@ -152,11 +152,10 @@ class Client implements Stringable, Journalled
      * registration) rather than a private individual. Chosen explicitly in
      * {@see ClientType} ("Type de client"), never guessed from the name: it
      * used to follow whether the name was left blank, and a record edited
-     * later flipped to a company. Drives
-     * {@see \Augias\TaxBundle\Validator\Constraints\RequiredFiscalIdentifierForElectronicInvoicingValidator}:
-     * an individual is never required to provide a SIRET, since the French
-     * mandatory e-invoicing rules this validates against only apply
-     * between VAT-registered businesses, not to private consumers.
+     * later flipped to a company. The one thing that decides how a sale is
+     * declared: e-reported for an individual, invoiced electronically for a
+     * business — which therefore needs a SIRET, see
+     * {@see \Augias\TaxBundle\Validator\Constraints\BusinessClientNeedsSiretValidator}.
      */
     #[ORM\Column(name: 'is_company', type: Types::BOOLEAN, options: ['default' => true])]
     #[Serialize\Groups(['client_api:read', 'client_api:write', 'searchable'])]
