@@ -19,6 +19,8 @@ use Augias\ElectronicInvoicingBundle\Form\Type\ElectronicInvoiceProviderSettingT
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceAccountMonitor;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceAccountCheckerInterface;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
+use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceVatSettingsException;
+use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceVatSettingsInterface;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpAccessTokens;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpConnector;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdpProvider;
@@ -64,10 +66,16 @@ final class ElectronicInvoiceProviderConfiguration extends AbstractController
      * Asked on demand, never on page load: it is a round trip to a third
      * party, and the page should not wait on it.
      *
-     * @var array{verification: string, companyName: ?string, companyNumber: ?string, environment: ?string, error: ?string, warnings: list<string>}|null
+     * @var array{verification: string, companyName: ?string, companyNumber: ?string, environment: ?string, error: ?string, warnings: list<string>, vatAlignable: bool}|null
      */
     #[LiveProp]
     public ?array $accountStatus = null;
+
+    /**
+     * Why the platform's VAT settings could not be set, when they could not.
+     */
+    #[LiveProp]
+    public ?string $vatAlignmentError = null;
 
     public function __construct(
         private readonly ElectronicInvoiceProviderSettingRepository $repository,
@@ -137,6 +145,31 @@ final class ElectronicInvoiceProviderConfiguration extends AbstractController
         // invoicing on or off.
         $this->entityManager->flush();
         $this->accountStatus = $status->toArray();
+    }
+
+    /**
+     * Sets the platform's VAT settings to Augias's, then asks again so the
+     * warnings reflect what the platform now holds.
+     */
+    #[LiveAction]
+    public function alignVatSettings(): void
+    {
+        $provider = $this->providers->get($this->providerSetting()->getProvider());
+
+        if (! $provider instanceof ElectronicInvoiceVatSettingsInterface) {
+            return;
+        }
+
+        try {
+            $provider->alignVatSettings($this->providerSetting()->getSettings());
+        } catch (ElectronicInvoiceVatSettingsException $e) {
+            $this->vatAlignmentError = $e->getMessage();
+
+            return;
+        }
+
+        $this->vatAlignmentError = null;
+        $this->checkAccount();
     }
 
     #[ExposeInTemplate]

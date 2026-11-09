@@ -39,6 +39,11 @@ final readonly class ElectronicInvoiceAccountStatus
          * account, and must not switch electronic invoicing off.
          */
         public bool $answered = true,
+        /**
+         * Whether Augias can set the platform's VAT settings to its own,
+         * which the warnings say disagree.
+         */
+        public bool $vatAlignable = false,
     ) {
     }
 
@@ -62,7 +67,7 @@ final readonly class ElectronicInvoiceAccountStatus
     }
 
     /**
-     * @return array{verification: string, companyName: ?string, companyNumber: ?string, environment: ?string, error: ?string, warnings: list<string>}
+     * @return array{verification: string, companyName: ?string, companyNumber: ?string, environment: ?string, error: ?string, warnings: list<string>, vatAlignable: bool}
      */
     public function toArray(): array
     {
@@ -73,6 +78,7 @@ final readonly class ElectronicInvoiceAccountStatus
             'environment' => $this->environment,
             'error' => $this->error,
             'warnings' => $this->warnings,
+            'vatAlignable' => $this->vatAlignable,
         ];
     }
 }

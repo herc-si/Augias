@@ -357,6 +357,22 @@ final readonly class SuperPdpClient
     }
 
     /**
+     * Sets the company's VAT regime (which fixes its e-reporting schedule)
+     * and its option for VAT on debits.
+     *
+     * @return array<string, mixed>
+     *
+     * @throws SuperPdpApiException
+     */
+    public function updateVatSettings(string $accessToken, string $vatRegime, bool $vatOnDebits): array
+    {
+        return $this->request('PATCH', '/v1.beta/companies', [
+            'auth_bearer' => $accessToken,
+            'json' => ['vat_regime' => $vatRegime, 'has_vat_on_debits' => $vatOnDebits],
+        ]);
+    }
+
+    /**
      * Uploads a Factur-X invoice (or CII/UBL XML) for asynchronous processing.
      *
      * $processingRule is left null by default: SUPER PDP computes it (B2B, B2C,

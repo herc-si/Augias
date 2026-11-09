@@ -1622,6 +1622,10 @@ einvoicing:
             pending: 'Will be reported on the next run, within the hour.'
             view: 'See the reporting'
     account:
+        align:
+            button: 'Align at SUPER PDP'
+            help: "Gives SUPER PDP Augias's VAT regime and option for VAT on debits. The e-reporting schedule follows that regime."
+            unknown_regime: 'Augias cannot tell which VAT regime to declare: choose the VAT filing rhythm in accounting, or set the regime in your SUPER PDP account.'
         held: 'Saved, but the platform has not verified the company''s identity: electronic invoicing stays stopped until it does.'
         check: 'Check the account'
         environment:

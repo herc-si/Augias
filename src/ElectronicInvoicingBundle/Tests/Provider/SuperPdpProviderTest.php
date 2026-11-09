@@ -21,6 +21,7 @@ use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoiceProcessingStatus;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Augias\ElectronicInvoicingBundle\Enum\ResponseReason;
+use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceVatSettingsException;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApplication;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\TokenCipher;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdpProvider;
@@ -181,6 +182,8 @@ final class SuperPdpProviderTest extends KernelTestCase
         $config = self::getContainer()->get(SystemConfig::class);
         $config->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, '0');
         $config->set(SystemConfig::VAT_ON_DEBITS_CONFIG_PATH, '1');
+        $config->set(SystemConfig::VAT_PERIODICITY_CONFIG_PATH, '');
+        $config->set(SystemConfig::DECLARATION_PERIODICITY_CONFIG_PATH, '');
 
         $status = self::getContainer()->get(SuperPdpProvider::class)->checkAccount(['client_id' => 'id', 'client_secret' => 'secret']);
 
@@ -191,6 +194,68 @@ final class SuperPdpProviderTest extends KernelTestCase
             'einvoicing.account.warning.vat_on_debits',
             'einvoicing.account.warning.vat_regime_missing',
         ], $status->warnings);
+        // Not exempt and no VAT rhythm chosen: Augias cannot name the regime,
+        // and SUPER PDP holds none either.
+        self::assertFalse($status->vatAlignable);
+    }
+
+    /**
+     * Augias names the regime (exempt) and tells SUPER PDP, with its option
+     * for VAT on debits.
+     */
+    public function testAlignVatSettingsTellsSuperPdpAugiasRegime(): void
+    {
+        $requests = [];
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient(
+            static function (string $method, string $url, array $options) use (&$requests): MockResponse {
+                $requests[] = [$method, $url, $options['body'] ?? null];
+
+                return new MockResponse((string) json_encode(match (true) {
+                    str_contains($url, '/oauth2/token') => ['access_token' => 'a-token'],
+                    str_contains($url, '/oauth2_sessions/me') => ['company_verification_status' => 'verified'],
+                    default => ['vat_regime' => 'monthly', 'has_vat_on_debits' => false],
+                }));
+            },
+        ));
+
+        $config = self::getContainer()->get(SystemConfig::class);
+        $config->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, '1');
+        $config->set(SystemConfig::VAT_ON_DEBITS_CONFIG_PATH, '0');
+
+        $provider = self::getContainer()->get(SuperPdpProvider::class);
+        $credentials = ['client_id' => 'id', 'client_secret' => 'secret'];
+
+        $status = $provider->checkAccount($credentials);
+        self::assertSame(['einvoicing.account.warning.vat_regime_mismatch'], $status->warnings);
+        self::assertTrue($status->vatAlignable);
+
+        $provider->alignVatSettings($credentials);
+
+        $patch = array_values(array_filter($requests, static fn (array $request): bool => 'PATCH' === $request[0]));
+        self::assertCount(1, $patch);
+        self::assertStringEndsWith('/v1.beta/companies', $patch[0][1]);
+        self::assertSame(['vat_regime' => 'vat_exemption', 'has_vat_on_debits' => false], json_decode((string) $patch[0][2], true));
+    }
+
+    /**
+     * Neither Augias nor SUPER PDP knows the regime: nothing is sent.
+     */
+    public function testAlignVatSettingsRefusesWithoutARegime(): void
+    {
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([
+            static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token'])),
+            static fn (): MockResponse => new MockResponse((string) json_encode(['vat_regime' => '', 'has_vat_on_debits' => false])),
+        ]));
+
+        $config = self::getContainer()->get(SystemConfig::class);
+        $config->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, '0');
+        $config->set(SystemConfig::VAT_PERIODICITY_CONFIG_PATH, '');
+        $config->set(SystemConfig::DECLARATION_PERIODICITY_CONFIG_PATH, '');
+
+        $this->expectException(ElectronicInvoiceVatSettingsException::class);
+        $this->expectExceptionMessage('einvoicing.account.align.unknown_regime');
+
+        self::getContainer()->get(SuperPdpProvider::class)->alignVatSettings(['client_id' => 'id', 'client_secret' => 'secret']);
     }
 
     /**

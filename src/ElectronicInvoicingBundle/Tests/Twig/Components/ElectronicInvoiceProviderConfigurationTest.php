@@ -18,10 +18,13 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApplication;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\ElectronicInvoicingBundle\Twig\Components\ElectronicInvoiceProviderConfiguration;
+use Augias\SettingsBundle\SystemConfig;
 use PHPUnit\Framework\Attributes\CoversClass;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
+use function json_decode;
 use function json_encode;
+use function str_contains;
 
 #[CoversClass(ElectronicInvoiceProviderConfiguration::class)]
 final class ElectronicInvoiceProviderConfigurationTest extends LiveComponentTest
@@ -68,6 +71,58 @@ final class ElectronicInvoiceProviderConfigurationTest extends LiveComponentTest
 
         self::assertInstanceOf(ElectronicInvoiceProviderSetting::class, $saved);
         self::assertSame('typed-secret', $saved->getSettings()['client_secret'] ?? null);
+    }
+
+    /**
+     * The regime SUPER PDP holds disagrees with Augias's: the button sets it,
+     * and the warning goes once SUPER PDP holds the right one.
+     */
+    public function testTheVatSettingsAreAlignedAtSuperPdp(): void
+    {
+        $user = $this->getUser();
+        $setting = new ElectronicInvoiceProviderSetting();
+        $setting->setCompany($user->getCompanies()->first())
+            ->setName('SUPERPDP')
+            ->setProvider('super_pdp')
+            ->setSettings(['client_id' => 'the-id', 'client_secret' => 'the-secret'])
+            ->setActive(true);
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($setting);
+        $entityManager->flush();
+
+        $config = self::getContainer()->get(SystemConfig::class);
+        $config->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, '1');
+        $config->set(SystemConfig::VAT_ON_DEBITS_CONFIG_PATH, '0');
+
+        $regime = 'monthly';
+        self::getContainer()->set(SuperPdpClient::class, new SuperPdpClient(new MockHttpClient(
+            static function (string $method, string $url, array $options) use (&$regime): MockResponse {
+                if ('PATCH' === $method) {
+                    $regime = json_decode((string) $options['body'], true)['vat_regime'];
+                }
+
+                return new MockResponse((string) json_encode(match (true) {
+                    str_contains($url, '/oauth2/token') => ['access_token' => 'a-token'],
+                    str_contains($url, '/oauth2_sessions/me') => ['company_verification_status' => 'verified'],
+                    default => ['formal_name' => 'Burger Queen', 'vat_regime' => $regime, 'has_vat_on_debits' => false],
+                }));
+            },
+        )));
+
+        $component = $this->createLiveComponent(
+            name: ElectronicInvoiceProviderConfiguration::class,
+            data: ['setting' => (string) $setting->getId(), 'provider' => 'super_pdp'],
+            client: $this->client,
+        )->actingAs($user);
+
+        $component->call('checkAccount');
+        self::assertStringContainsString('alignVatSettings', $component->render()->toString());
+
+        $component->call('alignVatSettings');
+
+        self::assertSame('vat_exemption', $regime);
+        self::assertStringNotContainsString('alignVatSettings', $component->render()->toString());
     }
 
     /**

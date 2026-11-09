@@ -56,7 +56,7 @@ use function usort;
  * @see \Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdpProviderTest
  */
 #[AsTaggedItem('super_pdp')]
-final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface, ElectronicInvoiceAccountCheckerInterface, ElectronicInvoiceResponderInterface, ElectronicReporterInterface, ElectronicDeclarationsInterface
+final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface, ElectronicInvoiceAccountCheckerInterface, ElectronicInvoiceResponderInterface, ElectronicReporterInterface, ElectronicDeclarationsInterface, ElectronicInvoiceVatSettingsInterface
 {
     /**
      * BT-8 values meaning the supplier's VAT falls due on the invoice date —
@@ -149,13 +149,52 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
             };
         }
 
+        $warnings = $this->vatSettingWarnings($company);
+
         return new ElectronicInvoiceAccountStatus(
             $verification,
             is_string($company['formal_name'] ?? null) ? $company['formal_name'] : null,
             is_string($company['number'] ?? null) ? $company['number'] : null,
             is_string($company['env'] ?? null) ? $company['env'] : null,
-            warnings: $this->vatSettingWarnings($company),
+            warnings: $warnings,
+            vatAlignable: [] !== $warnings && '' !== $this->vatRegimeToSet($company),
         );
+    }
+
+    /**
+     * Tells SUPER PDP the VAT regime Augias reads off its settings — or keeps
+     * the one SUPER PDP holds when Augias cannot name it — and the option for
+     * VAT on debits.
+     *
+     * @param array<string, mixed> $config
+     */
+    public function alignVatSettings(array $config): void
+    {
+        try {
+            $accessToken = $this->tokens->accessToken($config);
+            $regime = $this->vatRegimeToSet($this->client->getCompany($accessToken));
+
+            if ('' === $regime) {
+                throw new ElectronicInvoiceVatSettingsException('einvoicing.account.align.unknown_regime');
+            }
+
+            $this->client->updateVatSettings($accessToken, $regime, $this->systemConfig->isVatOnDebits());
+        } catch (SuperPdpApiException $e) {
+            $this->logger->warning('Could not set the VAT settings at SUPER PDP.', ['exception' => $e]);
+
+            throw new ElectronicInvoiceVatSettingsException($e->getMessage(), previous: $e);
+        }
+    }
+
+    /**
+     * The regime to give SUPER PDP: Augias's when it can tell it, otherwise
+     * the one already there. Empty when neither knows.
+     *
+     * @param array<string, mixed> $company
+     */
+    private function vatRegimeToSet(array $company): string
+    {
+        return $this->expectedVatRegime() ?? (is_string($company['vat_regime'] ?? null) ? $company['vat_regime'] : '');
     }
 
     /**

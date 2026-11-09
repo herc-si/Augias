@@ -1622,6 +1622,10 @@ einvoicing:
             pending: "Sera déclarée lors du prochain passage, dans l'heure."
             view: 'Voir le suivi'
     account:
+        align:
+            button: 'Aligner chez SUPER PDP'
+            help: "Donne à SUPER PDP le régime de TVA et l'option sur les débits d'Augias. Le calendrier de l'e-reporting suit ce régime."
+            unknown_regime: "Augias ne sait pas quel régime de TVA déclarer : choisissez le rythme de déclaration de TVA dans la comptabilité, ou renseignez le régime dans votre espace SUPER PDP."
         held: "Enregistré, mais la plateforme n'a pas vérifié l'identité de l'entreprise : la facturation électronique reste à l'arrêt jusqu'à ce qu'elle le fasse."
         check: 'Vérifier le compte'
         environment:
