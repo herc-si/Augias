@@ -58,6 +58,7 @@ final class InvoiceCreateTest extends KernelTestCase
             due: '2026-05-01',
             terms: 'Net 30',
             notes: 'Thanks for your business',
+            subject: 'Website redesign',
         );
 
         self::assertArrayHasKey('id', $result);
@@ -67,6 +68,7 @@ final class InvoiceCreateTest extends KernelTestCase
         self::assertSame('105000', $result['total']);
         self::assertSame('Net 30', $result['terms']);
         self::assertSame('Thanks for your business', $result['notes']);
+        self::assertSame('Website redesign', $result['subject']);
 
         $invoice = self::getContainer()->get('doctrine')->getRepository(Invoice::class)->find(Ulid::fromString($result['id']));
         self::assertInstanceOf(Invoice::class, $invoice);
@@ -225,12 +227,14 @@ final class InvoiceCreateTest extends KernelTestCase
             [['description' => 'Estimate', 'price' => 25000, 'qty' => 2]],
             due: '2026-06-01',
             notes: 'Rough estimate',
+            subject: 'Kitchen fitting',
         );
 
         self::assertArrayHasKey('id', $result);
         self::assertArrayHasKey('quote_number', $result);
         self::assertSame('50000', $result['total']);
         self::assertSame('Rough estimate', $result['notes']);
+        self::assertSame('Kitchen fitting', $result['subject']);
 
         $quote = self::getContainer()->get('doctrine')->getRepository(Quote::class)->find(Ulid::fromString($result['id']));
         self::assertInstanceOf(Quote::class, $quote);

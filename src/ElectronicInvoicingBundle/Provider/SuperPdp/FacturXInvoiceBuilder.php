@@ -169,6 +169,12 @@ final readonly class FacturXInvoiceBuilder
 
         $this->addMandatoryFrenchNotes($documentBuilder);
 
+        // The subject printed above the lines travels as a plain document
+        // note (BT-22), without a subject code, like the mention on debits.
+        if ($invoice->getSubject() !== null) {
+            $documentBuilder->addDocumentNote('Objet : ' . $invoice->getSubject());
+        }
+
         // The mention the law asks of a document issued under the option for
         // VAT on debits, in the data as well as on the page.
         if ($invoice->isVatOnDebits()) {

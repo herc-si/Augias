@@ -74,6 +74,7 @@ final readonly class QuoteWriteTools
      * @param int|float|null                  $discount_value Numeric discount value; required if discount_type is set
      * @param string|null                     $terms          Optional terms text
      * @param string|null                     $notes          Optional notes text
+     * @param string|null                     $subject        Optional subject (what the document is about), printed above the lines
      * @param list<string>                    $contact_ids    Client contact ULIDs to attach (optional)
      * @param string|null                     $quote_id       Explicit quote number (generated if omitted)
      * @param list<array<string, mixed>>      $invoice_taxes  Invoice-level taxes (withholding/surcharge/informational):
@@ -81,7 +82,7 @@ final readonly class QuoteWriteTools
      *
      * @return array<string, mixed>
      */
-    #[McpTool(name: 'create_quote', description: 'Create a new quote for a client, with line items, optional discount, due date, contacts, and invoice-level taxes.')]
+    #[McpTool(name: 'create_quote', description: 'Create a new quote for a client, with line items, optional subject, discount, due date, contacts, and invoice-level taxes.')]
     #[McpScopeRequired(McpScope::Write)]
     public function createQuote(
         string $client_id,
@@ -91,6 +92,7 @@ final readonly class QuoteWriteTools
         int | float | null $discount_value = null,
         ?string $terms = null,
         ?string $notes = null,
+        ?string $subject = null,
         array $contact_ids = [],
         ?string $quote_id = null,
         array $invoice_taxes = [],
@@ -127,6 +129,8 @@ final readonly class QuoteWriteTools
         if ($notes !== null) {
             $quote->setNotes($notes);
         }
+
+        $quote->setSubject($subject);
 
         foreach ($contact_ids as $index => $contactId) {
             if (! \is_string($contactId)) {
