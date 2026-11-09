@@ -18,9 +18,11 @@
             {{ 'saas.plan.free_plan_taken'|trans }}
             {% if plans|length == 0 %}
                 <br>{{ 'saas.plan.free_plan_taken_none_on_sale'|trans }}
-                <a href="https://herc-si.fr/contact" target="_blank" rel="external noreferrer noopener" class="alert-link">
-                    {{ 'saas.action.contact_support_short'|trans }}
-                </a>
+                {% if saas_support_url %}
+                    <a href="{{ saas_support_url }}" target="_blank" rel="external noreferrer noopener" class="alert-link">
+                        {{ 'saas.action.contact_support_short'|trans }}
+                    </a>
+                {% endif %}
             {% endif %}
         </div>
     </div>
