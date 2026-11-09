@@ -409,6 +409,11 @@ jobs:
       contents: write
       packages: write
     runs-on: ubuntu-latest
+    # The Pages branch also takes the documentation (docs.yml): one writer
+    # at a time.
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
     steps:
       - name: Harden the runner
         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
