@@ -7,7 +7,7 @@ on:
       - '.github/workflows/docs.yml'
   push:
     branches:
-      - 3.1.x
+      - 4.0.x
     paths:
       - 'docs/**'
       - '.github/workflows/docs.yml'
@@ -55,3 +55,71 @@ jobs:
           path: docs/build
           retention-days: 7
           if-no-files-found: error
+
+  deploy:
+    name: Publish to GitHub Pages
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+
+    # The Pages branch also takes the Helm charts (release.yml): one writer
+    # at a time.
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: Download build artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: docs-build
+          path: /tmp/docs-build
+
+      - name: Publish under /docs/ on gh-pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          git init -q site
+          cd site
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${REPOSITORY}.git"
+
+          # Same branch as the Helm charts (release.yml, under /charts/):
+          # only /docs/ is replaced, the rest is kept.
+          if git ls-remote --exit-code --heads origin gh-pages >/dev/null; then
+            git fetch -q --depth 1 origin gh-pages
+            git checkout -q -b gh-pages FETCH_HEAD
+          else
+            git checkout -q --orphan gh-pages
+          fi
+
+          rm -rf docs
+          cp -R /tmp/docs-build docs
+
+          echo "augias.herc-si.fr" > CNAME
+          # Pages would run Jekyll otherwise, which drops Docusaurus' _-prefixed files.
+          touch .nojekyll
+
+          # The bare domain leads to the documentation until a home page exists.
+          if [ ! -f index.html ]; then
+            printf '%s\n' '<!doctype html><meta charset="utf-8"><title>Augias</title><meta http-equiv="refresh" content="0; url=/docs/"><link rel="canonical" href="/docs/"><a href="/docs/">Augias documentation</a>' > index.html
+          fi
+
+          git add -A docs CNAME .nojekyll index.html
+          if git diff --cached --quiet; then
+            echo "Nothing changed in the documentation."
+            exit 0
+          fi
+
+          git commit -q -m "docs: publish ${GITHUB_SHA::9}"
+          git push -q origin gh-pages
