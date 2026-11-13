@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://augias.herc-si.fr/docs/sitemap.xml

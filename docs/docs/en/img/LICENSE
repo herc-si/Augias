@@ -1,0 +1,24 @@
+Augias logo and icon
+====================
+
+Files: logo.svg, icon.svg, logo.png, and every raster derived from them
+(public/favicon.ico, public/apple-touch-icon.png, docs/static/img/logo.png,
+docs/static/img/favicon.ico, docs/static/img/augias-social-card.png), plus the
+base64 copy embedded in GlobalExtension::DEFAULT_LOGO.
+
+These files are licensed under the Creative Commons Attribution 4.0
+International licence (CC BY 4.0). You may copy, modify and distribute them,
+including commercially, provided you give appropriate credit and indicate
+whether changes were made.
+
+    https://creativecommons.org/licenses/by/4.0/
+
+Note that this is deliberately *not* the MIT licence covering the source code,
+and deliberately not CC0. A mark exists to say who made something, so a licence
+that lets it travel with no attribution lets anyone present their own work as
+this project's. CC BY keeps the files free while requiring that the credit stay
+attached.
+
+The mark is original to Augias. It does not derive from the SolidInvoice logo,
+which remains the property of its author — the MIT licence covering the source
+code does not extend to that project's trademarks or brand assets.
