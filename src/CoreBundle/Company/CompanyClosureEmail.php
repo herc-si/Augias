@@ -24,6 +24,7 @@ final class CompanyClosureEmail extends TemplatedEmail
         string $companyName,
         ?DateTimeImmutable $closesAt,
         ?string $exportUrl,
+        ?string $archiveUrl,
         string $subject,
     ) {
         parent::__construct();
@@ -37,6 +38,7 @@ final class CompanyClosureEmail extends TemplatedEmail
             'companyName' => $companyName,
             'closesAt' => $closesAt,
             'exportUrl' => $exportUrl,
+            'archiveUrl' => $archiveUrl,
         ]);
     }
 }

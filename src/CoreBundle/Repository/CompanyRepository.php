@@ -90,6 +90,17 @@ class CompanyRepository extends EntityRepository
     }
 
     /**
+     * @return list<Company> every company scheduled for closure, whenever that is
+     */
+    public function findClosing(): array
+    {
+        return $this->createQueryBuilder('c')
+            ->andWhere('c.closesAt IS NOT NULL')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @return list<Company> the companies scheduled for closure on or before $date
      */
     public function findClosingBefore(DateTimeImmutable $date): array

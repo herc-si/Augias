@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\CoreBundle\Company;
 
 use Augias\CoreBundle\Entity\Company;
+use Augias\CoreBundle\Entity\ExportJob;
 use Augias\UserBundle\Entity\Membership;
 use Augias\UserBundle\Enum\CompanyPermission;
 use Symfony\Component\Mailer\MailerInterface;
@@ -26,7 +27,8 @@ use function array_values;
 
 /**
  * Writes to the people who can act on a company's closure — its owner and
- * administrators — when it is asked for, a week before, and once it is done.
+ * administrators — when it is asked for, when its archive is ready, a week
+ * before, and once it is done.
  *
  * The banner inside the application only reaches someone who signs in; a
  * company closing unnoticed would lose documents its owner has to keep.
@@ -62,8 +64,9 @@ final readonly class CompanyClosureNotifier
 
     /**
      * @param list<string>|null $recipients who to write to; read off the company when null — not possible once it is deleted
+     * @param ExportJob|null    $archive    the closure archive, once it can be downloaded: the email then links straight to it
      */
-    public function notify(Company $company, ClosureNotice $notice, ?array $recipients = null): void
+    public function notify(Company $company, ClosureNotice $notice, ?array $recipients = null, ?ExportJob $archive = null): void
     {
         $recipients ??= $this->recipients($company);
 
@@ -75,12 +78,17 @@ final readonly class CompanyClosureNotifier
         $reason = $company->getClosureReason() ?? ClosureReason::Requested;
         $exportUrl = ClosureNotice::Deleted === $notice ? null : $this->urls->generate('_export_list', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
+        $archiveUrl = ClosureNotice::Deleted === $notice || ! $archive instanceof ExportJob
+            ? null
+            : $this->urls->generate('_export_download', ['id' => $archive->getId()->toBase58()], UrlGeneratorInterface::ABSOLUTE_URL);
+
         $email = new CompanyClosureEmail(
             $notice,
             $reason,
             $name,
             $company->getClosesAt(),
             $exportUrl,
+            $archiveUrl,
             $this->translator->trans($reason->emailKeys() . '.' . $notice->value . '.subject', [
                 '%company%' => $name,
                 '%date%' => $company->getClosesAt()?->format('d/m/Y') ?? '',

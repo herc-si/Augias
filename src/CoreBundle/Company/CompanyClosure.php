@@ -25,14 +25,15 @@ use function sprintf;
  * carried out.
  *
  * The owner asks; the company then stays for GRACE_DAYS, read-only, so its
- * data can be taken out and a mistake undone. After that it is deleted with
+ * data can be taken out and a mistake undone — an archive of it is made and
+ * sent to the people who run it (see ClosureArchive). After that it is deleted with
  * everything in it, issued invoices included. Those are otherwise kept
  * whatever happens (see IssuedDocumentRetentionListener); the one exception
  * is this, which the guard learns from CompanyPurgeContext.
  *
  * @see \Augias\CoreBundle\Tests\Company\CompanyClosureTest
  */
-final class CompanyClosure
+final readonly class CompanyClosure
 {
     public const int GRACE_DAYS = 30;
 
@@ -40,11 +41,12 @@ final class CompanyClosure
     public const int REMINDER_DAYS = 7;
 
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly CompanyRepository $companies,
-        private readonly ClockInterface $clock,
-        private readonly ?CompanyClosureNotifier $notifier = null,
-        private readonly CompanyPurgeContext $context = new CompanyPurgeContext(),
+        private EntityManagerInterface $entityManager,
+        private CompanyRepository $companies,
+        private ClockInterface $clock,
+        private ?CompanyClosureNotifier $notifier = null,
+        private CompanyPurgeContext $context = new CompanyPurgeContext(),
+        private ?ClosureArchive $archive = null,
     ) {
     }
 
@@ -66,6 +68,37 @@ final class CompanyClosure
         $this->entityManager->flush();
 
         $this->notifier?->notify($company, ClosureNotice::Scheduled);
+        $this->archive?->prepare($company);
+    }
+
+    /**
+     * Has the archive made for every closing company still without one —
+     * closures scheduled before archives existed, exports that failed.
+     *
+     * @return list<string> the companies whose date has passed and that stay until their archive is there
+     */
+    public function prepareArchives(): array
+    {
+        if (! $this->archive instanceof ClosureArchive) {
+            return [];
+        }
+
+        $now = DateTimeImmutable::createFromInterface($this->clock->now());
+        $waiting = [];
+
+        foreach ($this->companies->findClosing() as $company) {
+            if ($this->archive->isSettled($company)) {
+                continue;
+            }
+
+            $this->archive->prepare($company);
+
+            if ($company->getClosesAt() <= $now) {
+                $waiting[] = (string) $company->getName();
+            }
+        }
+
+        return $waiting;
     }
 
     public function cancel(Company $company): void
@@ -89,7 +122,7 @@ final class CompanyClosure
                 continue;
             }
 
-            $this->notifier?->notify($company, ClosureNotice::Reminder);
+            $this->notifier?->notify($company, ClosureNotice::Reminder, archive: $this->archive?->ready($company));
             $company->markClosureReminded($now);
             ++$reminded;
         }
@@ -100,7 +133,9 @@ final class CompanyClosure
     }
 
     /**
-     * Deletes every company whose closure date has passed.
+     * Deletes every company whose closure date has passed — once its archive
+     * exists. The invoices go with the company and nobody else keeps them:
+     * one whose archive could not be made waits, and prepareArchives() says so.
      *
      * @return list<string> the names of the companies deleted
      */
@@ -109,6 +144,10 @@ final class CompanyClosure
         $deleted = [];
 
         foreach ($this->companies->findClosingBefore(DateTimeImmutable::createFromInterface($this->clock->now())) as $company) {
+            if (false === $this->archive?->isSettled($company)) {
+                continue;
+            }
+
             $this->purge($company);
             $deleted[] = (string) $company->getName();
         }
@@ -133,8 +172,11 @@ final class CompanyClosure
         try {
             // Read before the memberships go with the company.
             $recipients = $this->notifier?->recipients($company) ?? [];
+            $companyId = $company->getId();
+            $this->archive?->record($company);
 
-            $this->context->during($company, fn () => $this->companies->deleteCompany($company->getId()));
+            $this->context->during($company, fn () => $this->companies->deleteCompany($companyId));
+            $this->archive?->removeFiles($companyId);
         } finally {
             if ($archivable) {
                 $filters->enable('archivable');
