@@ -8,12 +8,12 @@ description: Conditions générales d'utilisation et de vente du service héberg
 Dernière mise à jour : 5 octobre 2026
 
 :::warning À compléter avant publication
-Ce document est un projet rédigé à partir du fonctionnement réel de l'application. Les mentions **[À COMPLÉTER]** attendent des informations ou des décisions de HERC SI, et l'ensemble doit être relu par un juriste avant d'engager la société.
+Ce document est un projet rédigé à partir du fonctionnement réel de l'application. Les mentions **[À COMPLÉTER]** attendent des informations ou des décisions de HERC SI, et l'ensemble doit être relu par un juriste avant d'engager HERC SI.
 :::
 
 ## 1. Objet
 
-Les présentes conditions régissent l'accès au service hébergé Augias, exploité par HERC SI (ci-après « le Prestataire ») à l'adresse `augias.herc-si.fr`, et son utilisation par ses abonnés (ci-après « le Client »).
+Les présentes conditions régissent l'accès au service hébergé Augias, exploité par HERC SI (ci-après « le Prestataire ») à l'adresse `app.augias.herc-si.fr`, et son utilisation par ses abonnés (ci-après « le Client »).
 
 Augias est une application de facturation et de tenue comptable : gestion des clients et des contacts, devis, factures, factures récurrentes, avoirs, encaissements, taxes et remises, relances, pièces justificatives, ainsi qu'une API REST.
 

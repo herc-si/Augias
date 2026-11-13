@@ -66,6 +66,8 @@ Sous-traitants ultérieurs, au jour de cette mise à jour :
 | Infomaniak Network SA | hébergement de l'application et de la base, envoi des courriers électroniques (SMTP) | l'ensemble des données ; pour le SMTP, les destinataires et le contenu des messages envoyés | Suisse ou France |
 | Sentry | suivi des erreurs applicatives | messages d'erreur, trace d'exécution, version, adresse IP | **[À COMPLÉTER : préciser si l'instance européenne de Sentry est utilisée ; à défaut les données partent aux États-Unis et il faut le dire ici]** |
 | Stripe Payments Europe, Limited | encaissement des abonnements, par carte ou prélèvement SEPA | nom, adresse électronique et adresse de facturation du Client, moyen de paiement ; HERC SI ne reçoit ni les numéros de carte ni les coordonnées bancaires | Irlande ; **[À VÉRIFIER : transferts hors de l'Union prévus par l'accord de traitement des données de Stripe, et qualité de Stripe (sous-traitant ou responsable de traitement distinct) pour les données de paiement]** |
+| **[À COMPLÉTER : dénomination et siège de l'exploitant de SUPER PDP]** | plateforme agréée de facturation électronique : transmission et réception des factures électroniques, e-reporting, lorsque vous connectez votre compte | les factures et avoirs transmis ou reçus, avec l'identité et les coordonnées des parties qui y figurent | **[À COMPLÉTER]** |
+| Annuaire des entreprises (API de l'État, `recherche-entreprises.api.gouv.fr`) | recherche d'une entreprise pour préremplir une fiche client | le nom ou le numéro SIREN que vous saisissez dans la recherche | France |
 | Cloudflare | protection contre les inscriptions automatisées (Turnstile) | adresse IP et signaux techniques du navigateur, à l'inscription uniquement | réseau mondial |
 
 L'option `AUGIAS_SENTRY_SEND_DEFAULT_PII` reste désactivée : les rapports d'erreur n'emportent pas volontairement de données identifiantes. Une trace d'exécution peut néanmoins en contenir de façon incidente, ce que la durée de conservation courte des rapports limite.
@@ -144,17 +146,19 @@ Cette annexe vaut accord de sous-traitance entre le Client, responsable de trait
 
 **Catégories de personnes concernées.** Les clients, contacts, fournisseurs et collaborateurs du Client.
 
-**Instructions.** HERC SI ne traite les données que sur instruction documentée du Client, l'usage du service valant instruction. Si une instruction paraît constituer une violation du RGPD, HERC SI en informe le Client.
+**Catégories de données.** Celles que l'article 2 énumère au titre de la sous-traitance : identité et coordonnées, documents commerciaux et comptables, paiements, pièces justificatives. Le service n'est pas conçu pour des données sensibles au sens de l'article 9 du RGPD.
+
+**Instructions.** HERC SI ne traite les données que sur instruction documentée du Client, l'usage du service valant instruction. Si une instruction paraît constituer une violation du RGPD, HERC SI en informe le Client. Aucun transfert de données hors de l'Union européenne n'a lieu en dehors de ceux que l'article 4 décrit, sauf obligation légale dont HERC SI informerait le Client au préalable, si la loi le permet.
 
 **Confidentialité.** Les personnes autorisées à accéder aux données sont tenues à une obligation de confidentialité.
 
 **Sécurité.** HERC SI met en œuvre les mesures décrites à l'article 6.
 
-**Sous-traitance ultérieure.** Le Client autorise les sous-traitants énumérés à l'article 4. Tout ajout est notifié avant sa mise en œuvre et le Client peut s'y opposer, la résiliation étant alors ouverte sans frais.
+**Sous-traitance ultérieure.** Le Client autorise les sous-traitants énumérés à l'article 4. Tout ajout est notifié avant sa mise en œuvre et le Client peut s'y opposer, la résiliation étant alors ouverte sans frais. HERC SI impose à ses sous-traitants des obligations de protection des données équivalentes à celles de la présente annexe et demeure responsable envers le Client de leur exécution.
 
 **Assistance.** HERC SI assiste le Client, dans la mesure du possible, pour répondre aux demandes d'exercice de droits, pour la notification des violations de données et, le cas échéant, pour les analyses d'impact.
 
-**Violation de données.** HERC SI notifie au Client toute violation de données le concernant **dans les meilleurs délais après en avoir pris connaissance**, avec les éléments dont il dispose.
+**Violation de données.** HERC SI notifie au Client toute violation de données le concernant **dans les meilleurs délais après en avoir pris connaissance**, avec les éléments dont il dispose : nature de la violation, données et personnes concernées, conséquences probables, mesures prises ou proposées. Les éléments manquants sont communiqués à mesure qu'ils sont connus.
 
 **Sort des données.** Au terme du contrat, selon le choix du Client, les données lui sont restituées par l'export intégré ou supprimées, dans les délais prévus à l'article 5.
 
