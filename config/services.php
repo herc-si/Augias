@@ -33,6 +33,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('env(AUGIAS_INSTALLED)', null);
     $parameters->set('env(AUGIAS_APPLICATION_URL)', '');
     $parameters->set('env(AUGIAS_CUSTOM_DOMAIN_DNS_RECORD)', '');
+    $parameters->set('env(AUGIAS_SAAS_SUPPORT_URL)', '');
     // Hosts this deployment answers on for its own purposes. They are served
     // rather than refused as unknown, and no tenant may claim one as a custom
     // domain. Empty by default: a self-hosted install has none.
