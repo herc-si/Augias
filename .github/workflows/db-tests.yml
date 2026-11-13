@@ -23,7 +23,11 @@ jobs:
   migrations:
     name: DB (${{ matrix.db.name }} ${{ matrix.db.driver }} ${{ matrix.db.version }})
 
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-26.04 (ubuntu-latest since late October 2026) ships a libxml2
+    # whose HTML serialiser quotes attributes differently, so every HTML snapshot
+    # (DOMDocument::saveHTML) would differ from what the Docker images, still on
+    # libxml2 2.9, produce. Move together with the images.
+    runs-on: ubuntu-24.04
 
     strategy:
       matrix:
