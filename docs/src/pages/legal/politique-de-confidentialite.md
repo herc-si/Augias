@@ -77,7 +77,7 @@ Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel
 | Donnée | Durée |
 |---|---|
 | Compte et données de l'entreprise | toute la durée du contrat |
-| Données après la fin du contrat | **[À COMPLÉTER : délai de rétention, voir l'article 10 des conditions générales]**, pour vous permettre de les exporter, puis suppression en production |
+| Données après la fin du contrat | **quatre-vingt-dix jours** (article 10 des conditions générales), pour vous permettre de les exporter, puis suppression en production |
 | Sauvegardes | **[À COMPLÉTER : durée du cycle de rotation des sauvegardes]** ; une donnée supprimée en production disparaît des sauvegardes au terme de ce cycle |
 | Factures émises par HERC SI | dix ans, article L123-22 du code de commerce |
 | Journal des connexions au compte | **90 jours**, puis suppression automatique. Il est consultable depuis votre compte, et pour votre entreprise depuis la page des utilisateurs |
