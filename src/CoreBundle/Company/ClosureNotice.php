@@ -22,6 +22,9 @@ enum ClosureNotice: string
     /** Just asked for: when it goes, that it is read-only, what to do. */
     case Scheduled = 'scheduled';
 
+    /** Its archive is ready: the link to what has to be kept. */
+    case ArchiveReady = 'archive_ready';
+
     /** A week before: the last reminder to take the data out. */
     case Reminder = 'reminder';
 

@@ -42,6 +42,7 @@ use Augias\UserBundle\Entity\Membership;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Entity\UserInvitation;
 use Augias\UserBundle\Enum\CompanyRole;
+use Carbon\CarbonImmutable;
 use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -108,6 +109,14 @@ class Company implements Stringable, SubscribableInterface
      */
     #[ORM\Column(name: 'closure_reminded_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?DateTimeImmutable $closureRemindedAt = null;
+
+    /**
+     * When the closure in force was scheduled. The company has been read-only
+     * since, so an archive made after this moment holds everything; one left
+     * over from a closure that was called off does not.
+     */
+    #[ORM\Column(name: 'closure_scheduled_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $closureScheduledAt = null;
 
     /**
      * Asked for by the owner, or following the end of the subscription —
@@ -356,13 +365,14 @@ class Company implements Stringable, SubscribableInterface
         $this->closesAt = $closesAt;
         $this->closureRemindedAt = null;
         $this->closureReason = $reason;
+        $this->closureScheduledAt = CarbonImmutable::now();
 
         return $this;
     }
 
     public function getClosureReason(): ?ClosureReason
     {
-        return null === $this->closesAt ? null : $this->closureReason ?? ClosureReason::Requested;
+        return $this->closesAt instanceof DateTimeImmutable ? $this->closureReason ?? ClosureReason::Requested : null;
     }
 
     public function cancelClosure(): self
@@ -370,8 +380,14 @@ class Company implements Stringable, SubscribableInterface
         $this->closesAt = null;
         $this->closureRemindedAt = null;
         $this->closureReason = null;
+        $this->closureScheduledAt = null;
 
         return $this;
+    }
+
+    public function getClosureScheduledAt(): ?DateTimeImmutable
+    {
+        return $this->closureScheduledAt;
     }
 
     public function getClosureRemindedAt(): ?DateTimeImmutable

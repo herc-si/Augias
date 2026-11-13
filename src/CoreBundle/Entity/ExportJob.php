@@ -15,6 +15,7 @@ namespace Augias\CoreBundle\Entity;
 
 use Augias\CoreBundle\Export\Attribute\ExportIgnore;
 use Augias\CoreBundle\Export\Enum\ExportFormat;
+use Augias\CoreBundle\Export\Enum\ExportPurpose;
 use Augias\CoreBundle\Export\Enum\ExportStatus;
 use Augias\CoreBundle\Repository\ExportJobRepository;
 use Augias\CoreBundle\Traits\Entity\CompanyAware;
@@ -72,6 +73,19 @@ class ExportJob
     #[ORM\Column(name: 'failure_reason', type: Types::TEXT, nullable: true)]
     private ?string $failureReason = null;
 
+    /**
+     * Asked for by someone, or made because the company is closing.
+     */
+    #[ORM\Column(name: 'purpose', type: Types::STRING, length: 20, enumType: ExportPurpose::class, options: ['default' => 'requested'])]
+    private ExportPurpose $purpose = ExportPurpose::Requested;
+
+    /**
+     * When the archive was first taken — the trace that what a closing
+     * company has to keep did reach its people.
+     */
+    #[ORM\Column(name: 'downloaded_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $downloadedAt = null;
+
     public function __construct(
         /**
          * Stored as a bare ULID rather than an `#[ORM\ManyToOne]` to `User` on purpose.
@@ -87,6 +101,42 @@ class ExportJob
     ) {
         $this->id = new Ulid();
         $this->createdAt = CarbonImmutable::now();
+    }
+
+    /**
+     * The archive of a company that is closing, made without anyone asking.
+     *
+     * @param Ulid $onBehalfOf one of the people who run the company
+     */
+    public static function forClosure(Ulid $onBehalfOf): self
+    {
+        $job = new self($onBehalfOf, ExportFormat::Csv);
+        $job->purpose = ExportPurpose::Closure;
+
+        return $job;
+    }
+
+    public function getPurpose(): ExportPurpose
+    {
+        return $this->purpose;
+    }
+
+    public function isForClosure(): bool
+    {
+        return ExportPurpose::Closure === $this->purpose;
+    }
+
+    public function getDownloadedAt(): ?DateTimeImmutable
+    {
+        return $this->downloadedAt;
+    }
+
+    /**
+     * Keeps the first time only: that it was taken at all is what matters.
+     */
+    public function markDownloaded(): void
+    {
+        $this->downloadedAt ??= CarbonImmutable::now();
     }
 
     public function getId(): Ulid

@@ -871,6 +871,10 @@ company:
                 subject: 'Fermeture de %company% programmée le %date%'
                 heading: 'La fermeture de %company% est programmée pour le %date%.'
                 body: "D'ici là, la société est en lecture seule pour tous ses membres. À cette date, elle sera supprimée définitivement avec toutes ses données : factures, avoirs, devis, clients, paiements, comptabilité."
+            archive_ready:
+                subject: "L'archive de %company% est prête"
+                heading: "L'archive de %company% est prête."
+                body: "Elle contient tout ce que vous devez conserver : les factures et avoirs en PDF, les justificatifs et la comptabilité. Téléchargez-la et gardez-la en lieu sûr avant le %date% : après cette date, la société et cette archive seront supprimées."
             reminder:
                 subject: '%company% sera fermée le %date%'
                 heading: 'Plus que quelques jours : %company% sera fermée le %date%.'
@@ -881,6 +885,8 @@ company:
                 body: 'La société et toutes ses données ont été supprimées définitivement, comme prévu. Votre compte Augias reste actif pour les autres sociétés dont vous êtes membre.'
             retention: "La loi vous impose de conserver vos factures pendant 10 ans. Augias ne les conserve pas après la fermeture : l'export complet contient les factures et avoirs en PDF, les justificatifs et la comptabilité."
             export: "Télécharger l'export complet"
+            archive: "Télécharger l'archive"
+            archive_coming: "Nous préparons dès maintenant une archive complète de la société. Vous recevrez un e-mail avec le lien de téléchargement dès qu'elle sera prête."
             hint: "Vous pouvez encore annuler la fermeture depuis Augias, jusqu'à la date prévue."
         read_only: "Cette société sera fermée le %date% : elle est en lecture seule d'ici là. Vous pouvez encore exporter ses données."
         banner:
@@ -924,6 +930,10 @@ company:
                 subject: 'Abonnement terminé : %company% sera supprimée le %date%'
                 heading: "L'abonnement de %company% a pris fin. Ses données seront supprimées le %date%."
                 body: "Comme le prévoient les conditions générales, les données sont conservées quatre-vingt-dix jours après la fin de l'abonnement pour vous permettre de les exporter. À cette date, la société sera supprimée définitivement avec toutes ses données : factures, avoirs, devis, clients, paiements, comptabilité."
+            archive_ready:
+                subject: "L'archive de %company% est prête"
+                heading: "L'archive de %company% est prête."
+                body: "Elle contient tout ce que vous devez conserver : les factures et avoirs en PDF, les justificatifs et la comptabilité. Téléchargez-la et gardez-la en lieu sûr avant le %date% : après cette date, la société et cette archive seront supprimées."
             reminder:
                 subject: '%company% sera supprimée le %date%'
                 heading: 'Plus que quelques jours : les données de %company% seront supprimées le %date%.'
@@ -1886,6 +1896,7 @@ export:
     size: Taille
     status: Statut
     title: 'Export de données'
+    closure_archive: 'Archive de fermeture'
 feature:
     available_on_plan: 'Disponible avec le plan %plan% et supérieur.'
     not_in_any_plan: "Cette fonctionnalité n'est incluse dans aucune offre pour le moment."

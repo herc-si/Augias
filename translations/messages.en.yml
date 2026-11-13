@@ -871,6 +871,10 @@ company:
                 subject: '%company% is set to close on %date%'
                 heading: '%company% is set to close on %date%.'
                 body: 'Until then the company is read-only for all its members. On that date it will be permanently deleted with all its data: invoices, credit notes, quotes, clients, payments, accounting.'
+            archive_ready:
+                subject: "%company%'s archive is ready"
+                heading: "%company%'s archive is ready."
+                body: 'It holds everything you have to keep: the invoices and credit notes as PDF, the receipts and the accounting. Download it and store it somewhere safe before %date%: after that date the company and this archive will be deleted.'
             reminder:
                 subject: '%company% closes on %date%'
                 heading: 'Only a few days left: %company% closes on %date%.'
@@ -881,6 +885,8 @@ company:
                 body: 'The company and all its data have been permanently deleted, as planned. Your Augias account remains active for the other companies you belong to.'
             retention: 'The law requires you to keep your invoices for 10 years. Augias does not keep them after the closure: the full export holds the invoices and credit notes as PDF, the receipts and the accounting.'
             export: 'Download the full export'
+            archive: 'Download the archive'
+            archive_coming: 'We are preparing a full archive of the company right now. You will get an email with the download link as soon as it is ready.'
             hint: 'You can still cancel the closure from Augias until the planned date.'
         read_only: 'This company will close on %date%: it is read-only until then. You can still export its data.'
         banner:
@@ -924,6 +930,10 @@ company:
                 subject: 'Subscription ended: %company% will be deleted on %date%'
                 heading: "%company%'s subscription has ended. Its data will be deleted on %date%."
                 body: 'As the terms of service provide, the data is kept for ninety days after the subscription ends so that you can export it. On that date the company will be permanently deleted with all its data: invoices, credit notes, quotes, clients, payments, accounting.'
+            archive_ready:
+                subject: "%company%'s archive is ready"
+                heading: "%company%'s archive is ready."
+                body: 'It holds everything you have to keep: the invoices and credit notes as PDF, the receipts and the accounting. Download it and store it somewhere safe before %date%: after that date the company and this archive will be deleted.'
             reminder:
                 subject: '%company% will be deleted on %date%'
                 heading: "Only a few days left: %company%'s data will be deleted on %date%."
@@ -1886,6 +1896,7 @@ export:
     size: Size
     status: Status
     title: 'Data Export'
+    closure_archive: 'Closure archive'
 feature:
     available_on_plan: 'Available on the %plan% plan and higher.'
     not_in_any_plan: 'This feature is not included in any plan at the moment.'

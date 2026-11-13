@@ -17,6 +17,7 @@ use Augias\CoreBundle\Entity\ExportJob;
 use Augias\CoreBundle\Export\Enum\ExportStatus;
 use Augias\CoreBundle\Export\Security\Voter\ExportJobVoter;
 use Augias\CoreBundle\Repository\ExportJobRepository;
+use DateTimeImmutable;
 use InvalidArgumentException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\HeaderUtils;
@@ -68,6 +69,11 @@ final readonly class DownloadExport
         $resolved = realpath($absolutePath);
         if ($exportRoot === false || $resolved === false || ! str_starts_with($resolved, $exportRoot . DIRECTORY_SEPARATOR)) {
             throw new NotFoundHttpException();
+        }
+
+        if (! $job->getDownloadedAt() instanceof DateTimeImmutable) {
+            $job->markDownloaded();
+            $this->exportJobRepository->save($job);
         }
 
         $response = new BinaryFileResponse($absolutePath);

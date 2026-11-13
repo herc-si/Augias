@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Export\Message\Handler;
 
+use Augias\CoreBundle\Company\ClosureNotice;
+use Augias\CoreBundle\Company\CompanyClosureNotifier;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\ExportJob;
 use Augias\CoreBundle\Export\CompanyExporter;
@@ -68,6 +70,7 @@ final readonly class ProcessCompanyExportHandler
         private LoggerInterface $logger,
         private string $projectDir,
         private TranslatorInterface $translator,
+        private CompanyClosureNotifier $closureNotifier,
     ) {
     }
 
@@ -109,7 +112,12 @@ final readonly class ProcessCompanyExportHandler
             $job->markCompleted($relativePath, $fileSize === false ? 0 : $fileSize);
             $this->entityManager->flush();
 
-            $this->sendEmail($job, $message->userId);
+            if ($job->isForClosure()) {
+                // Nobody asked for this one: it goes to all who run the company.
+                $this->closureNotifier->notify($job->getCompany(), ClosureNotice::ArchiveReady, archive: $job);
+            } else {
+                $this->sendEmail($job, $message->userId);
+            }
         } catch (Throwable $e) {
             $this->logger->error('Export job failed', [
                 'export_job_id' => $job->getId()->toString(),
