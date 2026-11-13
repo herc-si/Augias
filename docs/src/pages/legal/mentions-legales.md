@@ -5,7 +5,7 @@ description: Éditeur, hébergeur et contacts du service Augias.
 
 # Mentions légales
 
-Dernière mise à jour : 18 septembre 2026
+Dernière mise à jour : 13 novembre 2026
 
 :::warning À compléter avant publication
 Les mentions signalées par **[À COMPLÉTER]** sont des informations que seul HERC SI détient. Tant qu'elles ne sont pas renseignées, cette page ne satisfait pas l'article 6-III de la loi pour la confiance dans l'économie numérique (LCEN), qui impose l'identification de l'éditeur.
@@ -13,14 +13,16 @@ Les mentions signalées par **[À COMPLÉTER]** sont des informations que seul H
 
 ## Éditeur du site et du service
 
-**HERC SI**, [À COMPLÉTER : forme sociale, par exemple SAS] au capital de [À COMPLÉTER] euros
+**HERC SI** (HERC Solutions Informatiques) est le nom commercial de **Rémi Delory, entrepreneur individuel** (EI), sous le régime de la micro-entreprise.
 
-- Siège social : [À COMPLÉTER : adresse postale complète]
-- Immatriculée au RCS de [À COMPLÉTER : ville] sous le numéro [À COMPLÉTER : SIREN]
-- Numéro de TVA intracommunautaire : [À COMPLÉTER]
-- Directeur de la publication : [À COMPLÉTER : nom du représentant légal]
+- Adresse : [À COMPLÉTER : adresse postale complète de l'établissement], Bellegarde-Poussieu
+- Immatriculé au Registre national des entreprises (RNE) sous le numéro SIREN 514 072 248
+- SIRET de l'établissement : 514 072 248 00024
+- Code APE : 62.09Z (autres activités informatiques)
+- TVA non applicable, article 293 B du code général des impôts : l'entreprise relève de la franchise en base et n'a pas de numéro de TVA intracommunautaire
+- Directeur de la publication : Rémi Delory
 
-Contact : [À COMPLÉTER : adresse de contact général, par exemple contact@herc-si.fr]
+Contact : [À COMPLÉTER : adresse de contact général, par exemple contact@herc-si.fr] — téléphone : [À COMPLÉTER]
 
 ## Hébergeur
 
