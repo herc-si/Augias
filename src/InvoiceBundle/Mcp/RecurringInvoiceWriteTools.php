@@ -70,6 +70,7 @@ final readonly class RecurringInvoiceWriteTools
      * @param int|float|null                  $discount_value Numeric discount value; required if discount_type is set
      * @param string|null                     $terms          Optional terms text
      * @param string|null                     $notes          Optional notes text
+     * @param string|null                     $subject        Optional subject (what the document is about), printed above the lines
      * @param list<string>                    $contact_ids    Client contact ULIDs to attach (optional)
      * @param bool                            $activate       If true, also transition from "new" -> "active" after create
      *
@@ -87,6 +88,7 @@ final readonly class RecurringInvoiceWriteTools
         int | float | null $discount_value = null,
         ?string $terms = null,
         ?string $notes = null,
+        ?string $subject = null,
         array $contact_ids = [],
         bool $activate = false,
     ): array {
@@ -128,6 +130,8 @@ final readonly class RecurringInvoiceWriteTools
         if ($notes !== null) {
             $invoice->setNotes($notes);
         }
+
+        $invoice->setSubject($subject);
 
         foreach ($contact_ids as $index => $contactId) {
             if (! \is_string($contactId)) {

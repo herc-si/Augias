@@ -301,6 +301,16 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
     }
 
     /**
+     * The subject printed above the lines is carried as a document note;
+     * without one, no note is added.
+     */
+    public function testTheSubjectTravelsAsADocumentNote(): void
+    {
+        self::assertStringContainsString('Objet : Refonte du site', $this->xmlWith(false, 'Refonte du site', SupplyType::Services));
+        self::assertStringNotContainsString('Objet :', $this->xmlFor(SupplyType::Services));
+    }
+
+    /**
      * BT-72 carries the delivery date when the invoice gives one, and falls
      * back to the invoice date otherwise.
      */
@@ -587,14 +597,20 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
 
     private function xmlOf(bool $onDebits, SupplyType ...$types): string
     {
+        return $this->xmlWith($onDebits, null, ...$types);
+    }
+
+    private function xmlWith(bool $onDebits, ?string $subject, SupplyType ...$types): string
+    {
         $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
 
         $invoice = new Invoice();
         $invoice->setCompany($this->company);
         $invoice->setClient($client);
-        $invoice->setInvoiceId('INV-BT23-' . count($types) . ($onDebits ? '-D' : ''));
+        $invoice->setInvoiceId('INV-BT23-' . count($types) . ($onDebits ? '-D' : '') . ($subject !== null ? '-S' : ''));
         $invoice->setStatus(InvoiceStatus::Draft);
         $invoice->setVatOnDebits($onDebits);
+        $invoice->setSubject($subject);
 
         foreach ($types as $type) {
             $line = new Line();

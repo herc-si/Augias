@@ -83,6 +83,7 @@ final readonly class InvoiceWriteTools
      * @param int|float|null                  $discount_value Numeric discount value; required if discount_type is set
      * @param string|null                     $terms          Optional terms text
      * @param string|null                     $notes          Optional notes text
+     * @param string|null                     $subject        Optional subject (what the document is about), printed above the lines
      * @param list<string>                    $contact_ids    Client contact ULIDs to attach to the invoice (optional)
      * @param string|null                     $invoice_id     Explicit invoice number; if omitted, the draft is numbered when finalised
      * @param list<array<string, mixed>>      $invoice_taxes  Invoice-level taxes (withholding/surcharge/informational):
@@ -91,7 +92,7 @@ final readonly class InvoiceWriteTools
      *
      * @return array<string, mixed>
      */
-    #[McpTool(name: 'create_invoice', description: 'Create a new invoice for a client, with line items, optional discount, due date, contacts, and invoice-level taxes.')]
+    #[McpTool(name: 'create_invoice', description: 'Create a new invoice for a client, with line items, optional subject, discount, due date, contacts, and invoice-level taxes.')]
     #[McpScopeRequired(McpScope::Write)]
     public function createInvoice(
         string $client_id,
@@ -102,6 +103,7 @@ final readonly class InvoiceWriteTools
         int | float | null $discount_value = null,
         ?string $terms = null,
         ?string $notes = null,
+        ?string $subject = null,
         array $contact_ids = [],
         ?string $invoice_id = null,
         array $invoice_taxes = [],
@@ -135,6 +137,8 @@ final readonly class InvoiceWriteTools
         if ($notes !== null) {
             $invoice->setNotes($notes);
         }
+
+        $invoice->setSubject($subject);
 
         foreach ($contact_ids as $index => $contactId) {
             if (! \is_string($contactId)) {
