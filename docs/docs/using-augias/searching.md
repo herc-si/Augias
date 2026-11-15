@@ -10,10 +10,10 @@ La barre de recherche, en haut de chaque page, retrouve n'importe quelle fiche d
 
 Le raccourci `Ctrl+K` (`Cmd+K` sur macOS) place le curseur dans la barre depuis n'importe où, et l'icône `?` au bout de la barre ouvre un rappel de la syntaxe.
 
-:::info[Hébergé ou auto-hébergé]
-La recherche s'appuie sur Meilisearch.
+:::info[Avec ou sans moteur de recherche]
+La barre est toujours là. Sans moteur de recherche, Augias cherche directement dans ses données : il retrouve ce que vous tapez dans un nom, un numéro, un objet ou une adresse e-mail, sans tolérance aux fautes de frappe et sans les filtres décrits plus bas (seul `in:` fonctionne).
 
-En **auto-hébergement**, elle est facultative et s'active en configurant un moteur de recherche : voir l'[intégration Meilisearch](../integrations/meilisearch.md). Sans moteur, la barre est masquée et le reste d'Augias fonctionne normalement.
+Avec [Meilisearch](../integrations/meilisearch.md), facultatif en auto-hébergement, la recherche tolère les fautes de frappe et comprend tous les filtres. L'icône `?` n'apparaît que dans ce cas.
 :::
 
 ## Ce qui se recherche
@@ -31,7 +31,7 @@ Les résultats des autres entreprises dont vous êtes membre n'apparaissent jama
 
 ## Recherche libre
 
-Des mots simples, comme `acme` ou `facture 1024`, sont recherchés dans les six types, en tolérant les fautes de frappe. Quelques repères :
+Des mots simples, comme `acme` ou `facture 1024`, sont recherchés dans les six types. Avec Meilisearch :
 
 - **Plusieurs mots** doivent tous correspondre dans un même type : `klein 5000` montre les clients, factures, etc. qui contiennent les deux.
 - **Fautes de frappe et mots partiels** sont acceptés : `klien` trouve encore `Klein-Lehner`.
@@ -40,7 +40,7 @@ Des mots simples, comme `acme` ou `facture 1024`, sont recherchés dans les six 
 
 ## Filtres
 
-Au-delà du texte libre, la barre comprend une petite syntaxe de filtres, proche de celle de GitHub, sous la forme `clé:valeur`, que l'on peut combiner avec du texte libre. Les clés et les valeurs restent en anglais.
+Avec Meilisearch, au-delà du texte libre, la barre comprend une petite syntaxe de filtres, proche de celle de GitHub, sous la forme `clé:valeur`, que l'on peut combiner avec du texte libre. Les clés et les valeurs restent en anglais.
 
 | Filtre | Effet | Exemple |
 | --- | --- | --- |
@@ -71,9 +71,9 @@ Si les résultats semblent décalés (par exemple après la restauration d'une b
 
 ## Dépannage
 
-### La barre de recherche n'apparaît pas
+### Les filtres ou l'icône `?` n'apparaissent pas
 
-Le moteur de recherche n'est pas configuré pour votre installation. Sur le service hébergé, cela ne devrait pas arriver : contactez le support. En auto-hébergement, suivez le guide [Intégration Meilisearch](../integrations/meilisearch.md) pour configurer et relier un moteur. Après avoir réglé les variables d'environnement, videz le cache de l'application et rechargez la page.
+Votre installation cherche directement dans ses données, sans moteur de recherche : le texte libre fonctionne, pas les filtres. En auto-hébergement, suivez le guide [Intégration Meilisearch](../integrations/meilisearch.md) pour relier un moteur. Après avoir réglé les variables d'environnement, videz le cache de l'application et rechargez la page.
 
 ### Une fiche que je viens de créer ou de modifier n'apparaît pas
 

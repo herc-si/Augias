@@ -3802,6 +3802,37 @@ saas:
         subtitle: 'Your %days%-day trial ended on %date%. Activate your subscription at %price%/month to continue using Augias.'
         title: 'Your trial has ended'
 save: Save
+report:
+    aged:
+        csv:
+            d1_30: '1 to 30 days'
+            d31_60: '31 to 60 days'
+            d61_90: '61 to 90 days'
+            over_90: 'Over 90 days'
+        days: '%from% to %to% days late'
+        empty: 'Nobody owes you anything: no issued invoice is waiting to be paid.'
+        intro: 'What your clients owe you on %date%, by how late each invoice is on its due date. The largest debt first.'
+        not_due: 'Not due'
+        over: 'Over %days% days'
+        tab: 'Aged receivables'
+    column:
+        client: Client
+        currency: Currency
+        total: Total
+    export: 'Export as CSV'
+    menu: Reports
+    revenue:
+        credited: 'Credit notes excl. tax'
+        empty: 'No invoice issued and no payment received in %year%.'
+        intro: 'What each client brought in during %year%.'
+        invoiced: 'Invoiced excl. tax'
+        invoices: Invoices
+        net: 'Net excl. tax'
+        note: 'Invoiced and credit notes: documents issued in the year, before tax and without disbursements; drafts and cancelled invoices do not count. Received: payments taken in the year, tax included.'
+        received: 'Received incl. tax'
+        tab: 'Revenue per client'
+        year: Year
+    title: Reports
 search:
     and: and
     applies_to: 'Applies to'
