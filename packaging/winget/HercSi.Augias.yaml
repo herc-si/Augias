@@ -12,7 +12,7 @@ PackageName: Augias
 Publisher: HERC SI
 PublisherUrl: https://augias.herc-si.fr
 License: MIT
-LicenseUrl: https://github.com/herc-si/Augias/blob/4.0.x/LICENSE
+LicenseUrl: https://github.com/herc-si/Augias/blob/main/LICENSE
 ShortDescription: Simple and elegant invoicing solution
 Description: Augias is an open-source invoicing application for small businesses and freelancers.
 Tags:

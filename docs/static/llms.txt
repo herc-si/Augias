@@ -35,4 +35,4 @@
 
 - [REST API Documentation](https://augias.app/api/docs): Auto-generated OpenAPI/Swagger reference for the Augias REST API. Authentication via `X-API-TOKEN` header.
 - [GitHub Repository](https://github.com/herc-si/Augias): Source code, issues, contributions, releases.
-- [Contribution Guide](https://github.com/herc-si/Augias/blob/4.0.x/CONTRIBUTING.md): How to contribute to Augias.
+- [Contribution Guide](https://github.com/herc-si/Augias/blob/main/CONTRIBUTING.md): How to contribute to Augias.

@@ -13,7 +13,7 @@
     <projectUrl>https://augias.herc-si.fr</projectUrl>
     <projectSourceUrl>https://github.com/herc-si/Augias</projectSourceUrl>
     <bugTrackerUrl>https://github.com/herc-si/Augias/issues</bugTrackerUrl>
-    <licenseUrl>https://github.com/herc-si/Augias/blob/4.0.x/LICENSE</licenseUrl>
+    <licenseUrl>https://github.com/herc-si/Augias/blob/main/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>invoice invoicing billing freelancer business</tags>
     <summary>Simple and elegant invoicing solution</summary>
