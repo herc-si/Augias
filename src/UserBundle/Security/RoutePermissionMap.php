@@ -157,6 +157,7 @@ final class RoutePermissionMap
         '_invoices_clone' => CompanyPermission::BillingWrite,
         '_invoices_clone_recurring' => CompanyPermission::BillingWrite,
         '_invoices_create' => CompanyPermission::BillingWrite,
+        '_invoices_create_deposit' => CompanyPermission::BillingWrite,
         '_invoices_create_from_quote' => CompanyPermission::BillingWrite,
         '_invoices_create_recurring' => CompanyPermission::BillingWrite,
         '_invoices_disbursement_receipt_delete' => CompanyPermission::BillingWrite,

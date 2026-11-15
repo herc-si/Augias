@@ -27,6 +27,7 @@ use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
 use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
+use Augias\QuoteBundle\Test\Factory\QuoteFactory;
 use Augias\SettingsBundle\SystemConfig;
 use Augias\TaxBundle\Entity\InvoiceTax;
 use Augias\TaxBundle\Entity\LineTax;
@@ -588,6 +589,59 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         $xml = self::getContainer()->get(FacturXInvoiceBuilder::class)->buildDocument($invoice)->getContent();
 
         self::assertSame(2, substr_count($xml, '<ram:GlobalID'), 'One for the seller, one for the buyer.');
+    }
+
+    /**
+     * A deposit invoice goes out as a prepayment invoice (386). The final
+     * invoice stays a plain invoice whose deduction lines bill a negative
+     * quantity at a positive price, as EN 16931 wants (BR-27).
+     */
+    public function testADepositIsAPrepaymentInvoiceAndItsDeductionANegativeQuantity(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'currencyCode' => 'EUR']);
+        $quote = QuoteFactory::createOne(['company' => $this->company, 'client' => $client, 'archived' => null]);
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $builder = self::getContainer()->get(FacturXInvoiceBuilder::class);
+
+        $line = static function (string $description, int $price, int $qty): Line {
+            $line = new Line();
+            $line->setDescription($description)->setPrice($price)->setQty($qty)->updateTotal();
+            $vat = new LineTax();
+            $vat->setNameSnapshot('VAT');
+            $vat->setRateSnapshot('20.0000');
+            $line->addTax($vat);
+
+            return $line;
+        };
+
+        $deposit = new Invoice();
+        $deposit->setCompany($this->company);
+        $deposit->setClient($client);
+        $deposit->setInvoiceId('INV-DEP-1');
+        $deposit->setStatus(InvoiceStatus::Draft);
+        $deposit->setDepositForQuote($quote);
+        $deposit->addLine($line('Deposit of 30 %', 30000, 1));
+        $entityManager->persist($deposit);
+
+        $final = new Invoice();
+        $final->setCompany($this->company);
+        $final->setClient($client);
+        $final->setInvoiceId('INV-FIN-1');
+        $final->setStatus(InvoiceStatus::Draft);
+        $final->addLine($line('Work', 100000, 1));
+        $final->addLine($line('Deposit already billed', 30000, -1));
+        $entityManager->persist($final);
+        $entityManager->flush();
+
+        $depositXml = $builder->buildDocument($deposit)->getContent();
+        self::assertStringContainsString('<ram:TypeCode>386</ram:TypeCode>', $depositXml);
+
+        $finalXml = $builder->buildDocument($final)->getContent();
+        self::assertStringContainsString('<ram:TypeCode>380</ram:TypeCode>', $finalXml);
+        self::assertMatchesRegularExpression('#<ram:BilledQuantity unitCode="[A-Z0-9]+">-1(\.0+)?</ram:BilledQuantity>#', $finalXml);
+        self::assertStringNotContainsString('<ram:ChargeAmount>-', $finalXml, 'A price is never negative: the quantity is.');
+        self::assertStringContainsString('<ram:TaxBasisTotalAmount>700.00</ram:TaxBasisTotalAmount>', $finalXml);
+        self::assertStringContainsString('<ram:GrandTotalAmount>840.00</ram:GrandTotalAmount>', $finalXml);
     }
 
     private function xmlFor(SupplyType ...$types): string
