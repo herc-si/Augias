@@ -14,6 +14,8 @@ declare(strict_types=1);
 use Augias\ClientBundle\Action\Add;
 use Augias\ClientBundle\Action\Delete;
 use Augias\ClientBundle\Action\Edit;
+use Augias\ClientBundle\Action\Import;
+use Augias\ClientBundle\Action\ImportTemplate;
 use Augias\ClientBundle\Action\Index;
 use Augias\ClientBundle\Action\View;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
@@ -26,6 +28,16 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_clients_add', '/add')
         ->controller(Add::class);
+
+    $routingConfigurator
+        ->add('_clients_import', '/import')
+        ->controller(Import::class)
+        ->methods(['GET', 'POST']);
+
+    $routingConfigurator
+        ->add('_clients_import_template', '/import/clients.csv')
+        ->controller(ImportTemplate::class)
+        ->methods(['GET']);
 
     $routingConfigurator
         ->add('_clients_edit', '/edit/{id}')

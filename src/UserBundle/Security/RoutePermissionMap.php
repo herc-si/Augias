@@ -142,6 +142,8 @@ final class RoutePermissionMap
         '_clients_add' => CompanyPermission::BillingWrite,
         '_clients_delete' => CompanyPermission::BillingWrite,
         '_clients_edit' => CompanyPermission::BillingWrite,
+        '_clients_import' => CompanyPermission::BillingWrite,
+        '_clients_import_template' => CompanyPermission::BillingWrite,
         '_credit_notes_allocate' => CompanyPermission::BillingWrite,
         '_credit_notes_create' => CompanyPermission::BillingWrite,
         '_credit_notes_edit' => CompanyPermission::BillingWrite,
