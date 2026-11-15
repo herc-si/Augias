@@ -2607,7 +2607,6 @@ layout:
     profile: Profil
     switch_company: 'Changer de société'
     unsplash_credit: 'Téléchargez gratuitement des photos haute résolution de Julian Zett'
-    user_image: 'Photo de l''utilisateur'
 login_history:
     card_title: 'Vos dernières connexions'
     company:

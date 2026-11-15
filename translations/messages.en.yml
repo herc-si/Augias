@@ -2607,7 +2607,6 @@ layout:
     profile: Profile
     switch_company: 'Switch company'
     unsplash_credit: 'Download free do whatever you want high-resolution photos from Julian Zett'
-    user_image: 'User Image'
 login_history:
     card_title: 'Your recent sign-ins'
     company:

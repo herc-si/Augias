@@ -327,14 +327,16 @@ The first-run onboarding wizard (`/onboarding`) follows the same system — Ink 
 
 ### Signature Component: Money Display
 
-Tabular figures, currency prefixed and dimmed, amount prominent, two decimal places when fractional. Implemented in `assets/scss/components/_money.scss`.
+Tabular figures, currency dimmed, amount prominent, two decimal places when fractional. Implemented in `assets/scss/components/_money.scss`.
 
-**Markup contract** — this exact structure, every time:
+The currency is shown as its **symbol, on the side the locale puts it** — `1 234,56 €` in French, `€1,234.56` in English — the way every other screen writes an amount. Intl disambiguates where a bare symbol would not (`$US`, `CA$`). The dashboard macro (`@AugiasDashboard/money.html.twig`) is the reference implementation; an ISO code in front (`EUR 1 234,56`) is the former contract and only remains where no symbol exists.
+
+**Markup contract** — these two elements, in the locale's order:
 
 ```html
 <span class="money">
-  <span class="money-currency">USD</span>
-  <strong class="money-amount">1,234.56</strong>
+  <strong class="money-amount">1 234,56</strong>
+  <span class="money-currency money-currency--symbol">€</span>
 </span>
 ```
 
@@ -353,7 +355,7 @@ Tabular figures, currency prefixed and dimmed, amount prominent, two decimal pla
 | *(none)* | Amount in `text-primary`. **The neutral case, and the common one** — Draft, Pending, Sent. |
 | `.money--paid` | Amount in `money-paid` (`success-dark`). **Only ever valid alongside an explicit "Paid" label** (the Money-Color Rule). |
 | `.money--overdue` | Amount in `money-overdue` (`danger-dark`). Same labelling requirement. |
-| `.money--total` | Amount steps to weight 600 and up one size step (`money-total-scale`, `1.125em`). Currency drops to `money-currency-scale` (`0.75em`). |
+| `.money--total` | Amount steps to weight 600 and up one size step (`money-total-scale`, `1.125em`). A currency *code* drops to `money-currency-scale` (`0.75em`); a symbol (`.money-currency--symbol`) keeps its size. |
 
 **Sizing:** the component never declares a `font-size` — it inherits, so the same markup is correct inline in a table cell, in a heading, and at `.stat-value` scale in the dashboard hero tiles. Both steps are relative (`em`), so they stay proportional at every base size.
 
