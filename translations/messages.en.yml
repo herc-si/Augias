@@ -782,6 +782,50 @@ client:
         addresses: Addresses
         contacts: Contacts
         payments: Payments
+    import:
+        back: 'Back to clients'
+        button: Import
+        columns:
+            help: 'The first line of the file names the columns. Any order will do, only the Name column is required, and the usual titles are recognised in French and in English ("Raison sociale", "Company", "Code postal", "Zip"…).'
+            rule_contact: 'A contact is created when the line carries an e-mail address.'
+            rule_duplicates: 'A client whose name already exists is left out: importing the same file twice creates no duplicate.'
+            rule_name: 'One line per client.'
+            rule_type: 'Type: "Entreprise" / "Company" (the default) or "Particulier" / "Individual". A business needs a SIRET.'
+            template: 'Download the template'
+            title: 'Recognised columns'
+        done:
+            created: '{0} client created|{1} client created|]1,Inf[ clients created'
+            see_clients: 'See the clients'
+            title: 'Import complete'
+        error:
+            empty: 'The file holds no line to import.'
+            expired: 'The preview has expired. Send the file again.'
+            invalid_token: 'The session has expired. Try again.'
+            no_file: 'Choose a CSV file of 1 MB at most.'
+            no_name_column: 'No "Name" column was found on the first line of the file.'
+            too_many_rows: 'The file is over 2,000 lines. Split it into several files.'
+        preview:
+            cancel: Cancel
+            confirm: '{1} Import this client|]1,Inf[ Import these %count% clients'
+            created: '{0} client to create|{1} client to create|]1,Inf[ clients to create'
+            nothing: 'Nothing to import from this file: every line is already there or refused.'
+            title: 'Preview: nothing has been imported yet'
+        report:
+            duplicates: '{0} already there|{1} already there, left out|]1,Inf[ already there, left out'
+            duplicates_title: 'Already there'
+            line: Line
+            reason: 'What stands in the way'
+            rejected: '{0} line refused|{1} line refused|]1,Inf[ lines refused'
+            rejected_title: 'Lines refused'
+            unknown_columns: '{1} Column ignored:|]1,Inf[ Columns ignored:'
+        row:
+            no_name: "The client's name is empty."
+        title: 'Import clients'
+        upload:
+            file: 'CSV file'
+            help: 'Export your client list from your spreadsheet or your previous software as CSV (%max% lines at most). You will see what would be created before anything is imported.'
+            submit: 'See the preview'
+            title: 'Your file'
     info: 'General Info'
     invoices:
         empty:
