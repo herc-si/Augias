@@ -96,7 +96,7 @@ const config: Config = {
           sidebarPath: './sidebars.ts',
           routeBasePath: '/',
           editUrl:
-            'https://github.com/herc-si/Augias/edit/4.0.x/docs/',
+            'https://github.com/herc-si/Augias/edit/main/docs/',
         },
         blog: false,
         theme: {
