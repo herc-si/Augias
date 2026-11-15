@@ -3786,6 +3786,37 @@ saas:
         subtitle: 'Votre essai de %days% jours s''est terminé le %date%. Activez votre abonnement à %price%/mois pour continuer à utiliser Augias.'
         title: 'Votre essai est terminé'
 save: Enregistrer
+report:
+    aged:
+        csv:
+            d1_30: '1 à 30 jours'
+            d31_60: '31 à 60 jours'
+            d61_90: '61 à 90 jours'
+            over_90: 'Plus de 90 jours'
+        days: '%from% à %to% j de retard'
+        empty: "Personne ne vous doit rien : aucune facture émise n'attend de paiement."
+        intro: "Ce que vos clients vous doivent au %date%, selon le retard de chaque facture sur son échéance. Le plus gros encours d'abord."
+        not_due: 'Non échu'
+        over: 'Plus de %days% j'
+        tab: 'Balance âgée'
+    column:
+        client: Client
+        currency: Devise
+        total: Total
+    export: 'Exporter en CSV'
+    menu: Rapports
+    revenue:
+        credited: 'Avoirs HT'
+        empty: 'Aucune facture émise ni paiement reçu en %year%.'
+        intro: 'Ce que chaque client vous a rapporté en %year%.'
+        invoiced: 'Facturé HT'
+        invoices: Factures
+        net: 'Net HT'
+        note: "Facturé et avoirs : documents émis dans l'année, hors taxes et hors débours ; les brouillons et les factures annulées ne comptent pas. Encaissé : paiements reçus dans l'année, toutes taxes comprises."
+        received: 'Encaissé TTC'
+        tab: "Chiffre d'affaires par client"
+        year: Année
+    title: Rapports
 search:
     and: et
     applies_to: 'S''applique à'

@@ -108,6 +108,8 @@ final class RoutePermissionMap
         '_invoices_view' => CompanyPermission::BillingRead,
         '_invoices_view_recurring' => CompanyPermission::BillingRead,
         '_payments_index' => CompanyPermission::BillingRead,
+        '_reports' => CompanyPermission::BillingRead,
+        '_reports_export' => CompanyPermission::BillingRead,
         '_quotes_get_fields' => CompanyPermission::BillingRead,
         '_quotes_index' => CompanyPermission::BillingRead,
         '_quotes_view' => CompanyPermission::BillingRead,
