@@ -35,6 +35,7 @@ use Augias\InvoiceBundle\Action\Index;
 use Augias\InvoiceBundle\Action\RecurringIndex;
 use Augias\InvoiceBundle\Action\RecurringTransition;
 use Augias\InvoiceBundle\Action\Report\Index as ReportIndex;
+use Augias\InvoiceBundle\Action\Report\Statement as ReportStatement;
 use Augias\InvoiceBundle\Action\SendManualReminder;
 use Augias\InvoiceBundle\Action\Transition;
 use Augias\InvoiceBundle\Action\Transition\Send;
@@ -46,6 +47,13 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_invoices_index', '/')
         ->controller(Index::class);
+
+    $routingConfigurator
+        ->add('_reports_statement', '/reports/statement/{id}.{_format}')
+        ->controller(ReportStatement::class)
+        ->defaults(['_format' => 'html'])
+        ->requirements(['_format' => 'html|pdf'])
+        ->methods(['GET']);
 
     $routingConfigurator
         ->add('_reports_export', '/reports/{report}.csv')

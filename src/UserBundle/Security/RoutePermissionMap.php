@@ -110,6 +110,7 @@ final class RoutePermissionMap
         '_payments_index' => CompanyPermission::BillingRead,
         '_reports' => CompanyPermission::BillingRead,
         '_reports_export' => CompanyPermission::BillingRead,
+        '_reports_statement' => CompanyPermission::BillingRead,
         '_quotes_get_fields' => CompanyPermission::BillingRead,
         '_quotes_index' => CompanyPermission::BillingRead,
         '_quotes_view' => CompanyPermission::BillingRead,

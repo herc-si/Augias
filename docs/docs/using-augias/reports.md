@@ -1,6 +1,6 @@
 ---
 title: Consulter les rapports
-description: "La balance âgée et le chiffre d'affaires par client : qui vous doit quoi, et ce que chaque client vous a rapporté."
+description: "La balance âgée, le chiffre d'affaires par client et le relevé de compte : qui vous doit quoi, et ce que chaque client vous a rapporté."
 sidebar_position: 8
 ---
 
@@ -41,6 +41,25 @@ Une facture compte pour l'année de sa date de facture, un paiement pour l'anné
 
 :::note
 Si vous facturez dans plusieurs devises, chaque rapport affiche un tableau par devise : des montants en devises différentes ne sont jamais additionnés.
+:::
+
+## Relevé de compte d'un client
+
+Le relevé de compte liste, pour un client, tout ce qui a fait varier ce qu'il vous doit, par date, avec le solde après chaque ligne. Ouvrez la fiche du client, puis le menu `⋮` et `Relevé de compte`.
+
+| Mouvement | Effet sur le solde |
+|---|---|
+| Facture émise | Augmente ce que le client vous doit (`Débit`). |
+| Paiement reçu | Le diminue (`Crédit`), quel que soit le moyen de paiement. |
+| Avoir émis | Le diminue (`Crédit`). |
+| Remboursement d'un avoir | L'augmente de nouveau (`Débit`). |
+
+Choisissez `Tout` pour l'historique complet, ou une année : le relevé commence alors par le `Solde reporté`, ce qui était dû avant le 1er janvier. Un solde négatif signifie que vous devez de l'argent au client.
+
+`Télécharger en PDF` produit le relevé à vos couleurs, à joindre à une relance ou à envoyer en fin d'année.
+
+:::info
+Les brouillons et les factures annulées n'apparaissent pas. Un avoir imputé sur une facture n'a pas de ligne à part : il a déjà diminué le solde au moment où il a été émis.
 :::
 
 ## Exporter

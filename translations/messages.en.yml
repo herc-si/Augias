@@ -3816,6 +3816,33 @@ report:
         received: 'Received incl. tax'
         tab: 'Revenue per client'
         year: Year
+    statement:
+        all: All
+        back: 'Back to the client'
+        closing: 'Balance on %date%'
+        column:
+            balance: Balance
+            credit: Credit
+            date: Date
+            debit: Debit
+            movement: Movement
+        empty: 'Nothing moved over this period.'
+        heading: 'Statement of account'
+        intro: 'Everything that moved what the client owes you: invoices issued, payments received, credit notes and refunds, with the balance after each line.'
+        kind:
+            credit_note: 'Credit note no. %reference%'
+            invoice: 'Invoice no. %reference%'
+            payment: 'Payment of invoice no. %reference%'
+            refund: 'Refund of credit note no. %reference%'
+        menu: 'Statement of account'
+        opening: 'Balance brought forward'
+        owed_by_client: 'A positive balance is owed by the client.'
+        owed_to_client: 'The balance is negative: you owe the client this amount.'
+        pdf: 'Download as PDF'
+        period: Period
+        range: 'From %from% to %to%'
+        title: 'Statement of account — %client%'
+        until: 'Up to %to%'
     title: Reports
 search:
     and: and
