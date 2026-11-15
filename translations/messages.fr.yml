@@ -3832,6 +3832,33 @@ report:
         received: 'Encaissé TTC'
         tab: "Chiffre d'affaires par client"
         year: Année
+    statement:
+        all: Tout
+        back: 'Retour au client'
+        closing: 'Solde au %date%'
+        column:
+            balance: Solde
+            credit: Crédit
+            date: Date
+            debit: Débit
+            movement: Mouvement
+        empty: 'Aucun mouvement sur cette période.'
+        heading: 'Relevé de compte'
+        intro: "Tout ce qui a fait varier ce que le client vous doit : factures émises, paiements reçus, avoirs et remboursements, avec le solde après chaque ligne."
+        kind:
+            credit_note: 'Avoir n° %reference%'
+            invoice: 'Facture n° %reference%'
+            payment: 'Paiement de la facture n° %reference%'
+            refund: "Remboursement de l'avoir n° %reference%"
+        menu: 'Relevé de compte'
+        opening: 'Solde reporté'
+        owed_by_client: 'Un solde positif est dû par le client.'
+        owed_to_client: 'Le solde est négatif : vous devez cette somme au client.'
+        pdf: 'Télécharger en PDF'
+        period: Période
+        range: 'Du %from% au %to%'
+        title: 'Relevé de compte — %client%'
+        until: "Jusqu'au %to%"
     title: Rapports
 search:
     and: et

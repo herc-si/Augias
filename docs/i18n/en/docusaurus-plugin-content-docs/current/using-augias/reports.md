@@ -43,6 +43,25 @@ An invoice counts for the year of its invoice date, a payment for the year it wa
 If you invoice in several currencies, each report shows one table per currency: amounts in different currencies are never added together.
 :::
 
+## A client's statement of account
+
+The statement of account lists, for one client, everything that moved what they owe you, in date order, with the balance after each line. Open the client's page, then the `⋮` menu and `Statement of account`.
+
+| Movement | Effect on the balance |
+|---|---|
+| Invoice issued | Raises what the client owes you (`Debit`). |
+| Payment received | Lowers it (`Credit`), whatever it was paid with. |
+| Credit note issued | Lowers it (`Credit`). |
+| Refund of a credit note | Raises it again (`Debit`). |
+
+Choose `All` for the whole history, or a year: the statement then starts with the `Balance brought forward`, what was owed before 1 January. A negative balance means you owe the client money.
+
+`Download as PDF` produces the statement under your name, to attach to a reminder or to send at year end.
+
+:::info
+Drafts and cancelled invoices do not appear. A credit note set against an invoice has no line of its own: it already lowered the balance when it was issued.
+:::
+
 ## Export
 
 The `Export as CSV` button downloads the report on screen, ready to open in a spreadsheet.

@@ -1,0 +1,53 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # The body of a client's statement, shared by the page and the PDF: opening
+ # balance, one row per movement, totals. `linked` puts links on the documents
+ # (the page) or leaves plain text (the PDF).
+ #
+ # The attributes are written by this template from fixed strings, hence `raw`:
+ # escaped, the quotes of a style attribute stop being quotes and mPDF ignores it.
+ #}
+{% set currency = client.currency %}
+{% if from %}
+    <tr class="statement-opening">
+        <td{{ (pdf ? ' style="' ~ cell ~ '"')|raw }}>{{ from|format_date('short') }}</td>
+        <td{{ (pdf ? ' style="' ~ cell ~ '"')|raw }} colspan="3">{{ 'report.statement.opening'|trans }}</td>
+        <td{{ (pdf ? ' style="' ~ cell ~ 'text-align: right; font-weight: bold;"' : ' class="text-end text-nowrap fw-semibold"')|raw }}>{{ statement.opening|formatCurrency(currency) }}</td>
+    </tr>
+{% endif %}
+{% for line in statement.lines %}
+    <tr>
+        <td{{ (pdf ? ' style="' ~ cell ~ '"' : ' class="text-nowrap"')|raw }}>{{ line.date|format_date('short') }}</td>
+        <td{{ (pdf ? ' style="' ~ cell ~ '"')|raw }}>
+            {% set label = ('report.statement.kind.' ~ line.kind)|trans({'%reference%': line.reference}) %}
+            {% if linked and line.id and line.kind in ['invoice', 'payment'] and route_allowed('_invoices_view') %}
+                <a href="{{ path('_invoices_view', {id: line.id}) }}">{{ label }}</a>
+            {% elseif linked and line.id and route_allowed('_credit_notes_view') %}
+                <a href="{{ path('_credit_notes_view', {id: line.id}) }}">{{ label }}</a>
+            {% else %}
+                {{ label }}
+            {% endif %}
+        </td>
+        <td{{ (pdf ? ' style="' ~ cell ~ 'text-align: right;"' : ' class="text-end text-nowrap"')|raw }}>{{ line.debit.isZero ? '' : line.debit|formatCurrency(currency) }}</td>
+        <td{{ (pdf ? ' style="' ~ cell ~ 'text-align: right;"' : ' class="text-end text-nowrap"')|raw }}>{{ line.credit.isZero ? '' : line.credit|formatCurrency(currency) }}</td>
+        <td{{ (pdf ? ' style="' ~ cell ~ 'text-align: right;"' : ' class="text-end text-nowrap"')|raw }}>{{ line.balance|formatCurrency(currency) }}</td>
+    </tr>
+{% else %}
+    <tr>
+        <td{{ (pdf ? ' style="' ~ cell ~ 'color: #64748b;"' : ' class="text-secondary statement-empty"')|raw }} colspan="5">{{ 'report.statement.empty'|trans }}</td>
+    </tr>
+{% endfor %}
+<tr class="statement-total">
+    <td{{ (pdf ? ' style="' ~ cell ~ 'font-weight: bold; border-top: 1.5px solid #1e293b;"' : ' class="fw-semibold"')|raw }} colspan="2">{{ 'report.statement.closing'|trans({'%date%': to|format_date('long')}) }}</td>
+    <td{{ (pdf ? ' style="' ~ cell ~ 'text-align: right; font-weight: bold; border-top: 1.5px solid #1e293b;"' : ' class="text-end text-nowrap fw-semibold"')|raw }}>{{ statement.debit|formatCurrency(currency) }}</td>
+    <td{{ (pdf ? ' style="' ~ cell ~ 'text-align: right; font-weight: bold; border-top: 1.5px solid #1e293b;"' : ' class="text-end text-nowrap fw-semibold"')|raw }}>{{ statement.credit|formatCurrency(currency) }}</td>
+    <td{{ (pdf ? ' style="' ~ cell ~ 'text-align: right; font-weight: bold; border-top: 1.5px solid #1e293b;"' : ' class="text-end text-nowrap fw-semibold statement-closing"')|raw }}>{{ statement.closing|formatCurrency(currency) }}</td>
+</tr>
