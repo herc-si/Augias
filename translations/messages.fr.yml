@@ -513,6 +513,11 @@ bill:
         tax: 'TVA'
         total: Total
 billing:
+    seller_identity:
+        address: "Vos documents partiront sans l'adresse de votre société."
+        both: "Vos documents partiront sans l'adresse ni l'identifiant de votre société (SIRET, n° de TVA…)."
+        complete: 'Compléter'
+        identifier: "Vos documents partiront sans identifiant de votre société (SIRET, n° de TVA…)."
     subject: Objet
     disbursements: Débours
     discount: Remise
