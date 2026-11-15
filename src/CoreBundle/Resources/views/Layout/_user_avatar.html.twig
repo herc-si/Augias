@@ -1,0 +1,25 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # The signed-in user's avatar: their initials, drawn here.
+ #
+ # It used to be an image fetched from gravatar.com with the MD5 of the e-mail
+ # address, so every page told a third party who was signed in and from which
+ # IP address — for a grey silhouette, most users having no Gravatar account.
+ # Nothing leaves the application any more.
+ #
+ # Solid ink and white rather than a tint: the same markup sits on the white
+ # top bar and on the dark sidebar header of the phone layout, where a tint
+ # vanished.
+ #
+ # Decorative: the link around it carries the accessible name.
+ #}
+{% set initials = ((app.user.firstName|default('')|slice(0, 1)) ~ (app.user.lastName|default('')|slice(0, 1)))|upper %}
+<span class="avatar avatar-sm bg-primary text-white fw-semibold" aria-hidden="true">{{ initials ?: app.user.email|slice(0, 1)|upper }}</span>
