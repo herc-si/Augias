@@ -15,3 +15,6 @@
 // Page header — stack the title above its action buttons on small screens,
 // where Tabler's side-by-side columns squeeze long document titles.
 @import 'page-header';
+
+// Top bar — quiet text instead of the accent colour Tabler's default resolves to.
+@import 'navbar-top';

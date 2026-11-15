@@ -1,0 +1,14 @@
+/**
+ * Top bar text colour
+ *
+ * Tabler colours the navbar with `secondary`, a grey in its own palette. Here
+ * `secondary` is the terracotta accent, so the signed-in user's e-mail address
+ * came out in the accent colour. The top bar carries quiet text: bind it to the
+ * `text-secondary` token of DESIGN.md.
+ *
+ * `header` keeps the sidebar (`aside.navbar-vertical`) out of this rule.
+ */
+
+header.navbar {
+    --swp-navbar-color: var(--swp-text-secondary);
+}
