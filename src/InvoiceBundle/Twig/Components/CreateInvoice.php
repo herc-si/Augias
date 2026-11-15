@@ -90,6 +90,13 @@ final class CreateInvoice extends AbstractController
     #[LiveProp(writable: false)]
     public ?Quote $fromQuote = null;
 
+    /**
+     * The accepted quote this invoice bills a deposit on, if it is a deposit
+     * invoice: tied to it when the form is saved, like {@see $fromQuote}.
+     */
+    #[LiveProp(writable: false)]
+    public ?Quote $depositForQuote = null;
+
     #[LiveProp(writable: true)]
     public ?string $previousClientId = null;
 
@@ -447,6 +454,10 @@ final class CreateInvoice extends AbstractController
         // saves an invoice of its own, not tied to it.
         if ($this->fromQuote instanceof Quote && ! $this->fromQuote->getInvoice() instanceof Invoice) {
             $invoice->setQuote($this->fromQuote);
+        }
+
+        if ($this->depositForQuote instanceof Quote) {
+            $invoice->setDepositForQuote($this->depositForQuote);
         }
 
         // Apply state transitions

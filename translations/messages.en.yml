@@ -2210,6 +2210,22 @@ installation:
         locale_placeholder: 'Please select a locale'
 invalid_file: 'Invalid File'
 invoice:
+    deposit:
+        card:
+            draft: 'Deposit invoice, draft'
+            help: 'A deposit invoice opens, to check before saving it. Disbursements are left out of it.'
+            percentage: 'Bill a deposit of'
+            submit: Bill
+            title: Deposits
+        deduction: 'Deposit already billed — invoice no. %invoice% of %date%'
+        flash:
+            final_exists: 'The invoice of this quote already exists: nothing is left to bill as a deposit.'
+            percentage: 'Enter a percentage above 0 and of at most %remaining% %, the share of the quote not billed as a deposit yet.'
+        line: 'Deposit of %percentage% % on quote no. %quote%'
+        line_with_tax: 'Deposit of %percentage% % on quote no. %quote% (%tax%)'
+        subject: 'Deposit on quote no. %quote%'
+        view:
+            title: 'Deposit on quote'
     credit_notes:
         use_on_payment: 'Use them when recording the payment: "Pay Now".'
         applied: '%amount% of credit notes set against this invoice.'

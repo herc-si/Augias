@@ -38,5 +38,10 @@ final class QuoteRemovalListener
         if ($invoice instanceof Invoice && $invoice->getQuote() === $quote) {
             $invoice->detachQuote();
         }
+
+        // Its deposit invoices stay too, for the same reason.
+        foreach ($quote->getDepositInvoices() as $deposit) {
+            $deposit->setDepositForQuote(null);
+        }
     }
 }
