@@ -513,6 +513,11 @@ bill:
         tax: 'VAT'
         total: Total
 billing:
+    seller_identity:
+        address: "Your documents will go out without your company's address."
+        both: "Your documents will go out without your company's address or identifier (registration number, VAT number…)."
+        complete: 'Complete'
+        identifier: "Your documents will go out without a company identifier (registration number, VAT number…)."
     subject: Subject
     disbursements: Disbursements
     discount: Discount
