@@ -77,7 +77,7 @@ final class CreateDeposit extends AbstractController
         $remaining = $this->deposits->remainingPercentage($quote);
 
         if (! $percentage->isPositive() || $percentage->isGreaterThan($remaining)) {
-            $this->addFlash('danger', $this->translator->trans('invoice.deposit.flash.percentage', ['%remaining%' => str_replace('.', ',', (string) $remaining->stripTrailingZeros())]));
+            $this->addFlash('danger', $this->translator->trans('invoice.deposit.flash.percentage', ['%remaining%' => str_replace('.', ',', (string) $remaining->strippedOfTrailingZeros())]));
 
             return $back;
         }

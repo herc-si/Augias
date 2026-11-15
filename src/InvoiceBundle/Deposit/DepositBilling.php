@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Deposit;
 
+use Augias\CoreBundle\Billing\TotalCalculator;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\Line;
@@ -58,6 +59,7 @@ final readonly class DepositBilling
     public function __construct(
         private InvoiceManager $invoiceManager,
         private TaxSnapshotCopier $taxSnapshotCopier,
+        private TotalCalculator $totalCalculator,
         private TranslatorInterface $translator,
     ) {
     }
@@ -132,8 +134,11 @@ final readonly class DepositBilling
                 count($groups) > 1 && '' !== $taxes ? 'invoice.deposit.line_with_tax' : 'invoice.deposit.line',
                 ['%percentage%' => $this->percentageLabel($percentage), '%quote%' => $quote->getQuoteId(), '%tax%' => $taxes],
             ));
-            $deposit->setPrice(BigInteger::of((string) $amount->multipliedBy($share)->toScale(0, RoundingMode::HalfUp)));
+            $price = BigInteger::of((string) $amount->multipliedBy($share)->toScale(0, RoundingMode::HalfUp));
+            $deposit->setPrice($price);
             $deposit->setQty(1);
+            // The calculator reads the line's own total, as the form fills it in.
+            $deposit->setTotal($price);
             $deposit->setSupplyType($first->getSupplyType());
             $deposit->setPosition($position++);
             $deposit->getTaxes()->clear();
@@ -157,7 +162,12 @@ final readonly class DepositBilling
         }
 
         $invoice->setSubject($this->translator->trans('invoice.deposit.subject', ['%quote%' => $quote->getQuoteId()]));
-        $invoice->setDepositForQuote($quote);
+        // The draft came with the quote's totals: the form shows these before anything is typed.
+        $this->totalCalculator->calculateTotals($invoice);
+
+        // Not tied to the quote here: the draft is not saved, and hanging it on the
+        // quote's list would make any flush of the request fail on it. The form
+        // ties the two when it is saved.
 
         return $invoice;
     }
@@ -190,6 +200,7 @@ final readonly class DepositBilling
                 ]));
                 $deduction->setPrice($line->getPrice());
                 $deduction->setQty($line->getQty()->toBigDecimal()->negated());
+                $deduction->setTotal(BigInteger::of((string) $this->net($line)->negated()->toScale(0, RoundingMode::HalfUp)));
                 $deduction->setUnit($line->getUnit());
                 $deduction->setSupplyType($line->getSupplyType());
                 $deduction->setPosition($position++);
@@ -217,6 +228,8 @@ final readonly class DepositBilling
             $rest->setValueMoney(BigInteger::of((string) ($left->isNegative() ? BigDecimal::zero() : $left)->toScale(0, RoundingMode::HalfUp)));
             $final->setDiscount($rest);
         }
+
+        $this->totalCalculator->calculateTotals($final);
     }
 
     /**

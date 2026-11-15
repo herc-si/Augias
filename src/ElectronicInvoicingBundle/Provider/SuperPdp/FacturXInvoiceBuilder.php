@@ -145,10 +145,17 @@ final readonly class FacturXInvoiceBuilder
         $documentBuilder = ZugferdDocumentBuilder::createNew(ZugferdProfiles::PROFILE_EN16931);
 
         // A credit note is type 381 with positive amounts: the type carries
-        // the meaning, not the sign (EN 16931).
+        // the meaning, not the sign (EN 16931). A deposit invoice is a
+        // prepayment invoice, 386 in the same code list (UNTDID 1001).
+        $type = match (true) {
+            $isCreditNote => ZugferdInvoiceType::CREDITNOTE,
+            $invoice instanceof Invoice && $invoice->isDeposit() => ZugferdInvoiceType::PREPAYMENTINVOICE,
+            default => ZugferdInvoiceType::INVOICE,
+        };
+
         $documentBuilder->setDocumentInformation(
             $isCreditNote ? $invoice->getCreditNoteId() : $invoice->getInvoiceId(),
-            $isCreditNote ? ZugferdInvoiceType::CREDITNOTE : ZugferdInvoiceType::INVOICE,
+            $type,
             $isCreditNote ? $invoice->getCreditNoteDate() : $invoice->getInvoiceDate(),
             $client?->getCurrencyCode() ?? $this->systemConfig->getCurrency()->getCode(),
         );
