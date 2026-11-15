@@ -27,6 +27,7 @@ use DateTime;
 use DateTimeInterface;
 use Deprecated;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\NonUniqueResultException;
 use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\Query;
@@ -73,6 +74,35 @@ class PaymentRepository extends EntityRepository
             ->leftJoin($alias . '.method', 'incomeMethod')
             ->andWhere('incomeMethod.gatewayName IS NULL OR incomeMethod.gatewayName <> :clientCreditGateway')
             ->setParameter('clientCreditGateway', PaymentMethod::GATEWAY_CREDIT);
+    }
+
+    /**
+     * What each client paid between two instants, for the revenue report.
+     * Settling an invoice from a client's credit is not money coming in, and
+     * is left out like everywhere else.
+     *
+     * @return list<array{clientId: mixed, client: string|null, currencyCode: string|null, total: mixed}>
+     */
+    public function getIncomeByClientBetween(DateTimeInterface $from, DateTimeInterface $to): array
+    {
+        $qb = $this->createQueryBuilder('p');
+
+        $qb->select('c.id AS clientId', 'c.name AS client', 'p.currencyCode AS currencyCode', 'SUM(p.totalAmount) AS total')
+            ->innerJoin('p.client', 'c')
+            ->where('p.status = :status')
+            // `created`, like the dashboard's own totals: it is always set, `completed` is not.
+            ->andWhere('p.created BETWEEN :from AND :to')
+            ->setParameter('status', PaymentStatus::Captured->value)
+            ->setParameter('from', $from, Types::DATETIME_IMMUTABLE)
+            ->setParameter('to', $to, Types::DATETIME_IMMUTABLE)
+            ->groupBy('c.id', 'c.name', 'p.currencyCode');
+
+        $this->onlyIncome($qb);
+
+        /** @var list<array{clientId: mixed, client: string|null, currencyCode: string|null, total: mixed}> $rows */
+        $rows = $qb->getQuery()->getArrayResult();
+
+        return $rows;
     }
 
     /**
