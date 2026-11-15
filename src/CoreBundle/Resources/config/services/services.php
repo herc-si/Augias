@@ -22,8 +22,11 @@ use Augias\CoreBundle\Feature\NullUpgradePromptProvider;
 use Augias\CoreBundle\Feature\UpgradePromptProvider;
 use Augias\CoreBundle\Form\Extension\FeatureRestrictedExtension;
 use Augias\CoreBundle\Routing\Loader\AbstractDirectoryLoader;
+use Augias\CoreBundle\Search\DatabaseSearchService;
 use Augias\CoreBundle\Search\MultiSearchService;
+use Augias\CoreBundle\Search\SearchBackendInterface;
 use Augias\CoreBundle\Search\SearchQueryParser;
+use Augias\CoreBundle\Search\ToggledSearchBackend;
 use Augias\CoreBundle\Storage\DocumentStorage;
 use Augias\CoreBundle\Subscription\NullPaidSubscriptionGate;
 use Augias\CoreBundle\Templates\BillingDocumentType;
@@ -170,6 +173,11 @@ return static function (ContainerConfigurator $containerConfigurator, ContainerB
     $services->set(MultiSearchService::class)
         ->arg('$formatters', tagged_iterator('augias.search.result_formatter'))
         ->arg('$indexPrefix', env('AUGIAS_MEILISEARCH_PREFIX'));
+
+    $services->set(DatabaseSearchService::class)
+        ->arg('$formatters', tagged_iterator('augias.search.result_formatter'));
+
+    $services->alias(SearchBackendInterface::class, ToggledSearchBackend::class);
 
     $services->set(SearchQueryParser::class)
         ->arg('$formatters', tagged_iterator('augias.search.result_formatter'));

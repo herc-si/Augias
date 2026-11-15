@@ -103,10 +103,11 @@ const ICON_COLORS: Record<string, string> = {
 
 /* stimulusFetch: 'lazy' */
 export default class GlobalSearchController extends Controller<HTMLElement> {
-    static values = { url: String, suggestionsUrl: String };
+    static values = { url: String, suggestionsUrl: String, advanced: { type: Boolean, default: true } };
     static targets = ['input', 'dropdown', 'results', 'spinner', 'chips', 'suggestions'];
 
     declare urlValue: string;
+    declare advancedValue: boolean;
     declare suggestionsUrlValue: string;
     declare inputTarget: HTMLInputElement;
     declare dropdownTarget: HTMLElement;
@@ -224,6 +225,13 @@ export default class GlobalSearchController extends Controller<HTMLElement> {
     }
 
     private checkForSuggestions(): void {
+        // Qualifiers are Meilisearch's: the database search reads plain text only,
+        // so offering "status:paid" there would promise a filter that is not applied.
+        if (!this.advancedValue) {
+            this.hideSuggestions();
+            return;
+        }
+
         const value = this.inputTarget.value;
         const lastWord = value.split(/\s+/).pop() ?? '';
 
@@ -423,6 +431,8 @@ export default class GlobalSearchController extends Controller<HTMLElement> {
     }
 
     private checkForChipCreation(): void {
+        if (!this.advancedValue) return;
+
         const value = this.inputTarget.value;
 
         // Only trigger on space as the last character

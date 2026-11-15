@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Action;
 
-use Augias\CoreBundle\Search\MultiSearchService;
+use Augias\CoreBundle\Search\SearchBackendInterface;
 use Augias\CoreBundle\Search\SearchQueryParser;
 use Augias\CoreBundle\Search\SearchResult;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -30,7 +30,7 @@ use function trim;
 final readonly class Search
 {
     public function __construct(
-        private MultiSearchService $searchService,
+        private SearchBackendInterface $searchService,
         private SearchQueryParser $queryParser,
     ) {
     }
