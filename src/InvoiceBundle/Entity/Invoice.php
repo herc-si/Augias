@@ -223,6 +223,17 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
     #[ApiProperty(example: '/api/quotes/3fa85f64-5717-4562-b3fc-2c963f66afa6')]
     private ?Quote $quote = null;
 
+    /**
+     * The quote this invoice bills a deposit on, when it is a deposit invoice.
+     *
+     * A link of its own, beside {@see $quote}: that one stays "the invoice of
+     * the quote", one to one — the final invoice — while a quote can have
+     * several deposits billed before it.
+     */
+    #[ORM\ManyToOne(targetEntity: Quote::class, inversedBy: 'depositInvoices')]
+    #[ORM\JoinColumn(name: 'deposit_quote_id', nullable: true, onDelete: 'SET NULL')]
+    private ?Quote $depositForQuote = null;
+
     #[ORM\ManyToOne(targetEntity: RecurringInvoice::class, inversedBy: 'invoices')]
     #[ORM\JoinColumn(name: 'recurring_invoice_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?RecurringInvoice $recurringInvoice = null;
@@ -634,6 +645,30 @@ class Invoice extends BaseInvoice implements Stringable, Journalled
         $this->quote = $quote;
         $quote->setInvoice($this);
         return $this;
+    }
+
+    public function getDepositForQuote(): ?Quote
+    {
+        return $this->depositForQuote;
+    }
+
+    public function setDepositForQuote(?Quote $quote): self
+    {
+        $this->depositForQuote = $quote;
+
+        if ($quote instanceof Quote && ! $quote->getDepositInvoices()->contains($this)) {
+            $quote->getDepositInvoices()->add($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * A deposit invoice bills part of a quote ahead of the work.
+     */
+    public function isDeposit(): bool
+    {
+        return $this->depositForQuote instanceof Quote;
     }
 
     /**

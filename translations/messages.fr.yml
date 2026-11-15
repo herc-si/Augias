@@ -2210,6 +2210,22 @@ installation:
         locale_placeholder: 'Veuillez sélectionner une langue'
 invalid_file: 'Fichier invalide'
 invoice:
+    deposit:
+        card:
+            draft: "Facture d'acompte en brouillon"
+            help: "Une facture d'acompte s'ouvre, à vérifier avant de l'enregistrer. Les débours n'y entrent pas."
+            percentage: 'Facturer un acompte de'
+            submit: Facturer
+            title: Acomptes
+        deduction: "Acompte déjà facturé — facture n° %invoice% du %date%"
+        flash:
+            final_exists: 'La facture de ce devis existe déjà : il ne reste rien à facturer en acompte.'
+            percentage: "Indiquez un pourcentage supérieur à 0 et d'au plus %remaining% %, la part du devis qui n'est pas encore facturée en acompte."
+        line: 'Acompte de %percentage% % sur le devis n° %quote%'
+        line_with_tax: 'Acompte de %percentage% % sur le devis n° %quote% (%tax%)'
+        subject: 'Acompte sur le devis n° %quote%'
+        view:
+            title: "Acompte sur le devis"
     credit_notes:
         use_on_payment: 'Utilisables au moment du paiement : « Payer maintenant ».'
         applied: '%amount% d''avoirs imputés sur cette facture.'

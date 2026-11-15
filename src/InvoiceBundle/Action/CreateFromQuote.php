@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\InvoiceBundle\Action;
 
+use Augias\InvoiceBundle\Deposit\DepositBilling;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Enum\InvoiceClientMode;
 use Augias\InvoiceBundle\Form\Type\InvoiceType;
@@ -38,6 +39,7 @@ final class CreateFromQuote extends AbstractController
 {
     public function __construct(
         private readonly InvoiceManager $invoiceManager,
+        private readonly DepositBilling $deposits,
         private readonly InvoiceFormManager $formManager,
         private readonly InvoiceRepository $invoiceRepository,
         private readonly FeatureGate $featureGate,
@@ -66,7 +68,11 @@ final class CreateFromQuote extends AbstractController
             return $this->render('@AugiasInvoice/Default/invoice_gated.html.twig');
         }
 
-        $dto = $this->formManager->createDTOFromInvoice($this->invoiceManager->draftFromQuote($quote));
+        $invoice = $this->invoiceManager->draftFromQuote($quote);
+        // What deposit invoices already billed comes off: the final invoice is for the rest.
+        $this->deposits->deduct($quote, $invoice);
+
+        $dto = $this->formManager->createDTOFromInvoice($invoice);
         $dto->clientMode = InvoiceClientMode::Existing;
 
         $form = $this->createForm(InvoiceType::class, $dto, ['currency' => $quote->getClient()->getCurrency()]);
