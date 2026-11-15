@@ -10,10 +10,10 @@ The search bar at the top of every Augias page is a single entry point for findi
 
 You can focus the search bar from anywhere with the keyboard shortcut `Ctrl+K` (or `Cmd+K` on macOS), and there's a `?` icon at the right edge of the bar that opens a quick syntax reference modal.
 
-:::info[Hosted vs self-hosted]
-Search requires Meilisearch; see the [Meilisearch integration](../integrations/meilisearch.md) guide to enable it.
+:::info[With or without a search engine]
+The bar is always there. Without a search engine, Augias searches its own data directly: it finds what you type in a name, a number, a subject or an e-mail address, with no typo tolerance and without the filters described below (only `in:` works).
 
-If you're **self-hosting**, search is optional and needs to be enabled by configuring a search engine. See the [Meilisearch integration](../integrations/meilisearch.md) for the setup steps. Without it, the search bar is hidden and the rest of Augias runs normally.
+With [Meilisearch](../integrations/meilisearch.md), optional when self-hosting, search tolerates typos and understands every filter. The `?` icon only appears in that case.
 :::
 
 ## What's searchable
@@ -31,7 +31,7 @@ Results from other companies you belong to are never shown — switch companies 
 
 ## Free-text search
 
-Plain words like `acme` or `invoice 1024` do a fuzzy, typo-tolerant match across all six record types. A few practical notes:
+Plain words like `acme` or `invoice 1024` are searched across all six record types. With Meilisearch:
 
 - **Multiple words** are AND-matched within a record type — `klein 5000` shows clients/invoices/etc. that match both terms.
 - **Typos and partial matches** are handled — `klien` will still find `Klein-Lehner`.
@@ -40,7 +40,7 @@ Plain words like `acme` or `invoice 1024` do a fuzzy, typo-tolerant match across
 
 ## Qualifiers
 
-Beyond plain text, the search bar understands a small qualifier syntax — similar to GitHub's search — that maps to filters on each record type. Qualifiers have the form `key:value` and can be combined with free-text terms.
+With Meilisearch, beyond plain text, the search bar understands a small qualifier syntax — similar to GitHub's search — that maps to filters on each record type. Qualifiers have the form `key:value` and can be combined with free-text terms.
 
 | Qualifier | What it does | Example |
 | --- | --- | --- |
@@ -71,9 +71,9 @@ If results ever look out of sync (for example, after a database restore on a sel
 
 ## Troubleshooting
 
-### The search bar isn't visible
+### The filters or the `?` icon are missing
 
-This means the search engine isn't configured for your installation. On the hosted plan this shouldn't happen — contact support if you're on the hosted plan and the search bar is missing. On a self-hosted instance, follow the [Meilisearch integration](../integrations/meilisearch.md) guide to configure and connect a search engine. After setting the environment variables, clear the application cache and reload.
+Your installation searches its own data directly, without a search engine: free text works, filters do not. When self-hosting, follow the [Meilisearch integration](../integrations/meilisearch.md) guide to connect one. After setting the environment variables, clear the application cache and reload.
 
 ### A record I just created or edited isn't showing up
 
