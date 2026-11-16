@@ -5,7 +5,7 @@ description: Quelles données Augias traite, à quel titre, avec qui, et pendant
 
 # Politique de confidentialité
 
-Dernière mise à jour : 1er octobre 2026
+Dernière mise à jour : 16 novembre 2026
 
 :::warning À compléter avant publication
 Projet rédigé à partir du fonctionnement réel de l'application, à relire par un juriste. Les mentions **[À COMPLÉTER]** attendent une information ou une décision de HERC SI. Une politique qui décrirait des traitements différents de ceux réellement effectués serait sans valeur, et la section 4 dépend de choix d'exploitation encore ouverts.
@@ -80,7 +80,7 @@ Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel
 |---|---|
 | Compte et données de l'entreprise | toute la durée du contrat |
 | Données après la fin du contrat | **quatre-vingt-dix jours** (article 10 des conditions générales), pour vous permettre de les exporter, puis suppression en production |
-| Sauvegardes | **[À COMPLÉTER : durée du cycle de rotation des sauvegardes]** ; une donnée supprimée en production disparaît des sauvegardes au terme de ce cycle |
+| Sauvegardes | **trois mois au plus** : une sauvegarde par nuit, gardée sept jours, puis une par semaine pendant quatre semaines, puis une par mois pendant trois mois. Une donnée supprimée en production disparaît donc des sauvegardes au plus tard trois mois après |
 | Factures émises par HERC SI | dix ans, article L123-22 du code de commerce |
 | Journal des connexions au compte | **90 jours**, puis suppression automatique. Il est consultable depuis votre compte, et pour votre entreprise depuis la page des utilisateurs |
 | Journaux techniques du serveur | **[À COMPLÉTER : douze mois au plus est l'usage]** |
@@ -101,8 +101,9 @@ Les mesures effectivement en place :
 - **Accès d'assistance sur demande uniquement** : HERC SI n'entre dans votre entreprise que si son propriétaire ou un administrateur l'a demandé depuis l'application, pour la durée qu'il a choisie, en lecture seule, sous le nom de l'intervenant et jamais sous celui d'un de vos utilisateurs. Un bandeau le signale à chaque membre de l'entreprise pendant toute la durée de l'accès, qui peut être refermé à tout moment.
 - **Journal des consultations par HERC SI** : toute lecture de vos données dans le cadre de l'exploitation ou du support est inscrite dans votre propre dossier, avec sa date, son auteur et son motif. Le relevé vous est communiqué sur demande, et il figure dans l'export de vos données.
 - **Chiffrement des échanges** entre votre navigateur et le service.
+- **Sauvegardes chiffrées et conservées hors du serveur** : chaque nuit, les données sont sauvegardées, chiffrées sur le serveur, puis copiées sur un équipement de stockage exploité par HERC SI, en France. La clé qui permet de les relire n'est conservée ni sur le serveur ni sur cet équipement. Avant chiffrement, chaque sauvegarde est restaurée à blanc pour vérifier qu'elle est exploitable.
 
-**[À COMPLÉTER : chiffrement au repos des disques et des sauvegardes — à confirmer auprès d'Infomaniak avant de l'affirmer ici. Ne rien écrire est préférable à une affirmation invérifiée.]**
+**[À COMPLÉTER : chiffrement au repos des disques du serveur — à confirmer auprès d'Infomaniak avant de l'affirmer ici. Ne rien écrire est préférable à une affirmation invérifiée.]**
 
 ## 7. Vos droits
 
