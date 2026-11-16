@@ -513,6 +513,11 @@ bill:
         tax: 'VAT'
         total: Total
 billing:
+    seller_identity:
+        address: "Your documents will go out without your company's address."
+        both: "Your documents will go out without your company's address or identifier (registration number, VAT number…)."
+        complete: 'Complete'
+        identifier: "Your documents will go out without a company identifier (registration number, VAT number…)."
     subject: Subject
     disbursements: Disbursements
     discount: Discount
@@ -777,6 +782,50 @@ client:
         addresses: Addresses
         contacts: Contacts
         payments: Payments
+    import:
+        back: 'Back to clients'
+        button: Import
+        columns:
+            help: 'The first line of the file names the columns. Any order will do, only the Name column is required, and the usual titles are recognised in French and in English ("Raison sociale", "Company", "Code postal", "Zip"…).'
+            rule_contact: 'A contact is created when the line carries an e-mail address.'
+            rule_duplicates: 'A client whose name already exists is left out: importing the same file twice creates no duplicate.'
+            rule_name: 'One line per client.'
+            rule_type: 'Type: "Entreprise" / "Company" (the default) or "Particulier" / "Individual". A business needs a SIRET.'
+            template: 'Download the template'
+            title: 'Recognised columns'
+        done:
+            created: '{0} client created|{1} client created|]1,Inf[ clients created'
+            see_clients: 'See the clients'
+            title: 'Import complete'
+        error:
+            empty: 'The file holds no line to import.'
+            expired: 'The preview has expired. Send the file again.'
+            invalid_token: 'The session has expired. Try again.'
+            no_file: 'Choose a CSV file of 1 MB at most.'
+            no_name_column: 'No "Name" column was found on the first line of the file.'
+            too_many_rows: 'The file is over 2,000 lines. Split it into several files.'
+        preview:
+            cancel: Cancel
+            confirm: '{1} Import this client|]1,Inf[ Import these %count% clients'
+            created: '{0} client to create|{1} client to create|]1,Inf[ clients to create'
+            nothing: 'Nothing to import from this file: every line is already there or refused.'
+            title: 'Preview: nothing has been imported yet'
+        report:
+            duplicates: '{0} already there|{1} already there, left out|]1,Inf[ already there, left out'
+            duplicates_title: 'Already there'
+            line: Line
+            reason: 'What stands in the way'
+            rejected: '{0} line refused|{1} line refused|]1,Inf[ lines refused'
+            rejected_title: 'Lines refused'
+            unknown_columns: '{1} Column ignored:|]1,Inf[ Columns ignored:'
+        row:
+            no_name: "The client's name is empty."
+        title: 'Import clients'
+        upload:
+            file: 'CSV file'
+            help: 'Export your client list from your spreadsheet or your previous software as CSV (%max% lines at most). You will see what would be created before anything is imported.'
+            submit: 'See the preview'
+            title: 'Your file'
     info: 'General Info'
     invoices:
         empty:
@@ -871,6 +920,10 @@ company:
                 subject: '%company% is set to close on %date%'
                 heading: '%company% is set to close on %date%.'
                 body: 'Until then the company is read-only for all its members. On that date it will be permanently deleted with all its data: invoices, credit notes, quotes, clients, payments, accounting.'
+            archive_ready:
+                subject: "%company%'s archive is ready"
+                heading: "%company%'s archive is ready."
+                body: 'It holds everything you have to keep: the invoices and credit notes as PDF, the receipts and the accounting. Download it and store it somewhere safe before %date%: after that date the company and this archive will be deleted.'
             reminder:
                 subject: '%company% closes on %date%'
                 heading: 'Only a few days left: %company% closes on %date%.'
@@ -881,6 +934,8 @@ company:
                 body: 'The company and all its data have been permanently deleted, as planned. Your Augias account remains active for the other companies you belong to.'
             retention: 'The law requires you to keep your invoices for 10 years. Augias does not keep them after the closure: the full export holds the invoices and credit notes as PDF, the receipts and the accounting.'
             export: 'Download the full export'
+            archive: 'Download the archive'
+            archive_coming: 'We are preparing a full archive of the company right now. You will get an email with the download link as soon as it is ready.'
             hint: 'You can still cancel the closure from Augias until the planned date.'
         read_only: 'This company will close on %date%: it is read-only until then. You can still export its data.'
         banner:
@@ -924,6 +979,10 @@ company:
                 subject: 'Subscription ended: %company% will be deleted on %date%'
                 heading: "%company%'s subscription has ended. Its data will be deleted on %date%."
                 body: 'As the terms of service provide, the data is kept for ninety days after the subscription ends so that you can export it. On that date the company will be permanently deleted with all its data: invoices, credit notes, quotes, clients, payments, accounting.'
+            archive_ready:
+                subject: "%company%'s archive is ready"
+                heading: "%company%'s archive is ready."
+                body: 'It holds everything you have to keep: the invoices and credit notes as PDF, the receipts and the accounting. Download it and store it somewhere safe before %date%: after that date the company and this archive will be deleted.'
             reminder:
                 subject: '%company% will be deleted on %date%'
                 heading: "Only a few days left: %company%'s data will be deleted on %date%."
@@ -1886,6 +1945,7 @@ export:
     size: Size
     status: Status
     title: 'Data Export'
+    closure_archive: 'Closure archive'
 feature:
     available_on_plan: 'Available on the %plan% plan and higher.'
     not_in_any_plan: 'This feature is not included in any plan at the moment.'
@@ -2161,6 +2221,22 @@ installation:
         locale_placeholder: 'Please select a locale'
 invalid_file: 'Invalid File'
 invoice:
+    deposit:
+        card:
+            draft: 'Deposit invoice, draft'
+            help: 'A deposit invoice opens, to check before saving it. Disbursements are left out of it.'
+            percentage: 'Bill a deposit of'
+            submit: Bill
+            title: Deposits
+        deduction: 'Deposit already billed — invoice no. %invoice% of %date%'
+        flash:
+            final_exists: 'The invoice of this quote already exists: nothing is left to bill as a deposit.'
+            percentage: 'Enter a percentage above 0 and of at most %remaining% %, the share of the quote not billed as a deposit yet.'
+        line: 'Deposit of %percentage% % on quote no. %quote%'
+        line_with_tax: 'Deposit of %percentage% % on quote no. %quote% (%tax%)'
+        subject: 'Deposit on quote no. %quote%'
+        view:
+            title: 'Deposit on quote'
     credit_notes:
         use_on_payment: 'Use them when recording the payment: "Pay Now".'
         applied: '%amount% of credit notes set against this invoice.'
@@ -2607,7 +2683,6 @@ layout:
     profile: Profile
     switch_company: 'Switch company'
     unsplash_credit: 'Download free do whatever you want high-resolution photos from Julian Zett'
-    user_image: 'User Image'
 login_history:
     card_title: 'Your recent sign-ins'
     company:
@@ -3738,6 +3813,64 @@ saas:
         subtitle: 'Your %days%-day trial ended on %date%. Activate your subscription at %price%/month to continue using Augias.'
         title: 'Your trial has ended'
 save: Save
+report:
+    aged:
+        csv:
+            d1_30: '1 to 30 days'
+            d31_60: '31 to 60 days'
+            d61_90: '61 to 90 days'
+            over_90: 'Over 90 days'
+        days: '%from% to %to% days late'
+        empty: 'Nobody owes you anything: no issued invoice is waiting to be paid.'
+        intro: 'What your clients owe you on %date%, by how late each invoice is on its due date. The largest debt first.'
+        not_due: 'Not due'
+        over: 'Over %days% days'
+        tab: 'Aged receivables'
+    column:
+        client: Client
+        currency: Currency
+        total: Total
+    export: 'Export as CSV'
+    menu: Reports
+    revenue:
+        credited: 'Credit notes excl. tax'
+        empty: 'No invoice issued and no payment received in %year%.'
+        intro: 'What each client brought in during %year%.'
+        invoiced: 'Invoiced excl. tax'
+        invoices: Invoices
+        net: 'Net excl. tax'
+        note: 'Invoiced and credit notes: documents issued in the year, before tax and without disbursements; drafts and cancelled invoices do not count. Received: payments taken in the year, tax included.'
+        received: 'Received incl. tax'
+        tab: 'Revenue per client'
+        year: Year
+    statement:
+        all: All
+        back: 'Back to the client'
+        closing: 'Balance on %date%'
+        column:
+            balance: Balance
+            credit: Credit
+            date: Date
+            debit: Debit
+            movement: Movement
+        empty: 'Nothing moved over this period.'
+        heading: 'Statement of account'
+        intro: 'Everything that moved what the client owes you: invoices issued, payments received, credit notes and refunds, with the balance after each line.'
+        kind:
+            credit_note: 'Credit note no. %reference%'
+            invoice: 'Invoice no. %reference%'
+            payment: 'Payment of invoice no. %reference%'
+            refund: 'Refund of credit note no. %reference%'
+        menu: 'Statement of account'
+        opening: 'Balance brought forward'
+        owed_by_client: 'A positive balance is owed by the client.'
+        owed_to_client: 'The balance is negative: you owe the client this amount.'
+        pdf: 'Download as PDF'
+        period: Period
+        range: 'From %from% to %to%'
+        title: 'Statement of account — %client%'
+        until: 'Up to %to%'
+    title: Reports
 search:
     and: and
     applies_to: 'Applies to'

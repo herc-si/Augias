@@ -319,6 +319,15 @@ class Quote implements Journalled
     private ?Invoice $invoice = null;
 
     /**
+     * The deposit invoices raised on this quote, in the order they were made.
+     *
+     * @var Collection<int, Invoice>
+     */
+    #[ORM\OneToMany(targetEntity: Invoice::class, mappedBy: 'depositForQuote')]
+    #[ORM\OrderBy(['id' => 'ASC'])]
+    private Collection $depositInvoices;
+
+    /**
      * @var Collection<int, InvoiceTax>
      */
     #[ORM\OneToMany(targetEntity: InvoiceTax::class, mappedBy: 'quote', cascade: ['persist', 'remove'], orphanRemoval: true)]
@@ -331,6 +340,7 @@ class Quote implements Journalled
         $this->lines = new ArrayCollection();
         $this->users = new ArrayCollection();
         $this->invoiceTaxes = new ArrayCollection();
+        $this->depositInvoices = new ArrayCollection();
         $this->baseTotal = BigDecimal::zero();
         $this->tax = BigDecimal::zero();
         $this->total = BigDecimal::zero();
@@ -582,6 +592,14 @@ class Quote implements Journalled
     public function getInvoice(): ?Invoice
     {
         return $this->invoice;
+    }
+
+    /**
+     * @return Collection<int, Invoice>
+     */
+    public function getDepositInvoices(): Collection
+    {
+        return $this->depositInvoices;
     }
 
     public function getQuoteId(): string

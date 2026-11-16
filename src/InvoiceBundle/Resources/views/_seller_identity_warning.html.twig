@@ -1,0 +1,28 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # Shown at the top of the invoice and quote forms while the documents would go
+ # out without the issuing company's address or identifier. A warning, never a
+ # block: see SellerIdentityExtension.
+ #}
+{% set gaps = seller_identity_gaps() %}
+{% if gaps is not empty %}
+    <div class="alert alert-warning d-flex flex-wrap align-items-center gap-2 mb-4 seller-identity-warning" role="status">
+        {{ ux_icon('tabler:alert-triangle', {width: 20, height: 20, 'aria-hidden': 'true'}) }}
+        <div class="flex-fill">
+            {{ ('billing.seller_identity.' ~ (gaps|length > 1 ? 'both' : gaps|first))|trans }}
+        </div>
+        {% if route_allowed('_settings') %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ path('_settings', {section: 'system'}) }}{{ 'identifier' in gaps and 'address' not in gaps ? '#company-identifiers' }}">
+                {{ 'billing.seller_identity.complete'|trans }}
+            </a>
+        {% endif %}
+    </div>
+{% endif %}

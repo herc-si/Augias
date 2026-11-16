@@ -390,12 +390,14 @@
 // When the Tax column exists but no line-tax dropdowns are added on any row,
 // shrink the Tax slot so the "+ Add tax" button doesn't leave a visible gap
 // between Tax and Total. The wider slot returns the moment a tax row appears.
+// 120px is the French label ("+ Ajouter une taxe"): at 80px, sized on the
+// English one, the button ran into the line total.
 
 .billing-items-list:has(.column-tax):not(:has(.line-tax-row)) {
 
     .billing-items-header-row,
     .billing-item-row {
-        grid-template-columns: minmax(0, 3.2fr) minmax(130px, 1.1fr) minmax(120px, 0.7fr) minmax(80px, 0.5fr) minmax(60px, 0.4fr) 24px;
+        grid-template-columns: minmax(0, 3.2fr) minmax(130px, 1.1fr) minmax(120px, 0.7fr) minmax(120px, 0.5fr) minmax(60px, 0.4fr) 24px;
     }
 
     .billing-item-row {
@@ -1082,6 +1084,14 @@
     margin-top: var(--swp-space-8);
     z-index: 10;
     box-shadow: 0 -4px 12px rgb(0 0 0 / 5%);
+
+    // On a phone the three actions stack, and a sticky bar that tall hides a
+    // fifth of the screen while the form is being filled in. Leave it at the end
+    // of the form, where the user arrives once the lines are entered.
+    @media (width <= 576px) {
+        position: static;
+        box-shadow: none;
+    }
 }
 
 .billing-form-actions-inner {

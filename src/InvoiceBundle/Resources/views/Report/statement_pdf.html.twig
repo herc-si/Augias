@@ -1,0 +1,84 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # A client's statement of account as a PDF, to send them with a reminder or
+ # at year end. One plain design for every company template, like the
+ # disbursement note: it is a statement, not the company's showcase.
+ #}
+{% set cell = 'padding: 6px 8px; border-bottom: 0.5px solid #e2e8f0; font-size: 9pt; ' %}
+{% set head = 'padding: 6px 8px; font-size: 8pt; text-transform: uppercase; color: #475569; background: #f1f5f9; ' %}
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <style type="text/css">
+        {{ file(asset('static/pdf.css')) }}
+
+        @page {
+            margin-top: 20mm;
+            margin-bottom: {{ pdf_footer_margin() }};
+            margin-left: 15mm;
+            margin-right: 15mm;
+            footer: html_footer;
+        }
+    </style>
+</head>
+<body>
+
+{% include '@AugiasCore/Pdf/_footer.html.twig' %}
+
+<table cellpadding="0" cellspacing="0" style="width: 100%;">
+    <tr>
+        <td style="width: 50%; vertical-align: top;">
+            {% if setting('system/company/logo') is not empty %}
+                <div style="margin-bottom: 10px;">{{ app_logo(50) }}</div>
+            {% endif %}
+            <div style="font-size: 18pt; font-weight: bold; color: #1e293b; margin-bottom: 8px;">{{ company_name() }}</div>
+            <div style="font-size: 9pt; color: #475569; line-height: 1.6;">
+                {% for identifier in tax_identifiers() %}
+                    <div><span style="font-weight: 600; color: #1e293b;">{{ identifier.label }}:</span> {{ identifier.value }}</div>
+                {% endfor %}
+                {% set companyAddress = setting('system/company/contact_details/address', null, true) %}
+                {% if companyAddress is not empty %}
+                    <div>{{ address(companyAddress)|replace({"\n": ", "}) }}</div>
+                {% endif %}
+            </div>
+        </td>
+        <td style="width: 50%; vertical-align: top; text-align: right;">
+            <div style="font-size: 9pt; letter-spacing: 3px; text-transform: uppercase; color: #64748b;">{{ 'report.statement.heading'|trans }}</div>
+            <div style="font-size: 14pt; font-weight: bold; color: #1e293b; margin-top: 4px;">{{ client.name }}</div>
+            <div style="font-size: 9pt; color: #475569; line-height: 1.6; margin-top: 4px;">
+                {% for clientAddress in client.addresses|slice(0, 1) %}
+                    <div>{{ clientAddress|replace({"\n": ", "}) }}</div>
+                {% endfor %}
+                <div>{{ from ? 'report.statement.range'|trans({'%from%': from|format_date('long'), '%to%': to|format_date('long')}) : 'report.statement.until'|trans({'%to%': to|format_date('long')}) }}</div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+<table cellpadding="0" cellspacing="0" style="width: 100%; margin-top: 24px; border-collapse: collapse;">
+    <thead>
+        <tr>
+            <th style="{{ head }}text-align: left; width: 14%;">{{ 'report.statement.column.date'|trans }}</th>
+            <th style="{{ head }}text-align: left;">{{ 'report.statement.column.movement'|trans }}</th>
+            <th style="{{ head }}text-align: right; width: 16%;">{{ 'report.statement.column.debit'|trans }}</th>
+            <th style="{{ head }}text-align: right; width: 16%;">{{ 'report.statement.column.credit'|trans }}</th>
+            <th style="{{ head }}text-align: right; width: 16%;">{{ 'report.statement.column.balance'|trans }}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{ include('@AugiasInvoice/Report/_statement_lines.html.twig', {pdf: true, linked: false, cell: cell}) }}
+    </tbody>
+</table>
+
+<div style="margin-top: 14px; font-size: 9pt; color: #475569;">{{ (statement.closing.isNegative ? 'report.statement.owed_to_client' : 'report.statement.owed_by_client')|trans }}</div>
+
+</body>
+</html>

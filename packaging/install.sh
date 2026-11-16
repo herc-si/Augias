@@ -2,7 +2,7 @@
 # Augias Universal Installer
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/herc-si/Augias/4.0.x/packaging/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/herc-si/Augias/main/packaging/install.sh | sh
 #
 # Options (via environment variables):
 #   VERSION          - Specific version to install (default: latest)

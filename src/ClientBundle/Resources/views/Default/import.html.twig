@@ -1,0 +1,146 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # Client import: the upload form, then the preview of what the file would
+ # create, then the account of what it did — see Action\Import.
+ #}
+{% extends "@AugiasCore/Layout/default.html.twig" %}
+
+{% block title %}
+    {{ ux_icon('tabler:upload', {width: 24, height: 24, class: 'me-2'}) }}{{ 'client.import.title'|trans }}
+{% endblock title %}
+
+{% block heading %}
+    <a class="btn btn-outline-primary" href="{{ path('_clients_index') }}">
+        {{ ux_icon('tabler:arrow-left', {width: 18, height: 18}) }}
+        {{ 'client.import.back'|trans }}
+    </a>
+{% endblock %}
+
+{% block content %}
+    {% set token = csrf_token('client_import') %}
+
+    {% if report %}
+        <div class="client-import-report mb-4">
+        <twig:Ui:Card>
+            <h3 class="card-title">
+                {{ (imported ? 'client.import.done.title' : 'client.import.preview.title')|trans }}
+            </h3>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-4">
+                    <div class="h1 mb-0 text-success client-import-created">{{ report.createdCount }}</div>
+                    <div class="text-secondary">{{ (imported ? 'client.import.done.created' : 'client.import.preview.created')|trans({'%count%': report.createdCount}) }}</div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="h1 mb-0 client-import-duplicates">{{ report.duplicates|length }}</div>
+                    <div class="text-secondary">{{ 'client.import.report.duplicates'|trans({'%count%': report.duplicates|length}) }}</div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="h1 mb-0{{ report.rejected is not empty ? ' text-danger' }} client-import-rejected">{{ report.rejected|length }}</div>
+                    <div class="text-secondary">{{ 'client.import.report.rejected'|trans({'%count%': report.rejected|length}) }}</div>
+                </div>
+            </div>
+
+            {% if report.unknownColumns is not empty %}
+                <p class="text-secondary">
+                    {{ 'client.import.report.unknown_columns'|trans({'%count%': report.unknownColumns|length}) }}
+                    <strong>{{ report.unknownColumns|join(', ') }}</strong>
+                </p>
+            {% endif %}
+
+            {% if report.rejected is not empty %}
+                <h4 class="mt-4">{{ 'client.import.report.rejected_title'|trans }}</h4>
+                <div class="table-responsive">
+                    <table class="table table-vcenter">
+                        <thead>
+                            <tr>
+                                <th class="w-1">{{ 'client.import.report.line'|trans }}</th>
+                                <th>{{ 'client.name'|trans }}</th>
+                                <th>{{ 'client.import.report.reason'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in report.rejected %}
+                                <tr>
+                                    <td>{{ row.line }}</td>
+                                    <td>{{ row.name ?: '—' }}</td>
+                                    <td>{{ row.errors|join(' ') }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+
+            {% if report.duplicates is not empty %}
+                <h4 class="mt-4">{{ 'client.import.report.duplicates_title'|trans }}</h4>
+                <p class="text-secondary mb-0">
+                    {% for row in report.duplicates|slice(0, 30) %}{{ row.name }}{{ not loop.last ? ', ' }}{% endfor %}{% if report.duplicates|length > 30 %}…{% endif %}
+                </p>
+            {% endif %}
+
+            <div class="d-flex flex-wrap gap-2 mt-4">
+                {% if imported %}
+                    <a class="btn btn-primary" href="{{ path('_clients_index') }}">{{ 'client.import.done.see_clients'|trans }}</a>
+                {% elseif report.createdCount > 0 %}
+                    <form method="post" action="{{ path('_clients_import') }}">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <input type="hidden" name="confirm" value="1">
+                        <button class="btn btn-primary">
+                            {{ ux_icon('tabler:check', {width: 18, height: 18}) }}
+                            {{ 'client.import.preview.confirm'|trans({'%count%': report.createdCount}) }}
+                        </button>
+                    </form>
+                    <a class="btn btn-ghost" href="{{ path('_clients_import') }}">{{ 'client.import.preview.cancel'|trans }}</a>
+                {% else %}
+                    <p class="text-secondary mb-0">{{ 'client.import.preview.nothing'|trans }}</p>
+                {% endif %}
+            </div>
+        </twig:Ui:Card>
+        </div>
+    {% endif %}
+
+    {% if not report or imported or report.createdCount == 0 %}
+        <div class="row row-cards">
+            <div class="col-lg-6">
+                <twig:Ui:Card>
+                    <h3 class="card-title">{{ 'client.import.upload.title'|trans }}</h3>
+                    <p class="text-secondary">{{ 'client.import.upload.help'|trans({'%max%': maxRows|format_number}) }}</p>
+                    <form method="post" action="{{ path('_clients_import') }}" enctype="multipart/form-data" class="client-import-upload">
+                        <input type="hidden" name="_token" value="{{ token }}">
+                        <div class="mb-3">
+                            <label class="form-label" for="client-import-file">{{ 'client.import.upload.file'|trans }}</label>
+                            <input type="file" id="client-import-file" name="file" accept=".csv,text/csv,.txt" class="form-control" required>
+                        </div>
+                        <button class="btn btn-primary">{{ 'client.import.upload.submit'|trans }}</button>
+                    </form>
+                </twig:Ui:Card>
+            </div>
+            <div class="col-lg-6">
+                <twig:Ui:Card>
+                    <h3 class="card-title">{{ 'client.import.columns.title'|trans }}</h3>
+                    <p class="text-secondary">{{ 'client.import.columns.help'|trans }}</p>
+                    <p>{% for column in columns %}<span class="badge bg-primary-lt me-1 mb-1">{{ column }}</span>{% endfor %}</p>
+                    <ul class="text-secondary ps-3">
+                        <li>{{ 'client.import.columns.rule_name'|trans }}</li>
+                        <li>{{ 'client.import.columns.rule_type'|trans }}</li>
+                        <li>{{ 'client.import.columns.rule_contact'|trans }}</li>
+                        <li>{{ 'client.import.columns.rule_duplicates'|trans }}</li>
+                    </ul>
+                    <a class="btn btn-outline-primary" href="{{ path('_clients_import_template') }}">
+                        {{ ux_icon('tabler:download', {width: 18, height: 18}) }}
+                        {{ 'client.import.columns.template'|trans }}
+                    </a>
+                </twig:Ui:Card>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

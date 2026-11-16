@@ -16,6 +16,8 @@ namespace Augias\CoreBundle\Export\Security\Voter;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\ExportJob;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Enum\CompanyPermission;
+use Augias\UserBundle\Security\CompanyAccess;
 use SensitiveParameter;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Vote;
@@ -32,6 +34,7 @@ final class ExportJobVoter extends Voter
 
     public function __construct(
         private readonly CompanySelector $companySelector,
+        private readonly ?CompanyAccess $access = null,
     ) {
     }
 
@@ -49,15 +52,18 @@ final class ExportJobVoter extends Voter
 
         assert($subject instanceof ExportJob);
 
-        if (! $subject->getRequestedBy()->equals($user->getId())) {
-            return false;
-        }
-
         $activeCompanyId = $this->companySelector->getCompany();
-        if (! $activeCompanyId instanceof Ulid) {
+        if (! $activeCompanyId instanceof Ulid || ! $subject->getCompany()->getId()->equals($activeCompanyId)) {
             return false;
         }
 
-        return $subject->getCompany()->getId()->equals($activeCompanyId);
+        if ($subject->getRequestedBy()->equals($user->getId())) {
+            return true;
+        }
+
+        // A closing company's archive is for all who run it, whoever it was
+        // filed under. The role is read as it stands: a closing company
+        // otherwise grants its people nothing beyond reading.
+        return $subject->isForClosure() && true === $this->access?->role()?->can(CompanyPermission::ManageMembers);
     }
 }

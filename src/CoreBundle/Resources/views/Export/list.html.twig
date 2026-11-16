@@ -74,7 +74,12 @@
                     <tbody>
                         {% for job in jobs %}
                             <tr>
-                                <td>{{ job.createdAt|date('Y-m-d H:i') }}</td>
+                                <td>
+                                    {{ job.createdAt|date('Y-m-d H:i') }}
+                                    {% if job.isForClosure %}
+                                        <div class="small text-muted">{{ 'export.closure_archive'|trans }}</div>
+                                    {% endif %}
+                                </td>
                                 <td><span class="badge bg-secondary-lt text-uppercase">{{ job.format.value }}</span></td>
                                 <td>
                                     {% set status = job.status.value %}

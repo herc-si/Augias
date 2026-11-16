@@ -53,11 +53,16 @@ final class PurgeClosedCompaniesCommand extends Command
             $schedule->reconcile();
         }
 
+        $waiting = $this->closure->prepareArchives();
         $reminded = $this->closure->remindDue();
         $deleted = $this->closure->purgeDue();
 
         if ($reminded > 0) {
             $this->io->note(sprintf('Reminded %d compan(ies) closing within %d days.', $reminded, CompanyClosure::REMINDER_DAYS));
+        }
+
+        if ([] !== $waiting) {
+            $this->io->warning(sprintf('Kept %d compan(ies) past their date, their closure archive is not ready: %s.', count($waiting), implode(', ', $waiting)));
         }
 
         $this->io->success(0 === count($deleted)

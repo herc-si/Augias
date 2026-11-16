@@ -4,9 +4,17 @@
 {{ (keys ~ '.' ~ notice ~ '.body')|trans(params) }}
 
 {{ 'company.closing.email.retention'|trans }}
-{% if exportUrl %}
+{% if notice == 'scheduled' %}
 
+{{ 'company.closing.email.archive_coming'|trans }}
+{% endif %}
+{% if archiveUrl or exportUrl %}
+
+{% if archiveUrl %}
+{{ 'company.closing.email.archive'|trans }} : {{ archiveUrl }}
+{% else %}
 {{ 'company.closing.email.export'|trans }} : {{ exportUrl }}
+{% endif %}
 
 {{ (keys ~ '.hint')|trans }}
 {% endif %}

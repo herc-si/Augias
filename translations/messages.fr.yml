@@ -513,6 +513,11 @@ bill:
         tax: 'TVA'
         total: Total
 billing:
+    seller_identity:
+        address: "Vos documents partiront sans l'adresse de votre société."
+        both: "Vos documents partiront sans l'adresse ni l'identifiant de votre société (SIRET, n° de TVA…)."
+        complete: 'Compléter'
+        identifier: "Vos documents partiront sans identifiant de votre société (SIRET, n° de TVA…)."
     subject: Objet
     disbursements: Débours
     discount: Remise
@@ -777,6 +782,50 @@ client:
         addresses: Adresses
         contacts: Contacts
         payments: Paiements
+    import:
+        back: 'Retour aux clients'
+        button: Importer
+        columns:
+            help: "La première ligne du fichier nomme les colonnes. L'ordre est libre, seule la colonne Nom est obligatoire, et les titres usuels sont reconnus en français comme en anglais (« Raison sociale », « Company », « Code postal », « Zip »…)."
+            rule_contact: "Un contact est créé quand la ligne porte une adresse e-mail."
+            rule_duplicates: "Un client dont le nom existe déjà est laissé de côté : importer deux fois le même fichier ne crée pas de doublon."
+            rule_name: "Une ligne par client."
+            rule_type: "Type : « Entreprise » (par défaut) ou « Particulier ». Une entreprise doit avoir un SIRET."
+            template: 'Télécharger le modèle'
+            title: 'Colonnes reconnues'
+        done:
+            created: '{0} client créé|{1} client créé|]1,Inf[ clients créés'
+            see_clients: 'Voir les clients'
+            title: 'Import terminé'
+        error:
+            empty: "Le fichier ne contient aucune ligne à importer."
+            expired: "L'aperçu a expiré. Renvoyez le fichier."
+            invalid_token: 'La session a expiré. Réessayez.'
+            no_file: 'Choisissez un fichier CSV de 1 Mo au plus.'
+            no_name_column: "Aucune colonne « Nom » n'a été trouvée sur la première ligne du fichier."
+            too_many_rows: 'Le fichier dépasse 2 000 lignes. Découpez-le en plusieurs fichiers.'
+        preview:
+            cancel: Annuler
+            confirm: '{1} Importer ce client|]1,Inf[ Importer ces %count% clients'
+            created: '{0} client à créer|{1} client à créer|]1,Inf[ clients à créer'
+            nothing: "Rien à importer dans ce fichier : chaque ligne est déjà présente ou refusée."
+            title: "Aperçu : rien n'est encore importé"
+        report:
+            duplicates: '{0} déjà présent|{1} déjà présent, laissé de côté|]1,Inf[ déjà présents, laissés de côté'
+            duplicates_title: 'Déjà présents'
+            line: Ligne
+            reason: 'Ce qui bloque'
+            rejected: '{0} ligne refusée|{1} ligne refusée|]1,Inf[ lignes refusées'
+            rejected_title: 'Lignes refusées'
+            unknown_columns: '{1} Colonne ignorée :|]1,Inf[ Colonnes ignorées :'
+        row:
+            no_name: 'Le nom du client est vide.'
+        title: 'Importer des clients'
+        upload:
+            file: 'Fichier CSV'
+            help: "Exportez votre liste de clients depuis votre tableur ou votre ancien logiciel au format CSV (%max% lignes au plus). Vous verrez ce qui sera créé avant que rien ne soit importé."
+            submit: "Voir l'aperçu"
+            title: 'Votre fichier'
     info: 'Informations générales'
     invoices:
         empty:
@@ -871,6 +920,10 @@ company:
                 subject: 'Fermeture de %company% programmée le %date%'
                 heading: 'La fermeture de %company% est programmée pour le %date%.'
                 body: "D'ici là, la société est en lecture seule pour tous ses membres. À cette date, elle sera supprimée définitivement avec toutes ses données : factures, avoirs, devis, clients, paiements, comptabilité."
+            archive_ready:
+                subject: "L'archive de %company% est prête"
+                heading: "L'archive de %company% est prête."
+                body: "Elle contient tout ce que vous devez conserver : les factures et avoirs en PDF, les justificatifs et la comptabilité. Téléchargez-la et gardez-la en lieu sûr avant le %date% : après cette date, la société et cette archive seront supprimées."
             reminder:
                 subject: '%company% sera fermée le %date%'
                 heading: 'Plus que quelques jours : %company% sera fermée le %date%.'
@@ -881,6 +934,8 @@ company:
                 body: 'La société et toutes ses données ont été supprimées définitivement, comme prévu. Votre compte Augias reste actif pour les autres sociétés dont vous êtes membre.'
             retention: "La loi vous impose de conserver vos factures pendant 10 ans. Augias ne les conserve pas après la fermeture : l'export complet contient les factures et avoirs en PDF, les justificatifs et la comptabilité."
             export: "Télécharger l'export complet"
+            archive: "Télécharger l'archive"
+            archive_coming: "Nous préparons dès maintenant une archive complète de la société. Vous recevrez un e-mail avec le lien de téléchargement dès qu'elle sera prête."
             hint: "Vous pouvez encore annuler la fermeture depuis Augias, jusqu'à la date prévue."
         read_only: "Cette société sera fermée le %date% : elle est en lecture seule d'ici là. Vous pouvez encore exporter ses données."
         banner:
@@ -924,6 +979,10 @@ company:
                 subject: 'Abonnement terminé : %company% sera supprimée le %date%'
                 heading: "L'abonnement de %company% a pris fin. Ses données seront supprimées le %date%."
                 body: "Comme le prévoient les conditions générales, les données sont conservées quatre-vingt-dix jours après la fin de l'abonnement pour vous permettre de les exporter. À cette date, la société sera supprimée définitivement avec toutes ses données : factures, avoirs, devis, clients, paiements, comptabilité."
+            archive_ready:
+                subject: "L'archive de %company% est prête"
+                heading: "L'archive de %company% est prête."
+                body: "Elle contient tout ce que vous devez conserver : les factures et avoirs en PDF, les justificatifs et la comptabilité. Téléchargez-la et gardez-la en lieu sûr avant le %date% : après cette date, la société et cette archive seront supprimées."
             reminder:
                 subject: '%company% sera supprimée le %date%'
                 heading: 'Plus que quelques jours : les données de %company% seront supprimées le %date%.'
@@ -1886,6 +1945,7 @@ export:
     size: Taille
     status: Statut
     title: 'Export de données'
+    closure_archive: 'Archive de fermeture'
 feature:
     available_on_plan: 'Disponible avec le plan %plan% et supérieur.'
     not_in_any_plan: "Cette fonctionnalité n'est incluse dans aucune offre pour le moment."
@@ -2161,6 +2221,22 @@ installation:
         locale_placeholder: 'Veuillez sélectionner une langue'
 invalid_file: 'Fichier invalide'
 invoice:
+    deposit:
+        card:
+            draft: "Facture d'acompte en brouillon"
+            help: "Une facture d'acompte s'ouvre, à vérifier avant de l'enregistrer. Les débours n'y entrent pas."
+            percentage: 'Facturer un acompte de'
+            submit: Facturer
+            title: Acomptes
+        deduction: "Acompte déjà facturé — facture n° %invoice% du %date%"
+        flash:
+            final_exists: 'La facture de ce devis existe déjà : il ne reste rien à facturer en acompte.'
+            percentage: "Indiquez un pourcentage supérieur à 0 et d'au plus %remaining% %, la part du devis qui n'est pas encore facturée en acompte."
+        line: 'Acompte de %percentage% % sur le devis n° %quote%'
+        line_with_tax: 'Acompte de %percentage% % sur le devis n° %quote% (%tax%)'
+        subject: 'Acompte sur le devis n° %quote%'
+        view:
+            title: "Acompte sur le devis"
     credit_notes:
         use_on_payment: 'Utilisables au moment du paiement : « Payer maintenant ».'
         applied: '%amount% d''avoirs imputés sur cette facture.'
@@ -2607,7 +2683,6 @@ layout:
     profile: Profil
     switch_company: 'Changer de société'
     unsplash_credit: 'Téléchargez gratuitement des photos haute résolution de Julian Zett'
-    user_image: 'Photo de l''utilisateur'
 login_history:
     card_title: 'Vos dernières connexions'
     company:
@@ -3738,6 +3813,64 @@ saas:
         subtitle: 'Votre essai de %days% jours s''est terminé le %date%. Activez votre abonnement à %price%/mois pour continuer à utiliser Augias.'
         title: 'Votre essai est terminé'
 save: Enregistrer
+report:
+    aged:
+        csv:
+            d1_30: '1 à 30 jours'
+            d31_60: '31 à 60 jours'
+            d61_90: '61 à 90 jours'
+            over_90: 'Plus de 90 jours'
+        days: '%from% à %to% j de retard'
+        empty: "Personne ne vous doit rien : aucune facture émise n'attend de paiement."
+        intro: "Ce que vos clients vous doivent au %date%, selon le retard de chaque facture sur son échéance. Le plus gros encours d'abord."
+        not_due: 'Non échu'
+        over: 'Plus de %days% j'
+        tab: 'Balance âgée'
+    column:
+        client: Client
+        currency: Devise
+        total: Total
+    export: 'Exporter en CSV'
+    menu: Rapports
+    revenue:
+        credited: 'Avoirs HT'
+        empty: 'Aucune facture émise ni paiement reçu en %year%.'
+        intro: 'Ce que chaque client vous a rapporté en %year%.'
+        invoiced: 'Facturé HT'
+        invoices: Factures
+        net: 'Net HT'
+        note: "Facturé et avoirs : documents émis dans l'année, hors taxes et hors débours ; les brouillons et les factures annulées ne comptent pas. Encaissé : paiements reçus dans l'année, toutes taxes comprises."
+        received: 'Encaissé TTC'
+        tab: "Chiffre d'affaires par client"
+        year: Année
+    statement:
+        all: Tout
+        back: 'Retour au client'
+        closing: 'Solde au %date%'
+        column:
+            balance: Solde
+            credit: Crédit
+            date: Date
+            debit: Débit
+            movement: Mouvement
+        empty: 'Aucun mouvement sur cette période.'
+        heading: 'Relevé de compte'
+        intro: "Tout ce qui a fait varier ce que le client vous doit : factures émises, paiements reçus, avoirs et remboursements, avec le solde après chaque ligne."
+        kind:
+            credit_note: 'Avoir n° %reference%'
+            invoice: 'Facture n° %reference%'
+            payment: 'Paiement de la facture n° %reference%'
+            refund: "Remboursement de l'avoir n° %reference%"
+        menu: 'Relevé de compte'
+        opening: 'Solde reporté'
+        owed_by_client: 'Un solde positif est dû par le client.'
+        owed_to_client: 'Le solde est négatif : vous devez cette somme au client.'
+        pdf: 'Télécharger en PDF'
+        period: Période
+        range: 'Du %from% au %to%'
+        title: 'Relevé de compte — %client%'
+        until: "Jusqu'au %to%"
+    title: Rapports
 search:
     and: et
     applies_to: 'S''applique à'

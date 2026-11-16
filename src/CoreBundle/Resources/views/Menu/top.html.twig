@@ -76,9 +76,7 @@
 
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="{{ 'layout.aria.open_user_menu'|trans }}">
-                        <span class="avatar avatar-sm">
-                            <img src="https://gravatar.com/avatar/{{ app.user.email|md5 }}?d=mm" alt="{{ 'layout.user_image'|trans }}">
-                        </span>
+                        {{ include('@AugiasCore/Layout/_user_avatar.html.twig') }}
                         <div class="d-none d-xl-block ps-2">
                             <div>{{ app.user.email }}</div>
                         </div>
@@ -104,9 +102,13 @@
                 </div>
             </div>
             <div class="flex-grow-1 d-flex justify-content-center align-items-center px-3">
-                {% toggle 'meilisearch_search' %}
+                {# The bar is always there: Meilisearch answers it where it is installed, a plain
+                   database search otherwise. Qualifiers (status:, amount:…) and their guide are
+                   Meilisearch's, so they are only offered with it. #}
+                {% set advancedSearch = toggle('meilisearch_search') %}
                     <div class="global-search w-100"
                          data-controller="global-search"
+                         data-global-search-advanced-value="{{ advancedSearch ? 'true' : 'false' }}"
                          data-global-search-url-value="{{ path('_search') }}"
                          data-global-search-suggestions-url-value="{{ path('_search_suggestions') }}">
                         <div class="search-chips-bar" data-global-search-target="chips"></div>
@@ -123,9 +125,11 @@
                                 data-action="input->global-search#onInput keydown->global-search#onKeydown"
                             >
                             <span class="global-search-actions">
+                                {% if advancedSearch %}
                                 <button type="button" class="search-help-trigger" data-bs-toggle="modal" data-bs-target="#searchHelpModal" aria-label="{{ 'search.guide'|trans }}" title="{{ 'search.guide'|trans }}">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                                 </button>
+                                {% endif %}
                                 <span class="global-search-shortcut d-none d-xl-flex">
                                     <kbd>Ctrl</kbd><kbd>K</kbd>
                                 </span>
@@ -142,7 +146,6 @@
                             <div class="search-results" data-global-search-target="results"></div>
                         </div>
                     </div>
-                {% endtoggle %}
             </div>
         </div>
 

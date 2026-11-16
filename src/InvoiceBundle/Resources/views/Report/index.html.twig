@@ -1,0 +1,142 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # The reports page — see Action\Report\Index. One table per currency: amounts
+ # in different currencies are never added together.
+ #}
+{% extends "@AugiasCore/Layout/default.html.twig" %}
+
+{% block title %}
+    {{ ux_icon('tabler:chart-bar', {width: 24, height: 24, class: 'me-2'}) }}{{ 'report.title'|trans }}
+{% endblock title %}
+
+{% block heading %}
+    <a class="btn btn-outline-primary" href="{{ path('_reports_export', {report: report, year: report == 'revenue' ? year : null}) }}">
+        {{ ux_icon('tabler:download', {width: 18, height: 18}) }}
+        {{ 'report.export'|trans }}
+    </a>
+{% endblock %}
+
+{% block content %}
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <a class="nav-link{{ report == 'aged' ? ' active' }}" href="{{ path('_reports', {report: 'aged'}) }}">{{ 'report.aged.tab'|trans }}</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link{{ report == 'revenue' ? ' active' }}" href="{{ path('_reports', {report: 'revenue'}) }}">{{ 'report.revenue.tab'|trans }}</a>
+        </li>
+    </ul>
+
+    {% if report == 'aged' %}
+        <p class="text-secondary">{{ 'report.aged.intro'|trans({'%date%': today|format_date('long')}) }}</p>
+    {% else %}
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+            <div class="btn-group" role="group" aria-label="{{ 'report.revenue.year'|trans }}">
+                {% for choice in (thisYear - 3)..thisYear %}
+                    <a class="btn btn-sm{{ choice == year ? ' btn-primary' }}" href="{{ path('_reports', {report: 'revenue', year: choice}) }}"{{ choice == year ? ' aria-current="true"' }}>{{ choice }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        <p class="text-secondary">{{ 'report.revenue.intro'|trans({'%year%': year}) }}</p>
+    {% endif %}
+
+    {# The column titles, repeated on each cell: on a phone a row is stacked and the header is hidden. #}
+    {% if report == 'aged' %}
+        {% set labels = ['report.aged.not_due'|trans] %}
+        {% for bound in buckets|slice(1) %}
+            {% set labels = labels|merge(['report.aged.days'|trans({'%from%': buckets[loop.index0] + 1, '%to%': bound})]) %}
+        {% endfor %}
+        {% set labels = labels|merge(['report.aged.over'|trans({'%days%': buckets|last})]) %}
+    {% endif %}
+    {% set totalLabel = 'report.column.total'|trans %}
+
+    {% for currency, table in tables %}
+        <div class="report-table mb-4" data-currency="{{ currency }}">
+            <twig:Ui:Card>
+                {% if tables|length > 1 %}
+                    <h3 class="card-title">{{ currency }}</h3>
+                {% endif %}
+                <div class="table-responsive">
+                    <table class="table table-vcenter report-stacked">
+                        <thead>
+                            <tr>
+                                <th>{{ 'report.column.client'|trans }}</th>
+                                {% if report == 'aged' %}
+                                    <th class="text-end">{{ 'report.aged.not_due'|trans }}</th>
+                                    {% for bound in buckets|slice(1) %}
+                                        <th class="text-end">{{ 'report.aged.days'|trans({'%from%': buckets[loop.index0] + 1, '%to%': bound}) }}</th>
+                                    {% endfor %}
+                                    <th class="text-end">{{ 'report.aged.over'|trans({'%days%': buckets|last}) }}</th>
+                                    <th class="text-end">{{ 'report.column.total'|trans }}</th>
+                                {% else %}
+                                    <th class="text-end">{{ 'report.revenue.invoices'|trans }}</th>
+                                    <th class="text-end">{{ 'report.revenue.invoiced'|trans }}</th>
+                                    <th class="text-end">{{ 'report.revenue.credited'|trans }}</th>
+                                    <th class="text-end">{{ 'report.revenue.net'|trans }}</th>
+                                    <th class="text-end">{{ 'report.revenue.received'|trans }}</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in table.rows %}
+                                <tr>
+                                    <td class="report-row-title">
+                                        {% if route_allowed('_clients_view') %}
+                                            <a href="{{ path('_clients_view', {id: row.clientId}) }}">{{ row.client }}</a>
+                                        {% else %}
+                                            {{ row.client }}
+                                        {% endif %}
+                                    </td>
+                                    {% if report == 'aged' %}
+                                        {% for amount in row.buckets %}
+                                            <td class="text-end text-nowrap{{ loop.last and not amount.isZero ? ' text-danger' }}{{ amount.isZero ? ' report-cell-empty' }}" data-label="{{ labels[loop.index0] }}">{{ amount.isZero ? '—' : amount|formatCurrency(currency) }}</td>
+                                        {% endfor %}
+                                        <td class="text-end text-nowrap fw-semibold" data-label="{{ totalLabel }}">{{ row.total|formatCurrency(currency) }}</td>
+                                    {% else %}
+                                        <td class="text-end" data-label="{{ 'report.revenue.invoices'|trans }}">{{ row.invoices }}</td>
+                                        <td class="text-end text-nowrap" data-label="{{ 'report.revenue.invoiced'|trans }}">{{ row.invoiced|formatCurrency(currency) }}</td>
+                                        <td class="text-end text-nowrap{{ row.credited.isZero ? ' report-cell-empty' }}" data-label="{{ 'report.revenue.credited'|trans }}">{{ row.credited.isZero ? '—' : row.credited|formatCurrency(currency) }}</td>
+                                        <td class="text-end text-nowrap fw-semibold" data-label="{{ 'report.revenue.net'|trans }}">{{ row.net|formatCurrency(currency) }}</td>
+                                        <td class="text-end text-nowrap" data-label="{{ 'report.revenue.received'|trans }}">{{ row.received|formatCurrency(currency) }}</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-semibold report-total">
+                                <td class="report-row-title">{{ totalLabel }}</td>
+                                {% if report == 'aged' %}
+                                    {% for amount in table.totals %}
+                                        <td class="text-end text-nowrap{{ amount.isZero ? ' report-cell-empty' }}" data-label="{{ labels[loop.index0] }}">{{ amount|formatCurrency(currency) }}</td>
+                                    {% endfor %}
+                                    <td class="text-end text-nowrap" data-label="{{ totalLabel }}">{{ table.total|formatCurrency(currency) }}</td>
+                                {% else %}
+                                    <td class="report-cell-empty"></td>
+                                    <td class="text-end text-nowrap" data-label="{{ 'report.revenue.invoiced'|trans }}">{{ table.invoiced|formatCurrency(currency) }}</td>
+                                    <td class="text-end text-nowrap{{ table.credited.isZero ? ' report-cell-empty' }}" data-label="{{ 'report.revenue.credited'|trans }}">{{ table.credited|formatCurrency(currency) }}</td>
+                                    <td class="text-end text-nowrap" data-label="{{ 'report.revenue.net'|trans }}">{{ table.net|formatCurrency(currency) }}</td>
+                                    <td class="text-end text-nowrap" data-label="{{ 'report.revenue.received'|trans }}">{{ table.received|formatCurrency(currency) }}</td>
+                                {% endif %}
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </twig:Ui:Card>
+        </div>
+    {% else %}
+        <twig:Ui:Card>
+            <p class="text-secondary mb-0 report-empty">{{ (report == 'aged' ? 'report.aged.empty' : 'report.revenue.empty')|trans({'%year%': year}) }}</p>
+        </twig:Ui:Card>
+    {% endfor %}
+
+    {% if report == 'revenue' and tables is not empty %}
+        <p class="text-secondary small">{{ 'report.revenue.note'|trans }}</p>
+    {% endif %}
+{% endblock %}
