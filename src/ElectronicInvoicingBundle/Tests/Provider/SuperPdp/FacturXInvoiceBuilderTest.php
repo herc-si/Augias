@@ -371,6 +371,15 @@ final class FacturXInvoiceBuilderTest extends KernelTestCase
         self::assertStringContainsString('<ram:RateApplicablePercent>0.00</ram:RateApplicablePercent>', $xml);
         self::assertMatchesRegularExpression('/<ram:SpecifiedTaxRegistration>\s*<ram:ID schemeID="FC">\d+<\/ram:ID>/', $xml);
         self::assertStringContainsString('<ram:ExemptionReasonCode>VATEX-FR-FRANCHISE</ram:ExemptionReasonCode>', $xml);
+        // What it refused on 16/11/2026: the reason repeated on each line. It
+        // is said once, in the document's VAT breakdown, and the lines carry
+        // their category and rate only.
+        self::assertSame(1, substr_count($xml, '<ram:ExemptionReasonCode>'));
+        self::assertSame(1, substr_count($xml, '<ram:ExemptionReason>'));
+
+        foreach (explode('<ram:IncludedSupplyChainTradeLineItem>', explode('<ram:ApplicableHeaderTradeAgreement>', $xml)[0]) as $line) {
+            self::assertStringNotContainsString('ExemptionReason', $line);
+        }
     }
 
     /**
