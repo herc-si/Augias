@@ -74,6 +74,6 @@ Pour utiliser directement Nginx ou Apache, faites pointer la racine des document
 
 Ouvrez l'adresse affichée par la Symfony CLI (en général `https://127.0.0.1:7005`) et terminez avec l'[assistant de premier démarrage](./system-installation.md).
 
-Pour le flux de développement, les conventions de code et le lancement des tests, lisez [`CONTRIBUTING.md`](https://github.com/herc-si/Augias/blob/4.0.x/CONTRIBUTING.md) dans le dépôt.
+Pour le flux de développement, les conventions de code et le lancement des tests, lisez [`CONTRIBUTING.md`](https://github.com/herc-si/Augias/blob/main/CONTRIBUTING.md) dans le dépôt.
 
 En cas de problème, [signalez-le](https://github.com/herc-si/Augias/issues).

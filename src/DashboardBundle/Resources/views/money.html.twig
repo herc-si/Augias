@@ -19,17 +19,31 @@
  #
  #   amount     Minor units (cents). Same contract as the `formatCurrency` filter.
  #   currency   ISO code string, a Money\Currency, or empty to fall back to the
- #              system currency. Both the displayed code and the formatted digits
- #              resolve from this one value, so they can never disagree.
+ #              system currency. Both the displayed symbol and the formatted
+ #              digits resolve from this one value, so they can never disagree.
+ #
+ # The currency is shown as its symbol, on the side the locale puts it: "1 234,56 €"
+ # in French, "€1,234.56" in English. It used to be the ISO code in front
+ # ("EUR 1 234,56"), which no other screen of the application wrote (15/11/2026).
+ # Intl disambiguates where a bare symbol would not: "$US", "CA$".
  #   modifiers  Bare modifier names, e.g. ['total', 'paid'] -> `money--total money--paid`.
  #
  # Reminder for callers: `paid` and `overdue` are only ever valid next to a
  # visible label that says so. A green total with no "Paid" beside it is a bug.
  #}
 {% macro money(amount, currency, modifiers = []) %}
-    {%- set code = currency is empty ? '' : currency|trim -%}
+    {%- set code = currency is empty ? null : currency|trim -%}
+    {#- A currency Intl does not know has no symbol: its code is all there is to show. -#}
+    {%- set symbol = currencyFormatter().getCurrencySymbol(code, true) ?: code -%}
+    {#- The locale's own pattern says which side the symbol goes: ask it. -#}
+    {%- set symbolFirst = (1|formatCurrency(code))|last matches '/\\d/' -%}
     <span class="money{% for modifier in modifiers %} money--{{ modifier }}{% endfor %}">
-        <span class="money-currency">{{ code ?: currencyFormatter().getCurrencySymbol(null, true) }}</span>
-        <strong class="money-amount">{{ amount|formatCurrencyAmount(code ?: null) }}</strong>
+        {%- if symbolFirst -%}
+            <span class="money-currency money-currency--symbol">{{ symbol }}</span>
+        {%- endif -%}
+        <strong class="money-amount">{{ amount|formatCurrencyAmount(code) }}</strong>
+        {%- if not symbolFirst -%}
+            <span class="money-currency money-currency--symbol">{{ symbol }}</span>
+        {%- endif -%}
     </span>
 {% endmacro %}

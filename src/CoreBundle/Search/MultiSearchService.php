@@ -31,7 +31,7 @@ use function substr;
 /**
  * @see \Augias\CoreBundle\Tests\Search\MultiSearchServiceTest
  */
-final class MultiSearchService
+final class MultiSearchService implements SearchBackendInterface
 {
     /**
      * @var array<string, ResultFormatterInterface>|null

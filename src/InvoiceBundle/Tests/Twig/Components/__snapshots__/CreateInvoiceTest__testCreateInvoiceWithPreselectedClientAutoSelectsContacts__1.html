@@ -1,5 +1,5 @@
 <html><body>
-<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateInvoice" data-live-url-value="/_components/CreateInvoice" data-live-props-value='{"isEdit":false,"invoiceEntity":null,"fromQuote":null,"previousClientId":"01JBYEQCR7DJ2YW4EXP6FYJZCR","catalogProductId":null,"formName":"invoice","invoice":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"0","disbursement":null}],"subject":"","terms":"Payment due within 30 days of the invoice date.\nNo discount for early payment.\nLate payment penalties are due without reminder, at three times the legal interest rate in force.\nFixed compensation for recovery costs: \u20ac40 (French Commercial Code, art. L441-10 and D441-5).","notes":"","total":0,"baseTotal":0,"tax":0,"invoiceDate":"2021-01-01","deliveryDate":"","due":"","customFields":[],"__dynamic_error":"","client":"01JBYEQCR7DJ2YW4EXP6FYJZCR","users":["01JBYEQCR7DJ2YW4EXP6FYJZCR","01JBYEQCR7DJ2YW4EXP6FYJZCR"],"_token":""},"isValidated":false,"validatedFields":[],"appliedTerms":"Payment due within 30 days of the invoice date.\nNo discount for early payment.\nLate payment penalties are due without reminder, at three times the legal interest rate in force.\nFixed compensation for recovery costs: \u20ac40 (French Commercial Code, art. L441-10 and D441-5).","@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
+<div class="billing-form-page" id="in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed" data-controller="live" data-live-name-value="CreateInvoice" data-live-url-value="/_components/CreateInvoice" data-live-props-value='{"isEdit":false,"invoiceEntity":null,"fromQuote":null,"depositForQuote":null,"previousClientId":"01JBYEQCR7DJ2YW4EXP6FYJZCR","catalogProductId":null,"formName":"invoice","invoice":{"clientMode":"existing","discount":{"type":"percentage","value":"0"},"lines":[{"description":"","price":"100.00","qty":"1","unit":"unit","note":"0","position":"0","disbursement":null}],"subject":"","terms":"Payment due within 30 days of the invoice date.\nNo discount for early payment.\nLate payment penalties are due without reminder, at three times the legal interest rate in force.\nFixed compensation for recovery costs: \u20ac40 (French Commercial Code, art. L441-10 and D441-5).","notes":"","total":0,"baseTotal":0,"tax":0,"invoiceDate":"2021-01-01","deliveryDate":"","due":"","customFields":[],"__dynamic_error":"","client":"01JBYEQCR7DJ2YW4EXP6FYJZCR","users":["01JBYEQCR7DJ2YW4EXP6FYJZCR","01JBYEQCR7DJ2YW4EXP6FYJZCR"],"_token":""},"isValidated":false,"validatedFields":[],"appliedTerms":"Payment due within 30 days of the invoice date.\nNo discount for early payment.\nLate payment penalties are due without reminder, at three times the legal interest rate in force.\nFixed compensation for recovery costs: \u20ac40 (French Commercial Code, art. L441-10 and D441-5).","@attributes":{"id":"in-a-real-scenario-it-would-already-have-one---provide-one-yourself-if-needed"},"@checksum":"REPLACED_CHECKSUM"}'>
     
     <form name="invoice" method="post" data-model="on(change)|*">
 
@@ -16,13 +16,25 @@
             </div>
         </div>
 
+        
+    <div class="alert alert-warning d-flex flex-wrap align-items-center gap-2 mb-4 seller-identity-warning" role="status">
+        <svg viewbox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m-1.637-9.409L2.257 17.125a1.914 1.914 0 0 0 1.636 2.871h16.214a1.914 1.914 0 0 0 1.636-2.87L13.637 3.59a1.914 1.914 0 0 0-3.274 0M12 16h.01"></path></svg>
+        <div class="flex-fill">
+            Your documents will go out without your company's address or identifier (registration number, VAT number&acirc;&#128;&brvbar;).
+        </div>
+                    <a class="btn btn-sm btn-outline-primary" href="/settings?section=system">
+                Complete
+            </a>
+            </div>
+
+
                 <div class="billing-details-section">
             <div class="billing-details-grid">
                                 <div class="billing-details-left">
                                         <div class="client-selection">
                                                 <div class="client-mode-toggle mb-3">
                             <fieldset class="mb-3">                
-                                        <label class="control-label required form-label required" for="invoice_clientMode">Client mode</label><div id="invoice_clientMode" data-controller="symfony--ux-autocomplete--autocomplete" data-symfony--ux-autocomplete--autocomplete-max-results-value="10" data-symfony--ux-autocomplete--autocomplete-loading-more-text-value="Loading more results..." data-symfony--ux-autocomplete--autocomplete-no-results-found-text-value="No results found" data-symfony--ux-autocomplete--autocomplete-no-more-results-text-value="No more results" data-symfony--ux-autocomplete--autocomplete-create-option-text-value="Add %placeholder%..." data-symfony--ux-autocomplete--autocomplete-preload-value="focus" class="d-flex gap-2">
+                                        <label class="control-label required form-label required" for="invoice_clientMode">Client mode</label><div id="invoice_clientMode" class="d-flex gap-2">
 <div class="form-check">
 <input type="radio" id="invoice_clientMode_0" name="invoice[clientMode]" data-required="required" data-action="live#$render" class="form-check-input" value="existing" checked>
         <label class="form-check-label required" for="invoice_clientMode_0">Existing client</label>
@@ -96,8 +108,8 @@
             <label class="control-label form-label" for="invoice_subject">Subject</label><input type="text" id="invoice_subject" name="invoice[subject]" maxlength="255" aria-describedby="invoice_subject_help" class="form-control"><div class="form-text text-muted mb-0" id="invoice_subject_help">In a few words, what the document is about: shown above the lines.</div>
 </div>
                     <div class="invoice-dates-row">
-                        <div class="mb-3">                
-                                <label class="control-label required form-label required" for="invoice_invoiceDate">Invoice date</label><input type="date" id="invoice_invoiceDate" name="invoice[invoiceDate]" data-required="required" class="form-control" value="2021-01-01">
+                        <div class="mb-3">    
+                                <label class="control-label required form-label required" for="invoice_invoiceDate">Invoice Date</label><input type="date" id="invoice_invoiceDate" name="invoice[invoiceDate]" data-required="required" class="form-control" value="2021-01-01">
 </div>
                         <div class="mb-3">    
             <label class="control-label form-label" for="invoice_due">Due Date</label><input type="date" id="invoice_due" name="invoice[due]" class="form-control">

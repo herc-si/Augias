@@ -7,7 +7,7 @@ on:
       - '.github/workflows/docs.yml'
   push:
     branches:
-      - 4.0.x
+      - main
     paths:
       - 'docs/**'
       - '.github/workflows/docs.yml'

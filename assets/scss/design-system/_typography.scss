@@ -154,6 +154,30 @@
     color: var(--swp-text-secondary);
 }
 
+// Secondary text.
+// Bootstrap builds `.text-secondary` from `$secondary`, which is the terracotta
+// accent here. Templates use the class the way Tabler does, for quiet supporting
+// text, so captions and tile labels came out in the accent colour. DESIGN.md
+// gives the `text-secondary` token as slate: bind the utility to that token.
+
+.text-secondary {
+    color: var(--swp-text-secondary) !important;
+}
+
+// Help text under a field.
+// The Platform stylesheet paints `.form-hint` in `--swp-secondary`, the terracotta
+// accent, and again with more weight when the hint follows a field: a hint then
+// reads as an error. DESIGN.md gives help text a slate; the Platform sheet is
+// served after this one, hence the `body` in front of each of its selectors.
+
+body .form-text,
+body .form-hint,
+body .input-group + .form-hint,
+body .form-control + .form-hint,
+body .form-select + .form-hint {
+    color: var(--swp-text-secondary);
+}
+
 // Body text
 
 .text-body {

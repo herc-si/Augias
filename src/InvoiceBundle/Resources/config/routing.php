@@ -15,6 +15,7 @@ use Augias\InvoiceBundle\Action\ApplyCreditNotes;
 use Augias\InvoiceBundle\Action\CloneInvoice;
 use Augias\InvoiceBundle\Action\CloneRecurringInvoice;
 use Augias\InvoiceBundle\Action\Create;
+use Augias\InvoiceBundle\Action\CreateDeposit;
 use Augias\InvoiceBundle\Action\CreateFromQuote;
 use Augias\InvoiceBundle\Action\CreateRecurring;
 use Augias\InvoiceBundle\Action\CreditNote\Allocate as CreditNoteAllocate;
@@ -34,6 +35,8 @@ use Augias\InvoiceBundle\Action\Fields;
 use Augias\InvoiceBundle\Action\Index;
 use Augias\InvoiceBundle\Action\RecurringIndex;
 use Augias\InvoiceBundle\Action\RecurringTransition;
+use Augias\InvoiceBundle\Action\Report\Index as ReportIndex;
+use Augias\InvoiceBundle\Action\Report\Statement as ReportStatement;
 use Augias\InvoiceBundle\Action\SendManualReminder;
 use Augias\InvoiceBundle\Action\Transition;
 use Augias\InvoiceBundle\Action\Transition\Send;
@@ -47,6 +50,27 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->controller(Index::class);
 
     $routingConfigurator
+        ->add('_reports_statement', '/reports/statement/{id}.{_format}')
+        ->controller(ReportStatement::class)
+        ->defaults(['_format' => 'html'])
+        ->requirements(['_format' => 'html|pdf'])
+        ->methods(['GET']);
+
+    $routingConfigurator
+        ->add('_reports_export', '/reports/{report}.csv')
+        ->controller(ReportIndex::class)
+        ->defaults(['_format' => 'csv'])
+        ->requirements(['report' => 'aged|revenue'])
+        ->methods(['GET']);
+
+    $routingConfigurator
+        ->add('_reports', '/reports/{report}')
+        ->controller(ReportIndex::class)
+        ->defaults(['report' => 'aged', '_format' => 'html'])
+        ->requirements(['report' => 'aged|revenue'])
+        ->methods(['GET']);
+
+    $routingConfigurator
         ->add('_invoices_index_recurring', '/recurring')
         ->controller(RecurringIndex::class);
 
@@ -54,6 +78,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
         ->add('_invoices_create', '/create/{client}')
         ->controller(Create::class)
         ->defaults(['client' => null]);
+
+    $routingConfigurator
+        ->add('_invoices_create_deposit', '/deposit/{id}')
+        ->controller(CreateDeposit::class)
+        ->methods(['GET']);
 
     $routingConfigurator
         ->add('_invoices_create_from_quote', '/from-quote/{id}')

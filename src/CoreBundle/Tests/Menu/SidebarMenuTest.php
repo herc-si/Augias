@@ -47,6 +47,7 @@ final class SidebarMenuTest extends KernelTestCase
                 PrestationMenu::SECTION,
                 'catalog.menu.main',
                 'payment.menu.main',
+                'report.menu',
                 'accounting.menu.main',
                 'menu.top.system',
             ],

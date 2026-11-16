@@ -16,6 +16,7 @@ namespace Augias\CoreBundle\Form\Extension;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\OptionsResolver\Options;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 #[AutoconfigureTag('form.type_extension', attributes: ['priority' => -1])]
@@ -23,7 +24,9 @@ class AutocompleteExtension extends AbstractTypeExtension
 {
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefault('autocomplete', true);
+        // Radios and checkboxes render as a <div>: the autocomplete controller only
+        // accepts an <input> or a <select> and throws in the browser otherwise.
+        $resolver->setDefault('autocomplete', static fn (Options $options): bool => $options['expanded'] !== true);
     }
 
     public static function getExtendedTypes(): iterable

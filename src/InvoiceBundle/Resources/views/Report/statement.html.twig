@@ -1,0 +1,62 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{# A client's statement of account, on screen — see Action\Report\Statement. #}
+{% extends "@AugiasCore/Layout/default.html.twig" %}
+
+{% block title %}
+    {{ ux_icon('tabler:file-report', {width: 24, height: 24, class: 'me-2'}) }}{{ 'report.statement.title'|trans({'%client%': client.name}) }}
+{% endblock title %}
+
+{% block heading %}
+    {% if route_allowed('_clients_view') %}
+        <a class="btn btn-outline-primary" href="{{ path('_clients_view', {id: client.id}) }}">
+            {{ ux_icon('tabler:arrow-left', {width: 18, height: 18}) }}
+            {{ 'report.statement.back'|trans }}
+        </a>
+    {% endif %}
+    <a class="btn btn-primary" href="{{ path('_reports_statement', {id: client.id, _format: 'pdf', year: year ?? 'all'}) }}" target="_blank" rel="noopener">
+        {{ ux_icon('tabler:download', {width: 18, height: 18}) }}
+        {{ 'report.statement.pdf'|trans }}
+    </a>
+{% endblock %}
+
+{% block content %}
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+        <div class="btn-group" role="group" aria-label="{{ 'report.statement.period'|trans }}">
+            <a class="btn btn-sm{{ year is null ? ' btn-primary' }}" href="{{ path('_reports_statement', {id: client.id}) }}">{{ 'report.statement.all'|trans }}</a>
+            {% for choice in (thisYear - 3)..thisYear %}
+                <a class="btn btn-sm{{ choice == year ? ' btn-primary' }}" href="{{ path('_reports_statement', {id: client.id, year: choice}) }}">{{ choice }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <p class="text-secondary">{{ 'report.statement.intro'|trans }}</p>
+
+    <twig:Ui:Card>
+        <div class="table-responsive">
+            <table class="table table-vcenter client-statement">
+                <thead>
+                    <tr>
+                        <th>{{ 'report.statement.column.date'|trans }}</th>
+                        <th>{{ 'report.statement.column.movement'|trans }}</th>
+                        <th class="text-end">{{ 'report.statement.column.debit'|trans }}</th>
+                        <th class="text-end">{{ 'report.statement.column.credit'|trans }}</th>
+                        <th class="text-end">{{ 'report.statement.column.balance'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ include('@AugiasInvoice/Report/_statement_lines.html.twig', {pdf: false, linked: true, cell: ''}) }}
+                </tbody>
+            </table>
+        </div>
+    </twig:Ui:Card>
+
+    <p class="text-secondary small mt-3">{{ (statement.closing.isNegative ? 'report.statement.owed_to_client' : 'report.statement.owed_by_client')|trans }}</p>
+{% endblock %}

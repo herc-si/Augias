@@ -89,7 +89,8 @@
 // equal words. Scoped to `--total` deliberately. At body size (a table row, an
 // activity feed) the same reduction would put the code near 10px, which is the
 // legibility problem rather than the fix, so the code stays full size there.
+// A symbol is exempt: "€" is one glyph and does not compete with the amount.
 
-.money--total .money-currency {
+.money--total .money-currency:not(.money-currency--symbol) {
     font-size: var(--swp-money-currency-scale);
 }
