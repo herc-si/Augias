@@ -17,6 +17,8 @@ use Augias\CoreBundle\Entity\ExportJob;
 use Augias\CoreBundle\Export\Enum\ExportFormat;
 use Augias\CoreBundle\Repository\ExportJobRepository;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Enum\CompanyPermission;
+use Augias\UserBundle\Security\CompanyAccess;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -27,6 +29,7 @@ final readonly class ListExports
 {
     public function __construct(
         private ExportJobRepository $exportJobRepository,
+        private CompanyAccess $access,
     ) {
     }
 
@@ -41,7 +44,7 @@ final readonly class ListExports
         }
 
         return [
-            'jobs' => $this->exportJobRepository->findForUser($user->getId()),
+            'jobs' => $this->exportJobRepository->findForUser($user->getId(), true === $this->access->role()?->can(CompanyPermission::ManageMembers)),
             'formats' => ExportFormat::cases(),
         ];
     }

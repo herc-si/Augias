@@ -1,5 +1,5 @@
 {#
- # A company's closure: asked for, a week away, done. One template, three
+ # A company's closure: asked for, archive ready, a week away, done. One template, four
  # moments — `notice` says which.
  #}
 {% extends "@AugiasCore/Layout/Email/notification.html.twig" %}
@@ -22,12 +22,21 @@
                 <p style="color: #1e293b; font-size: 16px; line-height: 1.5; margin: 0 0 24px 0; Margin: 0 0 24px 0;">
                     {{ 'company.closing.email.retention'|trans }}
                 </p>
+                {% if notice == 'scheduled' %}
+                    <p style="color: #1e293b; font-size: 16px; line-height: 1.5; margin: 0 0 24px 0; Margin: 0 0 24px 0;">
+                        {{ 'company.closing.email.archive_coming'|trans }}
+                    </p>
+                {% endif %}
             </columns>
         </row>
     {% endapply %}
 
-    {% if exportUrl %}
-        {{ email.button('company.closing.email.export'|trans, exportUrl, 'primary', 'large') }}
+    {% if archiveUrl or exportUrl %}
+        {% if archiveUrl %}
+            {{ email.button('company.closing.email.archive'|trans, archiveUrl, 'primary', 'large') }}
+        {% else %}
+            {{ email.button('company.closing.email.export'|trans, exportUrl, 'primary', 'large') }}
+        {% endif %}
         {{ email.spacer('md') }}
         {% apply inky_to_html %}
             <row>

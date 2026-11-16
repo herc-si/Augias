@@ -30,9 +30,17 @@ Vous arrivez sur la page **Export de données**, qui affiche la date de fermetur
 
 ## Pendant les 30 jours
 
-L'entreprise est en lecture seule pour tous ses membres : rien ne peut être créé ni modifié, mais tout se consulte et s'exporte. Téléchargez l'export complet depuis `Export de données` dans votre profil : il contient les factures et les avoirs en PDF, les justificatifs et la comptabilité.
+L'entreprise est en lecture seule pour tous ses membres : rien ne peut être créé ni modifié, mais tout se consulte et s'exporte.
 
-Augias prévient par e-mail les propriétaires de l'entreprise quand la fermeture est programmée, puis peu avant la suppression.
+Augias prépare tout seul une **archive de fermeture** dès que la fermeture est programmée : c'est l'export complet, avec les factures et les avoirs en PDF, les justificatifs et la comptabilité. Les propriétaires et les administrateurs de l'entreprise reçoivent un e-mail avec le lien de téléchargement dès qu'elle est prête, et la retrouvent dans `Export de données`, dans leur profil, sous la mention **Archive de fermeture**. Téléchargez-la et gardez-la en lieu sûr : elle est supprimée avec l'entreprise.
+
+Vous pouvez aussi demander vous-même un export depuis `Export de données`, dans un autre format par exemple.
+
+Augias prévient par e-mail les propriétaires et les administrateurs quand la fermeture est programmée, quand l'archive est prête, puis peu avant la suppression. Le dernier rappel reprend le lien vers l'archive.
+
+:::note
+L'entreprise n'est pas supprimée tant que son archive n'a pas pu être préparée. Si la date est passée et qu'elle est toujours là, c'est que l'archive n'est pas encore prête.
+:::
 
 ## Revenir sur sa décision
 

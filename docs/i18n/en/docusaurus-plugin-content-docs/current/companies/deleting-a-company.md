@@ -30,9 +30,17 @@ You land on the **Data Export** page, which shows the closure date.
 
 ## During the 30 days
 
-The company is read-only for all its members: nothing can be created or changed, but everything can be viewed and exported. Download the full export from `Data Export` in your profile: it holds the invoices and credit notes as PDF, the receipts and the accounting.
+The company is read-only for all its members: nothing can be created or changed, but everything can be viewed and exported.
 
-Augias emails the company's owners when the closure is scheduled, and again shortly before the deletion.
+Augias prepares a **closure archive** by itself as soon as the closure is scheduled: it is the full export, with the invoices and credit notes as PDF, the receipts and the accounting. The company's owners and administrators get an email with the download link as soon as it is ready, and find it under `Data Export` in their profile, marked **Closure archive**. Download it and store it somewhere safe: it is deleted with the company.
+
+You can also request an export yourself from `Data Export`, in another format for instance.
+
+Augias emails the owners and administrators when the closure is scheduled, when the archive is ready, and again shortly before the deletion. The last reminder carries the link to the archive.
+
+:::note
+The company is not deleted until its archive could be prepared. If the date has passed and it is still there, the archive is not ready yet.
+:::
 
 ## Changing your mind
 

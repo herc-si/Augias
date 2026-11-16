@@ -13,7 +13,11 @@ declare(strict_types=1);
 
 namespace Augias\CoreBundle\Repository;
 
+use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\ExportJob;
+use Augias\CoreBundle\Export\Enum\ExportPurpose;
+use DateTimeImmutable;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\Persistence\ManagerRegistry;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -35,15 +39,51 @@ final class ExportJobRepository extends EntityRepository
      *
      * @return list<ExportJob>
      */
-    public function findForUser(Ulid $userId): array
+    public function findForUser(Ulid $userId, bool $withClosureArchives = false): array
     {
+        $builder = $this->createQueryBuilder('j')
+            ->setParameter('userId', $userId, UlidType::NAME);
+
+        if ($withClosureArchives) {
+            // Made for everyone who runs the company, whoever it was filed under.
+            $builder
+                ->andWhere('j.requestedBy = :userId OR j.purpose = :closure')
+                ->setParameter('closure', ExportPurpose::Closure);
+        } else {
+            $builder->andWhere('j.requestedBy = :userId');
+        }
+
         /** @var list<ExportJob> $result */
-        $result = $this->createQueryBuilder('j')
-            ->andWhere('j.requestedBy = :userId')
-            ->setParameter('userId', $userId, UlidType::NAME)
+        $result = $builder
             ->orderBy('j.createdAt', 'DESC')
             ->getQuery()
             ->getResult();
+
+        return $result;
+    }
+
+    /**
+     * The archives made for a company's closure, most recent first. The
+     * company is named rather than left to the filter: this is read by the
+     * daily task and the worker, where no company is open.
+     *
+     * @return list<ExportJob>
+     */
+    public function findClosureArchives(Company $company, ?DateTimeImmutable $since = null): array
+    {
+        $builder = $this->createQueryBuilder('j')
+            ->andWhere('j.company = :company')
+            ->andWhere('j.purpose = :closure')
+            ->setParameter('company', $company->getId(), UlidType::NAME)
+            ->setParameter('closure', ExportPurpose::Closure)
+            ->orderBy('j.createdAt', 'DESC');
+
+        if ($since instanceof DateTimeImmutable) {
+            $builder->andWhere('j.createdAt >= :since')->setParameter('since', $since, Types::DATETIME_IMMUTABLE);
+        }
+
+        /** @var list<ExportJob> $result */
+        $result = $builder->getQuery()->getResult();
 
         return $result;
     }
