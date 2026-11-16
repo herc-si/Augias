@@ -44,7 +44,15 @@ jobs:
       - name: Type check
         run: bun run typecheck
 
+      # The publisher's address, contact address and telephone number are kept
+      # out of the repository (docs/src/components/LegalIdentity). Only the build
+      # that is published gets them: a pull request build is an artifact anyone
+      # with read access can download.
       - name: Build site
+        env:
+          AUGIAS_LEGAL_ADDRESS: ${{ github.event_name == 'push' && vars.AUGIAS_LEGAL_ADDRESS || '' }}
+          AUGIAS_LEGAL_EMAIL: ${{ github.event_name == 'push' && vars.AUGIAS_LEGAL_EMAIL || '' }}
+          AUGIAS_LEGAL_PHONE: ${{ github.event_name == 'push' && vars.AUGIAS_LEGAL_PHONE || '' }}
         run: bun run build
 
       - name: Upload build artifact

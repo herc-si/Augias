@@ -25,6 +25,18 @@ const config: Config = {
   organizationName: 'Augias',
   projectName: 'Augias',
 
+  // The publisher's address, contact address and telephone number belong on
+  // the published legal notice, not in a public repository: they come from the
+  // environment of the build that publishes the site (.github/workflows/docs.yml)
+  // and are empty everywhere else. See src/components/LegalIdentity.
+  customFields: {
+    legalIdentity: {
+      address: process.env.AUGIAS_LEGAL_ADDRESS ?? '',
+      email: process.env.AUGIAS_LEGAL_EMAIL ?? '',
+      phone: process.env.AUGIAS_LEGAL_PHONE ?? '',
+    },
+  },
+
   onBrokenLinks: 'throw',
   markdown: {
     hooks: {
