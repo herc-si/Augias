@@ -111,8 +111,13 @@ jobs:
             git checkout -q --orphan gh-pages
           fi
 
+          # The build artifact is docs/build: the site itself in its docs/
+          # folder (the base URL is /docs/), and a 404.html beside it for the
+          # domain's root. Copying the artifact whole published the site one
+          # level too deep, at /docs/docs/, where none of its links resolve.
           rm -rf docs
-          cp -R /tmp/docs-build docs
+          cp -R /tmp/docs-build/docs docs
+          cp /tmp/docs-build/404.html 404.html
 
           echo "augias.herc-si.fr" > CNAME
           # Pages would run Jekyll otherwise, which drops Docusaurus' _-prefixed files.
@@ -123,7 +128,7 @@ jobs:
             printf '%s\n' '<!doctype html><meta charset="utf-8"><title>Augias</title><meta http-equiv="refresh" content="0; url=/docs/"><link rel="canonical" href="/docs/"><a href="/docs/">Augias documentation</a>' > index.html
           fi
 
-          git add -A docs CNAME .nojekyll index.html
+          git add -A docs CNAME .nojekyll index.html 404.html
           if git diff --cached --quiet; then
             echo "Nothing changed in the documentation."
             exit 0
