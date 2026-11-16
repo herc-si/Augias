@@ -275,9 +275,14 @@ final readonly class FacturXInvoiceBuilder
             $categoryCode = $this->mapVatCategory($category);
             $rate = $this->categoryRate($category, $taxRow);
             $taxAmount = $taxRow !== null ? $this->minorToFloat($taxRow->amount) : 0.0;
-            [$exemptionReason, $exemptionReasonCode] = $this->exemptionReasonFor($category);
 
-            $documentBuilder->addDocumentPositionTax($categoryCode, ZugferdVatTypeCodes::VALUE_ADDED_TAX, $rate, null, $exemptionReason, $exemptionReasonCode);
+            // No exemption reason on a line. EN 16931 gives the reason once, in
+            // the VAT breakdown of the document (BT-120 and BT-121); a line
+            // states its category and its rate and nothing more. The Factur-X
+            // EN 16931 profile marks both elements "not used" here, and SUPER
+            // PDP's validator refuses the document for it (seen 16/11/2026 on
+            // every invoice of a company in franchise).
+            $documentBuilder->addDocumentPositionTax($categoryCode, ZugferdVatTypeCodes::VALUE_ADDED_TAX, $rate);
             $documentBuilder->setDocumentPositionLineSummation($lineNet);
 
             $groupKey = $categoryCode . '|' . ($rate ?? 'null');
