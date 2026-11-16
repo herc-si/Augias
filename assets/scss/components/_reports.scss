@@ -1,0 +1,58 @@
+/*
+ * Reports (aged receivables, revenue per client).
+ *
+ * On a phone the six columns do not fit and the lateness columns were cut off
+ * behind a sideways scroll. Each row is stacked instead: the client as a title,
+ * then one line per amount carrying its column title, the empty ones left out.
+ */
+
+@media (width <= 640px) {
+
+    .report-stacked {
+
+        thead {
+            display: none;
+        }
+
+        tr {
+            display: block;
+            padding: var(--swp-space-3, 0.75rem) 0;
+            border-bottom: 1px solid var(--tblr-border-color);
+        }
+
+        td {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: var(--swp-space-3, 0.75rem);
+            padding: 0.125rem 0;
+            border: 0;
+            white-space: normal;
+
+            &::before {
+                content: attr(data-label);
+                color: var(--swp-text-secondary);
+                font-weight: var(--swp-font-normal, 400);
+                text-align: left;
+            }
+        }
+
+        .report-row-title {
+            display: block;
+            padding-bottom: 0.25rem;
+            font-weight: var(--swp-font-semibold, 600);
+
+            &::before {
+                content: none;
+            }
+        }
+
+        .report-cell-empty {
+            display: none;
+        }
+
+        tfoot tr {
+            border-bottom: 0;
+        }
+    }
+}

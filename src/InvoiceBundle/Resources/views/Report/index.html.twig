@@ -47,6 +47,16 @@
         <p class="text-secondary">{{ 'report.revenue.intro'|trans({'%year%': year}) }}</p>
     {% endif %}
 
+    {# The column titles, repeated on each cell: on a phone a row is stacked and the header is hidden. #}
+    {% if report == 'aged' %}
+        {% set labels = ['report.aged.not_due'|trans] %}
+        {% for bound in buckets|slice(1) %}
+            {% set labels = labels|merge(['report.aged.days'|trans({'%from%': buckets[loop.index0] + 1, '%to%': bound})]) %}
+        {% endfor %}
+        {% set labels = labels|merge(['report.aged.over'|trans({'%days%': buckets|last})]) %}
+    {% endif %}
+    {% set totalLabel = 'report.column.total'|trans %}
+
     {% for currency, table in tables %}
         <div class="report-table mb-4" data-currency="{{ currency }}">
             <twig:Ui:Card>
@@ -54,7 +64,7 @@
                     <h3 class="card-title">{{ currency }}</h3>
                 {% endif %}
                 <div class="table-responsive">
-                    <table class="table table-vcenter">
+                    <table class="table table-vcenter report-stacked">
                         <thead>
                             <tr>
                                 <th>{{ 'report.column.client'|trans }}</th>
@@ -77,7 +87,7 @@
                         <tbody>
                             {% for row in table.rows %}
                                 <tr>
-                                    <td>
+                                    <td class="report-row-title">
                                         {% if route_allowed('_clients_view') %}
                                             <a href="{{ path('_clients_view', {id: row.clientId}) }}">{{ row.client }}</a>
                                         {% else %}
@@ -86,33 +96,33 @@
                                     </td>
                                     {% if report == 'aged' %}
                                         {% for amount in row.buckets %}
-                                            <td class="text-end text-nowrap{{ loop.last and not amount.isZero ? ' text-danger' }}">{{ amount.isZero ? '—' : amount|formatCurrency(currency) }}</td>
+                                            <td class="text-end text-nowrap{{ loop.last and not amount.isZero ? ' text-danger' }}{{ amount.isZero ? ' report-cell-empty' }}" data-label="{{ labels[loop.index0] }}">{{ amount.isZero ? '—' : amount|formatCurrency(currency) }}</td>
                                         {% endfor %}
-                                        <td class="text-end text-nowrap fw-semibold">{{ row.total|formatCurrency(currency) }}</td>
+                                        <td class="text-end text-nowrap fw-semibold" data-label="{{ totalLabel }}">{{ row.total|formatCurrency(currency) }}</td>
                                     {% else %}
-                                        <td class="text-end">{{ row.invoices }}</td>
-                                        <td class="text-end text-nowrap">{{ row.invoiced|formatCurrency(currency) }}</td>
-                                        <td class="text-end text-nowrap">{{ row.credited.isZero ? '—' : row.credited|formatCurrency(currency) }}</td>
-                                        <td class="text-end text-nowrap fw-semibold">{{ row.net|formatCurrency(currency) }}</td>
-                                        <td class="text-end text-nowrap">{{ row.received|formatCurrency(currency) }}</td>
+                                        <td class="text-end" data-label="{{ 'report.revenue.invoices'|trans }}">{{ row.invoices }}</td>
+                                        <td class="text-end text-nowrap" data-label="{{ 'report.revenue.invoiced'|trans }}">{{ row.invoiced|formatCurrency(currency) }}</td>
+                                        <td class="text-end text-nowrap{{ row.credited.isZero ? ' report-cell-empty' }}" data-label="{{ 'report.revenue.credited'|trans }}">{{ row.credited.isZero ? '—' : row.credited|formatCurrency(currency) }}</td>
+                                        <td class="text-end text-nowrap fw-semibold" data-label="{{ 'report.revenue.net'|trans }}">{{ row.net|formatCurrency(currency) }}</td>
+                                        <td class="text-end text-nowrap" data-label="{{ 'report.revenue.received'|trans }}">{{ row.received|formatCurrency(currency) }}</td>
                                     {% endif %}
                                 </tr>
                             {% endfor %}
                         </tbody>
                         <tfoot>
                             <tr class="fw-semibold report-total">
-                                <td>{{ 'report.column.total'|trans }}</td>
+                                <td class="report-row-title">{{ totalLabel }}</td>
                                 {% if report == 'aged' %}
                                     {% for amount in table.totals %}
-                                        <td class="text-end text-nowrap">{{ amount|formatCurrency(currency) }}</td>
+                                        <td class="text-end text-nowrap{{ amount.isZero ? ' report-cell-empty' }}" data-label="{{ labels[loop.index0] }}">{{ amount|formatCurrency(currency) }}</td>
                                     {% endfor %}
-                                    <td class="text-end text-nowrap">{{ table.total|formatCurrency(currency) }}</td>
+                                    <td class="text-end text-nowrap" data-label="{{ totalLabel }}">{{ table.total|formatCurrency(currency) }}</td>
                                 {% else %}
-                                    <td></td>
-                                    <td class="text-end text-nowrap">{{ table.invoiced|formatCurrency(currency) }}</td>
-                                    <td class="text-end text-nowrap">{{ table.credited|formatCurrency(currency) }}</td>
-                                    <td class="text-end text-nowrap">{{ table.net|formatCurrency(currency) }}</td>
-                                    <td class="text-end text-nowrap">{{ table.received|formatCurrency(currency) }}</td>
+                                    <td class="report-cell-empty"></td>
+                                    <td class="text-end text-nowrap" data-label="{{ 'report.revenue.invoiced'|trans }}">{{ table.invoiced|formatCurrency(currency) }}</td>
+                                    <td class="text-end text-nowrap{{ table.credited.isZero ? ' report-cell-empty' }}" data-label="{{ 'report.revenue.credited'|trans }}">{{ table.credited|formatCurrency(currency) }}</td>
+                                    <td class="text-end text-nowrap" data-label="{{ 'report.revenue.net'|trans }}">{{ table.net|formatCurrency(currency) }}</td>
+                                    <td class="text-end text-nowrap" data-label="{{ 'report.revenue.received'|trans }}">{{ table.received|formatCurrency(currency) }}</td>
                                 {% endif %}
                             </tr>
                         </tfoot>

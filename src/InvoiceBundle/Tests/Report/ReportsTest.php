@@ -162,6 +162,9 @@ final class ReportsTest extends WebTestCase
             ->assertSuccessful()
             ->assertSeeIn('.report-table', 'Atelier Dupont')
             ->assertSeeElement('.report-total')
+            // A phone stacks each row: every amount carries its column title, and the empty ones are left out.
+            ->assertElementCount('.report-table tbody td[data-label]', 6)
+            ->assertElementCount('.report-table tbody td[data-label]:not(.report-cell-empty)', 2)
             ->assertSeeElement('a[href$="/invoices/reports/aged.csv"]')
             ->visit('/invoices/reports/revenue')
             ->assertSuccessful()
