@@ -23,10 +23,13 @@ use SolidWorx\Toggler\ToggleInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Uid\Ulid;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use function assert;
 
 final class Register extends AbstractController
@@ -37,8 +40,10 @@ final class Register extends AbstractController
         private readonly UserRepository $userRepository,
         private readonly Security $security,
         private readonly ToggleInterface $toggle,
-        #[Autowire(env: 'AUGIAS_TURNSTILE_SITE_KEY')]
-        private readonly ?string $turnstileSiteKey = null,
+        private readonly TranslatorInterface $translator,
+        // Submissions per address: the proof of work makes each one cost, this caps how many.
+        #[Autowire(service: 'limiter.registration')]
+        private readonly RateLimiterFactoryInterface $limiter,
     ) {
     }
 
@@ -77,6 +82,10 @@ final class Register extends AbstractController
 
         $form->handleRequest($request);
 
+        if ($form->isSubmitted() && ! $this->limiter->create($request->getClientIp() ?? 'unknown')->consume()->isAccepted()) {
+            $form->addError(new FormError($this->translator->trans('security.register.too_many_attempts')));
+        }
+
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             assert($data instanceof Registration);
@@ -104,6 +113,6 @@ final class Register extends AbstractController
             return $this->security->login($user, 'security.authenticator.form_login.main', 'main');
         }
 
-        return $this->render('@AugiasUser/Security/register.html.twig', ['form' => $form, 'turnstile_site_key' => $this->turnstileSiteKey]);
+        return $this->render('@AugiasUser/Security/register.html.twig', ['form' => $form]);
     }
 }

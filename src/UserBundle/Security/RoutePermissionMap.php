@@ -61,6 +61,7 @@ final class RoutePermissionMap
         '_profile' => null,
         '_profile_notifications' => null,
         '_register' => null,
+        '_register_challenge' => null,
         '_search' => CompanyPermission::BillingRead,
         '_search_suggestions' => CompanyPermission::BillingRead,
         '_select_company' => null,

@@ -67,7 +67,6 @@ Sous-traitants ultérieurs, au jour de cette mise à jour :
 | Stripe Payments Europe, Limited | encaissement des abonnements, par carte ou prélèvement SEPA | nom, adresse électronique et adresse de facturation du Client, moyen de paiement ; HERC SI ne reçoit ni les numéros de carte ni les coordonnées bancaires | Irlande ; **[À VÉRIFIER : transferts hors de l'Union prévus par l'accord de traitement des données de Stripe, et qualité de Stripe (sous-traitant ou responsable de traitement distinct) pour les données de paiement]** |
 | **[À COMPLÉTER : dénomination et siège de l'exploitant de SUPER PDP]** | plateforme agréée de facturation électronique : transmission et réception des factures électroniques, e-reporting, lorsque vous connectez votre compte | les factures et avoirs transmis ou reçus, avec l'identité et les coordonnées des parties qui y figurent | **[À COMPLÉTER]** |
 | Annuaire des entreprises (API de l'État, `recherche-entreprises.api.gouv.fr`) | recherche d'une entreprise pour préremplir une fiche client | le nom ou le numéro SIREN que vous saisissez dans la recherche | France |
-| Cloudflare | protection contre les inscriptions automatisées (Turnstile) | adresse IP et signaux techniques du navigateur, à l'inscription uniquement | réseau mondial |
 
 Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel libre peut émettre vers son éditeur amont **est désactivée sur le service hébergé**.
 
@@ -120,7 +119,7 @@ Si vos données figurent dans Augias parce qu'une entreprise vous a facturé, c'
 
 Le service dépose un **cookie de session**, strictement nécessaire à votre connexion, et un cookie de préférence si vous demandez à rester connecté. Ni l'un ni l'autre ne requiert de consentement.
 
-**Turnstile** dépose, à l'inscription uniquement, les éléments techniques nécessaires à la vérification anti-robot.
+La page d'inscription demande au navigateur un court calcul anti-robot (ALTCHA, logiciel libre exécuté par le service lui-même) : il ne dépose aucun cookie et ne contacte aucun service tiers.
 
 Aucun cookie publicitaire ni de mesure d'audience n'est utilisé sur l'application.
 

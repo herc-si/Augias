@@ -28,6 +28,7 @@ use Augias\UserBundle\Action\Member\TransferOwnership;
 use Augias\UserBundle\Action\Notifications;
 use Augias\UserBundle\Action\Profile;
 use Augias\UserBundle\Action\Register;
+use Augias\UserBundle\Action\RegisterChallenge;
 use Augias\UserBundle\Action\ResendUserInvite;
 use Augias\UserBundle\Action\Security\ChangePassword;
 use Augias\UserBundle\Action\Security\OAuthConnect;
@@ -100,6 +101,11 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_register', '/register')
         ->controller(Register::class);
+
+    $routingConfigurator
+        ->add('_register_challenge', '/register/challenge')
+        ->controller(RegisterChallenge::class)
+        ->methods(['GET']);
 
     $routingConfigurator
         ->add('_onboarding', '/onboarding')

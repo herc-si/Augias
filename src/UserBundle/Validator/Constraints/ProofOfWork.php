@@ -16,8 +16,12 @@ namespace Augias\UserBundle\Validator\Constraints;
 use Attribute;
 use Symfony\Component\Validator\Constraint;
 
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
-final class Turnstile extends Constraint
+/**
+ * The value is the registration widget's answer to a challenge this server
+ * signed (RegistrationChallenge).
+ */
+#[Attribute(Attribute::TARGET_PROPERTY)]
+final class ProofOfWork extends Constraint
 {
-    public string $message = 'user.turnstile.failed';
+    public string $message = 'user.proof_of_work.failed';
 }

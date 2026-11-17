@@ -3915,6 +3915,7 @@ security:
         remember: 'Keep me logged in'
         username: 'Email Address'
     register:
+        too_many_attempts: "Too many sign-up attempts from your connection. Try again in an hour."
         cta: 'Create your free account'
         email: 'Email Address'
         features:

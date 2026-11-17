@@ -28,6 +28,7 @@ use function Zenstruck\Foundry\faker;
 final class RegisterTest extends WebTestCase
 {
     use EnsureApplicationInstalled;
+    use SolvesRegistrationChallenge;
 
     private const string PASSWORD = 'Sup3rStr0ngP@ssw0rd';
 
@@ -37,40 +38,74 @@ final class RegisterTest extends WebTestCase
     private array $envOverrides = [];
 
     /**
-     * Default test env: the Turnstile env vars are unset, so the feature is off and registration
-     * behaves exactly as before — a valid submission creates a User and logs them in.
+     * A browser that solved the challenge the page handed out gets its account
+     * and is signed in.
      */
-    public function testRegistrationSucceedsWhenCaptchaDisabled(): void
+    public function testRegistrationSucceedsWithASolvedChallenge(): void
     {
         $this->setEnv('AUGIAS_ALLOW_REGISTRATION', '1');
 
         $client = $this->bootClient();
 
-        $this->submitRegistration($client, faker()->email());
+        $this->submitRegistration($client, faker()->email(), $this->solvedChallenge($client));
 
         self::assertResponseRedirects();
         self::assertSame(1, $this->userCount());
     }
 
     /**
-     * When the feature is on but no valid token is submitted (e.g. a bot that never solved the
-     * widget), server-side verification fails, the form is invalid, the page re-renders with the
-     * captcha error and no User is created.
+     * A script that never ran the proof of work is refused: the form re-renders
+     * with the anti-bot message and no account is created.
      */
-    public function testRegistrationBlockedWhenCaptchaTokenMissing(): void
+    public function testRegistrationIsRefusedWithoutTheProofOfWork(): void
     {
         $this->setEnv('AUGIAS_ALLOW_REGISTRATION', '1');
-        $this->setEnv('AUGIAS_TURNSTILE_SITE_KEY', 'test-site-key');
-        $this->setEnv('AUGIAS_TURNSTILE_SECRET_KEY', 'test-secret-key');
 
         $client = $this->bootClient();
 
-        $this->submitRegistration($client, faker()->email());
+        $this->submitRegistration($client, faker()->email(), null);
 
-        // An invalid form submission re-renders with Symfony's 422 status (no redirect).
         self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
-        self::assertStringContainsString('Captcha verification failed', (string) $client->getResponse()->getContent());
+        self::assertStringContainsString('anti-bot check did not complete', (string) $client->getResponse()->getContent());
         self::assertSame(0, $this->userCount());
+    }
+
+    /**
+     * One solved challenge, one account: replaying the answer for a second
+     * address is refused.
+     */
+    public function testASolvedChallengeServesOnce(): void
+    {
+        $this->setEnv('AUGIAS_ALLOW_REGISTRATION', '1');
+
+        $client = $this->bootClient();
+        $payload = $this->solvedChallenge($client);
+
+        $this->submitRegistration($client, faker()->email(), $payload);
+        self::assertResponseRedirects();
+
+        // Someone else, same answer: a fresh session.
+        $client->getCookieJar()->clear();
+        $this->submitRegistration($client, faker()->email(), $payload);
+
+        self::assertResponseStatusCodeSame(Response::HTTP_UNPROCESSABLE_ENTITY);
+        self::assertSame(1, $this->userCount());
+    }
+
+    public function testTheChallengeIsServedToAnyoneAndNeverCached(): void
+    {
+        $this->setEnv('AUGIAS_ALLOW_REGISTRATION', '1');
+
+        $client = $this->bootClient();
+        $client->request(Request::METHOD_GET, '/register/challenge');
+
+        self::assertResponseIsSuccessful();
+        self::assertStringContainsString('no-store', (string) $client->getResponse()->headers->get('Cache-Control'));
+
+        $challenge = json_decode((string) $client->getResponse()->getContent(), true, flags: JSON_THROW_ON_ERROR);
+        self::assertIsArray($challenge);
+        self::assertArrayHasKey('parameters', $challenge);
+        self::assertArrayHasKey('signature', $challenge);
     }
 
     #[After]
@@ -89,18 +124,13 @@ final class RegisterTest extends WebTestCase
         $this->envOverrides[] = $name;
     }
 
-    private function submitRegistration(KernelBrowser $client, string $email): void
+    private function submitRegistration(KernelBrowser $client, string $email, ?string $proofOfWork): void
     {
-        $crawler = $client->request(Request::METHOD_GET, '/register');
-        self::assertResponseIsSuccessful();
-
-        $form = $crawler->filter('form')->form([
+        $this->signUp($client, [
             'register[email]' => $email,
             'register[plainPassword]' => self::PASSWORD,
             'register[acceptTerms]' => '1',
-        ]);
-
-        $client->submit($form);
+        ], $proofOfWork, false);
     }
 
     private function userCount(): int

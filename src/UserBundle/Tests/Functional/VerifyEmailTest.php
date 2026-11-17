@@ -43,6 +43,7 @@ use function preg_match;
 #[Group('functional')]
 final class VerifyEmailTest extends WebTestCase
 {
+    use SolvesRegistrationChallenge;
     use EnsureApplicationInstalled;
 
     private const string EMAIL = 'someone.new@example.org';
@@ -55,12 +56,11 @@ final class VerifyEmailTest extends WebTestCase
         $client = self::createClient();
         $client->disableReboot();
 
-        $crawler = $client->request(Request::METHOD_GET, '/register');
-        $client->submit($crawler->filter('form')->form([
+        $this->signUp($client, [
             'register[email]' => self::EMAIL,
             'register[plainPassword]' => 'Sup3rStr0ngP@ssw0rd',
             'register[acceptTerms]' => '1',
-        ]));
+        ]);
         self::assertResponseRedirects();
 
         $link = null;
