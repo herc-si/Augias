@@ -22,6 +22,17 @@ return App::config([
                     'limit' => 300,
                     'interval' => '1 minute',
                 ],
+                // The registration page: challenges handed out, and accounts submitted, per address.
+                'registration_challenge' => [
+                    'policy' => 'sliding_window',
+                    'limit' => 30,
+                    'interval' => '1 hour',
+                ],
+                'registration' => [
+                    'policy' => 'sliding_window',
+                    'limit' => 10,
+                    'interval' => '1 hour',
+                ],
                 'mcp_oauth_register' => [
                     'policy' => 'fixed_window',
                     'limit' => 60,

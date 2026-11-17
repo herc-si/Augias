@@ -29,6 +29,7 @@
         "ext-pdo": "*",
         "ext-soap": "*",
         "ext-xsl": "*",
+        "altcha-org/altcha": "~2.3.0",
         "api-platform/core": "^4.3",
         "async-aws/ses": "^1.15",
         "babdev/pagerfanta-bundle": "^4.6",

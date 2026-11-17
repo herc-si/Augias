@@ -16,12 +16,6 @@
     {{ encore_entry_link_tags('register') }}
 {% endblock %}
 
-{% block javascripts %}
-    {{ parent() }}
-    {% toggle 'turnstile_captcha' %}
-        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-    {% endtoggle %}
-{% endblock %}
 
 {% block body %}
     <div class="container-fluid registration-split-layout">
@@ -94,12 +88,14 @@
                                 {{ form_errors(form.acceptTerms) }}
                             </div>
 
-                            {% toggle 'turnstile_captcha' %}
-                                <div class="mb-3">
-                                    <div class="cf-turnstile" data-sitekey="{{ turnstile_site_key }}"></div>
-                                    {{ form_errors(form.captcha) }}
-                                </div>
-                            {% endtoggle %}
+                            {# The proof of work that stands in for a captcha (RegistrationChallenge):
+                               solved in the browser, nothing loaded from elsewhere. The widget posts its
+                               answer under the form field's own name, so the field itself is not rendered. #}
+                            <div class="mb-3" {{ stimulus_controller('registration-challenge') }}>
+                                <altcha-widget challenge="{{ path('_register_challenge') }}" name="{{ field_name(form.captcha) }}" auto="onfocus"></altcha-widget>
+                                {{ form_errors(form.captcha) }}
+                            </div>
+                            {% do form.captcha.setRendered() %}
 
                             <div class="form-footer">
                                 <button type="submit" class="btn btn-primary btn-lg w-100">

@@ -52,8 +52,13 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     // company brings its own.
     $parameters->set('env(AUGIAS_SUPER_PDP_CLIENT_ID)', '');
     $parameters->set('env(AUGIAS_SUPER_PDP_CLIENT_SECRET)', '');
-    $parameters->set('env(AUGIAS_TURNSTILE_SITE_KEY)', null);
-    $parameters->set('env(AUGIAS_TURNSTILE_SECRET_KEY)', null);
+    // The registration page's proof of work (RegistrationChallenge): what a
+    // browser spends on it. Lowered in the test environment only.
+    // Measured on 17/11/2026: about two seconds on a desktop, started as soon as
+    // the form gets focus, so mostly done while the address is typed.
+    $parameters->set('augias.registration_challenge.cost', 3000);
+    $parameters->set('augias.registration_challenge.counter_min', 4000);
+    $parameters->set('augias.registration_challenge.counter_max', 8000);
 
     $parameters->set('env(AUGIAS_MAILER_DSN)', 'null://null');
     $parameters->set('env(AUGIAS_MAILER_SENDER)', 'Augias <no-reply@localhost>');
@@ -93,6 +98,10 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     if ($containerConfigurator->env() === 'test') {
         $parameters->set('env(AUGIAS_CONFIG_DIR)', param('kernel.project_dir') . '/var/cache/test/config');
         $parameters->set('env(AUGIAS_ATTACHMENTS_DIR)', param('kernel.project_dir') . '/var/cache/test/attachments');
+        // A proof of work the tests can solve in a few milliseconds.
+        $parameters->set('augias.registration_challenge.cost', 1);
+        $parameters->set('augias.registration_challenge.counter_min', 1);
+        $parameters->set('augias.registration_challenge.counter_max', 5);
     } else {
         $parameters->set('env(AUGIAS_CONFIG_DIR)', param('kernel.project_dir') . '/config/env');
         // Supporting documents, on disk rather than in the database: they are

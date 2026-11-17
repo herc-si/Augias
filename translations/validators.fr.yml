@@ -107,8 +107,8 @@ user:
         weak_stronger: 'Mot de passe trop facile à deviner. Allongez-le : 16 caractères ou plus en mêlant majuscules, minuscules, chiffres ou symboles, ou une phrase de quelques mots.'
     register:
         accept_terms: 'Vous devez accepter les conditions générales pour vous inscrire'
-    turnstile:
-        failed: 'La vérification du captcha a échoué. Veuillez réessayer.'
+    proof_of_work:
+        failed: "La vérification anti-robot n'a pas abouti. Attendez que la case soit cochée, puis réessayez."
 users:
     invitation:
         exists: 'Cet utilisateur a déjà été invité à rejoindre cette société.'

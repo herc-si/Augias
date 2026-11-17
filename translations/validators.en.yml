@@ -107,5 +107,5 @@ user:
         weak_stronger: 'This password is too easy to guess. Make it longer: 16 characters or more mixing upper case, lower case, digits or symbols, or a phrase of a few words.'
     register:
         accept_terms: 'You must accept the terms and conditions to register'
-    turnstile:
-        failed: 'Captcha verification failed. Please try again.'
+    proof_of_work:
+        failed: "The anti-bot check did not complete. Wait until the box is ticked, then try again."

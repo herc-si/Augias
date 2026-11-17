@@ -19,7 +19,6 @@ return App::config([
             'features' => [
                 'allow_registration' => env('AUGIAS_ALLOW_REGISTRATION'),
                 'google_oauth_login' => '@=env("AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_ID") !== null && env("AUGIAS_OAUTH_CLIENT_GOOGLE_CLIENT_SECRET") !== null',
-                'turnstile_captcha' => '@=env("AUGIAS_TURNSTILE_SITE_KEY") !== null && env("AUGIAS_TURNSTILE_SECRET_KEY") !== null',
                 'saas_enabled' => '@=env("AUGIAS_PLATFORM") === \'saas\'',
                 'meilisearch_search' => '@=env("AUGIAS_MEILISEARCH_URL") !== "" && env("AUGIAS_MEILISEARCH_API_KEY") !== ""',
             ],

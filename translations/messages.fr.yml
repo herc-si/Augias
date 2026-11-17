@@ -3915,6 +3915,7 @@ security:
         remember: 'Rester connecté'
         username: 'Adresse e-mail'
     register:
+        too_many_attempts: "Trop de tentatives d'inscription depuis votre connexion. Réessayez dans une heure."
         cta: 'Créez votre compte gratuit'
         email: 'Adresse e-mail'
         features:

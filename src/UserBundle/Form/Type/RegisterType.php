@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Augias\UserBundle\Form\Type;
 
 use Augias\UserBundle\DTO\Registration;
-use Augias\UserBundle\Validator\Constraints\Turnstile;
+use Augias\UserBundle\Validator\Constraints\ProofOfWork;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
@@ -74,7 +74,7 @@ final class RegisterType extends AbstractType
             // Keep the violation on this field (HiddenType bubbles errors by default)
             // so it renders next to the widget via form_errors(form.captcha).
             'error_bubbling' => false,
-            'constraints' => [new Turnstile()],
+            'constraints' => [new ProofOfWork()],
         ]);
     }
 
