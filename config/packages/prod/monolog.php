@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
+use Augias\CoreBundle\Watch\ErrorJournalHandler;
+
 return App::config([
     'monolog' => [
         'handlers' => [
@@ -28,6 +30,12 @@ return App::config([
                 'path' => 'php://stderr',
                 'level' => 'debug',
                 'formatter' => 'monolog.formatter.json',
+            ],
+            // Errors into the journal the operator console reads (error_records):
+            // what an error-tracking service would receive, kept on this server.
+            'error_journal' => [
+                'type' => 'service',
+                'id' => ErrorJournalHandler::class,
             ],
             'console' => [
                 'type' => 'console',
