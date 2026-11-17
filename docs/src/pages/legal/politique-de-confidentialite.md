@@ -81,6 +81,7 @@ Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel
 | Factures émises par HERC SI | dix ans, article L123-22 du code de commerce |
 | Journal des connexions au compte | **90 jours**, puis suppression automatique. Il est consultable depuis votre compte, et pour votre entreprise depuis la page des utilisateurs |
 | Journaux techniques du serveur | **[À COMPLÉTER : douze mois au plus est l'usage]** |
+| Journal des erreurs de l'application (message, emplacement dans le code, nombre d'occurrences), conservé sur le serveur et lu par l'exploitant | **90 jours** après la dernière occurrence, puis suppression automatique |
 | Journal de vos consultations | **90 jours**, puis suppression automatique |
 | Demandes d'assistance et leurs comptes rendus | aussi longtemps que le compte de l'entreprise ; supprimées avec elle |
 | Demandes de réinitialisation de mot de passe | quelques heures, jusqu'à expiration du lien |

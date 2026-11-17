@@ -15,6 +15,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use Augias\CoreBundle\Export\Message\RequestCompanyExport;
 use Augias\CoreBundle\Telemetry\Message\SendTelemetryMessage;
+use Augias\CronBundle\Messenger\ScheduledTaskJournalMiddleware;
 use Augias\InvoiceBundle\Message\SendInvoiceReminderMessage;
 use Augias\SaasBundle\Message\SendOnboardingEmailMessage;
 
@@ -63,7 +64,12 @@ return App::config([
             // Configure default bus
             'default_bus' => 'messenger.bus.default',
             'buses' => [
-                'messenger.bus.default' => [],
+                'messenger.bus.default' => [
+                    'middleware' => [
+                        // Each run of a scheduled task, for the operator console.
+                        ['id' => ScheduledTaskJournalMiddleware::class],
+                    ],
+                ],
             ],
             // Configure failure transport
             'failure_transport' => 'failed',
