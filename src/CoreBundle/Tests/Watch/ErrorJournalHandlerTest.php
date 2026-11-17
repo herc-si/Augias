@@ -92,14 +92,18 @@ final class ErrorJournalHandlerTest extends TestCase
 
     public function testAnExceptionThrownInALibraryIsPlacedWhereOurCodeCalledIt(): void
     {
+        $thrown = null;
+
         try {
             // Thrown inside vendor/symfony/uid, reached from this test.
             Ulid::fromString('not a ulid');
         } catch (InvalidArgumentException $e) {
+            $thrown = $e;
             $this->logger->error('Uncaught', ['exception' => $e]);
         }
 
-        self::assertStringStartsWith('vendor/', $this->relativeThrowSite($e));
+        self::assertInstanceOf(InvalidArgumentException::class, $thrown);
+        self::assertStringStartsWith('vendor/', $this->relativeThrowSite($thrown));
         self::assertSame('src/CoreBundle/Tests/Watch/ErrorJournalHandlerTest.php', $this->rows()[0]['file']);
     }
 
