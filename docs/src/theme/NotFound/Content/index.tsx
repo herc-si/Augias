@@ -15,7 +15,6 @@ function popularLinks() {
   {to: '/installation-guide/quick-install', label: translate({id: 'notFound.popular.quick', message: "Installation rapide"})},
   {to: '/companies/overview', label: translate({id: 'notFound.popular.companies', message: "Entreprises"})},
   {to: '/installation-guide/distribution-package/cron-job-setup', label: translate({id: 'notFound.popular.cron', message: "Tâches planifiées (cron)"})},
-  {to: '/integrations/sentry', label: translate({id: 'notFound.popular.sentry', message: "Intégration Sentry"})},
   ];
 }
 

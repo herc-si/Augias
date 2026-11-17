@@ -22,6 +22,8 @@ use Augias\SaasBundle\Action\ChoosePlanAction;
 use Augias\UserBundle\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Clock\ClockInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
@@ -35,7 +37,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\HttpClient\Exception\HttpExceptionInterface;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
-use function Sentry\captureException;
 use function strtolower;
 
 /**
@@ -51,6 +52,7 @@ class SubscribeController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly Telemetry $telemetry,
         private readonly ClockInterface $clock,
+        private readonly LoggerInterface $logger = new NullLogger(),
     ) {
     }
 
@@ -111,7 +113,7 @@ class SubscribeController extends AbstractController
             // cannot start was a 500 page instead of this message (test
             // instance, 29/09/2026). The HTTP client exceptions are Lemon
             // Squeezy's.
-            captureException($e);
+            $this->logger->error('The checkout could not start: ' . $e->getMessage(), ['exception' => $e]);
             $this->telemetry->event(TelemetryEvent::SaasCheckoutFailed, ['plan' => $planName]);
             $this->addFlash('error', 'saas.flash.checkout_failed');
 

@@ -373,23 +373,6 @@
         }
       }
     },
-    "sentry": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "dsn": {
-          "type": "string"
-        },
-        "existingSecret": {
-          "type": "string"
-        },
-        "existingSecretKey": {
-          "type": "string"
-        }
-      }
-    },
     "oauth": {
       "type": "object",
       "properties": {

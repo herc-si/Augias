@@ -77,29 +77,6 @@ loaded automatically via envFrom secretRef — no explicit env entry needed.
 {{- end }}
 
 {{/*
-Sentry DSN environment variable.
-
-When sentry.existingSecret is set, the DSN lives in an external secret that
-is NOT included in the chart Secret, so an explicit env entry is required.
-
-When sentry.dsn is set without an existingSecret, it is stored in the chart
-Secret and loaded automatically via envFrom secretRef — no explicit entry needed.
-
-Nothing is emitted when sentry.enabled=false.
-*/}}
-{{- define "augias.sentryEnv" -}}
-{{- if .Values.sentry.enabled }}
-{{- if .Values.sentry.existingSecret }}
-- name: AUGIAS_SENTRY_DSN
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Values.sentry.existingSecret }}
-      key: {{ required "sentry.existingSecretKey must not be empty when sentry.existingSecret is set" .Values.sentry.existingSecretKey }}
-{{- end }}
-{{- end }}
-{{- end }}
-
-{{/*
 OAuth environment variables.
 
 When oauth.google.existingSecret is set, credentials live in an external
@@ -143,9 +120,8 @@ envFrom:
 {{- $db := trim (include "augias.databaseUrl" .) }}
 {{- $mailer := trim (include "augias.mailerDsn" .) }}
 {{- $meilisearch := trim (include "augias.meilisearchEnv" .) }}
-{{- $sentry := trim (include "augias.sentryEnv" .) }}
 {{- $oauth := trim (include "augias.oauthEnv" .) }}
-{{- $hasEnv := or $db $mailer $meilisearch $sentry $oauth .Values.app.extraEnv }}
+{{- $hasEnv := or $db $mailer $meilisearch $oauth .Values.app.extraEnv }}
 {{- if $hasEnv }}
 env:
 {{- if $db }}
@@ -156,9 +132,6 @@ env:
 {{- end }}
 {{- if $meilisearch }}
   {{- $meilisearch | nindent 2 }}
-{{- end }}
-{{- if $sentry }}
-  {{- $sentry | nindent 2 }}
 {{- end }}
 {{- if $oauth }}
   {{- $oauth | nindent 2 }}

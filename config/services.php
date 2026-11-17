@@ -14,9 +14,6 @@ declare(strict_types=1);
 use Augias\AppRequirements;
 use Augias\CoreBundle\AugiasCoreBundle;
 use Augias\CoreBundle\Search\DoctrineEventSubscriberDecorator;
-use Monolog\Level;
-use Monolog\Processor\PsrLogMessageProcessor;
-use Sentry\SentryBundle\Monolog\LogsHandler;
 use SolidWorx\Toggler\ToggleInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\UX\StimulusBundle\Helper\StimulusHelper;
@@ -58,13 +55,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('env(AUGIAS_TURNSTILE_SITE_KEY)', null);
     $parameters->set('env(AUGIAS_TURNSTILE_SECRET_KEY)', null);
 
-    $parameters->set('env(AUGIAS_SENTRY_DSN)', null);
-    $parameters->set('env(AUGIAS_SENTRY_RELEASE)', '');
-    $parameters->set('env(AUGIAS_SENTRY_SEND_DEFAULT_PII)', '0');
-    $parameters->set('env(AUGIAS_SENTRY_TRACES_SAMPLE_RATE)', '0');
-    $parameters->set('env(AUGIAS_SENTRY_PROFILES_SAMPLE_RATE)', '0');
-    $parameters->set('env(AUGIAS_SENTRY_HTTP_TIMEOUT)', '2');
-    $parameters->set('env(AUGIAS_SENTRY_HTTP_CONNECT_TIMEOUT)', '2');
     $parameters->set('env(AUGIAS_MAILER_DSN)', 'null://null');
     $parameters->set('env(AUGIAS_MAILER_SENDER)', 'Augias <no-reply@localhost>');
 
@@ -117,11 +107,6 @@ return static function (ContainerConfigurator $containerConfigurator): void {
 
     $services = $containerConfigurator->services();
 
-    $services
-        ->set(PsrLogMessageProcessor::class)
-        ->tag('monolog.processor', ['handler' => 'sentry'])
-        ->tag('monolog.processor', ['handler' => 'sentry_logs']);
-
     $services->alias(StimulusHelper::class, 'stimulus.helper');
     $services->set(AppRequirements::class)
         ->autowire(true);
@@ -131,6 +116,4 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->tag('doctrine.event_listener', ['event' => 'postPersist'])
         ->tag('doctrine.event_listener', ['event' => 'postUpdate'])
         ->tag('doctrine.event_listener', ['event' => 'preRemove']);
-
-    $services->set(LogsHandler::class)->arg('$level', Level::Info);
 };

@@ -28,7 +28,6 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 use Throwable;
 use function assert;
-use function Sentry\withMonitor;
 use function sprintf;
 
 /**
@@ -65,7 +64,7 @@ final class SendRecurringInvoicesCommand extends Command
         }
 
         try {
-            withMonitor('send-recurring-invoices', function () use ($entityManager): void {
+            (function () use ($entityManager): void {
                 $recurringInvoices = $this->recurringInvoiceRepository->getActiveRecurringInvoices();
 
                 foreach ($recurringInvoices as $recurringInvoice) {
@@ -91,7 +90,7 @@ final class SendRecurringInvoicesCommand extends Command
                 }
 
                 $entityManager->flush();
-            });
+            })();
         } finally {
             if ($companyFilterEnabled) {
                 $filters->enable('company');

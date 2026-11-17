@@ -55,4 +55,3 @@ The `/metrics` endpoint reports standard Caddy HTTP server metrics (request coun
 ## Related
 
 - [Distribution package installation](../installation-guide/distribution-package/index.mdx)
-- [Sentry integration](./sentry.md)

@@ -99,13 +99,13 @@ final class SendInvoiceRemindersCommandTest extends KernelTestCase
     }
 
     /**
-     * Regression test for the cron timeout detected by Sentry (SOLIDINVOICE-74).
+     * Regression test for the cron timeout seen in production (SOLIDINVOICE-74).
      *
      * SendInvoiceReminderMessage must be routed to the async transport so the
      * hourly cron command returns in seconds rather than blocking on SMTP for
      * every qualifying invoice. Without async routing the handler runs inline,
      * and a slow or unreachable mail server causes the command to exceed
-     * Sentry's cron max_runtime, producing perpetual "timeout check-in" alerts.
+     * the hour, so that each run overlaps the next.
      *
      * If this test fails it means the message is handled synchronously: the
      * handler would have created an InvoiceReminder record during the command run.

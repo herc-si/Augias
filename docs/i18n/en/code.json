@@ -107,9 +107,6 @@
   "notFound.popular.cron": {
     "message": "Cron job setup"
   },
-  "notFound.popular.sentry": {
-    "message": "Sentry integration"
-  },
   "notFound.eyebrow": {
     "message": "404 — Page not found"
   },

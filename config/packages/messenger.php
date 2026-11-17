@@ -15,7 +15,6 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 
 use Augias\CoreBundle\Export\Message\RequestCompanyExport;
 use Augias\CoreBundle\Telemetry\Message\SendTelemetryMessage;
-use Augias\CronBundle\Messenger\SentrySchedulerMiddleware;
 use Augias\InvoiceBundle\Message\SendInvoiceReminderMessage;
 use Augias\SaasBundle\Message\SendOnboardingEmailMessage;
 
@@ -50,7 +49,7 @@ return App::config([
                 // reason: the hourly cron command must return quickly (seconds), not block
                 // while sending one SMTP email per qualifying invoice.  Without this routing
                 // the handler runs synchronously and a slow/unreachable mail server causes
-                // the cron to exceed Sentry's max_runtime → perpetual "timeout" alerts.
+                // the hourly cron to run for minutes and overlap the next one.
                 SendInvoiceReminderMessage::class => ['async'],
                 // Full company data exports are long-running and email the user on completion,
                 // so they must run out-of-band from the HTTP request that triggered them.
@@ -64,11 +63,7 @@ return App::config([
             // Configure default bus
             'default_bus' => 'messenger.bus.default',
             'buses' => [
-                'messenger.bus.default' => [
-                    'middleware' => [
-                        ['id' => SentrySchedulerMiddleware::class],
-                    ],
-                ],
+                'messenger.bus.default' => [],
             ],
             // Configure failure transport
             'failure_transport' => 'failed',
