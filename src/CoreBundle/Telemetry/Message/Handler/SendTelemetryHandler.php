@@ -20,7 +20,6 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Throwable;
 use function rtrim;
-use function Sentry\captureException;
 
 /**
  * @see \Augias\CoreBundle\Tests\Telemetry\Message\Handler\SendTelemetryHandlerTest
@@ -79,10 +78,6 @@ final readonly class SendTelemetryHandler
                 'endpoint' => $endpoint,
                 'exception' => $e,
             ]);
-
-            // Report to Sentry so we still learn about telemetry failures. This is a
-            // no-op when Sentry is not enabled.
-            captureException($e);
         }
     }
 }

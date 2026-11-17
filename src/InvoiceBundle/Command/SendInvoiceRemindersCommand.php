@@ -33,8 +33,6 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Scheduler\Attribute\AsCronTask;
 use Throwable;
 use function assert;
-use function Sentry\captureException;
-use function Sentry\withMonitor;
 use function sprintf;
 
 /**
@@ -94,13 +92,10 @@ final class SendInvoiceRemindersCommand extends Command
 
         try {
             $count = match ($this->io->getArgument('type')) {
-                'pre-due' => withMonitor('pre_due_invoice_reminders', $this->dispatchPreDueReminders(...)),
-                'overdue' => withMonitor('overdue_invoice_reminders', $this->dispatchOverdueReminders(...)),
+                'pre-due' => $this->dispatchPreDueReminders(),
+                'overdue' => $this->dispatchOverdueReminders(),
                 default => throw new InvalidArgumentException(sprintf('Invalid type "%s"', $this->io->getArgument('type'))),
             };
-        } catch (Throwable $e) {
-            captureException($e);
-            throw $e;
         } finally {
             // Re-enable company filter if it was enabled.
             //
@@ -158,7 +153,6 @@ final class SendInvoiceRemindersCommand extends Command
                     ++$count;
                 }
             } catch (DateMalformedStringException | ExceptionInterface $e) {
-                captureException($e);
                 $this->logger->error($e->getMessage(), ['exception' => $e]);
             }
         }
@@ -175,7 +169,7 @@ final class SendInvoiceRemindersCommand extends Command
         // Overdue reminders use fixed intervals (1, 7, 14 days) but respect the global enable
         // setting, which the query filters on. One scan per interval covers every company.
         foreach ($this->reminderTypes as $days => $type) {
-            $count += withMonitor(sprintf('overdue_invoice_reminders_%d_day', $days), function () use ($days, $type): int {
+            $count += (function () use ($days, $type): int {
                 $count = 0;
 
                 if ($this->io->isVerbose()) {
@@ -195,12 +189,11 @@ final class SendInvoiceRemindersCommand extends Command
                         ++$count;
                     }
                 } catch (Throwable $e) {
-                    captureException($e);
                     $this->logger->error($e->getMessage(), ['exception' => $e]);
                 }
 
                 return $count;
-            });
+            })();
         }
 
         return $count;

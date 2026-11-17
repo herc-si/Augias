@@ -44,7 +44,6 @@ use KnpU\OAuth2ClientBundle\KnpUOAuth2ClientBundle;
 use Liip\TestFixturesBundle\LiipTestFixturesBundle;
 use Meilisearch\Bundle\MeilisearchBundle;
 use Payum\Bundle\PayumBundle\PayumBundle;
-use Sentry\SentryBundle\SentryBundle;
 use SolidWorx\Platform\UiBundle\SolidWorxPlatformUiBundle;
 use SolidWorx\Toggler\Symfony\TogglerBundle;
 use Stof\DoctrineExtensionsBundle\StofDoctrineExtensionsBundle;
@@ -110,7 +109,6 @@ return [
     WebProfilerBundle::class => ['dev' => true, 'test' => true],
     TogglerBundle::class => ['all' => true],
     ZenstruckFoundryBundle::class => ['dev' => true, 'test' => true],
-    SentryBundle::class => ['all' => true],
     DropzoneBundle::class => ['all' => true],
     StimulusBundle::class => ['all' => true],
     TwigComponentBundle::class => ['all' => true],

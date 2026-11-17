@@ -18,10 +18,6 @@ data:
   AUGIAS_APPLICATION_URL: {{ .Values.app.url | quote }}
   {{- end }}
   AUGIAS_MAILER_SENDER: {{ .Values.mailer.sender | quote }}
-  {{- if .Values.sentry.enabled }}
-  AUGIAS_SENTRY_RELEASE: {{ default .Chart.AppVersion .Values.image.tag | quote }}
-  AUGIAS_SENTRY_SEND_DEFAULT_PII: "false"
-  {{- end }}
   {{- if .Values.app.workerMode }}
   FRANKENPHP_WORKER_MODE: "1"
   {{- end }}

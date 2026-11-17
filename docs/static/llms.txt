@@ -29,7 +29,7 @@
 
 ## Integrations
 
-- [Sentry](https://augias.herc-si.fr/docs/integrations/sentry): Configuring Sentry error tracking via the `SENTRY_DSN` environment variable, for both Docker and distribution-package deployments.
+- [SUPER PDP](https://augias.herc-si.fr/docs/integrations/super-pdp): Connecting a company to the SUPER PDP approved e-invoicing platform.
 
 ## External Resources
 

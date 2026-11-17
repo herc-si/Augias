@@ -182,7 +182,7 @@ const config: Config = {
             },
             {
               label: 'Intégrations',
-              to: '/integrations/sentry',
+              to: '/integrations/super-pdp',
             },
           ],
         },

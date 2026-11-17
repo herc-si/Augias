@@ -158,8 +158,6 @@ The following table lists the major configurable parameters. For the full list s
 | `redis.enabled` | Enable Bitnami Redis subchart | `false` |
 | `redis.auth.password` | Redis password | `""` |
 | `meilisearch.enabled` | Enable Meilisearch subchart (future feature) | `false` |
-| `sentry.enabled` | Enable Sentry error tracking | `false` |
-| `sentry.dsn` | Sentry DSN | `""` |
 | `oauth.google.enabled` | Enable Google OAuth | `false` |
 | `autoscaling.enabled` | Enable HPA for the main app | `false` |
 | `autoscaling.minReplicas` | HPA minimum replicas | `1` |

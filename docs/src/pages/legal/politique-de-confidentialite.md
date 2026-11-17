@@ -5,7 +5,7 @@ description: Quelles données Augias traite, à quel titre, avec qui, et pendant
 
 # Politique de confidentialité
 
-Dernière mise à jour : 16 novembre 2026
+Dernière mise à jour : 17 novembre 2026
 
 :::warning À compléter avant publication
 Projet rédigé à partir du fonctionnement réel de l'application, à relire par un juriste. Les mentions **[À COMPLÉTER]** attendent une information ou une décision de HERC SI. Une politique qui décrirait des traitements différents de ceux réellement effectués serait sans valeur, et la section 4 dépend de choix d'exploitation encore ouverts.
@@ -64,13 +64,10 @@ Sous-traitants ultérieurs, au jour de cette mise à jour :
 | Sous-traitant | Rôle | Données concernées | Localisation |
 |---|---|---|---|
 | Infomaniak Network SA | hébergement de l'application et de la base, envoi des courriers électroniques (SMTP) | l'ensemble des données ; pour le SMTP, les destinataires et le contenu des messages envoyés | Suisse ou France |
-| Sentry | suivi des erreurs applicatives | messages d'erreur, trace d'exécution, version, adresse IP | **[À COMPLÉTER : préciser si l'instance européenne de Sentry est utilisée ; à défaut les données partent aux États-Unis et il faut le dire ici]** |
 | Stripe Payments Europe, Limited | encaissement des abonnements, par carte ou prélèvement SEPA | nom, adresse électronique et adresse de facturation du Client, moyen de paiement ; HERC SI ne reçoit ni les numéros de carte ni les coordonnées bancaires | Irlande ; **[À VÉRIFIER : transferts hors de l'Union prévus par l'accord de traitement des données de Stripe, et qualité de Stripe (sous-traitant ou responsable de traitement distinct) pour les données de paiement]** |
 | **[À COMPLÉTER : dénomination et siège de l'exploitant de SUPER PDP]** | plateforme agréée de facturation électronique : transmission et réception des factures électroniques, e-reporting, lorsque vous connectez votre compte | les factures et avoirs transmis ou reçus, avec l'identité et les coordonnées des parties qui y figurent | **[À COMPLÉTER]** |
 | Annuaire des entreprises (API de l'État, `recherche-entreprises.api.gouv.fr`) | recherche d'une entreprise pour préremplir une fiche client | le nom ou le numéro SIREN que vous saisissez dans la recherche | France |
 | Cloudflare | protection contre les inscriptions automatisées (Turnstile) | adresse IP et signaux techniques du navigateur, à l'inscription uniquement | réseau mondial |
-
-L'option `AUGIAS_SENTRY_SEND_DEFAULT_PII` reste désactivée : les rapports d'erreur n'emportent pas volontairement de données identifiantes. Une trace d'exécution peut néanmoins en contenir de façon incidente, ce que la durée de conservation courte des rapports limite.
 
 Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel libre peut émettre vers son éditeur amont **est désactivée sur le service hébergé**.
 
@@ -84,7 +81,6 @@ Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel
 | Factures émises par HERC SI | dix ans, article L123-22 du code de commerce |
 | Journal des connexions au compte | **90 jours**, puis suppression automatique. Il est consultable depuis votre compte, et pour votre entreprise depuis la page des utilisateurs |
 | Journaux techniques du serveur | **[À COMPLÉTER : douze mois au plus est l'usage]** |
-| Rapports d'erreur | **[À COMPLÉTER : durée de rétention configurée chez Sentry]** |
 | Journal de vos consultations | **90 jours**, puis suppression automatique |
 | Demandes d'assistance et leurs comptes rendus | aussi longtemps que le compte de l'entreprise ; supprimées avec elle |
 | Demandes de réinitialisation de mot de passe | quelques heures, jusqu'à expiration du lien |

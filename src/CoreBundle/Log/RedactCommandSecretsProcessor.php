@@ -25,7 +25,7 @@ use function preg_replace;
  *
  * When a console command fails, Symfony logs its whole command line —
  * `augias:install --database-password=… --admin-password=…` included — and
- * that line reaches the terminal, the container logs and Sentry alike. Any
+ * that line reaches the terminal and the container logs alike. Any
  * option named for a password, secret, token, key or DSN keeps its name and
  * loses its value, in the message and in the `command` context entry.
  *

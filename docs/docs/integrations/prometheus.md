@@ -55,4 +55,3 @@ Le point `/metrics` publie les métriques habituelles du serveur HTTP Caddy (nom
 ## Voir aussi
 
 - [Installation du paquet de distribution](../installation-guide/distribution-package/index.mdx)
-- [Intégration Sentry](./sentry.md)

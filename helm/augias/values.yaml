@@ -218,14 +218,6 @@ meilisearch:
     enabled: true
     size: 5Gi
 
-## @section Sentry configuration
-sentry:
-  ## @param sentry.enabled Enable Sentry error tracking
-  enabled: false
-  dsn: ""
-  existingSecret: ""
-  existingSecretKey: "SENTRY_DSN"
-
 ## @section OAuth configuration
 oauth:
   google:
