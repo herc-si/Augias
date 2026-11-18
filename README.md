@@ -223,8 +223,7 @@ de Pierre du Plessis / SolidWorx, publié sous licence MIT. L'essentiel de
 l'application, sous le changement de nom, est leur travail.
 
 Le projet d'origine est soutenu par **[JetBrains](https://www.jetbrains.com/)**
-(licences PhpStorm), **[Docker](https://www.docker.com/)** (Docker Hub) et
-**[Sentry](https://sentry.io/)** (offre Business). Ces parrainages sont les leurs,
+(licences PhpStorm) et **[Docker](https://www.docker.com/)** (Docker Hub). Ces parrainages sont les leurs,
 pas ceux de ce fork : ils figurent ici en remerciement, pas comme une revendication.
 
 ---

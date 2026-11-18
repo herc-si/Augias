@@ -253,7 +253,6 @@ A large modernisation release with several technical upgrades that may affect us
 * Fix error when saving contact details with an empty type
 * Add a subject line to the password reset request email
 * Re-open the entity manager when it has been closed (avoids fatal errors after a failed query)
-* Additional Sentry configuration options for self-hosted Sentry instances
 * Move environment configuration to a separate, dedicated path
 
 2.2.5 / 2023-09-06
@@ -264,7 +263,6 @@ A large modernisation release with several technical upgrades that may affect us
 2.2.4 / 2023-09-06
 ------------------
 
-* Add Sentry integration for error reporting
 * Fix auto-incrementing of invoice and quote IDs
 * Fix various currency handling issues
 * Fix the actions dropdown on the data grid
