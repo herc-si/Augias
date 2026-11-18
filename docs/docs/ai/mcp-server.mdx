@@ -226,6 +226,13 @@ AUGIAS_MCP_SESSION_CACHE_POOL=cache.app
 ## Dépannage
 
 <details>
+<summary>L'agent affiche « Impossible de se connecter » après le consentement</summary>
+
+Si vous avez défini `AUGIAS_MCP_ALLOWED_HOSTS`, vérifiez que le nom d'hôte public de votre instance y figure (par exemple `factures.example.fr`, sans le port), puis videz le cache. Laissée vide, cette variable désactive le contrôle : chaque requête doit de toute façon porter un jeton OAuth.
+
+</details>
+
+<details>
 <summary>Le navigateur s'ouvre mais le consentement échoue avec « company required »</summary>
 
 Vous êtes membre de plusieurs entreprises et n'en avez choisi aucune. Relancez la connexion depuis l'agent et choisissez une entreprise sur l'écran de consentement.

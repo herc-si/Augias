@@ -28,6 +28,14 @@ use Augias\CoreBundle\AugiasCoreBundle;
 // already loaded .env by the time this config runs).
 $env = static fn (string $name, string | int $default): string | int => $_ENV[$name] ?? $_SERVER[$name] ?? $default;
 
+// The SDK's DNS rebinding protection lets only localhost through by default:
+// every authenticated request from Claude on preprod was a 403 "Invalid Host
+// header" (18/11/2026). It guards local servers that answer anyone; this one
+// asks an OAuth bearer token of every request, behind a proxy that serves our
+// own host names only. Off, unless AUGIAS_MCP_ALLOWED_HOSTS lists the hosts
+// (comma-separated) to keep it on with.
+$allowedHosts = array_values(array_filter(array_map('trim', explode(',', (string) $env('AUGIAS_MCP_ALLOWED_HOSTS', '')))));
+
 return App::config([
     'mcp' => [
         'app' => AugiasCoreBundle::APP_NAME,
@@ -39,6 +47,7 @@ return App::config([
         ],
         'http' => [
             'path' => '/_mcp',
+            'allowed_hosts' => [] === $allowedHosts ? false : $allowedHosts,
             'session' => [
                 'store' => (string) $env('AUGIAS_MCP_SESSION_STORE', 'file'),
                 'cache_pool' => (string) $env('AUGIAS_MCP_SESSION_CACHE_POOL', 'cache.mcp.sessions'),
