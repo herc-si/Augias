@@ -227,6 +227,13 @@ AUGIAS_MCP_SESSION_CACHE_POOL=cache.app
 ## Troubleshooting
 
 <details>
+<summary>The agent says it cannot connect after the consent screen</summary>
+
+If you set `AUGIAS_MCP_ALLOWED_HOSTS`, make sure your instance's public host name is in it (for example `invoices.example.com`, without the port), then clear the cache. Left empty, the variable turns the check off: every request has to carry an OAuth token anyway.
+
+</details>
+
+<details>
 <summary>The browser opens but consent fails with "company required"</summary>
 
 You belong to multiple companies and didn't pick one. Re-trigger the connection in the agent and select a company on the consent screen.
