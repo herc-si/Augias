@@ -17,6 +17,9 @@ use Augias\ElectronicInvoicingBundle\Action\IncomingInvoices;
 use Augias\ElectronicInvoicingBundle\Action\Providers;
 use Augias\ElectronicInvoicingBundle\Action\RespondToIncomingInvoice;
 use Augias\ElectronicInvoicingBundle\Action\SendElectronicInvoice;
+use Augias\ElectronicInvoicingBundle\Action\Setup\Check as SetupCheck;
+use Augias\ElectronicInvoicingBundle\Action\Setup\Connect as SetupConnect;
+use Augias\ElectronicInvoicingBundle\Action\Setup\Index as SetupIndex;
 use Augias\ElectronicInvoicingBundle\Action\SuperPdp\Callback;
 use Augias\ElectronicInvoicingBundle\Action\SuperPdp\Connect;
 use Augias\ElectronicInvoicingBundle\Action\SyncNow;
@@ -60,6 +63,21 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_einvoicing_sync', '/sync')
         ->controller(SyncNow::class)
+        ->methods(['POST']);
+
+    $routingConfigurator
+        ->add('_einvoicing_setup', '/setup')
+        ->controller(SetupIndex::class)
+        ->methods(['GET', 'POST']);
+
+    $routingConfigurator
+        ->add('_einvoicing_setup_connect', '/setup/connect')
+        ->controller(SetupConnect::class)
+        ->methods(['POST']);
+
+    $routingConfigurator
+        ->add('_einvoicing_setup_check', '/setup/check')
+        ->controller(SetupCheck::class)
         ->methods(['POST']);
 
     $routingConfigurator

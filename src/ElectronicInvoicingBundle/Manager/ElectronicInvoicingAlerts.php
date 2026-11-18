@@ -15,6 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Manager;
 
 use Augias\CoreBundle\Entity\Company;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
+use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoicingAccountVerifiedNotification;
 use Augias\ElectronicInvoicingBundle\Notification\ElectronicInvoicingProblemNotification;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\NotificationBundle\Notification\NotificationManager;
@@ -32,6 +33,21 @@ final readonly class ElectronicInvoicingAlerts
         private NotificationManager $notificationManager,
         private LoggerInterface $logger,
     ) {
+    }
+
+    /**
+     * The good news after a wait: the platform verified the company.
+     */
+    public function accountVerified(Company $company): void
+    {
+        try {
+            $this->notificationManager->sendNotification(new ElectronicInvoicingAccountVerifiedNotification(['company' => $company]));
+        } catch (Throwable $e) {
+            $this->logger->error('Failed to send electronic invoicing account verified notification', [
+                'company' => (string) $company->getId(),
+                'exception' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function raise(Company $company, ElectronicInvoicingProblem $problem, ?Invoice $invoice = null, ?string $detail = null): void

@@ -118,6 +118,39 @@ final class CheckElectronicInvoiceAccountsCommandTest extends KernelTestCase
     }
 
     /**
+     * The last step of the setup can outlast anyone's patience on the page:
+     * the end of the wait is told by email, once.
+     */
+    public function testTheEndOfTheWaitIsToldOnce(): void
+    {
+        $token = static fn (): MockResponse => new MockResponse((string) json_encode(['access_token' => 'a-token']));
+        $verified = static fn (): MockResponse => new MockResponse((string) json_encode(['created_at' => '2026-09-25T09:58:15Z', 'company_verification_status' => 'verified']));
+        $details = static fn (): MockResponse => new MockResponse((string) json_encode(['env' => 'sandbox', 'number' => '000000002', 'formal_name' => 'Burger Queen', 'vat_regime' => 'quarterly', 'has_vat_on_debits' => false]));
+        self::getContainer()->set(HttpClientInterface::class, new MockHttpClient([$token, $verified, $details, $token, $verified, $details]));
+
+        $entityManager = self::getContainer()->get('doctrine.orm.entity_manager');
+        $company = $entityManager->find(Company::class, $this->company->getId());
+        self::assertInstanceOf(Company::class, $company);
+        $owner = new User()->setEmail('owner@example.com')->setPassword('password');
+        $owner->addCompany($company, CompanyRole::Owner);
+        $entityManager->persist($owner);
+        $entityManager->flush();
+
+        $this->superPdp(AccountVerification::NeedsReview);
+
+        $this->runCheck();
+        $this->runCheck();
+
+        $told = array_filter(
+            self::getMailerMessages(),
+            static fn (mixed $message): bool => $message instanceof Email && 'Your electronic invoicing is active' === $message->getSubject(),
+        );
+
+        self::assertCount(1, $told);
+        self::assertSame('owner@example.com', array_values($told)[0]->getTo()[0]->getAddress());
+    }
+
+    /**
      * An outage says nothing about the account: what the platform last said
      * stands, and invoices keep going through.
      */

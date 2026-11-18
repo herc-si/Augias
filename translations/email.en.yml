@@ -34,6 +34,10 @@ einvoicing:
         note: "Client's details"
         reason: Reason
         view_invoice: 'View Invoice'
+    notification_verified:
+        heading: 'Your electronic invoicing is active'
+        message: 'The platform has verified your company: your electronic invoices now go out and come in through it.'
+        view_setup: 'View electronic invoicing'
     notification_problem:
         account_not_verified:
             heading: 'Electronic invoicing account not verified'

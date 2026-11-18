@@ -34,6 +34,10 @@ einvoicing:
         note: 'Précisions du client'
         reason: Motif
         view_invoice: 'Voir la facture'
+    notification_verified:
+        heading: 'Votre facturation électronique est active'
+        message: 'La plateforme a vérifié votre entreprise : vos factures électroniques partent et arrivent désormais par elle.'
+        view_setup: 'Voir la facturation électronique'
     notification_problem:
         account_not_verified:
             heading: 'Compte de facturation électronique non vérifié'

@@ -24,6 +24,17 @@ core:
         similar_label: 'Un champ personnalisé avec un libellé similaire existe déjà pour la cible sélectionnée.'
         unique_label: 'Un champ personnalisé avec ce libellé existe déjà pour la cible sélectionnée.'
 einvoicing:
+    setup:
+        identity:
+            siren_required: 'Saisissez votre SIREN.'
+            siren_invalid: 'Un SIREN compte 9 chiffres.'
+            siret_required: 'Saisissez votre SIRET.'
+            siret_invalid: 'Un SIRET compte 14 chiffres.'
+            siret_mismatch: 'Ce SIRET ne commence pas par votre SIREN.'
+            vat_number_required: 'Saisissez votre numéro de TVA intracommunautaire.'
+            vat_number_invalid: 'Un numéro de TVA français s''écrit FR suivi de 11 chiffres.'
+            zip_required: 'Saisissez votre code postal.'
+            city_required: 'Saisissez votre ville.'
     constraint:
         provider_setting:
             unique_name: 'Ce nom est déjà utilisé'

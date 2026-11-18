@@ -1,0 +1,40 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) HERC SI <opensource@herc-si.fr>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@AugiasCore/Layout/Email/notification.html.twig" %}
+{% import "@AugiasCore/Layout/Email/components.html.twig" as email %}
+
+{%- block title -%}
+    {{ 'einvoicing.notification_verified.heading'|trans({}, 'email') }}
+{%- endblock -%}
+
+{%- block content -%}
+    {% apply inky_to_html %}
+        <row>
+            <columns>
+                <p style="color: #16a34a; font-size: 16px; font-weight: 600; line-height: 1.5; margin: 0 0 16px 0; Margin: 0 0 16px 0;">
+                    ✅ {{ 'einvoicing.notification_verified.heading'|trans({}, 'email') }}
+                </p>
+                <p style="color: #1e293b; font-size: 16px; line-height: 1.5; margin: 0 0 24px 0; Margin: 0 0 24px 0;">
+                    {{ 'einvoicing.notification_verified.message'|trans({}, 'email') }}
+                </p>
+            </columns>
+        </row>
+    {% endapply %}
+
+    {{ email.spacer('sm') }}
+
+    {{ email.info_row('einvoicing.notification_problem.company'|trans({}, 'email'), company.name) }}
+
+    {{ email.divider('md') }}
+
+    {{ email.button('einvoicing.notification_verified.view_setup'|trans({}, 'email'), url('_einvoicing_setup'), 'primary', 'large') }}
+
+    {{ email.spacer('md') }}
+{%- endblock -%}

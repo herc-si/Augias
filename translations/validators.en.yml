@@ -24,6 +24,17 @@ core:
         similar_label: 'A custom field with a similar label already exists for the selected target.'
         unique_label: 'A custom field with this label already exists for the selected target.'
 einvoicing:
+    setup:
+        identity:
+            siren_required: 'Enter your SIREN.'
+            siren_invalid: 'A SIREN has 9 digits.'
+            siret_required: 'Enter your SIRET.'
+            siret_invalid: 'A SIRET has 14 digits.'
+            siret_mismatch: 'This SIRET does not start with your SIREN.'
+            vat_number_required: 'Enter your intra-community VAT number.'
+            vat_number_invalid: 'A French VAT number is FR followed by 11 digits.'
+            zip_required: 'Enter your postcode.'
+            city_required: 'Enter your city.'
     constraint:
         provider_setting:
             unique_name: 'The name is already in use'

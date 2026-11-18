@@ -63,6 +63,12 @@ final readonly class ElectronicInvoiceAccountMonitor
             if ($status->verification !== $before && in_array($status->verification, [AccountVerification::NeedsReview, AccountVerification::Failed], true)) {
                 $this->alerts->raise($setting->getCompany(), ElectronicInvoicingProblem::AccountNotVerified, detail: $status->verification->translationKey());
             }
+
+            // After a wait only: verified at the first check, the company is
+            // on the page that says so.
+            if ($status->verification === AccountVerification::Verified && in_array($before, [AccountVerification::NeedsReview, AccountVerification::Failed], true)) {
+                $this->alerts->accountVerified($setting->getCompany());
+            }
         }
 
         return $status;
