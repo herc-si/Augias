@@ -5,7 +5,7 @@ description: Quelles données Augias traite, à quel titre, avec qui, et pendant
 
 # Politique de confidentialité
 
-Dernière mise à jour : 17 novembre 2026
+Dernière mise à jour : 18 novembre 2026
 
 :::warning À compléter avant publication
 Projet rédigé à partir du fonctionnement réel de l'application, à relire par un juriste. Les mentions **[À COMPLÉTER]** attendent une information ou une décision de HERC SI. Une politique qui décrirait des traitements différents de ceux réellement effectués serait sans valeur, et la section 4 dépend de choix d'exploitation encore ouverts.
@@ -53,17 +53,15 @@ Aucun traitement de prospection n'est effectué sans consentement distinct.
 
 ## 4. Hébergement et destinataires
 
-Les données sont hébergées par **Infomaniak Network SA**, Genève, Suisse.
+Les données sont hébergées par **Infomaniak Network SA**, Genève, dans ses centres de données **en Suisse**.
 
-:::info Localisation à confirmer
-Le choix entre les centres de données **suisses** et **français** d'Infomaniak n'est pas arrêté. Dans les deux cas l'hébergement est européen au sens large, mais la rédaction diffère : la Suisse est un pays tiers couvert par une **décision d'adéquation de la Commission européenne**, ce qui autorise le transfert sans garantie supplémentaire mais doit être mentionné ; la France ne soulève aucune question de transfert. Cette page devra retenir l'une des deux formulations.
-:::
+La Suisse n'est pas membre de l'Union européenne, mais la Commission européenne y reconnaît un niveau de protection adéquat (décision 2000/518/CE, confirmée en janvier 2024). L'hébergement y est donc un transfert permis par l'article 45 du RGPD, sans garantie supplémentaire à prévoir.
 
 Sous-traitants ultérieurs, au jour de cette mise à jour :
 
 | Sous-traitant | Rôle | Données concernées | Localisation |
 |---|---|---|---|
-| Infomaniak Network SA | hébergement de l'application et de la base, envoi des courriers électroniques (SMTP) | l'ensemble des données ; pour le SMTP, les destinataires et le contenu des messages envoyés | Suisse ou France |
+| Infomaniak Network SA | hébergement de l'application et de la base, envoi des courriers électroniques (SMTP) | l'ensemble des données ; pour le SMTP, les destinataires et le contenu des messages envoyés | Suisse |
 | Stripe Payments Europe, Limited | encaissement des abonnements, par carte ou prélèvement SEPA | nom, adresse électronique et adresse de facturation du Client, moyen de paiement ; HERC SI ne reçoit ni les numéros de carte ni les coordonnées bancaires | Irlande ; **[À VÉRIFIER : transferts hors de l'Union prévus par l'accord de traitement des données de Stripe, et qualité de Stripe (sous-traitant ou responsable de traitement distinct) pour les données de paiement]** |
 | **[À COMPLÉTER : dénomination et siège de l'exploitant de SUPER PDP]** | plateforme agréée de facturation électronique : transmission et réception des factures électroniques, e-reporting, lorsque vous connectez votre compte | les factures et avoirs transmis ou reçus, avec l'identité et les coordonnées des parties qui y figurent | **[À COMPLÉTER]** |
 | Annuaire des entreprises (API de l'État, `recherche-entreprises.api.gouv.fr`) | recherche d'une entreprise pour préremplir une fiche client | le nom ou le numéro SIREN que vous saisissez dans la recherche | France |
@@ -79,7 +77,7 @@ Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel
 | Sauvegardes | **trois mois au plus** : une sauvegarde par nuit, gardée sept jours, puis une par semaine pendant quatre semaines, puis une par mois pendant trois mois. Une donnée supprimée en production disparaît donc des sauvegardes au plus tard trois mois après |
 | Factures émises par HERC SI | dix ans, article L123-22 du code de commerce |
 | Journal des connexions au compte | **90 jours**, puis suppression automatique. Il est consultable depuis votre compte, et pour votre entreprise depuis la page des utilisateurs |
-| Journaux techniques du serveur | **[À COMPLÉTER : douze mois au plus est l'usage]** |
+| Journaux techniques du serveur | **12 mois**, puis suppression automatique |
 | Journal des erreurs de l'application (message, emplacement dans le code, nombre d'occurrences), conservé sur le serveur et lu par l'exploitant | **90 jours** après la dernière occurrence, puis suppression automatique |
 | Journal de vos consultations | **90 jours**, puis suppression automatique |
 | Demandes d'assistance et leurs comptes rendus | aussi longtemps que le compte de l'entreprise ; supprimées avec elle |
@@ -155,7 +153,7 @@ Cette annexe vaut accord de sous-traitance entre le Client, responsable de trait
 
 **Assistance.** HERC SI assiste le Client, dans la mesure du possible, pour répondre aux demandes d'exercice de droits, pour la notification des violations de données et, le cas échéant, pour les analyses d'impact.
 
-**Violation de données.** HERC SI notifie au Client toute violation de données le concernant **dans les meilleurs délais après en avoir pris connaissance**, avec les éléments dont il dispose : nature de la violation, données et personnes concernées, conséquences probables, mesures prises ou proposées. Les éléments manquants sont communiqués à mesure qu'ils sont connus.
+**Violation de données.** HERC SI notifie au Client toute violation de données le concernant **dans les 48 heures après en avoir pris connaissance**, avec les éléments dont il dispose : nature de la violation, données et personnes concernées, conséquences probables, mesures prises ou proposées. Les éléments manquants sont communiqués à mesure qu'ils sont connus.
 
 **Sort des données.** Au terme du contrat, selon le choix du Client, les données lui sont restituées par l'export intégré ou supprimées, dans les délais prévus à l'article 5.
 
