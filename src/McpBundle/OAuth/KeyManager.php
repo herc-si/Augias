@@ -16,6 +16,7 @@ namespace Augias\McpBundle\OAuth;
 use League\OAuth2\Server\CryptKey;
 use League\OAuth2\Server\CryptKeyInterface;
 use RuntimeException;
+use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 
 /**
@@ -125,13 +126,39 @@ final readonly class KeyManager
         return true;
     }
 
+    /**
+     * Creates the key pair the first time it is needed. Nothing else does on
+     * an instance installed before MCP, or by hand: the first connection was
+     * a 500 instead (preprod, 18/11/2026). A lock keeps two first requests
+     * from each writing a pair, the second over the first.
+     */
     private function assertKeysExist(): void
     {
-        if (! $this->hasKeys()) {
+        if ($this->hasKeys()) {
+            return;
+        }
+
+        try {
+            $this->filesystem->mkdir($this->getKeyDir(), 0700);
+            $lock = fopen($this->getKeyDir() . '/.lock', 'c');
+
+            if ($lock === false) {
+                throw new IOException('cannot open the lock file');
+            }
+
+            try {
+                flock($lock, LOCK_EX);
+                $this->generate();
+            } finally {
+                flock($lock, LOCK_UN);
+                fclose($lock);
+            }
+        } catch (IOException $e) {
             throw new RuntimeException(sprintf(
-                'OAuth signing keys are missing. Run "bin/console mcp:keys:generate" to create them (expected at %s).',
+                'OAuth signing keys are missing and could not be created at %s (%s). Run "bin/console mcp:keys:generate" to create them.',
                 $this->getKeyDir(),
-            ));
+                $e->getMessage(),
+            ), previous: $e);
         }
     }
 }
