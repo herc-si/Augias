@@ -3584,6 +3584,7 @@ saas:
         contact_support_short: 'Contacter le support'
         switch_company: 'Changer de société'
     billing:
+        payment_method: 'Carte bancaire (Stripe)'
         invoice_line:
             subscription: 'Abonnement Augias %plan% du %from% au %to%'
             plan_change: 'Changement d''offre vers Augias %plan%, au prorata du %from% au %to%'

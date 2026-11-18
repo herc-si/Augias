@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\Tests\Payment\Stripe;
 
+use Augias\ClientBundle\Entity\Client;
+use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
@@ -52,6 +54,13 @@ final class SubscriptionInvoiceIssuerTest extends KernelTestCase
     private Company $billing;
 
     private Subscription $subscription;
+
+    private Company $subscriber;
+
+    /**
+     * @var array<string, mixed> what Stripe answers differently from now on
+     */
+    private array $stripeOverrides = [];
 
     #[Override]
     protected static function getKernelClass(): string
@@ -109,15 +118,61 @@ final class SubscriptionInvoiceIssuerTest extends KernelTestCase
         self::assertSame($first->getClient()?->getId()?->toString(), $second->getClient()?->getId()?->toString());
     }
 
-    private function seed(): void
+    public function testACardPaymentIsRecordedAsSuchEvenWithoutAMethodSetUp(): void
+    {
+        $issuer = $this->issuer(1, withMethod: false);
+
+        $invoice = $issuer->issue('in_1');
+
+        self::assertNotNull($invoice);
+        $payment = $this->em->getRepository(Payment::class)->findOneBy(['reference' => 'in_1']);
+        self::assertInstanceOf(Payment::class, $payment);
+        self::assertSame('stripe', $payment->getMethod()?->getGatewayName());
+        self::assertTrue($payment->getMethod()->isInternal());
+        self::assertTrue($payment->getMethod()->getCompany()->getId()->equals($this->billing->getId()));
+    }
+
+    public function testTheClientFollowsWhatTheSubscriberDeclaresNow(): void
+    {
+        $issuer = $this->issuer(2, withSiren: false);
+
+        $first = $issuer->issue('in_1');
+        self::assertNotNull($first);
+        $clientId = $first->getClient()?->getId();
+        self::assertFalse($first->getClient()->isCompany());
+
+        // The subscriber fills in their SIREN and moves after the first payment.
+        $this->companySelector()->reset();
+        TaxIdentifierFactory::createOne(['company' => $this->subscriber, 'client' => null, 'label' => 'SIREN', 'value' => '123456789']);
+        $this->stripeOverrides = ['customer_address' => ['line1' => '8 place Bellecour', 'line2' => null, 'postal_code' => '69002', 'city' => 'Lyon', 'country' => 'FR']];
+
+        $second = $issuer->issue('in_2');
+        self::assertNotNull($second);
+        $this->em->clear();
+        $client = $this->em->find(Client::class, $clientId);
+        self::assertInstanceOf(Client::class, $client);
+
+        self::assertTrue($client->isCompany());
+        self::assertSame('123456789', $client->getSiren());
+        self::assertCount(1, $client->getAddresses());
+        self::assertSame('8 place Bellecour', $client->getAddresses()->first()->getStreet1());
+        self::assertCount(1, $client->getContacts());
+    }
+
+    private function seed(bool $withMethod = true, bool $withSiren = true): void
     {
         $billing = CompanyFactory::createOne(['name' => 'HERC SI']);
         $this->billing = $this->em->find(Company::class, $billing->getId()) ?? self::fail();
-        PaymentMethodFactory::createOne(['company' => $this->billing, 'name' => 'Stripe', 'gatewayName' => 'stripe', 'factoryName' => 'offline']);
+        if ($withMethod) {
+            PaymentMethodFactory::createOne(['company' => $this->billing, 'name' => 'Stripe', 'gatewayName' => 'stripe', 'factoryName' => 'offline']);
+        }
 
         $subscriber = CompanyFactory::createOne(['name' => 'Boulangerie Martin']);
         $subscriber = $this->em->find(Company::class, $subscriber->getId()) ?? self::fail();
-        TaxIdentifierFactory::createOne(['company' => $subscriber, 'client' => null, 'label' => 'SIREN', 'value' => '123456789']);
+        $this->subscriber = $subscriber;
+        if ($withSiren) {
+            TaxIdentifierFactory::createOne(['company' => $subscriber, 'client' => null, 'label' => 'SIREN', 'value' => '123456789']);
+        }
 
         $plan = new Plan()->setName('Solo')->setPlanId('price_inv_solo')->setPrice(1200);
         $this->em->persist($plan);
@@ -139,7 +194,7 @@ final class SubscriptionInvoiceIssuerTest extends KernelTestCase
      *
      * @param array<string, mixed> $overrides
      */
-    private function issuer(int $calls, array $overrides = []): SubscriptionInvoiceIssuer
+    private function issuer(int $calls, array $overrides = [], bool $withMethod = true, bool $withSiren = true): SubscriptionInvoiceIssuer
     {
         self::ensureKernelShutdown();
         self::bootKernel();
@@ -148,11 +203,11 @@ final class SubscriptionInvoiceIssuerTest extends KernelTestCase
         $factory = function (string $method, string $url) use ($overrides): JsonMockResponse {
             $id = substr($url, strrpos($url, '/') + 1);
 
-            return new JsonMockResponse($this->stripeInvoice(['id' => $id] + $overrides));
+            return new JsonMockResponse($this->stripeInvoice(['id' => $id] + $this->stripeOverrides + $overrides));
         };
         self::getContainer()->set(StripeApi::class, new StripeApi(new MockHttpClient(array_fill(0, $calls, $factory), 'https://api.stripe.com/v1/')));
 
-        $this->seed();
+        $this->seed($withMethod, $withSiren);
         $_SERVER['AUGIAS_SAAS_BILLING_COMPANY'] = $_ENV['AUGIAS_SAAS_BILLING_COMPANY'] = $this->billing->getId()->toString();
 
         $issuer = self::getContainer()->get(SubscriptionInvoiceIssuer::class);
@@ -182,6 +237,14 @@ final class SubscriptionInvoiceIssuerTest extends KernelTestCase
             'status_transitions' => ['paid_at' => 1_788_300_000],
             'lines' => ['data' => [['price' => ['id' => 'price_inv_solo'], 'period' => ['start' => 1_788_264_000, 'end' => 1_790_856_000]]]],
         ];
+    }
+
+    private function companySelector(): CompanySelector
+    {
+        $selector = self::getContainer()->get(CompanySelector::class);
+        self::assertInstanceOf(CompanySelector::class, $selector);
+
+        return $selector;
     }
 
     #[Override]
