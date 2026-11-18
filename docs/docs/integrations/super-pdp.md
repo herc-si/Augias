@@ -52,6 +52,10 @@ Les jetons des entreprises connectées sont chiffrés avec le secret de l'applic
 
 ## Connecter le compte d'une entreprise
 
+:::tip[L'assistant fait tout dans l'ordre]
+L'étape `Activez la facturation électronique` de la liste de configuration du tableau de bord ouvre un assistant en trois étapes. Il renseigne d'abord l'entreprise à partir de son SIREN (raison sociale, SIRET, numéro de TVA et adresse viennent de l'annuaire des entreprises), puis connecte le compte SUPER PDP, puis suit la vérification et prévient par e-mail quand SUPER PDP l'a terminée. Sur le service hébergé, l'assistant s'ouvre aussi juste après le premier paiement d'abonnement.
+:::
+
 1. Dans le menu latéral, cliquez sur `Facturation électronique`.
 2. À côté de SUPER PDP, cliquez sur `Configurer`, donnez un nom au fournisseur, puis cliquez sur `Continuer vers SUPER PDP`.
 3. Sur SUPER PDP, connectez-vous ou créez le compte de l'entreprise. L'e-mail de l'utilisateur et le SIREN de l'entreprise sont préremplis quand Augias les connaît.

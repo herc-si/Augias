@@ -19,6 +19,8 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\CoreBundle\Telemetry\Telemetry;
 use Augias\CoreBundle\Tests\Telemetry\CollectingMessageBus;
+use Augias\ElectronicInvoicingBundle\Onboarding\OnboardingProgress;
+use Augias\ElectronicInvoicingBundle\Onboarding\OnboardingProgressProviderInterface;
 use Augias\SaasBundle\Controller\SubscribeController;
 use Augias\UserBundle\Entity\User;
 use Carbon\CarbonImmutable;
@@ -115,6 +117,18 @@ final class SubscribeControllerTest extends TestCase
         self::assertSame('saas_checkout_failed', $this->bus->messages[0]->payload['event']);
     }
 
+    /**
+     * HERC SI invoices the subscriber: without a SIREN, the setup's first
+     * step comes before the payment, and brings it back here.
+     */
+    public function testWithoutASirenTheCompanyIsAskedForItBeforePaying(): void
+    {
+        $response = $this->invokeController(null, hasSiren: false);
+
+        self::assertSame('/electronic-invoicing/setup?next=/billing/checkout?from=pricing', $response[0]->getTargetUrl());
+        self::assertSame([], $this->bus->messages);
+    }
+
     public function testSuccessfulCheckoutEmitsCheckoutStartedTelemetryAndRedirects(): void
     {
         $response = $this->invokeController(null);
@@ -180,11 +194,13 @@ final class SubscribeControllerTest extends TestCase
     /**
      * @return array{0: RedirectResponse, 1: array<string, list<string|Stringable>>}
      */
-    private function invokeController(?Throwable $exception): array
+    private function invokeController(?Throwable $exception, bool $hasSiren = true): array
     {
         $paymentIntegration = $this->createMock(PaymentIntegrationInterface::class);
 
-        if ($exception instanceof Throwable) {
+        if (! $hasSiren) {
+            $paymentIntegration->expects(self::never())->method('checkout');
+        } elseif ($exception instanceof Throwable) {
             $paymentIntegration->expects(self::once())->method('checkout')->willThrowException($exception);
         } else {
             $paymentIntegration->expects(self::once())->method('checkout')->willReturn('https://checkout.lemonsqueezy.com/buy/abc');
@@ -224,6 +240,7 @@ final class SubscribeControllerTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $this->makeTelemetry(),
             $clock,
+            $this->companyWithSiren($hasSiren),
         );
 
         $session = new Session(new MockArraySessionStorage());
@@ -233,13 +250,13 @@ final class SubscribeControllerTest extends TestCase
         $requestStack = new RequestStack([$request]);
 
         $router = $this->createStub(RouterInterface::class);
-        $router->method('generate')->willReturn('/billing/');
+        $router->method('generate')->willReturnCallback(static fn (string $name, array $parameters = []): string => '_einvoicing_setup' === $name ? '/electronic-invoicing/setup?next=' . $parameters['next'] : '/billing/');
 
         $user = new User();
         $user->setEmail('test@example.com');
 
-        $token = $this->createMock(TokenInterface::class);
-        $token->expects(self::once())->method('getUser')->willReturn($user);
+        $token = $this->createStub(TokenInterface::class);
+        $token->method('getUser')->willReturn($user);
 
         $tokenStorage = $this->createMock(TokenStorageInterface::class);
         $tokenStorage->expects(self::once())->method('getToken')->willReturn($token);
@@ -252,9 +269,20 @@ final class SubscribeControllerTest extends TestCase
         $controller->setContainer($container);
 
         /** @var RedirectResponse $response */
-        $response = $controller(new Request());
+        $response = $controller(Request::create('/billing/checkout?from=pricing'));
 
         return [$response, $session->getFlashBag()->all()];
+    }
+
+    /**
+     * A company HERC SI can invoice: the checkout is not sent to the setup first.
+     */
+    private function companyWithSiren(bool $hasSiren = true): OnboardingProgressProviderInterface
+    {
+        $provider = $this->createStub(OnboardingProgressProviderInterface::class);
+        $provider->method('progress')->willReturn(new OnboardingProgress(identityDone: $hasSiren, hasSiren: $hasSiren, platform: null, connected: false, verification: null, canConnectHere: false));
+
+        return $provider;
     }
 
     private function makeTelemetry(): Telemetry
@@ -335,6 +363,7 @@ final class SubscribeControllerTest extends TestCase
             $this->createStub(EntityManagerInterface::class),
             $this->makeTelemetry(),
             $clock,
+            $this->companyWithSiren(),
         );
 
         $session = new Session(new MockArraySessionStorage());
@@ -347,8 +376,8 @@ final class SubscribeControllerTest extends TestCase
         $user = new User();
         $user->setEmail('test@example.com');
 
-        $token = $this->createMock(TokenInterface::class);
-        $token->expects(self::once())->method('getUser')->willReturn($user);
+        $token = $this->createStub(TokenInterface::class);
+        $token->method('getUser')->willReturn($user);
 
         $tokenStorage = $this->createMock(TokenStorageInterface::class);
         $tokenStorage->expects(self::once())->method('getToken')->willReturn($token);

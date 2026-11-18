@@ -11,6 +11,7 @@ declare(strict_types=1);
  * with this source code in the file LICENSE.
  */
 
+use Augias\DashboardBundle\Checklist\ChecklistItemInterface;
 use Augias\ElectronicInvoicingBundle\AugiasElectronicInvoicingBundle;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\param;
@@ -25,6 +26,11 @@ return static function (ContainerConfigurator $containerConfigurator): void {
         ->private()
         ->bind('$projectDir', param('kernel.project_dir'))
     ;
+
+    // Tagged before load(), as the dashboard's own items are.
+    $services
+        ->instanceof(ChecklistItemInterface::class)
+        ->tag('dashboard.checklist_item');
 
     $services
         ->load(AugiasElectronicInvoicingBundle::NAMESPACE . '\\', dirname(__DIR__, 3))

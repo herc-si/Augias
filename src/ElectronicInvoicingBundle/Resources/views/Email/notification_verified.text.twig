@@ -1,0 +1,21 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) HERC SI <opensource@herc-si.fr>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{# Plain text: nothing here is HTML, and a French apostrophe must not come out as &#039;. #}
+{% autoescape false %}
+{{ 'einvoicing.notification_verified.heading'|trans({}, 'email') }}
+{{ '='|repeat(60) }}
+
+{{ 'einvoicing.notification_verified.message'|trans({}, 'email') }}
+
+{{ 'einvoicing.notification_problem.company'|trans({}, 'email') }}: {{ company.name }}
+
+{{ '-'|repeat(60) }}
+{{ 'einvoicing.notification_verified.view_setup'|trans({}, 'email') }}: {{ url('_einvoicing_setup') }}
+{% endautoescape %}

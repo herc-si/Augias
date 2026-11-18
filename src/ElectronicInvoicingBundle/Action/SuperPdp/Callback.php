@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Action\SuperPdp;
 
+use Augias\ElectronicInvoicingBundle\Action\Setup\Connect as SetupConnect;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceAccountMonitor;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpConnectionFailed;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpConnector;
@@ -49,7 +50,9 @@ final readonly class Callback
         $session = $request->getSession();
         assert($session instanceof Session);
         $flashes = $session->getFlashBag();
-        $redirect = new RedirectResponse($this->router->generate('_einvoicing_providers'));
+        // Back to the setup when the connection was started from there.
+        $fromSetup = true === $session->remove(SetupConnect::SESSION_KEY);
+        $redirect = new RedirectResponse($this->router->generate($fromSetup ? '_einvoicing_setup' : '_einvoicing_providers'));
 
         $code = $request->query->getString('code');
 

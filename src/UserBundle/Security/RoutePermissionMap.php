@@ -196,6 +196,9 @@ final class RoutePermissionMap
 
         // Configuring the company.
         '_einvoicing_providers' => CompanyPermission::Settings,
+        '_einvoicing_setup' => CompanyPermission::Settings,
+        '_einvoicing_setup_check' => CompanyPermission::Settings,
+        '_einvoicing_setup_connect' => CompanyPermission::Settings,
         '_einvoicing_super_pdp_callback' => CompanyPermission::Settings,
         '_einvoicing_super_pdp_connect' => CompanyPermission::Settings,
         '_notification_integration' => CompanyPermission::Settings,

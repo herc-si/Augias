@@ -52,6 +52,10 @@ The tokens of connected companies are encrypted with the application secret (`AU
 
 ## Connecting a company's account
 
+:::tip[The assistant does it all in order]
+The `Set up electronic invoicing` step of the dashboard's setup list opens a three-step assistant. It first fills in the company from its SIREN (name, SIRET, VAT number and address come from the company register), then connects the SUPER PDP account, then follows the verification and sends an email once SUPER PDP has finished it. On the hosted service, the assistant also opens right after the first subscription payment.
+:::
+
 1. In the sidebar, click `Electronic Invoicing`.
 2. Next to SUPER PDP, click `Configure`, give the provider a name, then click `Continue to SUPER PDP`.
 3. On SUPER PDP, sign in or create the company's account. The user's email and the company's SIREN are filled in when Augias knows them.

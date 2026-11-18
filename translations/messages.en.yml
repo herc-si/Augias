@@ -1266,6 +1266,9 @@ dashboard:
         revenue_title: 'Revenue Trend'
     checklist:
         action_required: 'Action Required'
+        set_up_einvoicing:
+            description: 'Receive and send your electronic invoices, required since September 2026'
+            name: 'Set up electronic invoicing'
         activate_subscription:
             description: 'Pick a plan to keep your account active'
             name: 'Activate Your Subscription'
@@ -1612,6 +1615,63 @@ document_line:
     note_placeholder: 'Note or heading, such as “Phase 2 — Development”'
 edit_client: 'Edit Record'
 einvoicing:
+    setup:
+        title: 'Set up electronic invoicing'
+        intro: 'Since 1 September 2026 every company must be able to receive electronic invoices, and you will have to issue them by 1 September 2027 at the latest. Three steps are enough: we guide you through them.'
+        step_done: 'Done'
+        step_current: 'To do'
+        step_later: 'Next'
+        invalid_token: 'The page expired. Please try again.'
+        identity:
+            title: 'Your company'
+            help: 'Type your SIREN, then "Look up": we fill in the rest from the State''s company register. Check before saving.'
+            before_checkout: 'Before payment we need your SIREN: your subscription invoice is made out to your company and sent to you as an electronic invoice.'
+            siren: 'SIREN'
+            siren_help: 'The 9 digits of your company number.'
+            look_up: 'Look up'
+            found: 'Found in the register: %name%. Check the details below.'
+            not_found: 'This SIREN is not in the register. Fill in the details by hand.'
+            siret: 'SIRET'
+            siret_help: 'The SIRET of the establishment that invoices, usually your head office.'
+            vat_regime: 'VAT'
+            vat_exempt: 'VAT franchise (no VAT charged)'
+            vat_liable: 'I charge VAT'
+            vat_number: 'Intra-community VAT number'
+            vat_number_help: 'Worked out from your SIREN; optional under the franchise.'
+            street: 'Address'
+            street2: 'Address line 2'
+            zip: 'Postcode'
+            city: 'City'
+            save: 'Save'
+            save_and_pay: 'Save and continue to payment'
+            saved: 'Your company details are saved.'
+            done: 'Your SIREN, SIRET, VAT regime and address are saved.'
+            edit: 'Edit'
+        platform:
+            title: 'Your platform'
+            help: 'Your electronic invoices go through SUPER PDP, a platform approved by the tax administration, included in your subscription. With the button:'
+            what_1: 'you create your SUPER PDP account, or sign in to the one you have;'
+            what_2: 'SUPER PDP verifies your identity: have the manager''s ID document ready;'
+            what_3: 'you allow Augias to send and receive your invoices, and come back here.'
+            connect: 'Connect my SUPER PDP account'
+            identity_first: 'Save your company details first.'
+            connected: 'Your %name% account is connected.'
+            self_hosted: 'Choose the approved platform your invoices will go through, and enter the credentials it gave you.'
+            choose: 'Choose a platform'
+        verification:
+            title: 'Verification'
+            later: 'Once your account is connected, the platform verifies your identity.'
+            verified: 'Your identity is verified: your electronic invoices go out and come in.'
+            pending: 'The platform has not confirmed your identity yet. We check every hour and email you as soon as it is done.'
+            needs_review: 'The platform is reviewing your file: something does not match (name, address, manager). We will email you as soon as it has concluded.'
+            failed: 'The platform could not verify your identity. Resume the verification from your SUPER PDP account, or contact support.'
+            unknown: 'We could not reach the platform. Try again in a few minutes.'
+            unreachable: 'The platform did not answer. Try again in a few minutes.'
+            check: 'Check now'
+        done:
+            title: 'All set'
+            message: 'You receive your electronic invoices, and the ones you send to companies go through your platform.'
+            dashboard: 'Go to the dashboard'
     ereporting:
         title: E-reporting
         intro: 'Sales to private individuals do not go through electronic invoicing: Augias reports them to your platform, which aggregates them and sends them to the tax administration on the schedule of your VAT regime.'
@@ -3584,6 +3644,7 @@ saas:
         contact_support_short: 'Contact support'
         switch_company: 'Switch company'
     billing:
+        payment_method: 'Card (Stripe)'
         invoice_line:
             subscription: 'Augias %plan% subscription from %from% to %to%'
             plan_change: 'Change to Augias %plan%, prorated from %from% to %to%'

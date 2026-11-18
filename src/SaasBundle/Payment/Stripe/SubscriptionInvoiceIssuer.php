@@ -55,6 +55,7 @@ use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
+use function strcasecmp;
 use function strtoupper;
 
 /**
@@ -71,12 +72,18 @@ use function strtoupper;
  * means the invoice exists.
  *
  * The subscriber is found among HERC SI's clients by SIREN, then by email,
- * so that one already invoiced for something else stays one client.
+ * so that one already invoiced for something else stays one client. Each
+ * invoice brings that client up to date with what the subscriber declares
+ * now (name, SIREN, SIRET, VAT number, billing address, email): a SIREN added
+ * after the first payment turns the client into a company, and the next
+ * invoice goes out electronically.
  *
  * @see \Augias\SaasBundle\Tests\Payment\Stripe\SubscriptionInvoiceIssuerTest
  */
 final readonly class SubscriptionInvoiceIssuer
 {
+    private const string PAYMENT_GATEWAY = 'stripe';
+
     public function __construct(
         private StripeApi $api,
         private SubscriptionRepositoryInterface $subscriptions,
@@ -221,41 +228,66 @@ final readonly class SubscriptionInvoiceIssuer
         $email = is_string($remote['customer_email'] ?? null) ? $remote['customer_email'] : null;
 
         $client = $this->findClient($identifiers[TaxIdentifierType::SIREN] ?? null, $email);
-        if ($client instanceof Client) {
-            return $client;
+        if (! $client instanceof Client) {
+            $client = new Client();
+            $client->setCurrencyCode('EUR');
+            // A private individual until a SIREN or SIRET says otherwise (below).
+            $client->setIsCompany(false);
+            $this->entityManager->persist($client);
         }
 
-        $client = new Client();
         $client->setName($subscriber->getName());
-        $client->setCurrencyCode('EUR');
-        $client->setIsCompany(isset($identifiers[TaxIdentifierType::SIREN]) || isset($identifiers[TaxIdentifierType::SIRET]));
-        $client->setSiren($identifiers[TaxIdentifierType::SIREN] ?? null);
-        $client->setSiret($identifiers[TaxIdentifierType::SIRET] ?? null);
-        $client->setVatNumber($identifiers[TaxIdentifierType::VAT_NUMBER] ?? null);
+
+        // Only what the subscriber has: an identifier they never gave is not
+        // taken away from a client HERC SI completed by hand.
+        foreach ([TaxIdentifierType::SIREN => $client->setSiren(...), TaxIdentifierType::SIRET => $client->setSiret(...), TaxIdentifierType::VAT_NUMBER => $client->setVatNumber(...)] as $label => $set) {
+            if (isset($identifiers[$label])) {
+                $set($identifiers[$label]);
+            }
+        }
+
+        if ($client->getSiren() !== null || $client->getSiret() !== null) {
+            $client->setIsCompany(true);
+        }
 
         $address = $remote['customer_address'] ?? null;
-        if (is_array($address)) {
-            $client->addAddress(new Address()
+        if (is_array($address) && self::string($address['line1'] ?? null) !== null) {
+            $current = $client->getAddresses()->first();
+            if (! $current instanceof Address) {
+                $current = new Address();
+                $client->addAddress($current);
+            }
+
+            $current
                 ->setStreet1(self::string($address['line1'] ?? null))
                 ->setStreet2(self::string($address['line2'] ?? null))
                 ->setZip(self::string($address['postal_code'] ?? null))
                 ->setCity(self::string($address['city'] ?? null))
-                ->setCountry(self::string($address['country'] ?? null)));
+                ->setCountry(self::string($address['country'] ?? null));
 
             if (($address['country'] ?? 'FR') !== 'FR') {
                 $this->logger->warning('Subscription paid from outside France, where the service is not sold yet.', ['country' => $address['country']]);
             }
         }
 
-        if ($email !== null) {
+        if ($email !== null && ! $this->hasContact($client, $email)) {
             $client->addContact(new Contact()
                 ->setFirstName(self::string($remote['customer_name'] ?? null) ?? $subscriber->getName())
                 ->setEmail($email));
         }
 
-        $this->entityManager->persist($client);
-
         return $client;
+    }
+
+    private function hasContact(Client $client, string $email): bool
+    {
+        foreach ($client->getContacts() as $contact) {
+            if (strcasecmp((string) $contact->getEmail(), $email) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function findClient(?string $siren, ?string $email): ?Client
@@ -335,18 +367,30 @@ final readonly class SubscriptionInvoiceIssuer
     }
 
     /**
-     * An offline method named "stripe" when HERC SI created one, so that
-     * these payments stand apart; otherwise any offline method.
+     * HERC SI's "card (Stripe)" method, created the first time it is needed.
+     * Falling back on any offline method recorded card payments as cash, as
+     * a bank transfer, or as the client's credit, which it is not.
      */
     private function paymentMethod(): PaymentMethod
     {
         $repository = $this->entityManager->getRepository(PaymentMethod::class);
-        $method = $repository->findOneBy(['factoryName' => PaymentMethod::FACTORY_OFFLINE, 'gatewayName' => 'stripe'])
-            ?? $repository->findOneBy(['factoryName' => PaymentMethod::FACTORY_OFFLINE]);
+        $method = $repository->findOneBy(['factoryName' => PaymentMethod::FACTORY_OFFLINE, 'gatewayName' => self::PAYMENT_GATEWAY]);
 
-        if (! $method instanceof PaymentMethod) {
-            throw new LogicException('The billing company has no offline payment method to record Stripe payments with.');
+        if ($method instanceof PaymentMethod) {
+            return $method;
         }
+
+        $company = $this->entityManager->getReference(Company::class, Ulid::fromString($this->billingCompany));
+        $locale = (string) ($this->systemConfig->get('system/company/locale') ?? 'fr');
+
+        $method = new PaymentMethod()
+            ->setName($this->translator->trans('saas.billing.payment_method', locale: $locale))
+            ->setGatewayName(self::PAYMENT_GATEWAY)
+            ->setFactoryName(PaymentMethod::FACTORY_OFFLINE)
+            ->setInternal(true)
+            ->setEnabled(true);
+        $method->setCompany($company);
+        $this->entityManager->persist($method);
 
         return $method;
     }

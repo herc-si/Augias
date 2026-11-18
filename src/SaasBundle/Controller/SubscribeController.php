@@ -18,6 +18,7 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\CoreBundle\Telemetry\Telemetry;
 use Augias\CoreBundle\Telemetry\TelemetryEvent;
+use Augias\ElectronicInvoicingBundle\Onboarding\OnboardingProgressProviderInterface;
 use Augias\SaasBundle\Action\ChoosePlanAction;
 use Augias\UserBundle\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
@@ -52,6 +53,7 @@ class SubscribeController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly Telemetry $telemetry,
         private readonly ClockInterface $clock,
+        private readonly OnboardingProgressProviderInterface $einvoicingOnboarding,
         private readonly LoggerInterface $logger = new NullLogger(),
     ) {
     }
@@ -65,6 +67,14 @@ class SubscribeController extends AbstractController
         if (! $subscription instanceof Subscription) {
             $this->addFlash('error', 'saas.flash.no_subscription_short');
             return $this->redirectToRoute('_dashboard');
+        }
+
+        // HERC SI invoices the subscriber: without a SIREN it would be a
+        // private individual, its invoice reported instead of sent
+        // electronically. Asked once, by the setup's first step, which comes
+        // back here — the chosen plan with it.
+        if (! $this->einvoicingOnboarding->progress()->hasSiren) {
+            return $this->redirectToRoute('_einvoicing_setup', ['next' => $request->getRequestUri()]);
         }
 
         // Grant Lemon Squeezy's built-in trial (skip_trial: false) only for a
