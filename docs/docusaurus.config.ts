@@ -197,10 +197,6 @@ const config: Config = {
               label: 'Signaler un problème',
               href: 'https://github.com/herc-si/Augias/issues',
             },
-            {
-              label: 'X (Twitter)',
-              href: 'https://x.com/augias',
-            },
           ],
         },
         {

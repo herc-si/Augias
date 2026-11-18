@@ -35,10 +35,6 @@
     "message": "Report an Issue",
     "description": "The label of footer link with label=Signaler un problème linking to https://github.com/herc-si/Augias/issues"
   },
-  "link.item.label.X (Twitter)": {
-    "message": "X (Twitter)",
-    "description": "The label of footer link with label=X (Twitter) linking to https://x.com/augias"
-  },
   "link.item.label.GitHub": {
     "message": "GitHub",
     "description": "The label of footer link with label=GitHub linking to https://github.com/herc-si/Augias"
