@@ -30,6 +30,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 use Symfony\Component\Security\Http\Event\LogoutEvent;
+use function in_array;
 use function is_string;
 
 /**
@@ -47,6 +48,15 @@ use function is_string;
  */
 final readonly class LoginRecordSubscriber implements EventSubscriberInterface
 {
+    /**
+     * Firewalls where every request carries a token: each one authenticates,
+     * none is a sign-in. The sign-in that granted the token was recorded on
+     * the main firewall; recording each use put six rows in the journal for
+     * one MCP connection, each from another of Claude's servers, each a
+     * "new network" alert (preprod, 18/11/2026).
+     */
+    private const array TOKEN_FIREWALLS = ['api', 'mcp'];
+
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserRepository $users,
@@ -71,6 +81,10 @@ final readonly class LoginRecordSubscriber implements EventSubscriberInterface
 
     public function onLoginSuccess(LoginSuccessEvent $event): void
     {
+        if (in_array($event->getFirewallName(), self::TOKEN_FIREWALLS, true)) {
+            return;
+        }
+
         if ($event->getAuthenticatedToken() instanceof TwoFactorTokenInterface) {
             // Not signed in yet — see the class docblock.
             return;
@@ -87,6 +101,10 @@ final readonly class LoginRecordSubscriber implements EventSubscriberInterface
 
     public function onLoginFailure(LoginFailureEvent $event): void
     {
+        if (in_array($event->getFirewallName(), self::TOKEN_FIREWALLS, true)) {
+            return;
+        }
+
         $identifier = $this->attemptedIdentifier($event);
 
         if ($identifier === null) {

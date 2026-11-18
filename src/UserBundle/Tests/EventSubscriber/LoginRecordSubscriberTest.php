@@ -50,6 +50,7 @@ final class LoginRecordSubscriberTest extends TestCase
         $entityManager->shouldNotReceive('flush');
 
         $event = M::mock(LoginSuccessEvent::class);
+        $event->shouldReceive('getFirewallName')->andReturn('main');
         $event->shouldReceive('getAuthenticatedToken')
             ->andReturn(M::mock(TwoFactorTokenInterface::class));
 
@@ -73,6 +74,7 @@ final class LoginRecordSubscriberTest extends TestCase
         $entityManager->shouldReceive('flush')->once();
 
         $event = M::mock(LoginSuccessEvent::class);
+        $event->shouldReceive('getFirewallName')->andReturn('main');
         $event->shouldReceive('getAuthenticatedToken')->andReturn(M::mock(TokenInterface::class));
         $event->shouldReceive('getUser')->andReturn($user);
 
@@ -105,6 +107,7 @@ final class LoginRecordSubscriberTest extends TestCase
         $users->shouldReceive('findOneBy')->with(['email' => 'nobody@example.com'])->andReturnNull();
 
         $event = M::mock(LoginFailureEvent::class);
+        $event->shouldReceive('getFirewallName')->andReturn('main');
         $event->shouldReceive('getPassport')->andReturn(
             new Passport(new UserBadge('nobody@example.com'), M::mock(
                 \Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CredentialsInterface::class
@@ -117,6 +120,27 @@ final class LoginRecordSubscriberTest extends TestCase
         self::assertNull($recorded->getUser());
         self::assertSame(LoginOutcome::Failure, $recorded->getOutcome());
         self::assertSame('nobody@example.com', $recorded->getIdentifier());
+    }
+
+    /**
+     * A request on the API or the MCP server carries a token: it is not a
+     * sign-in, and each one from another of the client's servers was a "new
+     * network" alert.
+     */
+    public function testATokenUsedOnTheApiOrTheMcpServerIsNotASignIn(): void
+    {
+        $entityManager = M::mock(EntityManagerInterface::class);
+        $entityManager->shouldNotReceive('persist');
+
+        foreach (['api', 'mcp'] as $firewall) {
+            $success = M::mock(LoginSuccessEvent::class);
+            $success->shouldReceive('getFirewallName')->andReturn($firewall);
+            $this->subscriber($entityManager)->onLoginSuccess($success);
+
+            $failure = M::mock(LoginFailureEvent::class);
+            $failure->shouldReceive('getFirewallName')->andReturn($firewall);
+            $this->subscriber($entityManager)->onLoginFailure($failure);
+        }
     }
 
     private function subscriber(
