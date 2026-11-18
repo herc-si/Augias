@@ -107,7 +107,7 @@ Vous disposez des droits d'accès, de rectification, d'effacement, de limitation
 
 Pour la **portabilité**, l'application intègre un export complet des données de votre entreprise, disponible depuis votre compte sans avoir à en faire la demande.
 
-Pour les autres droits, écrivez à **[À COMPLÉTER : adresse de contact pour les demandes RGPD ; `privacy-augias@herc-si.fr` suivrait la convention déjà retenue pour la sécurité, mais la boîte doit exister]**. Une réponse vous parvient dans un délai d'un mois.
+Pour les autres droits, écrivez à [privacy-augias@herc-si.fr](mailto:privacy-augias@herc-si.fr). Une réponse vous parvient dans un délai d'un mois.
 
 Vous pouvez introduire une réclamation auprès de la **Commission nationale de l'informatique et des libertés** (CNIL), 3 place de Fontenoy, 75007 Paris — [cnil.fr](https://www.cnil.fr).
 
