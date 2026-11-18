@@ -18,6 +18,7 @@ use Augias\McpBundle\Action\WellKnownAgentSkillsIndex;
 use Augias\McpBundle\Action\WellKnownAuthServer;
 use Augias\McpBundle\Action\WellKnownProtectedResource;
 use Augias\McpBundle\Action\WellKnownServerCard;
+use Augias\McpBundle\OAuth\KeyManager;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -68,6 +69,54 @@ final class WellKnownTest extends WebTestCase
         self::assertArrayHasKey('authorization_servers', $data);
         self::assertSame(['header'], $data['bearer_methods_supported']);
         self::assertSame(['mcp:read', 'mcp:write'], $data['scopes_supported']);
+    }
+
+    /**
+     * RFC 9728 §3.1: the metadata of https://host/_mcp, at the path a client
+     * builds from the resource. It was a 404, and Claude gave up there.
+     */
+    public function testProtectedResourceMetadataAtTheResourcesOwnPath(): void
+    {
+        self::ensureKernelShutdown();
+        $client = self::createClient();
+        $client->request(Request::METHOD_GET, '/.well-known/oauth-protected-resource/_mcp');
+
+        self::assertResponseIsSuccessful();
+        $data = json_decode((string) $client->getResponse()->getContent(), true);
+        self::assertIsArray($data);
+        self::assertStringEndsWith('/_mcp', $data['resource']);
+    }
+
+    /**
+     * The first request of every client carries no token: the 401 tells it
+     * where to sign in, or it does not know and stops.
+     */
+    public function testARequestWithoutATokenIsToldWhereTheMetadataIs(): void
+    {
+        self::ensureKernelShutdown();
+        $client = self::createClient();
+        $client->request(Request::METHOD_POST, '/_mcp', server: ['CONTENT_TYPE' => 'application/json'], content: '{"jsonrpc":"2.0","id":1,"method":"initialize"}');
+
+        self::assertResponseStatusCodeSame(401);
+        self::assertSame(
+            'Bearer resource_metadata="http://localhost/.well-known/oauth-protected-resource", scope="mcp:read mcp:write"',
+            $client->getResponse()->headers->get('WWW-Authenticate'),
+        );
+    }
+
+    public function testAnInvalidTokenIsAlsoToldWhereTheMetadataIs(): void
+    {
+        self::ensureKernelShutdown();
+        $client = self::createClient();
+        // Reading a token needs the signing keys; nothing else here makes them.
+        $keys = self::getContainer()->get(KeyManager::class);
+        self::assertInstanceOf(KeyManager::class, $keys);
+        $keys->generate();
+
+        $client->request(Request::METHOD_POST, '/_mcp', server: ['CONTENT_TYPE' => 'application/json', 'HTTP_AUTHORIZATION' => 'Bearer not-a-token'], content: '{}');
+
+        self::assertResponseStatusCodeSame(401);
+        self::assertStringContainsString('resource_metadata="http://localhost/.well-known/oauth-protected-resource"', (string) $client->getResponse()->headers->get('WWW-Authenticate'));
     }
 
     public function testServerCard(): void

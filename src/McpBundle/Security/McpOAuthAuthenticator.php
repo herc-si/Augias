@@ -33,8 +33,15 @@ use Symfony\Component\Security\Http\Authenticator\AbstractAuthenticator;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
+use Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface;
 
-final class McpOAuthAuthenticator extends AbstractAuthenticator
+/**
+ * Bearer tokens on /_mcp. Every 401 names where the OAuth metadata is
+ * (`WWW-Authenticate: Bearer resource_metadata=…`), as the MCP authorization
+ * spec requires: a client that receives a 401 without it does not know where
+ * to sign in, and stops there.
+ */
+final class McpOAuthAuthenticator extends AbstractAuthenticator implements AuthenticationEntryPointInterface
 {
     public const string ATTR_ACCESS_TOKEN_ID = 'mcp_oauth_access_token_id';
 
@@ -128,9 +135,29 @@ final class McpOAuthAuthenticator extends AbstractAuthenticator
         return null;
     }
 
+    /**
+     * No token at all: the first request of every client.
+     */
+    public function start(Request $request, ?AuthenticationException $authException = null): Response
+    {
+        return new JsonResponse(
+            ['error' => 'unauthorized', 'error_description' => 'Authentication required.'],
+            Response::HTTP_UNAUTHORIZED,
+            ['WWW-Authenticate' => sprintf('Bearer resource_metadata="%s", scope="%s"', self::resourceMetadata($request), implode(' ', McpScope::values()))],
+        );
+    }
+
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): ?Response
     {
-        return $this->buildErrorResponse('invalid_token', $exception->getMessage(), Response::HTTP_UNAUTHORIZED);
+        $response = $this->buildErrorResponse('invalid_token', $exception->getMessage(), Response::HTTP_UNAUTHORIZED);
+        $response->headers->set('WWW-Authenticate', sprintf('%s, resource_metadata="%s"', $response->headers->get('WWW-Authenticate'), self::resourceMetadata($request)));
+
+        return $response;
+    }
+
+    private static function resourceMetadata(Request $request): string
+    {
+        return rtrim($request->getSchemeAndHttpHost() . $request->getBaseUrl(), '/') . '/.well-known/oauth-protected-resource';
     }
 
     private function buildAccessDeniedResponse(string $reason): Response
