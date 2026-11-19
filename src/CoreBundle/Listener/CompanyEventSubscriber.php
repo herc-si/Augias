@@ -164,6 +164,14 @@ final readonly class CompanyEventSubscriber implements EventSubscriberInterface
                 '_switch_company',
                 '_create_company',
                 '_onboarding',
+                // What a new account needs before it has a company: the link
+                // that verifies its address, a new one, and a way out. Sent to
+                // the picker instead, the link never reached its action, and
+                // the picker asks for the address to be verified (19/11/2026).
+                '_verify_email',
+                '_verify_email_resend',
+                '_logout',
+                '_logout_main',
             ],
             true
         );

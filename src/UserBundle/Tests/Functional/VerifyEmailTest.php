@@ -86,6 +86,49 @@ final class VerifyEmailTest extends WebTestCase
     }
 
     /**
+     * What a new customer does: sign up, then open the link in the same
+     * browser, still signed in and with no company yet. The request was sent
+     * to the company picker before it reached the link, and the picker shows
+     * "verify your email": the address could never be verified (test
+     * instance, 19/11/2026).
+     */
+    public function testTheLinkWorksStraightAfterSigningUp(): void
+    {
+        $_SERVER['AUGIAS_ALLOW_REGISTRATION'] = $_ENV['AUGIAS_ALLOW_REGISTRATION'] = '1';
+
+        self::ensureKernelShutdown();
+        $client = self::createClient();
+        $client->disableReboot();
+
+        $this->signUp($client, [
+            'register[email]' => self::EMAIL,
+            'register[plainPassword]' => 'Sup3rStr0ngP@ssw0rd',
+            'register[acceptTerms]' => '1',
+        ]);
+
+        $link = null;
+
+        foreach (self::getMailerMessages() as $message) {
+            if ($message instanceof TemplatedEmail && preg_match('#href="([^"]*/verify\?[^"]*)"#', (string) $message->getHtmlBody(), $match) === 1) {
+                $link = html_entity_decode($match[1]);
+            }
+        }
+
+        self::assertIsString($link, 'No verification email was sent.');
+
+        // Cookies kept: the browser that signed up.
+        $client->request(Request::METHOD_GET, $link);
+
+        /** @var ManagerRegistry $registry */
+        $registry = self::getContainer()->get('doctrine');
+        $registry->getManager()->clear();
+        $user = $registry->getRepository(User::class)->findOneBy(['email' => self::EMAIL]);
+
+        self::assertInstanceOf(User::class, $user);
+        self::assertTrue($user->isVerified(), 'The link opened right after signing up did not verify the address.');
+    }
+
+    /**
      * What failed on the test instance (29/09/2026, logged as "names no
      * account"): the link opened in a browser already signed in to another
      * account, whose company was selected. The company filter then scoped the
