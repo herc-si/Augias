@@ -21,9 +21,11 @@ use Augias\CoreBundle\Telemetry\Telemetry;
 use Augias\CoreBundle\Tests\Telemetry\CollectingMessageBus;
 use Augias\ElectronicInvoicingBundle\Onboarding\OnboardingProgress;
 use Augias\ElectronicInvoicingBundle\Onboarding\OnboardingProgressProviderInterface;
+use Augias\SaasBundle\Action\ChoosePlanAction;
 use Augias\SaasBundle\Controller\SubscribeController;
 use Augias\UserBundle\Entity\User;
 use Carbon\CarbonImmutable;
+use DateInterval;
 use DateTimeImmutable;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -152,6 +154,27 @@ final class SubscribeControllerTest extends TestCase
         $options = $this->captureCheckoutOptions($subscription, CarbonImmutable::parse('2024-01-01'));
 
         self::assertFalse($options->getValue(Options::SKIP_TRIAL));
+    }
+
+    /**
+     * The trial is the base plan's: a company in its trial that picks a
+     * higher plan pays at once (19/11/2026).
+     */
+    public function testAHigherPlanChosenDuringTheTrialIsChargedNow(): void
+    {
+        $subscription = $this->trialSubscription(
+            SubscriptionStatus::TRIAL,
+            CarbonImmutable::parse('2024-01-10'),
+        );
+
+        $solo = new Plan();
+        $solo->setName('Solo');
+        $solo->setPlanId('higher-plan');
+        $solo->setPrice(999);
+
+        $options = $this->captureCheckoutOptions($subscription, CarbonImmutable::parse('2024-01-01'), $solo);
+
+        self::assertTrue($options->getValue(Options::SKIP_TRIAL));
     }
 
     public function testExpiredTrialCheckoutSkipsTrial(): void
@@ -309,10 +332,12 @@ final class SubscribeControllerTest extends TestCase
         DateTimeImmutable $endDate,
         ?string $subscriptionId = null,
     ): Subscription {
+        // The base plan: the one with a trial.
         $plan = new Plan();
-        $plan->setName('Pro');
+        $plan->setName('Découverte');
         $plan->setPlanId('variant-123');
-        $plan->setPrice(1000);
+        $plan->setPrice(300);
+        $plan->setTrialDuration(new DateInterval('P30D'));
 
         $subscription = new Subscription();
         $subscription->setPlan($plan);
@@ -324,7 +349,7 @@ final class SubscribeControllerTest extends TestCase
         return $subscription;
     }
 
-    private function captureCheckoutOptions(Subscription $subscription, DateTimeImmutable $now): Options
+    private function captureCheckoutOptions(Subscription $subscription, DateTimeImmutable $now, ?Plan $chosen = null): Options
     {
         $capturedOptions = null;
 
@@ -355,11 +380,14 @@ final class SubscribeControllerTest extends TestCase
         $clock = $this->createStub(ClockInterface::class);
         $clock->method('now')->willReturn($now);
 
+        $planRepository = $this->createStub(PlanRepositoryInterface::class);
+        $planRepository->method('find')->willReturn($chosen);
+
         $controller = new SubscribeController(
             $subscriptionManager,
             $companyRepository,
             $companySelector,
-            $this->createStub(PlanRepositoryInterface::class),
+            $planRepository,
             $this->createStub(EntityManagerInterface::class),
             $this->makeTelemetry(),
             $clock,
@@ -388,7 +416,7 @@ final class SubscribeControllerTest extends TestCase
         $container->set('security.token_storage', $tokenStorage);
 
         $controller->setContainer($container);
-        $controller(new Request());
+        $controller($chosen instanceof Plan ? new Request([ChoosePlanAction::PENDING_PLAN_QUERY_PARAMETER => 'higher-plan']) : new Request());
 
         self::assertInstanceOf(Options::class, $capturedOptions);
 

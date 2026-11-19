@@ -21,6 +21,7 @@ use Augias\CoreBundle\Telemetry\TelemetryEvent;
 use Augias\ElectronicInvoicingBundle\Onboarding\OnboardingProgressProviderInterface;
 use Augias\SaasBundle\Action\ChoosePlanAction;
 use Augias\UserBundle\Entity\User;
+use DateInterval;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
@@ -77,19 +78,6 @@ class SubscribeController extends AbstractController
             return $this->redirectToRoute('_einvoicing_setup', ['next' => $request->getRequestUri()]);
         }
 
-        // Grant Lemon Squeezy's built-in trial (skip_trial: false) only for a
-        // user who is still actively trialling and has not yet added a card.
-        // This is what makes the "extend your trial" offer real. Every other
-        // path (expired trial, cancelled, free-plan upgrade, plan change) is
-        // charged immediately and must not receive a second free trial.
-        $grantsTrialExtension = $subscription->getStatus() === SubscriptionStatus::TRIAL
-            && ! $subscription->isExternallyBilled()
-            && $subscription->getEndDate() > $this->clock->now();
-
-        $options = Options::new()
-            ->withEmail($user->getEmail())
-            ->withSkipTrial(! $grantsTrialExtension);
-
         // The chosen plan id (LS variant) is passed in via query parameter
         // from ChoosePlanAction / ConfirmPlanChangeAction. We swap it onto the
         // subscription IN MEMORY only — the checkout URL builder reads
@@ -108,6 +96,22 @@ class SubscribeController extends AbstractController
                 $swapped = true;
             }
         }
+
+        // What is left of the trial carries over to the paid subscription
+        // only for the plan that has a trial — the base one. A company in its
+        // trial that picks a higher plan pays now (decided by Rémi,
+        // 19/11/2026): the trial is a way to try Augias, not a month of a
+        // higher plan for free. Read after the swap above, so the plan is the
+        // one being paid for. Every other path (expired trial, cancelled,
+        // already billed elsewhere) is charged at once as well.
+        $grantsTrialExtension = $subscription->getStatus() === SubscriptionStatus::TRIAL
+            && ! $subscription->isExternallyBilled()
+            && $subscription->getEndDate() > $this->clock->now()
+            && $subscription->getPlan()->getTrialDuration() instanceof DateInterval;
+
+        $options = Options::new()
+            ->withEmail($user->getEmail())
+            ->withSkipTrial(! $grantsTrialExtension);
 
         // Capture the plan the user is checking out (the in-memory swapped
         // target when a pending plan id was supplied) before the `finally`
