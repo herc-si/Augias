@@ -18,6 +18,7 @@ use Augias\ClientBundle\Entity\Contact;
 use Augias\ClientBundle\Repository\ClientRepository;
 use Augias\CoreBundle\Billing\TotalCalculator;
 use Augias\CoreBundle\Generator\BillingIdGenerator;
+use Augias\InvoiceBundle\Deposit\DepositBilling;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Manager\InvoiceManager;
 use Augias\McpBundle\Mcp\Attribute\McpScopeRequired;
@@ -25,19 +26,28 @@ use Augias\McpBundle\Mcp\McpScopeGuard;
 use Augias\McpBundle\Mcp\Tool\EntityNormalizer;
 use Augias\McpBundle\Mcp\Tool\InvoiceTaxBuilder;
 use Augias\McpBundle\Mcp\Tool\LineItemBuilder;
+use Augias\McpBundle\Mcp\Tool\PlanLimits;
 use Augias\McpBundle\Mcp\Tool\UlidParser;
 use Augias\McpBundle\Security\McpScope;
 use Augias\QuoteBundle\Cloner\QuoteCloner;
 use Augias\QuoteBundle\Entity\Quote;
 use Augias\QuoteBundle\Enum\QuoteStatus;
+use Augias\QuoteBundle\Exception\InvalidTransitionException;
+use Augias\QuoteBundle\Mailer\QuoteMailer;
 use Augias\QuoteBundle\Model\Graph as QuoteGraph;
 use Augias\QuoteBundle\Repository\QuoteRepository;
+use Augias\SaasBundle\Feature\Feature;
+use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use JsonException;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Exception\ToolCallException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Workflow\WorkflowInterface;
 
 final readonly class QuoteWriteTools
@@ -56,6 +66,10 @@ final readonly class QuoteWriteTools
         #[Autowire(service: 'state_machine.quote')]
         private WorkflowInterface $quoteWorkflow,
         private McpScopeGuard $scopeGuard,
+        private PlanLimits $planLimits,
+        private DepositBilling $deposits,
+        private QuoteMailer $quoteMailer,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -98,6 +112,7 @@ final readonly class QuoteWriteTools
         array $invoice_taxes = [],
     ): array {
         $this->scopeGuard->require(McpScope::Write);
+        $this->planLimits->assertFeature(Feature::Quotes, 'Quotes');
 
         $client = $this->clientRepository->find(UlidParser::parse($client_id, 'client_id'));
 
@@ -218,6 +233,7 @@ final readonly class QuoteWriteTools
     public function cloneQuote(string $quote_id): array
     {
         $this->scopeGuard->require(McpScope::Write);
+        $this->planLimits->assertFeature(Feature::Quotes, 'Quotes');
 
         $quote = $this->quoteRepository->find(UlidParser::parse($quote_id, 'quote_id'));
 
@@ -248,6 +264,7 @@ final readonly class QuoteWriteTools
     public function convertQuoteToInvoice(string $quote_id): array
     {
         $this->scopeGuard->require(McpScope::Write);
+        $this->planLimits->assertCanCreateInvoice();
 
         $quote = $this->quoteRepository->find(UlidParser::parse($quote_id, 'quote_id'));
 
@@ -267,8 +284,107 @@ final readonly class QuoteWriteTools
         }
 
         $invoice = $this->invoiceManager->createFromQuote($quote);
+        // What deposit invoices already billed comes off, as on the screen:
+        // the final invoice is for the rest.
+        $this->deposits->deduct($quote, $invoice);
         $invoice = $this->invoiceManager->create($invoice);
 
         return $this->normalizer->normalize($invoice);
+    }
+
+    /**
+     * Bill a share of an accepted quote ahead of the work, as a deposit invoice
+     * (facture d'acompte). The final invoice made later from the quote deducts
+     * every deposit issued.
+     *
+     * @param string     $quote_id   Quote ULID; the quote must be accepted and not yet invoiced
+     * @param int|float|string $percentage Share of the quote to bill, in percent (e.g. 30)
+     *
+     * @return array<string, mixed>
+     */
+    #[McpTool(name: 'create_deposit_invoice', description: 'Create a deposit invoice (facture d\'acompte) for a percentage of an accepted quote. The final invoice from convert_quote_to_invoice deducts it.')]
+    #[McpScopeRequired(McpScope::Write)]
+    public function createDepositInvoice(string $quote_id, int | float | string $percentage): array
+    {
+        $this->scopeGuard->require(McpScope::Write);
+
+        $quote = $this->quoteRepository->find(UlidParser::parse($quote_id, 'quote_id'));
+
+        if (! $quote instanceof Quote) {
+            throw new ToolCallException(sprintf('Quote %s not found.', $quote_id));
+        }
+
+        if ($quote->getStatus() !== QuoteStatus::Accepted) {
+            throw new ToolCallException('Only an accepted quote can be billed a deposit.');
+        }
+
+        if ($quote->getInvoice() instanceof Invoice) {
+            throw new ToolCallException('The final invoice of this quote exists already: everything left has been billed.');
+        }
+
+        try {
+            $share = BigDecimal::of(\is_float($percentage) ? sprintf('%.6F', $percentage) : str_replace(',', '.', trim((string) $percentage)));
+        } catch (MathException) {
+            throw new ToolCallException(sprintf('Invalid percentage "%s".', (string) $percentage));
+        }
+
+        $remaining = $this->deposits->remainingPercentage($quote);
+
+        if (! $share->isPositive() || $share->isGreaterThan($remaining)) {
+            throw new ToolCallException(sprintf('The percentage must be above 0 and at most %s, the share of the quote not billed yet.', (string) $remaining->strippedOfTrailingZeros()));
+        }
+
+        $this->planLimits->assertCanCreateInvoice();
+
+        $invoice = $this->deposits->draft($quote, $share);
+        $invoice->setDepositForQuote($quote);
+
+        foreach ($invoice->getUsers() as $contact) {
+            $contact->addInvoice($invoice);
+        }
+
+        $invoice->setInvoiceId('');
+        $invoice = $this->invoiceManager->create($invoice);
+
+        return $this->normalizer->normalize($invoice);
+    }
+
+    /**
+     * Email a quote to its contacts. A draft is marked as sent first.
+     *
+     * @param string $quote_id Quote ULID
+     *
+     * @return array<string, mixed>
+     */
+    #[McpTool(name: 'send_quote', description: 'Email a quote (with its PDF) to its contacts; a draft quote is marked as sent.')]
+    #[McpScopeRequired(McpScope::Write)]
+    public function sendQuote(string $quote_id): array
+    {
+        $this->scopeGuard->require(McpScope::Write);
+        $this->planLimits->assertCanSend();
+
+        $quote = $this->quoteRepository->find(UlidParser::parse($quote_id, 'quote_id'));
+
+        if (! $quote instanceof Quote) {
+            throw new ToolCallException(sprintf('Quote %s not found.', $quote_id));
+        }
+
+        if ($quote->getUsers()->isEmpty()) {
+            throw new ToolCallException('The quote has no contact to send it to. Add a contact to the client, then to the quote.');
+        }
+
+        try {
+            $this->quoteMailer->send($quote);
+        } catch (InvalidTransitionException) {
+            throw new ToolCallException(sprintf('A quote in status "%s" cannot be sent.', $quote->getStatus()->value));
+        } catch (TransportExceptionInterface | JsonException $exception) {
+            $this->logger->error('Failed to send quote via MCP', ['quote_id' => $quote->getQuoteId(), 'exception' => $exception]);
+
+            throw new ToolCallException('Failed to send the quote. See server logs for details.', 0, $exception);
+        }
+
+        $this->entityManager->flush();
+
+        return $this->normalizer->normalize($quote);
     }
 }

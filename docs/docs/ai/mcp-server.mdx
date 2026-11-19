@@ -152,7 +152,7 @@ Le serveur expose le même jeu d'outils à tous les agents. Les outils qui deman
 
 | Outil | Rôle |
 | --- | --- |
-| `list_resource` | Liste les fiches de toute ressource (facture, devis, client, contact, paiement, taxe, facture récurrente), avec filtres et pagination. |
+| `list_resource` | Liste les fiches de toute ressource (facture, avoir, devis, client, contact, paiement, taxe, facture récurrente, produit), avec filtres et pagination. |
 | `get_resource` | Récupère une fiche par son identifiant. |
 | `list_invoices_by_status` | Liste les factures d'un statut (brouillon, en attente, payée, en retard, etc.). |
 | `list_overdue_invoices` | Liste les factures en retard, éventuellement pour un client. |
@@ -163,11 +163,7 @@ Le serveur expose le même jeu d'outils à tous les agents. Les outils qui deman
 | `list_workflow_transitions` | Liste les transitions de statut possibles sur une fiche. |
 | `get_company_info` | Renvoie l'identifiant, le nom et la devise par défaut de l'entreprise active. |
 | `get_client_summary` | Total facturé, impayé, total payé et nombres de documents pour un client. |
-| `get_dashboard_stats` | Totaux impayés et en retard par devise, nombre de factures par statut, nombre de clients. |
-| `get_invoice_status_distribution` | Nombre de factures par statut. |
-| `get_revenue_by_period` | Chiffre d'affaires des paiements encaissés entre deux dates, par jour, semaine ou mois. |
-| `get_total_outstanding` | Total impayé par devise, éventuellement pour un client. |
-| `get_total_overdue` | Total en retard par devise, éventuellement pour un client. |
+| `search_products` | Cherche dans le catalogue de produits et services, par nom, référence ou description. |
 
 ### Outils d'écriture (`mcp:write`)
 
@@ -176,18 +172,31 @@ Le serveur expose le même jeu d'outils à tous les agents. Les outils qui deman
 | `create_resource` | Crée une ressource simple : `client`, `contact` ou `tax`. |
 | `update_resource` | Modifie les champs simples d'un client, d'un contact ou d'une taxe. |
 | `delete_resource` | Supprime un client, un contact ou une taxe. |
-| `create_invoice` | Crée une facture pour un client, avec ses lignes, une remise, une échéance et des contacts. |
+| `create_invoice` | Crée une facture pour un client, avec ses lignes, une remise, une échéance et des contacts. Une ligne peut venir du catalogue (`product_id`), être un débours ou un texte seul. |
 | `create_quote` | Crée un devis pour un client, avec ses lignes, une remise, une échéance et des contacts. |
 | `create_recurring_invoice` | Crée une facture récurrente quotidienne, hebdomadaire, mensuelle ou annuelle. |
 | `clone_invoice` | Duplique une facture en un nouveau brouillon avec les mêmes lignes. |
 | `clone_quote` | Duplique un devis en un nouveau brouillon avec les mêmes lignes. |
-| `convert_quote_to_invoice` | Transforme un devis en nouvelle facture, avec client, lignes et totaux. |
+| `convert_quote_to_invoice` | Transforme un devis accepté en facture finale, en déduisant les acomptes déjà émis. |
+| `create_deposit_invoice` | Crée une facture d'acompte pour un pourcentage d'un devis accepté. |
+| `send_invoice` | Envoie une facture comme le bouton `Envoyer` : un brouillon est numéroté, la facture part par e-mail avec son PDF, et en facture électronique si le client y est éligible. |
+| `send_quote` | Envoie un devis par e-mail avec son PDF ; un brouillon passe à envoyé. |
+| `create_credit_note` | Crée un avoir en brouillon : annulation complète d'une facture, ou lignes choisies. Un avoir ne peut pas dépasser ce qui reste à créditer sur la facture. |
+| `issue_credit_note` | Émet un avoir (numéroté, figé) sans l'envoyer par e-mail. |
+| `send_credit_note` | Envoie un avoir par e-mail avec son PDF, en l'émettant d'abord s'il est en brouillon. |
+| `allocate_credit_note` | Impute un avoir émis sur une facture impayée (`offset`) ou enregistre son remboursement (`refund`). |
+| `create_product` | Ajoute un produit ou un service au catalogue. |
+| `update_product` | Modifie une entrée du catalogue, ou la retire des nouvelles lignes (`active: false`). |
 | `apply_invoice_transition` | Applique une transition de statut (`accept`, `cancel`, `overdue`, `pay`, `reopen`, `archive`) à une facture. |
 | `apply_quote_transition` | Applique une transition de statut (`send`, `accept`, `decline`, `cancel`, `reopen`, `archive`) à un devis. |
 | `apply_recurring_transition` | Applique une transition de statut à une facture récurrente. |
 | `record_payment` | Enregistre un paiement hors ligne sur une facture et la passe payée. |
 | `add_contact` | Ajoute un contact (e-mail et nom facultatif) à un client existant. |
 | `send_invoice_reminder` | Envoie aux contacts d'une facture une relance manuelle par e-mail. |
+
+:::info
+Les outils appliquent les mêmes limites que l'interface : quota mensuel de factures et fonctions comprises dans l'offre, et adresse e-mail vérifiée avant tout envoi.
+:::
 
 :::note
 L'agent agit toujours au nom de l'utilisateur qui a donné son accord, sur l'entreprise choisie au consentement. Un `company` ou `company_id` passé par l'agent dans un appel d'écriture est ignoré : l'entreprise active est imposée côté serveur.

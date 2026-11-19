@@ -17,11 +17,16 @@ use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\ClientBundle\Repository\ClientRepository;
 use Augias\CoreBundle\Billing\TotalCalculator;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceManager;
+use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceManagerInterface;
 use Augias\InvoiceBundle\Cloner\InvoiceCloner;
+use Augias\InvoiceBundle\Email\InvoiceEmail;
 use Augias\InvoiceBundle\Email\ManualInvoiceReminderEmail;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
+use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Manager\InvoiceManager;
+use Augias\InvoiceBundle\Model\Graph;
 use Augias\InvoiceBundle\Repository\InvoiceRepository;
 use Augias\InvoiceBundle\Repository\RecurringInvoiceRepository;
 use Augias\McpBundle\Mcp\Attribute\McpScopeRequired;
@@ -29,12 +34,14 @@ use Augias\McpBundle\Mcp\McpScopeGuard;
 use Augias\McpBundle\Mcp\Tool\EntityNormalizer;
 use Augias\McpBundle\Mcp\Tool\InvoiceTaxBuilder;
 use Augias\McpBundle\Mcp\Tool\LineItemBuilder;
+use Augias\McpBundle\Mcp\Tool\PlanLimits;
 use Augias\McpBundle\Mcp\Tool\UlidParser;
 use Augias\McpBundle\Security\McpScope;
 use Carbon\CarbonImmutable;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use LogicException;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Exception\ToolCallException;
 use Psr\Log\LoggerInterface;
@@ -63,6 +70,8 @@ final readonly class InvoiceWriteTools
         private MailerInterface $mailer,
         private LoggerInterface $logger,
         private McpScopeGuard $scopeGuard,
+        private PlanLimits $planLimits,
+        private ElectronicInvoiceManagerInterface $electronicInvoiceManager,
     ) {
     }
 
@@ -109,6 +118,7 @@ final readonly class InvoiceWriteTools
         array $invoice_taxes = [],
     ): array {
         $this->scopeGuard->require(McpScope::Write);
+        $this->planLimits->assertCanCreateInvoice();
 
         $client = $this->clientRepository->find(UlidParser::parse($client_id, 'client_id'));
 
@@ -262,6 +272,7 @@ final readonly class InvoiceWriteTools
     public function cloneInvoice(string $invoice_id): array
     {
         $this->scopeGuard->require(McpScope::Write);
+        $this->planLimits->assertCanCreateInvoice();
 
         $invoice = $this->invoiceRepository->find(UlidParser::parse($invoice_id, 'invoice_id'));
 
@@ -328,6 +339,71 @@ final readonly class InvoiceWriteTools
         return [
             'sent' => true,
             'invoice_id' => $invoice->getId()?->toRfc4122() ?? $invoice_id,
+        ];
+    }
+
+    /**
+     * Send an invoice as the Send button does: a draft is finalised (numbered,
+     * pending payment), emailed with its PDF to its contacts, and handed to the
+     * electronic invoicing platform when the client is eligible.
+     *
+     * @param string $invoice_id Invoice ULID
+     *
+     * @return array<string, mixed>
+     */
+    #[McpTool(name: 'send_invoice', description: 'Send an invoice: finalise a draft (numbered, pending), email it with its PDF to its contacts, and submit it as an electronic invoice when the client is eligible.')]
+    #[McpScopeRequired(McpScope::Write)]
+    public function sendInvoice(string $invoice_id): array
+    {
+        $this->scopeGuard->require(McpScope::Write);
+        $this->planLimits->assertCanSend();
+
+        $invoice = $this->invoiceRepository->find(UlidParser::parse($invoice_id, 'invoice_id'));
+
+        if (! $invoice instanceof Invoice) {
+            throw new ToolCallException(sprintf('Invoice %s not found.', $invoice_id));
+        }
+
+        if ($invoice->getUsers()->isEmpty()) {
+            throw new ToolCallException('The invoice has no contact to send it to. Add a contact to the client, then to the invoice.');
+        }
+
+        if (InvoiceStatus::Pending !== $invoice->getStatus() && $this->invoiceWorkflow->can($invoice, Graph::TRANSITION_ACCEPT)) {
+            $this->invoiceWorkflow->apply($invoice, Graph::TRANSITION_ACCEPT);
+        }
+
+        $this->entityManager->flush();
+
+        $emailSent = true;
+
+        try {
+            $this->mailer->send(new InvoiceEmail($invoice));
+        } catch (TransportExceptionInterface $exception) {
+            $this->logger->error('Failed to send invoice email via MCP', ['invoice_id' => $invoice->getInvoiceId(), 'exception' => $exception]);
+            $emailSent = false;
+        }
+
+        // The email and the electronic invoice are two deliveries of the same
+        // invoice: a mail server down must not keep it off the platform.
+        $electronic = null;
+
+        if ($this->electronicInvoiceManager->isEligible($invoice)) {
+            try {
+                $submission = $this->electronicInvoiceManager->send($invoice);
+                $electronic = $submission->isSuccess()
+                    ? 'submitted'
+                    : ($submission->getMessage() === ElectronicInvoiceManager::ONLY_DISBURSEMENTS ? 'not_needed_disbursements_only' : 'failed');
+            } catch (LogicException $exception) {
+                $this->logger->error('Failed to send electronic invoice via MCP', ['invoice_id' => $invoice->getInvoiceId(), 'exception' => $exception]);
+                $electronic = 'failed';
+            }
+        }
+
+        return [
+            'email_sent' => $emailSent,
+            // null when the client is not concerned by electronic invoicing.
+            'electronic_invoice' => $electronic,
+            'invoice' => $this->normalizer->normalize($invoice),
         ];
     }
 }

@@ -21,6 +21,7 @@ use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Enum\CreditReason;
 use Augias\InvoiceBundle\Model\MirroredDiscount;
+use Augias\TaxBundle\Entity\LineTax;
 use Carbon\CarbonImmutable;
 use InvalidArgumentException;
 
@@ -128,8 +129,26 @@ final readonly class CreditNoteFormManager
         $dto->discount = $invoice->getDiscount();
 
         foreach ($invoice->getLines() as $line) {
+            $creditedLine = new CreditNoteLine();
+
+            // The VAT the invoice charged is taken back with it, at the rate
+            // the invoice was issued at, not the rate the tax has today.
+            foreach ($line->getTaxes() as $lineTax) {
+                $creditedLine->addTax(
+                    new LineTax()
+                        ->setTax($lineTax->getTax())
+                        ->setNameSnapshot((string) $lineTax->getNameSnapshot())
+                        ->setRateSnapshot($lineTax->getRateSnapshot())
+                        ->setCategorySnapshot($lineTax->getCategorySnapshot())
+                        ->setTypeSnapshot($lineTax->getTypeSnapshot())
+                        ->setCompound($lineTax->isCompound())
+                        ->setSequence($lineTax->getSequence())
+                        ->setSnapshottedAt($lineTax->getSnapshottedAt()),
+                );
+            }
+
             $dto->lines->add(
-                new CreditNoteLine()
+                $creditedLine
                     ->setDescription($line->getDescription())
                     ->setPrice($line->getPrice())
                     ->setQty($line->getQty())

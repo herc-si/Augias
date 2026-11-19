@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Augias\McpBundle\Mcp\Tool;
 
+use Augias\CatalogBundle\Entity\Product;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\CoreBundle\Entity\LineInterface;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
 use Augias\PaymentBundle\Entity\Payment;
@@ -26,6 +28,7 @@ use Augias\TaxBundle\Entity\LineTax;
 use Augias\TaxBundle\Entity\Tax;
 use Augias\TaxBundle\Entity\TaxIdentifier;
 use BackedEnum;
+use Brick\Math\BigDecimal;
 use Brick\Math\BigNumber;
 use DateTimeInterface;
 use Mcp\Exception\ToolCallException;
@@ -44,6 +47,8 @@ final class EntityNormalizer
     {
         return match (true) {
             $entity instanceof Invoice => $this->invoice($entity),
+            $entity instanceof CreditNote => $this->creditNote($entity),
+            $entity instanceof Product => $this->product($entity),
             $entity instanceof RecurringInvoice => $this->recurringInvoice($entity),
             $entity instanceof Quote => $this->quote($entity),
             $entity instanceof Client => $this->client($entity),
@@ -175,6 +180,79 @@ final class EntityNormalizer
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    private function creditNote(CreditNote $creditNote): array
+    {
+        $allocated = BigDecimal::zero();
+        $allocations = [];
+
+        foreach ($creditNote->getAllocations() as $allocation) {
+            $allocated = $allocated->plus($allocation->getAmount());
+            $allocations[] = [
+                'id' => $allocation->getId()?->toRfc4122(),
+                'kind' => $allocation->getKind()->value,
+                'amount' => $this->bigNumber($allocation->getAmount()),
+                'invoice_id' => $allocation->getInvoice()?->getId()?->toRfc4122(),
+                'invoice_number' => $allocation->getInvoice()?->getInvoiceId(),
+                'allocated_on' => $this->date($allocation->getAllocatedOn()),
+                'notes' => $allocation->getNotes(),
+            ];
+        }
+
+        return [
+            'id' => $creditNote->getId()?->toRfc4122(),
+            'credit_note_number' => $creditNote->isNumbered() ? $creditNote->getCreditNoteId() : null,
+            'status' => $creditNote->getStatus()->value,
+            'reason' => $creditNote->getReason()?->value,
+            'client' => $this->clientSummary($creditNote->getClient()),
+            'currency' => $creditNote->getClient()->getCurrencyCode(),
+            'credited_invoice' => $creditNote->getCreditedInvoice() instanceof Invoice ? [
+                'id' => $creditNote->getCreditedInvoice()->getId()?->toRfc4122(),
+                'invoice_number' => $creditNote->getCreditedInvoice()->getInvoiceId(),
+            ] : null,
+            'total' => $this->bigNumber($creditNote->getTotal()),
+            'base_total' => $this->bigNumber($creditNote->getBaseTotal()),
+            'tax' => $this->bigNumber($creditNote->getTax()),
+            // What is still owed to the client: neither set against an
+            // invoice nor refunded.
+            'remaining' => $this->bigNumber($creditNote->getTotal()->toBigDecimal()->minus($allocated)),
+            'credit_note_date' => $this->date($creditNote->getCreditNoteDate()),
+            'issued_at' => $this->date($creditNote->getIssuedAt()),
+            'subject' => $creditNote->getSubject(),
+            'terms' => $creditNote->getTerms(),
+            'notes' => $creditNote->getNotes(),
+            'lines' => $this->lines($creditNote->getLines()->toArray()),
+            'allocations' => $allocations,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function product(Product $product): array
+    {
+        return [
+            'id' => $product->getId()?->toRfc4122(),
+            'name' => $product->getName(),
+            'description' => $product->getDescription(),
+            'reference' => $product->getReference(),
+            'type' => $product->getType()->value,
+            'unit' => $product->getUnit()->value,
+            // In the minor unit of the client's currency, as on a line.
+            'sale_price' => $this->bigNumber($product->getSalePrice()),
+            'purchase_price' => $this->bigNumber($product->getPurchasePrice()),
+            'tax' => $product->getTax() instanceof Tax ? [
+                'id' => $product->getTax()->getId()->toRfc4122(),
+                'name' => $product->getTax()->getName(),
+                'rate' => $product->getTax()->getRate(),
+            ] : null,
+            'category' => $product->getCategory()?->getName(),
+            'active' => $product->isActive(),
+        ];
+    }
+
+    /**
      * @param list<LineInterface> $lines
      *
      * @return list<array<string, mixed>>
@@ -194,6 +272,8 @@ final class EntityNormalizer
                 'supply_type' => $line->getSupplyType()->value,
                 // A line of text only: no price, no quantity, in no total.
                 'note' => $line->isNote(),
+                // Re-invoiced at cost: outside turnover, carries no tax.
+                'disbursement' => $line->isDisbursement(),
                 'taxes' => array_values(array_map(
                     $this->lineTax(...),
                     $line->getTaxes()->toArray(),
