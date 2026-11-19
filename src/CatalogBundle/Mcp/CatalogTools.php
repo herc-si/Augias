@@ -26,6 +26,7 @@ use Augias\TaxBundle\Entity\Tax;
 use Brick\Math\BigInteger;
 use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Capability\Attribute\McpTool;
+use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Throwable;
@@ -137,7 +138,7 @@ final readonly class CatalogTools
      */
     #[McpTool(name: 'update_product', description: 'Change a catalogue entry: name, sale_price, type, unit, description, reference, tax_id, purchase_price, or active (false withdraws it from new lines).')]
     #[McpScopeRequired(McpScope::Write)]
-    public function updateProduct(string $product_id, array $fields): array
+    public function updateProduct(string $product_id, #[Schema(type: 'object', additionalProperties: true)] array $fields): array
     {
         $this->scopeGuard->require(McpScope::Write);
 

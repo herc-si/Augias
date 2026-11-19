@@ -35,6 +35,7 @@ use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Mcp\Capability\Attribute\McpTool;
+use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -85,6 +86,7 @@ final readonly class RecurringInvoiceWriteTools
         string $client_id,
         array $lines,
         string $date_start,
+        #[Schema(type: 'object', additionalProperties: true)]
         array $schedule,
         ?string $date_end = null,
         ?string $discount_type = null,

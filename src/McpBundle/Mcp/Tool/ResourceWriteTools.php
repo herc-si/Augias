@@ -26,6 +26,7 @@ use Augias\TaxBundle\Entity\Tax;
 use BackedEnum;
 use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Capability\Attribute\McpTool;
+use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
 use ReflectionClass;
 use ReflectionNamedType;
@@ -108,7 +109,7 @@ final readonly class ResourceWriteTools
      */
     #[McpTool(name: 'create_resource', description: 'Create a new record of a safe, flat resource (client, contact, tax). A client is a business unless is_company is false; a business client needs a siret.')]
     #[McpScopeRequired(McpScope::Write)]
-    public function createResource(string $resource, array $data): array
+    public function createResource(string $resource, #[Schema(type: 'object', additionalProperties: true)] array $data): array
     {
         $this->scopeGuard->require(McpScope::Write);
         $class = $this->resolveCreatable($resource);
@@ -146,7 +147,7 @@ final readonly class ResourceWriteTools
      */
     #[McpTool(name: 'update_resource', description: 'Update scalar fields on an existing record (client, contact, tax).')]
     #[McpScopeRequired(McpScope::Write)]
-    public function updateResource(string $resource, string $id, array $data): array
+    public function updateResource(string $resource, string $id, #[Schema(type: 'object', additionalProperties: true)] array $data): array
     {
         $this->scopeGuard->require(McpScope::Write);
         $class = $this->resolveUpdatable($resource);
