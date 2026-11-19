@@ -21,6 +21,7 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\QueryBuilder;
 use InvalidArgumentException;
 use Mcp\Capability\Attribute\McpTool;
+use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
 use Symfony\Component\Uid\Ulid;
 
@@ -56,6 +57,7 @@ final readonly class ResourceQueryTools
     #[McpScopeRequired(McpScope::Read)]
     public function listResource(
         string $resource,
+        #[Schema(type: 'object', additionalProperties: true)]
         array $filters = [],
         int $page = 1,
         int $items_per_page = 25,
