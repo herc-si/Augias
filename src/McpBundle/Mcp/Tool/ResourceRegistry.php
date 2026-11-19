@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace Augias\McpBundle\Mcp\Tool;
 
+use Augias\CatalogBundle\Entity\Product;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
+use Augias\InvoiceBundle\Entity\CreditNote;
 use Augias\InvoiceBundle\Entity\Invoice;
 use Augias\InvoiceBundle\Entity\RecurringInvoice;
 use Augias\PaymentBundle\Entity\Payment;
@@ -35,6 +37,8 @@ final class ResourceRegistry
      */
     private const array RESOURCES = [
         'invoice' => Invoice::class,
+        'credit_note' => CreditNote::class,
+        'product' => Product::class,
         'recurring_invoice' => RecurringInvoice::class,
         'quote' => Quote::class,
         'client' => Client::class,

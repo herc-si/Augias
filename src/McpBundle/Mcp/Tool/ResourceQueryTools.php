@@ -43,7 +43,7 @@ final readonly class ResourceQueryTools
      * List records of an Augias resource (invoices, quotes, clients, contacts,
      * payments, taxes, payment methods, recurring invoices).
      *
-     * @param string               $resource       Resource name: invoice, recurring_invoice, quote, client, contact, payment, payment_method, tax
+     * @param string               $resource       Resource name: invoice, credit_note, recurring_invoice, quote, client, contact, payment, payment_method, tax, product
      * @param array<string, mixed> $filters        Optional exact-match filters on scalar fields (e.g. {"status": "overdue", "client_id": "01H..."})
      * @param int                  $page           1-indexed page number
      * @param int                  $items_per_page Results per page (max 100)
@@ -52,7 +52,7 @@ final readonly class ResourceQueryTools
      *
      * @return array{results: list<array<string, mixed>>, page: int, items_per_page: int, total: int, resource: string}
      */
-    #[McpTool(name: 'list_resource', description: 'List records of an Augias resource with optional filters and pagination.')]
+    #[McpTool(name: 'list_resource', description: 'List records of an Augias resource (invoice, credit_note, recurring_invoice, quote, client, contact, payment, payment_method, tax, product) with optional filters and pagination.')]
     #[McpScopeRequired(McpScope::Read)]
     public function listResource(
         string $resource,

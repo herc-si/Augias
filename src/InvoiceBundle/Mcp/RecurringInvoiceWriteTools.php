@@ -25,6 +25,8 @@ use Augias\InvoiceBundle\Enum\RecurringInvoiceStatus;
 use Augias\InvoiceBundle\Model\Graph as InvoiceGraph;
 use Augias\McpBundle\Mcp\Attribute\McpScopeRequired;
 use Augias\McpBundle\Mcp\McpScopeGuard;
+use Augias\McpBundle\Mcp\Tool\PlanLimits;
+use Augias\SaasBundle\Feature\Feature;
 use Augias\McpBundle\Mcp\Tool\EntityNormalizer;
 use Augias\McpBundle\Mcp\Tool\LineItemBuilder;
 use Augias\McpBundle\Mcp\Tool\UlidParser;
@@ -48,6 +50,7 @@ final readonly class RecurringInvoiceWriteTools
         #[Autowire(service: 'state_machine.recurring_invoice')]
         private WorkflowInterface $recurringWorkflow,
         private McpScopeGuard $scopeGuard,
+        private PlanLimits $planLimits,
     ) {
     }
 
@@ -93,6 +96,7 @@ final readonly class RecurringInvoiceWriteTools
         bool $activate = false,
     ): array {
         $this->scopeGuard->require(McpScope::Write);
+        $this->planLimits->assertFeature(Feature::RecurringInvoices, 'Recurring invoices');
 
         $client = $this->clientRepository->find(UlidParser::parse($client_id, 'client_id'));
 

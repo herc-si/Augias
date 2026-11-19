@@ -13,9 +13,11 @@ declare(strict_types=1);
 
 namespace Augias\McpBundle\Mcp\Tool;
 
+use Augias\CatalogBundle\Entity\Product;
 use Augias\CoreBundle\Entity\Discount;
 use Augias\CoreBundle\Enum\QuantityUnit;
 use Augias\CoreBundle\Enum\SupplyType;
+use Augias\InvoiceBundle\Entity\CreditNoteLine;
 use Augias\InvoiceBundle\Entity\Line as InvoiceLine;
 use Augias\InvoiceBundle\Entity\RecurringInvoiceLine;
 use Augias\QuoteBundle\Entity\Line as QuoteLine;
@@ -55,6 +57,16 @@ final readonly class LineItemBuilder
     public function buildQuoteLines(array $lines): array
     {
         return $this->buildLines($lines, static fn (): QuoteLine => new QuoteLine());
+    }
+
+    /**
+     * @param list<array<string, mixed>> $lines
+     *
+     * @return list<CreditNoteLine>
+     */
+    public function buildCreditNoteLines(array $lines): array
+    {
+        return $this->buildLines($lines, static fn (): CreditNoteLine => new CreditNoteLine());
     }
 
     /**
@@ -131,20 +143,25 @@ final readonly class LineItemBuilder
                 throw new ToolCallException(sprintf('Line item #%d must be an object.', $index));
             }
 
-            $description = $data['description'] ?? null;
-            $price = $data['price'] ?? null;
+            $product = $this->product($data['product_id'] ?? null, $index);
+            $note = (bool) ($data['note'] ?? false);
+
+            // A catalogue entry fills what the caller leaves out, as the
+            // picker does on the form: text, price, unit, kind and tax.
+            $description = $data['description'] ?? ($product instanceof Product ? $this->productDescription($product) : null);
+            $price = $data['price'] ?? $product?->getSalePrice()?->__toString() ?? ($note ? 0 : null);
             $qty = $data['qty'] ?? ($data['quantity'] ?? null);
 
             if (! \is_string($description) || $description === '') {
-                throw new ToolCallException(sprintf('Line item #%d requires a non-empty "description".', $index));
+                throw new ToolCallException(sprintf('Line item #%d requires a non-empty "description" (or a "product_id").', $index));
             }
 
             if ($price === null) {
-                throw new ToolCallException(sprintf('Line item #%d requires a "price" (in the minor unit, e.g. cents).', $index));
+                throw new ToolCallException(sprintf('Line item #%d requires a "price" (in the minor unit, e.g. cents), or a "product_id".', $index));
             }
 
             if ($qty === null) {
-                $qty = 1;
+                $qty = $note ? 0 : 1;
             }
 
             $line = $factory();
@@ -162,15 +179,87 @@ final readonly class LineItemBuilder
                 throw new ToolCallException(sprintf('Line item #%d has an invalid "qty": %s', $index, $this->describe($qty)));
             }
 
-            $line->setSupplyType($this->supplyType($data['supply_type'] ?? null, $index));
-            $line->setUnit($this->unit($data['unit'] ?? null, $index));
+            $line->setSupplyType(
+                $product instanceof Product && ! isset($data['supply_type'])
+                    ? $product->getType()->supplyType()
+                    : $this->supplyType($data['supply_type'] ?? null, $index),
+            );
+            $line->setUnit(
+                $product instanceof Product && ! isset($data['unit'])
+                    ? $product->getUnit()
+                    : $this->unit($data['unit'] ?? null, $index),
+            );
+
+            $disbursement = (bool) ($data['disbursement'] ?? false);
+
+            if ($disbursement && ! $line instanceof InvoiceLine) {
+                throw new ToolCallException(sprintf('Line item #%d: only an invoice or a credit note can carry a disbursement (débours).', $index));
+            }
+
+            if (($note || isset($data['position'])) && $line instanceof RecurringInvoiceLine) {
+                throw new ToolCallException(sprintf('Line item #%d: a recurring invoice line cannot be a note or take a position.', $index));
+            }
+
+            if (! $line instanceof RecurringInvoiceLine) {
+                $line->setNote($note);
+                $line->setPosition(\is_int($data['position'] ?? null) ? $data['position'] : $index);
+            }
+
+            if ($line instanceof InvoiceLine) {
+                $line->setDisbursement($disbursement);
+            }
+
+            if ($product instanceof Product && ! isset($data['taxes']) && ! isset($data['tax_id']) && $product->getTax() instanceof Tax && ! $disbursement && ! $note) {
+                $data['tax_id'] = $product->getTax()->getId()->toRfc4122();
+            }
+
+            if ($disbursement && (! empty($data['taxes']) || ! empty($data['tax_id']))) {
+                throw new ToolCallException(sprintf('Line item #%d: a disbursement (débours) is re-invoiced at cost and carries no tax.', $index));
+            }
 
             $this->attachTaxes($line, $data, $index);
+
+            if (! $line instanceof RecurringInvoiceLine) {
+                // A note is text only: no price, no quantity, no tax.
+                $line->neutraliseNote();
+            }
 
             $built[] = $line;
         }
 
         return $built;
+    }
+
+    private function product(mixed $value, int $index): ?Product
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (! \is_string($value)) {
+            throw new ToolCallException(sprintf('Line item #%d: "product_id" must be a string.', $index));
+        }
+
+        $product = $this->entityManager
+            ->getRepository(Product::class)
+            ->find(UlidParser::parse($value, sprintf('line[%d].product_id', $index)));
+
+        if (! $product instanceof Product) {
+            throw new ToolCallException(sprintf('Line item #%d: product %s not found.', $index, $value));
+        }
+
+        return $product;
+    }
+
+    /**
+     * The catalogue keeps name and description apart; a document line has one
+     * text field, so they are joined as on the form.
+     */
+    private function productDescription(Product $product): string
+    {
+        $description = trim((string) $product->getDescription());
+
+        return $description === '' ? (string) $product->getName() : $product->getName() . "\n" . $description;
     }
 
     /**
