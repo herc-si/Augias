@@ -2785,8 +2785,10 @@ mcp:
         revoke_hint: 'Vous pouvez révoquer cette application à tout moment depuis votre'
         revoke_hint_link: 'applications connectées'
         scope:
-            read: 'Lire vos factures, devis, clients, paiements, taxes et analyses'
-            write: 'Créer et modifier des factures, devis, clients, paiements et taxes'
+            finance: 'Lire les livres et les chiffres'
+            finance_hint: 'Chiffre d''affaires, totaux impayés, livres, TVA, relevés bancaires et rapports. Inutile pour rédiger ou envoyer des documents.'
+            read: 'Lire vos factures, devis, avoirs, achats, clients, paiements et taxes'
+            write: 'Créer, modifier et envoyer des factures, devis, avoirs, achats, clients et paiements'
         title: 'Autoriser l''application'
     error:
         title: 'Erreur d''autorisation'
