@@ -153,7 +153,7 @@ The server exposes a single, consistent toolset across every agent. Tools requir
 
 | Tool                           | What it does                                                                                  |
 |--------------------------------|-----------------------------------------------------------------------------------------------|
-| `list_resource`                | List records of any resource (invoice, credit note, quote, client, contact, payment, tax, recurring invoice, product) with filters and pagination. |
+| `list_resource`                | List records of any resource (invoice, credit note, quote, client, contact, payment, tax, recurring invoice, product, purchase) with filters and pagination. |
 | `get_resource`                 | Fetch a single record by ID.                                                                  |
 | `list_invoices_by_status`      | List invoices filtered by status (draft, pending, paid, overdue, etc.).                       |
 | `list_overdue_invoices`        | List overdue invoices, optionally for a specific client.                                      |
@@ -165,6 +165,7 @@ The server exposes a single, consistent toolset across every agent. Tools requir
 | `get_company_info`             | Return id, name, and default currency for the active company.                                 |
 | `get_client_summary`           | Totals invoiced, outstanding balance, total paid, and counts for a client.                    |
 | `search_products`              | Search the catalogue of products and services by name, reference or description.              |
+| `list_received_invoices`       | List invoices received from suppliers on the electronic invoicing platform, with the answer given and the purchase each became. |
 
 ### Write tools (`mcp:write`)
 
@@ -194,6 +195,11 @@ The server exposes a single, consistent toolset across every agent. Tools requir
 | `record_payment`               | Record an offline payment against an invoice and transition it to paid.                       |
 | `add_contact`                  | Add a contact (email + optional name) to an existing client.                                  |
 | `send_invoice_reminder`        | Email a manual reminder for an invoice to its contacts.                                       |
+| `create_bill`                  | Enter a purchase (supplier invoice) as a draft: existing or new supplier, total and VAT, dates, the supplier's invoice number. |
+| `apply_bill_transition`        | Apply a transition to a purchase (`confirm`, `cancel`, `reopen`, `archive`, `edit`).          |
+| `record_bill_payment`          | Record a payment to the supplier; the purchase is marked paid once settled.                   |
+| `create_bill_from_received_invoice` | Turn an invoice received on the platform into a purchase.                                |
+| `respond_to_received_invoice`  | Answer the supplier: invoice accepted, disputed or refused (the last two with a reason code). |
 
 :::info
 The tools apply the same limits as the screens: the plan's monthly invoice count and included features, and a verified email address before anything is sent.

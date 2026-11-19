@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\McpBundle\Tests\Functional;
 
+use Augias\BillBundle\Mcp\PurchaseTools;
 use Augias\CatalogBundle\Mcp\CatalogTools;
 use Augias\ClientBundle\Mcp\ClientReadTools;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
@@ -49,6 +50,7 @@ final class ToolRegistrationTest extends KernelTestCase
             SettingsReadTools::class,
             CatalogTools::class,
             CreditNoteTools::class,
+            PurchaseTools::class,
         ];
 
         foreach ($expected as $class) {

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\McpBundle\Mcp\Tool;
 
+use Augias\BillBundle\Entity\Bill;
 use Augias\CatalogBundle\Entity\Product;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
@@ -49,6 +50,7 @@ final class EntityNormalizer
             $entity instanceof Invoice => $this->invoice($entity),
             $entity instanceof CreditNote => $this->creditNote($entity),
             $entity instanceof Product => $this->product($entity),
+            $entity instanceof Bill => $this->bill($entity),
             $entity instanceof RecurringInvoice => $this->recurringInvoice($entity),
             $entity instanceof Quote => $this->quote($entity),
             $entity instanceof Client => $this->client($entity),
@@ -230,6 +232,46 @@ final class EntityNormalizer
     /**
      * @return array<string, mixed>
      */
+    private function bill(Bill $bill): array
+    {
+        $payments = [];
+
+        foreach ($bill->getPayments() as $payment) {
+            $payments[] = [
+                'id' => $payment->getId()?->toRfc4122(),
+                'amount' => $this->bigNumber($payment->getAmount()),
+                'paid_date' => $this->date($payment->getPaidDate()),
+                'method' => $payment->getMethod()->value,
+                'reference' => $payment->getReference(),
+            ];
+        }
+
+        return [
+            'id' => $bill->getId()?->toRfc4122(),
+            'bill_number' => $bill->getBillNumber(),
+            'status' => $bill->getStatus()->value,
+            'supplier' => $this->clientSummary($bill->getSupplier()),
+            'currency' => $bill->getCurrencyCode(),
+            // In the minor unit, VAT included; tax_amount is the VAT in it.
+            'total_amount' => $this->bigNumber($bill->getTotalAmount()),
+            'tax_amount' => $this->bigNumber($bill->getTaxAmount()),
+            'net_amount' => $this->bigNumber($bill->getNetAmount()),
+            'balance' => $bill->getBalance()->getAmount(),
+            'supply_type' => $bill->getSupplyType()->value,
+            'supplier_vat_on_debits' => $bill->isSupplierVatOnDebits(),
+            'issue_date' => $this->date($bill->getIssueDate()),
+            'due_date' => $this->date($bill->getDueDate()),
+            'category' => $bill->getCategory()?->getName(),
+            'notes' => $bill->getNotes(),
+            'received_invoice_id' => $bill->getElectronicInvoiceReceipt()?->getId()?->toRfc4122(),
+            'has_document' => $bill->getDocumentPath() !== null,
+            'payments' => $payments,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     private function product(Product $product): array
     {
         return [
@@ -340,6 +382,9 @@ final class EntityNormalizer
             'name' => $client->getName(),
             'status' => $status instanceof BackedEnum ? $status->value : $status,
             'website' => $client->getWebsite(),
+            // One record can be both: invoiced (client) and invoicing the company (supplier).
+            'is_client' => $client->isClient(),
+            'is_supplier' => $client->isSupplier(),
             'currency' => $client->getCurrencyCode(),
             'tax_identifiers' => array_values(array_map(
                 $this->taxIdentifier(...),

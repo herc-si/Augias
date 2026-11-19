@@ -152,7 +152,7 @@ Le serveur expose le même jeu d'outils à tous les agents. Les outils qui deman
 
 | Outil | Rôle |
 | --- | --- |
-| `list_resource` | Liste les fiches de toute ressource (facture, avoir, devis, client, contact, paiement, taxe, facture récurrente, produit), avec filtres et pagination. |
+| `list_resource` | Liste les fiches de toute ressource (facture, avoir, devis, client, contact, paiement, taxe, facture récurrente, produit, achat), avec filtres et pagination. |
 | `get_resource` | Récupère une fiche par son identifiant. |
 | `list_invoices_by_status` | Liste les factures d'un statut (brouillon, en attente, payée, en retard, etc.). |
 | `list_overdue_invoices` | Liste les factures en retard, éventuellement pour un client. |
@@ -164,6 +164,7 @@ Le serveur expose le même jeu d'outils à tous les agents. Les outils qui deman
 | `get_company_info` | Renvoie l'identifiant, le nom et la devise par défaut de l'entreprise active. |
 | `get_client_summary` | Total facturé, impayé, total payé et nombres de documents pour un client. |
 | `search_products` | Cherche dans le catalogue de produits et services, par nom, référence ou description. |
+| `list_received_invoices` | Liste les factures reçues des fournisseurs sur la plateforme de facturation électronique, avec la réponse donnée et l'achat qu'elles sont devenues. |
 
 ### Outils d'écriture (`mcp:write`)
 
@@ -193,6 +194,11 @@ Le serveur expose le même jeu d'outils à tous les agents. Les outils qui deman
 | `record_payment` | Enregistre un paiement hors ligne sur une facture et la passe payée. |
 | `add_contact` | Ajoute un contact (e-mail et nom facultatif) à un client existant. |
 | `send_invoice_reminder` | Envoie aux contacts d'une facture une relance manuelle par e-mail. |
+| `create_bill` | Saisit un achat (facture fournisseur) en brouillon : fournisseur existant ou nouveau, montant TTC et TVA, dates, numéro de la facture du fournisseur. |
+| `apply_bill_transition` | Applique une transition à un achat (`confirm`, `cancel`, `reopen`, `archive`, `edit`). |
+| `record_bill_payment` | Enregistre un paiement au fournisseur ; l'achat passe payé une fois soldé. |
+| `create_bill_from_received_invoice` | Transforme une facture reçue sur la plateforme en achat. |
+| `respond_to_received_invoice` | Répond au fournisseur : facture acceptée, contestée ou refusée (avec un code motif pour les deux dernières). |
 
 :::info
 Les outils appliquent les mêmes limites que l'interface : quota mensuel de factures et fonctions comprises dans l'offre, et adresse e-mail vérifiée avant tout envoi.
