@@ -159,6 +159,30 @@ final class SubscriptionInvoiceIssuerTest extends KernelTestCase
         self::assertCount(1, $client->getContacts());
     }
 
+    /**
+     * The address the subscriber's platform registered goes on the client,
+     * so HERC SI's e-invoice is delivered there and not to a SIREN the
+     * French directory may not list (test instance, 19/11/2026).
+     */
+    public function testTheSubscribersElectronicAddressGoesOnTheClient(): void
+    {
+        $issuer = $this->issuer(1);
+        TaxIdentifierFactory::createOne(['company' => $this->subscriber, 'client' => null, 'label' => 'Adresse électronique', 'value' => '315143296_92569']);
+
+        $invoice = $issuer->issue('in_1');
+        self::assertNotNull($invoice);
+
+        $address = null;
+
+        foreach ($invoice->getClient()?->getTaxIdentifiers() ?? [] as $identifier) {
+            if ($identifier->getLabel() === 'Adresse électronique') {
+                $address = $identifier->getValue();
+            }
+        }
+
+        self::assertSame('315143296_92569', $address);
+    }
+
     private function seed(bool $withMethod = true, bool $withSiren = true): void
     {
         $billing = CompanyFactory::createOne(['name' => 'HERC SI']);

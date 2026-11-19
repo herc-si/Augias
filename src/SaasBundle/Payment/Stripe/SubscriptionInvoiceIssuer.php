@@ -204,14 +204,14 @@ final readonly class SubscriptionInvoiceIssuer
     }
 
     /**
-     * @return array<string, string> the subscriber's SIREN, SIRET, VAT number, by label
+     * @return array<string, string> the subscriber's SIREN, SIRET, VAT number and e-invoicing address, by label
      */
     private function subscriberIdentifiers(Company $subscriber): array
     {
         $identifiers = [];
         foreach ($this->taxIdentifiers->findCompanyIdentifiers($subscriber->getId()) as $identifier) {
             $label = (string) $identifier->getLabel();
-            if (in_array($label, TaxIdentifierType::PROMINENT_LABELS, true) && ! isset($identifiers[$label]) && (string) $identifier->getValue() !== '') {
+            if (in_array($label, [...TaxIdentifierType::PROMINENT_LABELS, TaxIdentifierType::ELECTRONIC_ADDRESS], true) && ! isset($identifiers[$label]) && (string) $identifier->getValue() !== '') {
                 $identifiers[$label] = (string) $identifier->getValue();
             }
         }
@@ -250,6 +250,14 @@ final readonly class SubscriptionInvoiceIssuer
             $client->setIsCompany(true);
         }
 
+        // Where the subscriber's platform delivers its invoices, as it
+        // registered it: the e-invoice goes there rather than to the SIREN,
+        // which the French directory may not list yet — and never does for a
+        // sandbox company (test instance, 19/11/2026).
+        if (isset($identifiers[TaxIdentifierType::ELECTRONIC_ADDRESS])) {
+            $this->setElectronicAddress($client, $identifiers[TaxIdentifierType::ELECTRONIC_ADDRESS]);
+        }
+
         $address = $remote['customer_address'] ?? null;
         if (is_array($address) && self::string($address['line1'] ?? null) !== null) {
             $current = $client->getAddresses()->first();
@@ -277,6 +285,19 @@ final readonly class SubscriptionInvoiceIssuer
         }
 
         return $client;
+    }
+
+    private function setElectronicAddress(Client $client, string $address): void
+    {
+        foreach ($client->getTaxIdentifiers() as $identifier) {
+            if ($identifier->getLabel() === TaxIdentifierType::ELECTRONIC_ADDRESS) {
+                $identifier->setValue($address);
+
+                return;
+            }
+        }
+
+        $client->addTaxIdentifier(new TaxIdentifier()->setLabel(TaxIdentifierType::ELECTRONIC_ADDRESS)->setValue($address));
     }
 
     private function hasContact(Client $client, string $email): bool

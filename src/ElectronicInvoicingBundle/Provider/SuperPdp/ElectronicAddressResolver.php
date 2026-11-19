@@ -68,6 +68,19 @@ final readonly class ElectronicAddressResolver
         }
     }
 
+    /**
+     * The company's own address only, as soon as it is connected, rather
+     * than at its first invoice: whoever invoices it — HERC SI for its
+     * subscription — can then deliver to where the platform registered it,
+     * not to a SIREN the French directory may not list yet.
+     */
+    public function resolveOwnAddress(string $accessToken, Company $company): void
+    {
+        if ($this->resolveOwn($accessToken, $company)) {
+            $this->entityManager->flush();
+        }
+    }
+
     private function resolveOwn(string $accessToken, Company $company): bool
     {
         $identifiers = $this->taxIdentifiers->findCompanyIdentifiers($company->getId());

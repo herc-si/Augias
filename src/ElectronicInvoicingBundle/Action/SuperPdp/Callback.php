@@ -15,6 +15,9 @@ namespace Augias\ElectronicInvoicingBundle\Action\SuperPdp;
 
 use Augias\ElectronicInvoicingBundle\Action\Setup\Connect as SetupConnect;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceAccountMonitor;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\ElectronicAddressResolver;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpAccessTokens;
+use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApiException;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpConnectionFailed;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpConnector;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
@@ -39,6 +42,8 @@ final readonly class Callback
     public function __construct(
         private SuperPdpConnector $connector,
         private ElectronicInvoiceAccountMonitor $accountMonitor,
+        private SuperPdpAccessTokens $accessTokens,
+        private ElectronicAddressResolver $addressResolver,
         private ElectronicInvoiceProviderSettingRepository $settings,
         private EntityManagerInterface $entityManager,
         private RouterInterface $router,
@@ -83,6 +88,16 @@ final readonly class Callback
         $status = $this->accountMonitor->check($setting);
 
         $this->entityManager->flush();
+
+        // The address the platform registered for the company, kept now: the
+        // directory answers only a verified account, and a lookup that fails
+        // leaves things as they were.
+        if (null !== $status && $status->verification->isUsable()) {
+            try {
+                $this->addressResolver->resolveOwnAddress($this->accessTokens->accessToken($setting->getSettings()), $setting->getCompany());
+            } catch (SuperPdpApiException) {
+            }
+        }
 
         $flashes->add('success', 'einvoicing.super_pdp.connect.connected');
 
