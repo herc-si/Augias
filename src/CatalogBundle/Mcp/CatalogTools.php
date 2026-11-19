@@ -16,7 +16,10 @@ namespace Augias\CatalogBundle\Mcp;
 use Augias\CatalogBundle\Entity\Product;
 use Augias\CatalogBundle\Enum\ProductType;
 use Augias\CatalogBundle\Repository\ProductRepository;
+use Augias\CoreBundle\Entity\Category;
+use Augias\CoreBundle\Enum\CategoryUsage;
 use Augias\CoreBundle\Enum\QuantityUnit;
+use Augias\CoreBundle\Repository\CategoryRepository;
 use Augias\McpBundle\Mcp\Attribute\McpScopeRequired;
 use Augias\McpBundle\Mcp\McpScopeGuard;
 use Augias\McpBundle\Mcp\Tool\EntityNormalizer;
@@ -39,6 +42,7 @@ final readonly class CatalogTools
 {
     public function __construct(
         private ProductRepository $productRepository,
+        private CategoryRepository $categoryRepository,
         private EntityManagerInterface $entityManager,
         private EntityNormalizer $normalizer,
         private ValidatorInterface $validator,
@@ -91,6 +95,7 @@ final readonly class CatalogTools
      * @param string|null $reference      Internal reference (SKU)
      * @param string|null $tax_id         Tax rate ULID applied by default to lines built from it
      * @param int|string|null $purchase_price Purchase price, in the minor unit, to follow the margin
+     * @param string|null $category_id    Catalogue category ULID (from list_categories)
      *
      * @return array<string, mixed>
      */
@@ -105,6 +110,7 @@ final readonly class CatalogTools
         ?string $reference = null,
         ?string $tax_id = null,
         int | string | null $purchase_price = null,
+        ?string $category_id = null,
     ): array {
         $this->scopeGuard->require(McpScope::Write);
 
@@ -118,6 +124,7 @@ final readonly class CatalogTools
             'reference' => $reference,
             'tax_id' => $tax_id,
             'purchase_price' => $purchase_price,
+            'category_id' => $category_id,
         ]);
 
         $this->validate($product);
@@ -132,11 +139,11 @@ final readonly class CatalogTools
      * already written keep the lines they were given.
      *
      * @param string               $product_id Product ULID
-     * @param array<string, mixed> $fields     Any of: name, sale_price, type, unit, description, reference, tax_id (null to remove), purchase_price, active
+     * @param array<string, mixed> $fields     Any of: name, sale_price, type, unit, description, reference, tax_id (null to remove), category_id (null to remove), purchase_price, active
      *
      * @return array<string, mixed>
      */
-    #[McpTool(name: 'update_product', description: 'Change a catalogue entry: name, sale_price, type, unit, description, reference, tax_id, purchase_price, or active (false withdraws it from new lines).')]
+    #[McpTool(name: 'update_product', description: 'Change a catalogue entry: fields is an object with any of name, sale_price, type, unit, description, reference, tax_id, category_id, purchase_price, or active (false withdraws it from new lines).')]
     #[McpScopeRequired(McpScope::Write)]
     public function updateProduct(string $product_id, #[Schema(type: 'object', additionalProperties: true)] array $fields): array
     {
@@ -179,10 +186,170 @@ final readonly class CatalogTools
                     )),
                 ),
                 'tax_id' => $product->setTax($this->tax($value)),
+                'category_id' => $product->setCategory($this->category($value, CategoryUsage::Catalog)),
                 'active' => $product->setActive((bool) $value),
                 default => throw new ToolCallException(sprintf('Unknown product field "%s".', $field)),
             };
         }
+    }
+
+    /**
+     * Delete a catalogue entry. Documents already written keep their lines:
+     * they hold a copy, not a link. To keep it but stop offering it, set
+     * active to false with update_product instead.
+     *
+     * @param string $product_id Product ULID
+     *
+     * @return array{deleted: bool, product_id: string}
+     */
+    #[McpTool(name: 'delete_product', description: 'Delete a catalogue entry (documents already written keep their lines). To only stop offering it, use update_product with active false.')]
+    #[McpScopeRequired(McpScope::Write)]
+    public function deleteProduct(string $product_id): array
+    {
+        $this->scopeGuard->require(McpScope::Write);
+
+        $product = $this->productRepository->find(UlidParser::parse($product_id, 'product_id'));
+
+        if (! $product instanceof Product) {
+            throw new ToolCallException(sprintf('Product %s not found.', $product_id));
+        }
+
+        $this->entityManager->remove($product);
+        $this->entityManager->flush();
+
+        return ['deleted' => true, 'product_id' => $product_id];
+    }
+
+    /**
+     * Categories, shared by the catalogue and the purchases: each says which
+     * of the two it is used for.
+     *
+     * @param string|null $usage "catalog" or "purchase"; omit for all
+     *
+     * @return array{results: list<array<string, mixed>>, count: int}
+     */
+    #[McpTool(name: 'list_categories', description: 'List categories with what each is used for (catalog, purchase). Pass a category id as category_id on create_product, update_product or create_bill.')]
+    #[McpScopeRequired(McpScope::Read)]
+    public function listCategories(?string $usage = null): array
+    {
+        $this->scopeGuard->require(McpScope::Read);
+
+        if ($usage !== null) {
+            $categories = $this->categoryRepository->sortedForUsage($this->usage($usage));
+        } else {
+            $categories = $this->categoryRepository->findBy([], ['name' => 'ASC']);
+        }
+
+        $results = array_map($this->categoryRow(...), $categories);
+
+        return ['results' => $results, 'count' => \count($results)];
+    }
+
+    /**
+     * @param string       $name   Category name
+     * @param list<string> $usages What it is used for: "catalog", "purchase" or both
+     *
+     * @return array<string, mixed>
+     */
+    #[McpTool(name: 'create_category', description: 'Create a category for the catalogue and/or the purchases (usages: ["catalog"], ["purchase"] or both).')]
+    #[McpScopeRequired(McpScope::Write)]
+    public function createCategory(string $name, array $usages = ['catalog']): array
+    {
+        $this->scopeGuard->require(McpScope::Write);
+
+        $category = new Category();
+        $category->setName(trim($name));
+        $this->applyUsages($category, $usages);
+        $this->validateEntity($category);
+
+        $this->entityManager->persist($category);
+        $this->entityManager->flush();
+
+        return $this->categoryRow($category);
+    }
+
+    /**
+     * Rename a category or change what it is used for.
+     *
+     * @param string            $category_id Category ULID
+     * @param string|null       $name        New name
+     * @param list<string>|null $usages      New usages ("catalog", "purchase"), replacing the current ones
+     *
+     * @return array<string, mixed>
+     */
+    #[McpTool(name: 'update_category', description: 'Rename a category or replace what it is used for (usages: "catalog", "purchase").')]
+    #[McpScopeRequired(McpScope::Write)]
+    public function updateCategory(string $category_id, ?string $name = null, ?array $usages = null): array
+    {
+        $this->scopeGuard->require(McpScope::Write);
+
+        $category = $this->categoryRepository->find(UlidParser::parse($category_id, 'category_id'));
+
+        if (! $category instanceof Category) {
+            throw new ToolCallException(sprintf('Category %s not found.', $category_id));
+        }
+
+        if ($name !== null) {
+            $category->setName(trim($name));
+        }
+
+        if ($usages !== null) {
+            $this->applyUsages($category, $usages);
+        }
+
+        $this->validateEntity($category);
+        $this->entityManager->flush();
+
+        return $this->categoryRow($category);
+    }
+
+    /**
+     * @param list<mixed> $usages
+     */
+    private function applyUsages(Category $category, array $usages): void
+    {
+        $wanted = array_map(fn (mixed $value): CategoryUsage => $this->usage(\is_string($value) ? $value : ''), $usages);
+
+        foreach (CategoryUsage::cases() as $case) {
+            $category->setUsage($case, \in_array($case, $wanted, true));
+        }
+    }
+
+    private function usage(string $value): CategoryUsage
+    {
+        return CategoryUsage::tryFrom($value) ?? throw new ToolCallException(sprintf('Unknown usage "%s": expected "catalog" or "purchase".', $value));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function categoryRow(Category $category): array
+    {
+        return [
+            'id' => $category->getId()?->toRfc4122(),
+            'name' => $category->getName(),
+            'usages' => array_map(static fn (CategoryUsage $usage): string => $usage->value, $category->usages()),
+        ];
+    }
+
+    private function category(mixed $value, CategoryUsage $usage): ?Category
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $categoryId = $this->string($value, 'category_id');
+        $category = $this->categoryRepository->find(UlidParser::parse($categoryId, 'category_id'));
+
+        if (! $category instanceof Category) {
+            throw new ToolCallException(sprintf('Category %s not found.', $categoryId));
+        }
+
+        if (! $category->supports($usage)) {
+            throw new ToolCallException(sprintf('Category "%s" is not used for the %s. Add the "%s" usage with update_category first.', $category->getName(), $usage === CategoryUsage::Catalog ? 'catalogue' : 'purchases', $usage->value));
+        }
+
+        return $category;
     }
 
     private function tax(mixed $value): ?Tax
@@ -234,7 +401,12 @@ final readonly class CatalogTools
 
     private function validate(Product $product): void
     {
-        $errors = $this->validator->validate($product);
+        $this->validateEntity($product);
+    }
+
+    private function validateEntity(object $entity): void
+    {
+        $errors = $this->validator->validate($entity);
 
         if (\count($errors) === 0) {
             return;

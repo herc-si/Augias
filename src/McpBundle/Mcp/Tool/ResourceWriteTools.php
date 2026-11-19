@@ -81,7 +81,7 @@ final readonly class ResourceWriteTools
      */
     private const array SETTABLE_FIELDS = [
         // A business client has a SIRET; an individual is said with is_company false.
-        Client::class => ['name', 'website', 'status', 'currency_code', 'is_company', 'siret'],
+        Client::class => ['name', 'website', 'status', 'currency_code', 'is_company', 'is_client', 'is_supplier', 'siret', 'siren', 'vat_number'],
         Contact::class => ['first_name', 'last_name', 'email'],
         Tax::class => ['name', 'rate', 'type'],
     ];
@@ -107,7 +107,7 @@ final readonly class ResourceWriteTools
      *
      * @return array<string, mixed>
      */
-    #[McpTool(name: 'create_resource', description: 'Create a new record of a safe, flat resource (client, contact, tax). A client is a business unless is_company is false; a business client needs a siret.')]
+    #[McpTool(name: 'create_resource', description: 'Create a client, contact or tax: data is an object of fields. Client: name, currency_code, is_company, is_client, is_supplier (a supplier is a client record with is_supplier true), siret, siren, vat_number, website, status. A business client needs a siret.')]
     #[McpScopeRequired(McpScope::Write)]
     public function createResource(string $resource, #[Schema(type: 'object', additionalProperties: true)] array $data): array
     {
@@ -145,7 +145,7 @@ final readonly class ResourceWriteTools
      *
      * @return array<string, mixed>
      */
-    #[McpTool(name: 'update_resource', description: 'Update scalar fields on an existing record (client, contact, tax).')]
+    #[McpTool(name: 'update_resource', description: 'Update fields of a client, contact or tax: data is an object of the fields to change (client: name, currency_code, is_company, is_client, is_supplier, siret, siren, vat_number, website, status).')]
     #[McpScopeRequired(McpScope::Write)]
     public function updateResource(string $resource, string $id, #[Schema(type: 'object', additionalProperties: true)] array $data): array
     {

@@ -167,6 +167,9 @@ The server exposes a single, consistent toolset across every agent. Tools requir
 | `search_products`              | Search the catalogue of products and services by name, reference or description.              |
 | `list_einvoice_submissions`    | List invoices and credit notes sent on the electronic invoicing platform, with the platform's answer; `failed_only` keeps those not taken. |
 | `list_received_invoices`       | List invoices received from suppliers on the electronic invoicing platform, with the answer given and the purchase each became. |
+| `list_categories`              | List categories and what each is used for (catalogue, purchases).                             |
+| `search`                       | Search across clients, contacts, invoices, quotes, credit notes, purchases and the catalogue. |
+| `get_document_links`           | Links to a document: its page in Augias and, for an invoice or a quote, the page and PDF sent to the client. |
 
 ### Books and figures (`mcp:finance`)
 
@@ -183,6 +186,15 @@ Turnover, the books, VAT, bank statements and reports are only available with `m
 | `get_aged_receivables`         | Aged receivables: what each client owes, split into not due, 1-30, 31-60, 61-90 and over 90 days late. |
 | `get_client_statement`         | A client's statement of account: invoices, payments and credit notes in date order, with the running balance. |
 | `get_revenue_by_client`        | Revenue by client over a year: invoiced, credited, net and received.                          |
+
+With `mcp:finance` **and** `mcp:write`, and the role that may write in the books:
+
+| Tool                           | What it does                                                                                  |
+|--------------------------------|-----------------------------------------------------------------------------------------------|
+| `add_ledger_entry` / `delete_ledger_entry` | Write or delete an entry by hand in the revenue, purchase or expense book, never before the lock date. |
+| `create_accounting_period` / `close_accounting_period` | Create a declaration period, or close it once ended (irreversible).     |
+| `mark_declaration_filed`       | Record that a declaration was filed, with its reference.                                      |
+| `reconcile_bank_transaction`   | Match a statement line with a payment, an invoice or a purchase, set it aside, or reopen it.  |
 
 ### Write tools (`mcp:write`)
 
@@ -217,6 +229,19 @@ Turnover, the books, VAT, bank statements and reports are only available with `m
 | `record_bill_payment`          | Record a payment to the supplier; the purchase is marked paid once settled.                   |
 | `create_bill_from_received_invoice` | Turn an invoice received on the platform into a purchase.                                |
 | `respond_to_received_invoice`  | Answer the supplier: invoice accepted, disputed or refused (the last two with a reason code). |
+| `update_invoice`               | Change a draft invoice (dates, subject, terms, discount, lines, contacts, taxes). An issued invoice is corrected by a credit note. |
+| `update_quote`                 | Change a quote that is a draft or sent, as long as it has no answer.                          |
+| `update_credit_note`           | Change a draft credit note.                                                                   |
+| `update_recurring_invoice`     | Change a recurring invoice for the invoices it makes next.                                    |
+| `update_bill`                  | Change a purchase that is not paid yet.                                                       |
+| `delete_document`              | Delete a draft (invoice, quote, credit note, purchase) or a recurring invoice; an issued document is kept. |
+| `create_category` / `update_category` | Create a category, rename it or change its usage (catalogue, purchases).               |
+| `delete_product`               | Delete a catalogue entry.                                                                     |
+| `add_client_address` / `update_client_address` / `remove_client_address` | Manage the addresses of a client or supplier.              |
+| `apply_client_credit`          | Set the client's available credit against an unpaid invoice.                                 |
+| `generate_recurring_invoice_now` | Make a recurring invoice's invoice right away.                                              |
+| `send_electronic_document`     | Submit an issued invoice or credit note to the electronic invoicing platform again.           |
+| `sync_electronic_invoicing`    | Ask the platform for news: invoices received, statuses, e-reporting.                          |
 
 :::info
 The tools apply the same limits as the screens: the plan's monthly invoice count and included features, and a verified email address before anything is sent.
