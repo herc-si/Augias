@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\McpBundle\Mcp\Tool;
 
+use Augias\BillBundle\Entity\Bill;
 use Augias\CatalogBundle\Entity\Product;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
@@ -39,6 +40,7 @@ final class ResourceRegistry
         'invoice' => Invoice::class,
         'credit_note' => CreditNote::class,
         'product' => Product::class,
+        'bill' => Bill::class,
         'recurring_invoice' => RecurringInvoice::class,
         'quote' => Quote::class,
         'client' => Client::class,
