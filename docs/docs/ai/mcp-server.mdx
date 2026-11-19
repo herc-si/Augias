@@ -164,6 +164,7 @@ Le serveur expose le même jeu d'outils à tous les agents. Les outils qui deman
 | `get_company_info` | Renvoie l'identifiant, le nom et la devise par défaut de l'entreprise active. |
 | `get_client_summary` | Total facturé, impayé, total payé et nombres de documents pour un client. |
 | `search_products` | Cherche dans le catalogue de produits et services, par nom, référence ou description. |
+| `list_einvoice_submissions` | Liste les factures et avoirs envoyés sur la plateforme de facturation électronique, avec la réponse de la plateforme ; `failed_only` garde ceux qui n'ont pas été pris. |
 | `list_received_invoices` | Liste les factures reçues des fournisseurs sur la plateforme de facturation électronique, avec la réponse donnée et l'achat qu'elles sont devenues. |
 
 ### Livres et chiffres (`mcp:finance`)
@@ -178,6 +179,9 @@ Le chiffre d'affaires, les livres, la TVA, les relevés bancaires et les rapport
 | `list_ledger_entries` | Écritures des livres (recettes, ventes, achats, dépenses), entre deux dates et pour un livre. |
 | `list_bank_accounts` | Comptes bancaires dont des relevés ont été importés, avec le nombre de lignes non rapprochées. |
 | `list_bank_transactions` | Lignes d'un relevé, avec pour chaque ligne non rapprochée les paiements, factures ou achats qui lui correspondent probablement. |
+| `get_aged_receivables` | Balance âgée : ce que doit chaque client, réparti entre non échu, 1-30, 31-60, 61-90 et plus de 90 jours de retard. |
+| `get_client_statement` | Relevé de compte d'un client : factures, paiements et avoirs dans l'ordre des dates, avec le solde au fil de l'eau. |
+| `get_revenue_by_client` | Chiffre d'affaires par client sur une année : facturé, crédité, net et encaissé. |
 
 ### Outils d'écriture (`mcp:write`)
 
