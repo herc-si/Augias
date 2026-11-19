@@ -102,6 +102,7 @@ final readonly class SubscriptionInvoiceIssuer
         private ElectronicInvoiceManagerInterface $electronicInvoiceManager,
         private TranslatorInterface $translator,
         private LoggerInterface $logger,
+        private SubscriberPurchaseRecorder $subscriberPurchases,
         #[Autowire(env: 'AUGIAS_SAAS_BILLING_COMPANY')]
         private string $billingCompany,
     ) {
@@ -170,6 +171,10 @@ final readonly class SubscriptionInvoiceIssuer
             $this->invoiceStateMachine->apply($invoice, Graph::TRANSITION_ACCEPT);
 
             $this->recordPayment($invoice, $client, $amount, strtoupper((string) ($remote['currency'] ?? 'eur')), $stripeInvoiceId, $paidAt);
+
+            // The same payment on the subscriber's side: their purchase from
+            // HERC SI, paid by card. Comes back to HERC SI's company after.
+            $this->subscriberPurchases->record($invoice, $subscriber, $paidAt, $stripeInvoiceId);
 
             $this->deliver($invoice);
 

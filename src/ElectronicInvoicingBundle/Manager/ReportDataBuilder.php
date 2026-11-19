@@ -137,6 +137,39 @@ final readonly class ReportDataBuilder
      * or null when there is nothing to report: no services, VAT on debits, a
      * company in franchise.
      */
+    /**
+     * The payment status (fr:212) of an invoice sent on the platform. For a
+     * company liable to VAT, the share of services by rate, as reported;
+     * for one in VAT franchise, the whole amount at no rate — optional, but
+     * it closes the invoice's lifecycle, which otherwise waits for an answer
+     * from the client that rarely comes (HERC SI's subscriptions, paid in
+     * advance by card; 19/11/2026).
+     */
+    public function paymentReceived(Payment $payment): ?ReportedPayment
+    {
+        $invoice = $payment->getInvoice();
+
+        if (! $invoice instanceof Invoice || $invoice->isVatOnDebits()) {
+            return null;
+        }
+
+        if (! $this->systemConfig->isVatExempt($invoice->getCompany())) {
+            return $this->payment($payment);
+        }
+
+        $amount = BigDecimal::of($payment->getAmount()->getAmount());
+
+        if (! $amount->isPositive()) {
+            return null;
+        }
+
+        return new ReportedPayment(
+            $payment->getCompleted() ?? new DateTimeImmutable('today'),
+            $payment->getAmount()->getCurrency()->getCode(),
+            ['0.00' => $this->major($amount)],
+        );
+    }
+
     public function payment(Payment $payment): ?ReportedPayment
     {
         $invoice = $payment->getInvoice();

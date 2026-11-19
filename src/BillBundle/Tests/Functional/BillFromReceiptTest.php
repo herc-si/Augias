@@ -111,6 +111,28 @@ final class BillFromReceiptTest extends KernelTestCase
         self::assertCount(1, $this->entityManager->getRepository(Client::class)->findBy(['isSupplier' => true]));
     }
 
+    /**
+     * A purchase already written down — HERC SI's subscription, recorded paid
+     * by card when Stripe took the money — takes its e-invoice when it
+     * arrives, rather than a second purchase being made (19/11/2026).
+     */
+    public function testTheInvoiceOfAPurchaseAlreadyRecordedIsAttachedToIt(): void
+    {
+        $first = $this->receipt('FA-2026-0001', '438907');
+        $this->runAsTheImportCron();
+        $manager = self::getContainer()->get(BillManager::class);
+        $recorded = $manager->createFromReceipt($first);
+        $recorded->setElectronicInvoiceReceipt(null);
+        $this->entityManager->flush();
+
+        $arrived = $this->receipt('FA-2026-0001', '438999');
+        $bill = $manager->createFromReceipt($arrived);
+
+        self::assertSame($recorded->getId()?->toRfc4122(), $bill->getId()?->toRfc4122());
+        self::assertSame($arrived, $bill->getElectronicInvoiceReceipt());
+        self::assertCount(1, self::getContainer()->get(BillRepository::class)->findAll());
+    }
+
     private function runAsTheImportCron(): void
     {
         $selector = self::getContainer()->get(CompanySelector::class);

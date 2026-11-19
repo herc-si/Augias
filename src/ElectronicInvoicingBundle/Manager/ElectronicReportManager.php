@@ -130,7 +130,7 @@ final readonly class ElectronicReportManager
         }
 
         foreach ($this->paymentsOnSentInvoices($company, $since, $setting->getProvider()) as [$payment, $invoiceReference]) {
-            $data = $this->builder->payment($payment);
+            $data = $this->builder->paymentReceived($payment);
 
             if (null === $data) {
                 continue;

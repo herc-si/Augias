@@ -106,6 +106,24 @@ final class ReportDataBuilderTest extends KernelTestCase
     }
 
     /**
+     * In franchise nothing is reported to the tax administration, but the
+     * invoice sent on the platform is told it was paid (fr:212): the whole
+     * amount, at no rate (19/11/2026).
+     */
+    public function testAnInvoiceInFranchiseIsToldItWasPaid(): void
+    {
+        self::getContainer()->get(SystemConfig::class)->set(SystemConfig::VAT_EXEMPT_CONFIG_PATH, '1');
+        $invoice = $this->invoice([[SupplyType::Services, 1999, null]]);
+        $paid = $this->paid($invoice, 1999);
+
+        self::assertNull($this->builder()->payment($paid), 'Nothing to report to the tax administration.');
+
+        $received = $this->builder()->paymentReceived($paid);
+        self::assertNotNull($received);
+        self::assertSame(['0.00' => '19.99'], $received->amounts);
+    }
+
+    /**
      * Half the invoice paid is half of each services rate — tax included.
      * Goods are left out: their VAT fell due on delivery.
      */
