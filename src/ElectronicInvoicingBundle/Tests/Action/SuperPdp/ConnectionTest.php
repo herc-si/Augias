@@ -22,6 +22,7 @@ use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpApplication;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpClient;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
+use Augias\TaxBundle\Entity\TaxIdentifier;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Test\Factory\UserFactory;
 use Doctrine\ORM\EntityManagerInterface;
@@ -94,6 +95,14 @@ final class ConnectionTest extends WebTestCase
         // was asked at once whether the company is verified.
         self::assertTrue($saved->isActive());
         self::assertSame(AccountVerification::Verified, $saved->getAccountVerification());
+
+        // Its own address is kept at once, for whoever invoices it.
+        $addresses = array_values(array_filter(
+            $this->entityManager->getRepository(TaxIdentifier::class)->findBy(['company' => $this->company->getId(), 'client' => null]),
+            static fn (TaxIdentifier $identifier): bool => $identifier->getLabel() === 'Adresse électronique',
+        ));
+        self::assertCount(1, $addresses);
+        self::assertSame('315143296_92569', $addresses[0]->getValue());
     }
 
     public function testDecliningOnSuperPdpChangesNothing(): void
@@ -148,6 +157,7 @@ final class ConnectionTest extends WebTestCase
             static fn (string $method, string $url): MockResponse => new MockResponse((string) json_encode(match (true) {
                 str_ends_with($url, '/oauth2/token') => ['access_token' => 'access', 'refresh_token' => 'refresh', 'expires_in' => 1800],
                 str_ends_with($url, '/oauth2_sessions/me') => ['company_verification_status' => 'verified'],
+                str_ends_with($url, '/directory_entries') => ['data' => [['identifier' => '0225:315143296_92569']]],
                 default => ['formal_name' => 'Acme', 'env' => 'sandbox', 'has_vat_on_debits' => false, 'vat_regime' => 'monthly'],
             })),
         )));
