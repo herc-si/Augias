@@ -15,6 +15,7 @@ namespace Augias\McpBundle\Mcp\Tool;
 
 use Augias\BillBundle\Entity\Bill;
 use Augias\CatalogBundle\Entity\Product;
+use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\CoreBundle\Entity\LineInterface;
@@ -261,7 +262,7 @@ final class EntityNormalizer
             'supplier_vat_on_debits' => $bill->isSupplierVatOnDebits(),
             'issue_date' => $this->date($bill->getIssueDate()),
             'due_date' => $this->date($bill->getDueDate()),
-            'category' => $bill->getCategory()?->getName(),
+            'category' => $bill->getCategory() !== null ? ['id' => $bill->getCategory()->getId()?->toRfc4122(), 'name' => $bill->getCategory()->getName()] : null,
             'notes' => $bill->getNotes(),
             'received_invoice_id' => $bill->getElectronicInvoiceReceipt()?->getId()?->toRfc4122(),
             'has_document' => $bill->getDocumentPath() !== null,
@@ -289,7 +290,7 @@ final class EntityNormalizer
                 'name' => $product->getTax()->getName(),
                 'rate' => $product->getTax()->getRate(),
             ] : null,
-            'category' => $product->getCategory()?->getName(),
+            'category' => $product->getCategory() !== null ? ['id' => $product->getCategory()->getId()?->toRfc4122(), 'name' => $product->getCategory()->getName()] : null,
             'active' => $product->isActive(),
         ];
     }
@@ -385,6 +386,16 @@ final class EntityNormalizer
             // One record can be both: invoiced (client) and invoicing the company (supplier).
             'is_client' => $client->isClient(),
             'is_supplier' => $client->isSupplier(),
+            'is_company' => $client->isCompany(),
+            'addresses' => array_values(array_map(static fn (Address $address): array => [
+                'id' => $address->getId()?->toRfc4122(),
+                'street1' => $address->getStreet1(),
+                'street2' => $address->getStreet2(),
+                'city' => $address->getCity(),
+                'zip' => $address->getZip(),
+                'state' => $address->getState(),
+                'country' => $address->getCountry(),
+            ], $client->getAddresses()->toArray())),
             'currency' => $client->getCurrencyCode(),
             'tax_identifiers' => array_values(array_map(
                 $this->taxIdentifier(...),
