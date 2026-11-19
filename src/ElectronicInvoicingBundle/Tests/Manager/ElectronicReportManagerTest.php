@@ -256,9 +256,12 @@ final class ElectronicReportManagerTest extends KernelTestCase
     }
 
     /**
-     * Under the VAT franchise no VAT falls due, on payment or otherwise.
+     * Under the VAT franchise no VAT falls due, so nothing goes to the tax
+     * administration; the invoice sent on the platform is still told it was
+     * paid (fr:212), the whole amount at no rate, which closes its lifecycle
+     * (decided by Rémi, 19/11/2026).
      */
-    public function testNoPaymentIsReportedUnderTheFranchise(): void
+    public function testAnInvoiceSentInFranchiseIsToldItWasPaid(): void
     {
         $invoice = $this->invoice(private: false, date: 'today');
         $this->sentElectronically($invoice);
@@ -276,8 +279,17 @@ final class ElectronicReportManagerTest extends KernelTestCase
         $entityManager->flush();
         $entityManager->refresh($invoice);
 
-        self::assertSame(['reported' => 0, 'failed' => 0], $this->manager()->reportPending($this->company));
-        self::assertNull($this->lastEvent);
+        self::assertSame(['reported' => 1, 'failed' => 0], $this->manager()->reportPending($this->company));
+        self::assertSame(['reported' => 0, 'failed' => 0], $this->manager()->reportPending($this->company), 'Not twice.');
+
+        self::assertSame('fr:212', $this->lastEvent['status_code'] ?? null);
+        self::assertSame([[
+            'type_code' => 'MEN',
+            'amount' => '12.00',
+            'currency_code' => 'EUR',
+            'date' => new DateTimeImmutable('today')->format('Y-m-d'),
+            'value_percent' => '0.00',
+        ]], $this->lastEvent['details'][0]['reported_data'] ?? null);
     }
 
     /**

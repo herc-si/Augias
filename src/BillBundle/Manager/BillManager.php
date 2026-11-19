@@ -15,6 +15,7 @@ namespace Augias\BillBundle\Manager;
 
 use Augias\BillBundle\Entity\Bill;
 use Augias\BillBundle\Enum\BillStatus;
+use Augias\BillBundle\Repository\BillRepository;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
 use Augias\SettingsBundle\SystemConfig;
@@ -36,14 +37,31 @@ final readonly class BillManager
         private EntityManagerInterface $entityManager,
         private SupplierResolver $suppliers,
         private SystemConfig $systemConfig,
+        private ?BillRepository $bills = null,
     ) {
     }
 
     public function createFromReceipt(ElectronicInvoiceReceipt $receipt): Bill
     {
+        $supplier = $this->suppliers->resolve($receipt->getCompany(), $receipt->getSellerName(), $receipt->getSellerIdentifier());
+
+        // Already written down without its e-invoice — HERC SI's subscription,
+        // recorded paid by card when Stripe took the money: the e-invoice is
+        // attached to it rather than becoming a second purchase.
+        $existing = null !== $receipt->getInvoiceNumber()
+            ? $this->bills?->findOneBy(['supplier' => $supplier, 'billNumber' => $receipt->getInvoiceNumber(), 'electronicInvoiceReceipt' => null])
+            : null;
+
+        if ($existing instanceof Bill) {
+            $existing->setElectronicInvoiceReceipt($receipt);
+            $this->entityManager->flush();
+
+            return $existing;
+        }
+
         $bill = new Bill();
         $bill->setCompany($receipt->getCompany())
-            ->setSupplier($this->suppliers->resolve($receipt->getCompany(), $receipt->getSellerName(), $receipt->getSellerIdentifier()))
+            ->setSupplier($supplier)
             ->setBillNumber($receipt->getInvoiceNumber())
             ->setStatus(BillStatus::Pending)
             ->setIssueDate($receipt->getIssueDate())

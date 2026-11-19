@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\Tests\Payment\Stripe;
 
+use Augias\BillBundle\Entity\Bill;
+use Augias\BillBundle\Enum\BillPaymentMethod;
+use Augias\BillBundle\Enum\BillStatus;
 use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
@@ -181,6 +184,39 @@ final class SubscriptionInvoiceIssuerTest extends KernelTestCase
         }
 
         self::assertSame('315143296_92569', $address);
+    }
+
+    /**
+     * The subscriber's Augias holds the purchase too, already paid by card:
+     * HERC SI as the supplier, the same number, once (19/11/2026).
+     */
+    public function testTheSubscriberHasThePurchasePaidByCard(): void
+    {
+        $issuer = $this->issuer(2);
+        TaxIdentifierFactory::createOne(['company' => $this->billing, 'client' => null, 'label' => 'SIREN', 'value' => '315143296']);
+
+        $invoice = $issuer->issue('in_1');
+        self::assertNotNull($invoice);
+        $issuer->issue('in_1');
+
+        $this->companySelector()->reset();
+        $this->em->clear();
+
+        $bills = $this->em->getRepository(Bill::class)->findBy(['company' => $this->subscriber->getId()]);
+        self::assertCount(1, $bills);
+
+        $bill = $bills[0];
+        self::assertSame($invoice->getInvoiceId(), $bill->getBillNumber());
+        self::assertSame(BillStatus::Paid, $bill->getStatus());
+        self::assertSame('HERC SI', $bill->getSupplier()->getName());
+        self::assertSame('315143296', $bill->getSupplier()->getSiren());
+        self::assertTrue($bill->getSupplier()->isSupplier());
+
+        $payment = $bill->getPayments()->first();
+        self::assertNotFalse($payment);
+        self::assertSame(BillPaymentMethod::CreditCard, $payment->getMethod());
+        self::assertSame('in_1', $payment->getReference());
+        self::assertTrue($bill->getBalance()->isZero());
     }
 
     private function seed(bool $withMethod = true, bool $withSiren = true): void
