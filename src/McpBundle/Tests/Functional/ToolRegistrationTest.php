@@ -13,12 +13,14 @@ declare(strict_types=1);
 
 namespace Augias\McpBundle\Tests\Functional;
 
+use Augias\AccountingBundle\Mcp\FinanceTools;
 use Augias\BillBundle\Mcp\PurchaseTools;
 use Augias\CatalogBundle\Mcp\CatalogTools;
 use Augias\ClientBundle\Mcp\ClientReadTools;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Mcp\CreditNoteTools;
 use Augias\InvoiceBundle\Mcp\InvoiceReadTools;
+use Augias\InvoiceBundle\Mcp\ReportTools;
 use Augias\McpBundle\Mcp\Tool\ResourceQueryTools;
 use Augias\McpBundle\Mcp\Tool\WorkflowTools;
 use Augias\PaymentBundle\Mcp\PaymentMethodReadTools;
@@ -51,6 +53,8 @@ final class ToolRegistrationTest extends KernelTestCase
             CatalogTools::class,
             CreditNoteTools::class,
             PurchaseTools::class,
+            FinanceTools::class,
+            ReportTools::class,
         ];
 
         foreach ($expected as $class) {

@@ -165,6 +165,7 @@ The server exposes a single, consistent toolset across every agent. Tools requir
 | `get_company_info`             | Return id, name, and default currency for the active company.                                 |
 | `get_client_summary`           | Totals invoiced, outstanding balance, total paid, and counts for a client.                    |
 | `search_products`              | Search the catalogue of products and services by name, reference or description.              |
+| `list_einvoice_submissions`    | List invoices and credit notes sent on the electronic invoicing platform, with the platform's answer; `failed_only` keeps those not taken. |
 | `list_received_invoices`       | List invoices received from suppliers on the electronic invoicing platform, with the answer given and the purchase each became. |
 
 ### Books and figures (`mcp:finance`)
@@ -179,6 +180,9 @@ Turnover, the books, VAT, bank statements and reports are only available with `m
 | `list_ledger_entries`          | Entries of the books (receipts, sales, purchases, expenses), between two dates and for one book. |
 | `list_bank_accounts`           | Bank accounts with imported statements, and how many lines are not reconciled.                |
 | `list_bank_transactions`       | Lines of a statement, with the likely payments, invoices or purchases for each line not reconciled. |
+| `get_aged_receivables`         | Aged receivables: what each client owes, split into not due, 1-30, 31-60, 61-90 and over 90 days late. |
+| `get_client_statement`         | A client's statement of account: invoices, payments and credit notes in date order, with the running balance. |
+| `get_revenue_by_client`        | Revenue by client over a year: invoiced, credited, net and received.                          |
 
 ### Write tools (`mcp:write`)
 
