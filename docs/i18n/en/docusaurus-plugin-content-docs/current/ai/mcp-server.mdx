@@ -38,7 +38,7 @@ You don't paste API keys anywhere. The first time an agent connects, it walks yo
 2. Your browser opens to the Augias consent page. Sign in if you aren't already.
 3. On the consent screen you choose:
    - **Which company** the agent will act on (if you belong to more than one).
-   - **Which scopes** to grant — `mcp:read` is always enabled; `mcp:write` is opt-in and only shown if the agent asked for it.
+   - **Which scopes** to grant — `mcp:read` is always enabled; `mcp:write` is opt-in and only shown if the agent asked for it; `Read the books and figures` (`mcp:finance`) is a box of its own, **unticked** when the page opens.
 4. After you approve, the agent receives an access token (valid for 24 hours) and a refresh token (valid for 90 days, rotated on each use). Tokens are bound to the company and scopes you chose; nothing about that binding can be changed later without re-consenting.
 
 You can review and revoke any connected agent at any time from `Profile → Connected apps` (`/profile/connected-apps`).
@@ -126,7 +126,7 @@ Any MCP client that supports the **Streamable HTTP** transport with **OAuth 2.1 
 
 - Server URL: `https://augias.app/_mcp` (or your self-hosted URL)
 - Auth: discovered automatically from `/.well-known/oauth-authorization-server`
-- Scopes: request `mcp:read` and (if the agent needs to make changes) `mcp:write`
+- Scopes: request `mcp:read` and (if the agent needs to make changes) `mcp:write`; for the books and figures, `mcp:finance`
 
 If your client cannot perform DCR or OAuth, it cannot use this server — there is intentionally no static API-key fallback.
 
@@ -166,6 +166,19 @@ The server exposes a single, consistent toolset across every agent. Tools requir
 | `get_client_summary`           | Totals invoiced, outstanding balance, total paid, and counts for a client.                    |
 | `search_products`              | Search the catalogue of products and services by name, reference or description.              |
 | `list_received_invoices`       | List invoices received from suppliers on the electronic invoicing platform, with the answer given and the purchase each became. |
+
+### Books and figures (`mcp:finance`)
+
+Turnover, the books, VAT, bank statements and reports are only available with `mcp:finance`, ticked on its own on the consent screen. Neither `mcp:read` nor `mcp:write` grants it: an agent that drafts your invoices has no need to read your accounts. These tools read and write nothing; closing a period, recording a declaration or reconciling a statement line stays in the application.
+
+| Tool                           | What it does                                                                                  |
+|--------------------------------|-----------------------------------------------------------------------------------------------|
+| `get_accounting_overview`      | Regime, VAT franchise, turnover since 1 January by activity, how much of each ceiling is used, current period and lock date. |
+| `get_turnover`                 | Turnover received between two dates, by activity.                                             |
+| `list_pending_declarations`    | Declarations still to make (URSSAF turnover, VAT), oldest first, with the amounts due as the books stand. |
+| `list_ledger_entries`          | Entries of the books (receipts, sales, purchases, expenses), between two dates and for one book. |
+| `list_bank_accounts`           | Bank accounts with imported statements, and how many lines are not reconciled.                |
+| `list_bank_transactions`       | Lines of a statement, with the likely payments, invoices or purchases for each line not reconciled. |
 
 ### Write tools (`mcp:write`)
 
@@ -259,6 +272,13 @@ You belong to multiple companies and didn't pick one. Re-trigger the connection 
 <summary>Tools that change data return "insufficient scope"</summary>
 
 The agent only requested — or you only granted — `mcp:read`. Revoke the connection from `Profile → Connected apps` and reconnect, making sure the agent requests `mcp:write` and you tick the write checkbox on the consent screen.
+
+</details>
+
+<details>
+<summary>The agent says it needs the `mcp:finance` scope</summary>
+
+The `Read the books and figures` box was not ticked at consent, or the agent was connected before it existed. Revoke the connection from `Profile → Connected apps`, reconnect the agent and tick that box.
 
 </details>
 

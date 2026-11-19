@@ -51,7 +51,7 @@ final class WellKnownTest extends WebTestCase
         self::assertSame(['code'], $data['response_types_supported']);
         self::assertSame(['authorization_code', 'refresh_token'], $data['grant_types_supported']);
         self::assertSame(['S256'], $data['code_challenge_methods_supported']);
-        self::assertSame(['mcp:read', 'mcp:write'], $data['scopes_supported']);
+        self::assertSame(['mcp:read', 'mcp:write', 'mcp:finance'], $data['scopes_supported']);
     }
 
     public function testProtectedResourceMetadata(): void
@@ -68,7 +68,7 @@ final class WellKnownTest extends WebTestCase
         self::assertArrayHasKey('resource', $data);
         self::assertArrayHasKey('authorization_servers', $data);
         self::assertSame(['header'], $data['bearer_methods_supported']);
-        self::assertSame(['mcp:read', 'mcp:write'], $data['scopes_supported']);
+        self::assertSame(['mcp:read', 'mcp:write', 'mcp:finance'], $data['scopes_supported']);
     }
 
     /**
@@ -99,7 +99,7 @@ final class WellKnownTest extends WebTestCase
 
         self::assertResponseStatusCodeSame(401);
         self::assertSame(
-            'Bearer resource_metadata="http://localhost/.well-known/oauth-protected-resource", scope="mcp:read mcp:write"',
+            'Bearer resource_metadata="http://localhost/.well-known/oauth-protected-resource", scope="mcp:read mcp:write mcp:finance"',
             $client->getResponse()->headers->get('WWW-Authenticate'),
         );
     }
@@ -135,7 +135,7 @@ final class WellKnownTest extends WebTestCase
         self::assertSame('http', $data['transport']['type']);
         self::assertStringEndsWith('/_mcp', $data['transport']['endpoint']);
         self::assertSame('oauth2', $data['authorization']['type']);
-        self::assertSame(['mcp:read', 'mcp:write'], $data['authorization']['scopes']);
+        self::assertSame(['mcp:read', 'mcp:write', 'mcp:finance'], $data['authorization']['scopes']);
         self::assertArrayHasKey('tools', $data['capabilities']);
     }
 

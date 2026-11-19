@@ -19,6 +19,14 @@ enum McpScope: string
     case Write = 'mcp:write';
 
     /**
+     * The company's figures taken together: books, VAT, bank, turnover and
+     * reports. Granted on its own on the consent page, unticked by default,
+     * and implied by no other scope: an assistant that may write invoices
+     * does not, for that, read the books.
+     */
+    case Finance = 'mcp:finance';
+
+    /**
      * @return list<string>
      */
     public static function values(): array
@@ -27,7 +35,7 @@ enum McpScope: string
     }
 
     /**
-     * Write scope implies read; check whether the given granted scopes satisfy a required scope.
+     * Write and finance each imply read; nothing implies finance. Check whether the given granted scopes satisfy a required scope.
      *
      * @param list<string> $grantedScopes
      */
@@ -37,6 +45,7 @@ enum McpScope: string
             return true;
         }
 
-        return $required === self::Read && \in_array(self::Write->value, $grantedScopes, true);
+        return $required === self::Read
+            && (\in_array(self::Write->value, $grantedScopes, true) || \in_array(self::Finance->value, $grantedScopes, true));
     }
 }

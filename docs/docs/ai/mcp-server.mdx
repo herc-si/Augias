@@ -37,7 +37,7 @@ Aucune clé d'API à coller. À sa première connexion, l'agent vous fait suivre
 2. Votre navigateur ouvre la page de consentement d'Augias. Connectez-vous si besoin.
 3. Sur l'écran de consentement, vous choisissez :
    - **l'entreprise** sur laquelle l'agent agira (si vous en avez plusieurs) ;
-   - **les portées** accordées : `mcp:read` est toujours accordée ; `mcp:write` est facultative et n'apparaît que si l'agent l'a demandée.
+   - **les portées** accordées : `mcp:read` est toujours accordée ; `mcp:write` est facultative et n'apparaît que si l'agent l'a demandée ; `Lire les livres et les chiffres` (`mcp:finance`) est une case à part, **décochée** à l'ouverture.
 4. Une fois l'accord donné, l'agent reçoit un jeton d'accès (valable 24 heures) et un jeton de renouvellement (valable 90 jours, renouvelé à chaque usage). Les jetons sont liés à l'entreprise et aux portées choisies ; ce lien ne peut plus changer sans nouveau consentement.
 
 Vous pouvez consulter et révoquer chaque agent connecté à tout moment dans `Profil → Applications connectées` (`/profile/connected-apps`).
@@ -125,7 +125,7 @@ Tout client MCP qui accepte le transport **Streamable HTTP** avec **OAuth 2.1 (c
 
 - Adresse : `https://<votre-instance-augias>/_mcp`
 - Authentification : découverte automatiquement sur `/.well-known/oauth-authorization-server`
-- Portées : demandez `mcp:read` et, si l'agent doit modifier des données, `mcp:write`
+- Portées : demandez `mcp:read` et, si l'agent doit modifier des données, `mcp:write` ; pour les livres et les chiffres, `mcp:finance`
 
 Un client incapable d'enregistrement dynamique ou d'OAuth ne peut pas utiliser ce serveur : il n'y a volontairement pas de repli par clé d'API fixe.
 
@@ -165,6 +165,19 @@ Le serveur expose le même jeu d'outils à tous les agents. Les outils qui deman
 | `get_client_summary` | Total facturé, impayé, total payé et nombres de documents pour un client. |
 | `search_products` | Cherche dans le catalogue de produits et services, par nom, référence ou description. |
 | `list_received_invoices` | Liste les factures reçues des fournisseurs sur la plateforme de facturation électronique, avec la réponse donnée et l'achat qu'elles sont devenues. |
+
+### Livres et chiffres (`mcp:finance`)
+
+Le chiffre d'affaires, les livres, la TVA, les relevés bancaires et les rapports ne sont accessibles qu'avec `mcp:finance`, à cocher à part sur l'écran de consentement. Ni `mcp:read` ni `mcp:write` ne la donnent : un agent qui rédige vos factures n'a pas besoin de lire vos comptes. Ces outils lisent sans rien écrire ; clôturer une période, enregistrer une déclaration ou rapprocher une ligne de relevé se fait dans l'interface.
+
+| Outil | Rôle |
+| --- | --- |
+| `get_accounting_overview` | Régime, franchise de TVA, chiffre d'affaires depuis le 1er janvier par activité, part de chaque plafond déjà atteinte, période en cours et date de verrouillage. |
+| `get_turnover` | Chiffre d'affaires encaissé entre deux dates, par activité. |
+| `list_pending_declarations` | Déclarations restant à faire (chiffre d'affaires URSSAF, TVA), les plus anciennes d'abord, avec les montants dus d'après les livres. |
+| `list_ledger_entries` | Écritures des livres (recettes, ventes, achats, dépenses), entre deux dates et pour un livre. |
+| `list_bank_accounts` | Comptes bancaires dont des relevés ont été importés, avec le nombre de lignes non rapprochées. |
+| `list_bank_transactions` | Lignes d'un relevé, avec pour chaque ligne non rapprochée les paiements, factures ou achats qui lui correspondent probablement. |
 
 ### Outils d'écriture (`mcp:write`)
 
@@ -258,6 +271,13 @@ Vous êtes membre de plusieurs entreprises et n'en avez choisi aucune. Relancez 
 <summary>Les outils qui modifient des données renvoient « insufficient scope »</summary>
 
 L'agent n'a demandé, ou vous n'avez accordé, que `mcp:read`. Révoquez la connexion dans `Profil → Applications connectées` et reconnectez-vous, en vérifiant que l'agent demande `mcp:write` et que vous cochez l'écriture sur l'écran de consentement.
+
+</details>
+
+<details>
+<summary>L'agent répond qu'il lui faut la portée `mcp:finance`</summary>
+
+La case `Lire les livres et les chiffres` n'était pas cochée au consentement, ou l'agent a été connecté avant qu'elle n'existe. Révoquez la connexion dans `Profil → Applications connectées`, reconnectez l'agent et cochez cette case.
 
 </details>
 

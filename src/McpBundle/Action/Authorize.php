@@ -161,6 +161,7 @@ final readonly class Authorize
                 'active_company_id' => $activeCompanyId,
                 'requested_scopes' => $requestedScopeValues,
                 'supports_write' => \in_array(McpScope::Write->value, $requestedScopeValues, true),
+                'supports_finance' => \in_array(McpScope::Finance->value, $requestedScopeValues, true),
                 'state' => $request->query->get('state'),
                 'csrf_token_id' => self::CONSENT_CSRF_TOKEN_ID,
             ]),
@@ -303,6 +304,11 @@ final readonly class Authorize
 
         if ($grantWrite && \in_array(McpScope::Write->value, $requestedScopeValues, true)) {
             $grantedScopeValues[] = McpScope::Write->value;
+        }
+
+        // Ticked by hand only: the box is unticked when the page opens.
+        if ($request->request->getBoolean('grant_finance') && \in_array(McpScope::Finance->value, $requestedScopeValues, true)) {
+            $grantedScopeValues[] = McpScope::Finance->value;
         }
 
         // The grant is always persisted so the token/refresh flow can resolve

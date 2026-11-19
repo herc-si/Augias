@@ -38,6 +38,10 @@ final readonly class McpScopeGuard
         $granted = $this->context->getScopes();
 
         if (! McpScope::satisfies($granted, $required)) {
+            if (McpScope::Finance === $required) {
+                throw new ToolCallException('This tool reads the company\'s figures (books, VAT, bank, reports) and needs the "mcp:finance" scope, which is granted separately. Ask the user to disconnect and reconnect this assistant, and tick "Read the books and figures" (« Lire les livres et les chiffres ») on the consent page.');
+            }
+
             throw new ToolCallException(sprintf(
                 'This tool requires the "%s" scope. Granted: %s.',
                 $required->value,
