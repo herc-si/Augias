@@ -44,6 +44,15 @@ final class ResetPasswordTest extends WebTestCase
         $this->em->flush();
     }
 
+    public function testTheLoginPageLeadsToThePasswordReset(): void
+    {
+        $this->browser()
+            ->visit('/login')
+            ->click('Forgot your password?')
+            ->assertOn('/forgot-password')
+            ->assertSuccessful();
+    }
+
     public function testPasswordReset(): void
     {
         // Create a test user

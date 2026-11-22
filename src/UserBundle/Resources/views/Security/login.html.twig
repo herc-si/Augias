@@ -43,6 +43,12 @@
 
     {{ parent() }}
 
+    {# The platform's form leaves its "forgot password" link commented out:
+       without this one, a forgotten password had no way back in. #}
+    <div class="text-center mt-3 bg-white p-2">
+        <a href="{{ path('_user_forgot_password') }}">{{ 'security.login.forgot_password'|trans }}</a>
+    </div>
+
     {% toggle 'allow_registration' %}
         <div class="text-center text-secondary mt-3 bg-white p-2">
             {{ 'security.login.no_account'|trans }}
