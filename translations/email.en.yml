@@ -80,6 +80,16 @@ einvoicing:
         status_code: 'Status Code'
         view_invoice: 'View Invoice Details'
 email:
+    account_notice:
+        email_changed:
+            message: 'The sign-in address of your Augias account changed from %email% to %new_email%. Password reset links will now go to the new address.'
+            subject: 'Your Augias account address was changed'
+            title: 'Sign-in address changed'
+        not_you: 'If you did not make this change, someone else may be using your account: contact support as soon as possible. Secure your mailbox as well.'
+        password_changed:
+            message: 'The password of the Augias account %email% was just changed. Trusted devices were forgotten: two-factor authentication will be asked again at the next sign-in.'
+            subject: 'Your Augias account password was changed'
+            title: 'Password changed'
     confirmation:
         alternative: "If the button above doesn't work, copy and paste this link into your browser:"
         button: 'Confirm Email Address'

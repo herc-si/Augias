@@ -80,6 +80,16 @@ einvoicing:
         status_code: 'Code de statut'
         view_invoice: 'Voir les détails de la facture'
 email:
+    account_notice:
+        email_changed:
+            message: 'L''adresse de connexion de votre compte Augias est passée de %email% à %new_email%. Les liens de réinitialisation du mot de passe partiront désormais vers la nouvelle adresse.'
+            subject: 'L''adresse de votre compte Augias a été modifiée'
+            title: 'Adresse de connexion modifiée'
+        not_you: 'Si vous n''êtes pas à l''origine de ce changement, votre compte est peut-être utilisé par quelqu''un d''autre : prévenez l''assistance au plus vite. Pensez aussi à sécuriser votre boîte mail.'
+        password_changed:
+            message: 'Le mot de passe du compte Augias %email% vient d''être modifié. Les appareils de confiance ont été oubliés : la double authentification sera redemandée à la prochaine connexion.'
+            subject: 'Le mot de passe de votre compte Augias a été modifié'
+            title: 'Mot de passe modifié'
     confirmation:
         alternative: "Si le bouton ci-dessus ne fonctionne pas, copiez-collez ce lien dans votre navigateur :"
         button: 'Confirmer l''adresse e-mail'

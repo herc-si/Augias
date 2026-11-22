@@ -3343,6 +3343,7 @@ profile:
                 text: '%date% depuis %ip%'
     edit:
         cancel: Annuler
+        email_confirmation_sent: 'Un lien de confirmation est parti vers votre nouvelle adresse : cliquez dessus pour l''activer. Votre ancienne adresse a été prévenue du changement.'
         locale:
             help: 'Choisissez la langue dans laquelle Augias vous est affiché. Laissez vide pour utiliser la langue par défaut de la société.'
             label: Langue
