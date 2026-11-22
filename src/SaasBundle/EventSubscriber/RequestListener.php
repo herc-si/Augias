@@ -56,6 +56,7 @@ final readonly class RequestListener implements EventSubscriberInterface
         '_view_invoice_external',
         'billing_index',
         'saas_subscription_checkout',
+        'saas_billing_portal',
         'saas_subscription_plans',
         'saas_subscription_choose',
         'saas_subscription_change',
@@ -87,6 +88,7 @@ final readonly class RequestListener implements EventSubscriberInterface
      */
     private const array MANAGED_ROUTES = [
         'saas_subscription_checkout',
+        'saas_billing_portal',
         'saas_subscription_plans',
         'saas_subscription_choose',
         'saas_subscription_change',
@@ -238,7 +240,7 @@ final readonly class RequestListener implements EventSubscriberInterface
             'title' => $this->translator->trans($banner->titleKey, $banner->params),
             'message' => $this->translator->trans($banner->messageKey, $banner->params),
             'cta_label' => $this->translator->trans($banner->ctaLabelKey, $banner->params),
-            'cta_url' => $this->urlGenerator->generate('saas_subscription_checkout'),
+            'cta_url' => $this->urlGenerator->generate($banner->ctaRoute),
             'code' => $banner->code,
         ]);
 

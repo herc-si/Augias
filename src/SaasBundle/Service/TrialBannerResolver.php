@@ -65,6 +65,21 @@ final readonly class TrialBannerResolver
             );
         }
 
+        // A refused renewal, Stripe retrying: the company still works, and
+        // every page says how to put it right — another card, on Stripe's
+        // customer portal.
+        if ($subscription->getStatus() === SubscriptionStatus::PAST_DUE) {
+            return new TrialBanner(
+                'danger',
+                'tabler:credit-card-off',
+                'saas.trial_banner.past_due.title',
+                'saas.trial_banner.past_due.message',
+                [],
+                'saas.trial_banner.past_due.cta',
+                ctaRoute: 'saas_billing_portal',
+            );
+        }
+
         if ($subscription->getStatus() !== SubscriptionStatus::TRIAL) {
             return null;
         }

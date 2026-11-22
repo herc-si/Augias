@@ -32,6 +32,7 @@ final readonly class TrialBanner
         public array $params,
         public string $ctaLabelKey,
         public ?string $code = null,
+        public string $ctaRoute = 'saas_subscription_checkout',
     ) {
     }
 }

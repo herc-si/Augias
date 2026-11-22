@@ -12,6 +12,7 @@ declare(strict_types=1);
  */
 
 use Augias\SaasBundle\Action\AbandonCompanyAction;
+use Augias\SaasBundle\Action\BillingPortalAction;
 use Augias\SaasBundle\Action\CancelDowngradeAction;
 use Augias\SaasBundle\Action\ChangePlanAction;
 use Augias\SaasBundle\Action\ChoosePlanAction;
@@ -33,6 +34,10 @@ return static function (RoutingConfigurator $routingConfigurator): void {
 
     $routingConfigurator->add('saas_subscription_checkout', '/subscription/activate')
         ->controller(SubscribeController::class);
+
+    $routingConfigurator->add('saas_billing_portal', '/subscription/payment-method')
+        ->controller(BillingPortalAction::class)
+        ->methods(['GET']);
 
     $routingConfigurator->add('saas_subscription_plans', '/subscription/plans')
         ->controller(SelectPlanAction::class)
