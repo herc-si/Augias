@@ -13,12 +13,15 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\Tests\Payment\Stripe;
 
+use Augias\CoreBundle\Entity\Company;
 use Augias\SaasBundle\Payment\Stripe\StripeApi;
 use Augias\SaasBundle\Payment\Stripe\StripeIntegration;
+use Augias\SettingsBundle\SystemConfig;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use ReflectionProperty;
+use SolidWorx\Platform\PlatformBundle\Feature\SubscribableInterface;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Exception\PaymentIntegrationException;
@@ -29,6 +32,7 @@ use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Uid\Ulid;
 use function array_shift;
+use function json_encode;
 use function parse_str;
 
 #[CoversClass(StripeIntegration::class)]
@@ -78,6 +82,66 @@ final class StripeIntegrationTest extends TestCase
             ->checkout($subscription, Options::new()->withSkipTrial(false));
 
         self::assertArrayNotHasKey('trial_end', $this->requests[0]['body']['subscription_data']);
+    }
+
+    public function testACompanysFirstCheckoutOpensWithItsNameAndAddress(): void
+    {
+        $company = $this->company('Acme SARL');
+        $subscription = $this->subscription('price_solo', '+10 days')->setSubscriber($company);
+        $address = json_encode(['street1' => '12 rue des Essais', 'street2' => null, 'zip' => '69001', 'city' => 'Lyon', 'state' => '', 'country' => 'fr'], JSON_THROW_ON_ERROR);
+
+        $this->integration([
+            new JsonMockResponse(['data' => [['id' => 'cus_other', 'metadata' => ['augias_company' => 'someone-else']]]]),
+            new JsonMockResponse(['data' => []]),
+            new JsonMockResponse(['id' => 'cus_new']),
+            new JsonMockResponse(['url' => 'https://checkout.stripe.com/x']),
+        ], $address)->checkout($subscription, Options::new()->withEmail('jo@acme.fr')->withSkipTrial(true));
+
+        self::assertStringEndsWith('/v1/customers?email=jo@acme.fr&limit=100', $this->requests[0]['url']);
+        self::assertStringContainsString('/v1/customers/search', $this->requests[1]['url']);
+        self::assertStringEndsWith('/v1/customers', $this->requests[2]['url']);
+        self::assertSame([
+            'name' => 'Acme SARL',
+            'metadata' => ['augias_company' => $company->getId()->toBase58()],
+            'email' => 'jo@acme.fr',
+            'address' => ['line1' => '12 rue des Essais', 'postal_code' => '69001', 'city' => 'Lyon', 'country' => 'FR'],
+        ], $this->requests[2]['body']);
+
+        $body = $this->requests[3]['body'];
+        self::assertSame('cus_new', $body['customer']);
+        self::assertSame(['address' => 'auto', 'name' => 'auto'], $body['customer_update']);
+        self::assertArrayNotHasKey('customer_email', $body);
+        self::assertSame('required', $body['billing_address_collection']);
+    }
+
+    public function testTheCustomerMadeAMomentAgoIsFoundByEmailAndUpdated(): void
+    {
+        $company = $this->company('Acme SARL');
+        $subscription = $this->subscription('price_solo', '+10 days')->setSubscriber($company);
+
+        $this->integration([
+            new JsonMockResponse(['data' => [['id' => 'cus_1', 'metadata' => ['augias_company' => $company->getId()->toBase58()]]]]),
+            new JsonMockResponse(['id' => 'cus_1']),
+            new JsonMockResponse(['url' => 'https://checkout.stripe.com/x']),
+        ])->checkout($subscription, Options::new()->withEmail('jo@acme.fr')->withSkipTrial(true));
+
+        self::assertStringEndsWith('/v1/customers/cus_1', $this->requests[1]['url']);
+        self::assertSame('Acme SARL', $this->requests[1]['body']['name']);
+        self::assertSame('cus_1', $this->requests[2]['body']['customer']);
+    }
+
+    public function testTheCheckoutStillOpensWhenTheCustomerCannotBePrepared(): void
+    {
+        $subscription = $this->subscription('price_solo', '+10 days')->setSubscriber($this->company('Acme SARL'));
+
+        $url = $this->integration([
+            new JsonMockResponse(['error' => ['message' => 'Search is unavailable']], ['http_code' => 400]),
+            new JsonMockResponse(['url' => 'https://checkout.stripe.com/x']),
+        ])->checkout($subscription, Options::new()->withEmail('jo@acme.fr')->withSkipTrial(true));
+
+        self::assertSame('https://checkout.stripe.com/x', $url);
+        self::assertSame('jo@acme.fr', $this->requests[1]['body']['customer_email']);
+        self::assertArrayNotHasKey('customer', $this->requests[1]['body']);
     }
 
     public function testPlansAreTheActiveRecurringPrices(): void
@@ -136,7 +200,7 @@ final class StripeIntegrationTest extends TestCase
     /**
      * @param list<JsonMockResponse> $responses
      */
-    private function integration(array $responses): StripeIntegration
+    private function integration(array $responses, ?string $address = null): StripeIntegration
     {
         $client = new MockHttpClient(function (string $method, string $url, array $options) use (&$responses): JsonMockResponse {
             $body = [];
@@ -149,7 +213,18 @@ final class StripeIntegrationTest extends TestCase
         $router = $this->createStub(UrlGeneratorInterface::class);
         $router->method('generate')->willReturnCallback(static fn (string $route): string => 'https://app.test/' . $route);
 
-        return new StripeIntegration(new StripeApi($client), $router, new MockClock('2026-09-28 12:00:00'), 'saas_payment_success');
+        $systemConfig = $this->createStub(SystemConfig::class);
+        $systemConfig->method('get')->willReturn($address);
+
+        return new StripeIntegration(new StripeApi($client), $router, new MockClock('2026-09-28 12:00:00'), 'saas_payment_success', $systemConfig);
+    }
+
+    private function company(string $name): Company
+    {
+        $company = new Company()->setName($name);
+        new ReflectionProperty(Company::class, 'id')->setValue($company, new Ulid());
+
+        return $company;
     }
 
     private function subscription(string $planId, string $endsIn): Subscription
@@ -157,7 +232,8 @@ final class StripeIntegrationTest extends TestCase
         $subscription = new Subscription()
             ->setPlan(new Plan()->setName('Solo')->setPlanId($planId)->setPrice(1200))
             ->setStartDate(new DateTimeImmutable('2026-09-20'))
-            ->setEndDate(new DateTimeImmutable('2026-09-28 12:00:00')->modify($endsIn));
+            ->setEndDate(new DateTimeImmutable('2026-09-28 12:00:00')->modify($endsIn))
+            ->setSubscriber($this->createStub(SubscribableInterface::class));
         new ReflectionProperty(Subscription::class, 'id')->setValue($subscription, new Ulid());
 
         return $subscription;
