@@ -95,6 +95,9 @@
                     {{ ux_icon('tabler:alert-triangle', {width: 20, height: 20, class: 'me-2'}) }}
                     <strong>{{ 'saas.overview.past_due_title'|trans }}.</strong>
                     {{ 'saas.overview.past_due_message'|trans }}
+                    {% if hasExternalBilling %}
+                        <a href="{{ path('saas_billing_portal') }}" class="alert-link ms-1">{{ 'saas.trial_banner.past_due.cta'|trans }}</a>
+                    {% endif %}
                 </div>
             {% endif %}
 
@@ -160,7 +163,7 @@
                         {{ 'saas.overview.change_plan'|trans }}
                     </a>
                     {% if hasExternalBilling %}
-                        <a href="{{ path('saas_subscription_checkout') }}" class="btn btn-outline-secondary">
+                        <a href="{{ path('saas_billing_portal') }}" class="btn btn-outline-secondary">
                             {{ ux_icon('tabler:credit-card', {width: 18, height: 18}) }}
                             {{ 'saas.overview.manage_payment_method'|trans }}
                         </a>

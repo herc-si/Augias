@@ -3689,6 +3689,7 @@ saas:
     flash:
         abandon_refused: 'Cette société ne peut pas être abandonnée : seul son propriétaire le peut, et seulement avant son activation.'
         checkout_failed: 'Impossible de créer la session de paiement. Veuillez réessayer plus tard.'
+        portal_failed: 'Impossible d''ouvrir la gestion du moyen de paiement. Veuillez réessayer plus tard.'
         company_abandoned: 'La société « %name% » a été supprimée.'
         company_covered: 'Cette société est maintenant couverte par votre abonnement Agence.'
         cover_unavailable: 'Cette société ne peut pas être rattachée : l''abonnement n''a plus de place, ou elle paie déjà le sien.'
@@ -3857,6 +3858,10 @@ saas:
             cta: 'Prolonger mon essai'
             message: "Ajoutez vos informations de paiement avant la fin de votre essai et nous le prolongerons de %days% jours. Aucun frais aujourd'hui, annulable à tout moment."
             title: 'Obtenez %days% jours de plus, gratuitement'
+        past_due:
+            cta: 'Changer de carte'
+            message: 'Le dernier prélèvement de votre abonnement a été refusé. Stripe va réessayer dans les prochains jours ; vous gardez l''accès d''ici là. Mettez à jour votre moyen de paiement pour éviter l''interruption.'
+            title: 'Paiement refusé'
     retention:
         export: 'Exporter les données'
         text: "Comme le prévoient les conditions générales, elles sont conservées quatre-vingt-dix jours après la fin de l'abonnement, le temps de les exporter ou de vous réabonner, puis supprimées définitivement, factures comprises. Vous devez conserver vos factures pendant 10 ans."

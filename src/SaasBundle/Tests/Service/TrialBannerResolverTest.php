@@ -126,6 +126,16 @@ final class TrialBannerResolverTest extends TestCase
         self::assertNull($banner->code);
     }
 
+    public function testARefusedRenewalAsksForAnotherCardOnStripesPortal(): void
+    {
+        $banner = $this->resolve(SubscriptionStatus::PAST_DUE, '2023-12-30', subscriptionId: 'sub_1');
+
+        self::assertInstanceOf(TrialBanner::class, $banner);
+        self::assertSame('danger', $banner->type);
+        self::assertSame('saas.trial_banner.past_due.title', $banner->titleKey);
+        self::assertSame('saas_billing_portal', $banner->ctaRoute);
+    }
+
     public function testNoBannerWhenCancelledExpired(): void
     {
         $banner = $this->resolve(SubscriptionStatus::CANCELLED, '2023-12-30');

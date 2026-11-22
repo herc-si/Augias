@@ -3689,6 +3689,7 @@ saas:
     flash:
         abandon_refused: 'This company cannot be abandoned: only its owner can, and only before it is activated.'
         checkout_failed: 'Unable to create checkout session. Please try again later.'
+        portal_failed: 'Unable to open payment method management. Please try again later.'
         company_abandoned: 'The company "%name%" was deleted.'
         company_covered: 'This company is now covered by your Agence subscription.'
         cover_unavailable: 'This company cannot be put under it: the subscription has no room left, or the company already pays for its own.'
@@ -3857,6 +3858,10 @@ saas:
             cta: 'Extend my trial'
             message: "Add your payment details before your trial ends and we'll extend it by %days% days. No charge today, cancel anytime."
             title: 'Get %days% more days, free'
+        past_due:
+            cta: 'Change card'
+            message: 'The last payment for your subscription was declined. Stripe will try again over the next few days, and you keep access until then. Update your payment method to avoid an interruption.'
+            title: 'Payment declined'
     retention:
         export: 'Export the data'
         text: 'As the terms of service provide, it is kept for ninety days after the subscription ends, time enough to export it or to subscribe again, then permanently deleted, invoices included. You must keep your invoices for 10 years.'

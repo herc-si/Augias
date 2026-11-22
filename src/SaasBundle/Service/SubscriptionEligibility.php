@@ -48,6 +48,11 @@ final readonly class SubscriptionEligibility implements PaidSubscriptionGateInte
 
         return match ($subscription->getStatus()) {
             SubscriptionStatus::ACTIVE => EligibilityResult::active(),
+            // A renewal the card refused: Stripe tries again for days, and
+            // the company keeps working meanwhile, a banner on every page
+            // asking for another card. Access ends when Stripe gives up —
+            // unpaid or cancelled (Rémi, 22/11/2026).
+            SubscriptionStatus::PAST_DUE => EligibilityResult::active(),
             // Subscribed during the trial: billed at its end, by Stripe.
             SubscriptionStatus::TRIAL => $subscription->getEndDate() > $now || $subscription->isExternallyBilled()
                 ? EligibilityResult::active()
@@ -57,7 +62,7 @@ final readonly class SubscriptionEligibility implements PaidSubscriptionGateInte
                 : EligibilityResult::denied('Your subscription has ended. Renew it to continue using this resource.'),
             SubscriptionStatus::PAUSED => EligibilityResult::denied('Your subscription is currently paused. Reactivate it to continue using this resource.'),
             SubscriptionStatus::PENDING => EligibilityResult::denied('Your subscription payment is still being processed. Access will resume once it completes.'),
-            // Any other known-or-future SubscriptionStatus (INACTIVE, PAST_DUE, UNPAID, …)
+            // Any other known-or-future SubscriptionStatus (INACTIVE, UNPAID, …)
             // fails closed. Future enum cases must be wired up explicitly above.
             default => EligibilityResult::denied('Your subscription is not currently active.'),
         };
@@ -85,7 +90,8 @@ final readonly class SubscriptionEligibility implements PaidSubscriptionGateInte
         }
 
         return match ($subscription->getStatus()) {
-            SubscriptionStatus::ACTIVE => true,
+            // Paying, the renewal being retried: see evaluate().
+            SubscriptionStatus::ACTIVE, SubscriptionStatus::PAST_DUE => true,
             SubscriptionStatus::CANCELLED, SubscriptionStatus::EXPIRED => $subscription->getEndDate() > $this->clock->now(),
             // TRIAL, PAUSED, PENDING and any future status are not paid access.
             default => false,

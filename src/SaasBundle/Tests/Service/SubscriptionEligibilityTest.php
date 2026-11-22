@@ -145,10 +145,19 @@ final class SubscriptionEligibilityTest extends TestCase
         );
     }
 
+    public function testARefusedRenewalKeepsTheCompanyWorkingWhileStripeRetries(): void
+    {
+        $eligibility = $this->makeEligibility(
+            $this->subscription(SubscriptionStatus::PAST_DUE, '2020-01-01'),
+        );
+
+        self::assertTrue($eligibility->evaluate(new Company())->active);
+    }
+
     public function testUnhandledStatusFailsClosed(): void
     {
         $eligibility = $this->makeEligibility(
-            $this->subscription(SubscriptionStatus::PAST_DUE, '2099-01-01'),
+            $this->subscription(SubscriptionStatus::UNPAID, '2099-01-01'),
         );
 
         $result = $eligibility->evaluate(new Company());
@@ -182,7 +191,8 @@ final class SubscriptionEligibilityTest extends TestCase
         // Paused/pending/unknown are not paid access.
         yield 'paused' => [SubscriptionStatus::PAUSED, '2099-01-01', false];
         yield 'pending' => [SubscriptionStatus::PENDING, '2099-01-01', false];
-        yield 'past due' => [SubscriptionStatus::PAST_DUE, '2099-01-01', false];
+        yield 'past due' => [SubscriptionStatus::PAST_DUE, '2020-01-01', true];
+        yield 'unpaid' => [SubscriptionStatus::UNPAID, '2099-01-01', false];
     }
 
     #[DataProvider('providePaidScenarios')]

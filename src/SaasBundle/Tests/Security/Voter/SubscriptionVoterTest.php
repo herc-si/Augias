@@ -215,7 +215,7 @@ final class SubscriptionVoterTest extends KernelTestCase
     public function testDeniesUnhandledSubscriptionStatus(string $attribute): void
     {
         $voter = $this->createVoter(
-            subscription: $this->createSubscription(SubscriptionStatus::PAST_DUE),
+            subscription: $this->createSubscription(SubscriptionStatus::UNPAID),
         );
 
         $this->assertDeniedWithReason($voter, $attribute, self::PAID_REQUIRED_REASON);
