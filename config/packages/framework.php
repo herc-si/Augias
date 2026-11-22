@@ -60,6 +60,13 @@ return App::config([
             // session on the other, which matters most where the two instances
             // are not equally exposed.
             'name' => env('AUGIAS_SESSION_NAME'),
+            // Kept beside the vault rather than in PHP's temporary directory,
+            // which a container loses on every deployment and signs everyone
+            // out: the config directory already persists wherever Augias
+            // runs — a volume on the VPS, a shared claim under Helm, the
+            // user's own folder for the binary. Backups leave it out.
+            'handler_id' => 'session.handler.native_file',
+            'save_path' => '%env(AUGIAS_CONFIG_DIR)%/sessions',
         ],
         'secrets' => [
             'enabled' => true,
