@@ -15,6 +15,7 @@ namespace Augias\UserBundle\Action\ForgotPassword;
 
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Form\Type\ChangePasswordFormType;
+use Augias\UserBundle\Security\AccountSecurity;
 use Doctrine\Persistence\ManagerRegistry;
 use SensitiveParameter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,6 +37,7 @@ final class Reset extends AbstractController
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly TranslatorInterface $translator,
         private readonly ManagerRegistry $registry,
+        private readonly AccountSecurity $accountSecurity,
     ) {
     }
 
@@ -82,6 +84,7 @@ final class Reset extends AbstractController
             // Encode(hash) the plain password, and set it.
             $user->setPassword($this->passwordHasher->hashPassword($user, $plainPassword));
             $this->registry->getManagerForClass(User::class)?->flush();
+            $this->accountSecurity->passwordChanged($user);
 
             // The session is cleaned up after the password has been changed.
             $this->cleanSessionAfterReset();

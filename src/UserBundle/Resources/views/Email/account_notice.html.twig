@@ -1,0 +1,33 @@
+{#
+ # This file is part of Augias package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends '@AugiasCore/Layout/Email/base.html.twig' %}
+{% import "@AugiasCore/Layout/Email/components.html.twig" as email %}
+
+{%- block title -%}
+    {{ ('email.account_notice.' ~ what ~ '.title')|trans(parameters, 'email') }}
+{%- endblock -%}
+
+{%- block content -%}
+    {% apply inky_to_html %}
+        <row>
+            <columns>
+                <p style="color: #1e293b; font-size: 16px; line-height: 1.5; margin: 0 0 16px 0; Margin: 0 0 16px 0;">
+                    {{ ('email.account_notice.' ~ what ~ '.message')|trans(parameters, 'email') }}
+                </p>
+            </columns>
+        </row>
+    {% endapply %}
+
+    {{ email.spacer('md') }}
+
+    {{ email.alert_box('email.account_notice.not_you'|trans({}, 'email')|e, 'warning') }}
+
+    {{ email.spacer('sm') }}
+{%- endblock -%}

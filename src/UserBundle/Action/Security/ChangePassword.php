@@ -17,6 +17,7 @@ use Augias\UserBundle\DTO\ChangePassword as ChangePasswordDTO;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Form\Type\ChangePasswordType;
 use Augias\UserBundle\Repository\UserRepositoryInterface;
+use Augias\UserBundle\Security\AccountSecurity;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\Form\FormView;
@@ -38,7 +39,8 @@ final readonly class ChangePassword
         private UserRepositoryInterface $userRepository,
         private UserPasswordHasherInterface $userPasswordHasher,
         private TokenStorageInterface $tokenStorage,
-        private RouterInterface $router
+        private RouterInterface $router,
+        private AccountSecurity $accountSecurity,
     ) {
     }
 
@@ -70,6 +72,7 @@ final readonly class ChangePassword
             }
 
             $this->userRepository->save($user);
+            $this->accountSecurity->passwordChanged($user);
 
             $session = $request->getSession();
             assert($session instanceof Session);
