@@ -68,6 +68,14 @@ return App::config([
             'handler_id' => 'session.handler.native_file',
             'save_path' => '%env(AUGIAS_CONFIG_DIR)%/sessions',
         ],
+        'csrf_protection' => [
+            // Signing out is checked by where the request comes from rather
+            // than by a token kept in the session: a page opened before the
+            // session was lost — a deployment, an expiry, a remember-me
+            // sign-in since — still signs out instead of answering "Invalid
+            // CSRF token", and another site still cannot.
+            'stateless_token_ids' => ['logout'],
+        ],
         'secrets' => [
             'enabled' => true,
             'vault_directory' => env('AUGIAS_CONFIG_DIR'),
