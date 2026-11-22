@@ -97,9 +97,12 @@ final readonly class SelectCompany
         $session = $request->getSession();
         $target = $session->get('_security.main.target_path');
 
-        if (\is_string($target) && $target !== '') {
-            $session->remove('_security.main.target_path');
+        $session->remove('_security.main.target_path');
 
+        // The page the second factor interrupted is this list itself, after
+        // signing in: going back there would ask for a company again, just
+        // after one was picked (Rémi, 19/11/2026).
+        if (\is_string($target) && $target !== '' && parse_url($target, PHP_URL_PATH) !== $this->router->generate('_select_company')) {
             return $target;
         }
 
