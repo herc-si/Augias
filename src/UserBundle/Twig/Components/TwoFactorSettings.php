@@ -15,6 +15,7 @@ namespace Augias\UserBundle\Twig\Components;
 
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Repository\UserRepository;
+use Augias\UserBundle\Security\AuthenticatorAppPolicy;
 use Carbon\Carbon;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
@@ -73,6 +74,7 @@ final class TwoFactorSettings extends AbstractController
         private readonly TrustedDeviceManagerInterface $trustedDeviceManager,
         private readonly BackupCodeGeneratorInterface $backupCodeGenerator,
         private readonly TokenStorageInterface $tokenStorage,
+        private readonly AuthenticatorAppPolicy $authenticatorAppPolicy,
     ) {
     }
 
@@ -166,6 +168,13 @@ final class TwoFactorSettings extends AbstractController
     {
         $user = $this->getUser();
         assert($user instanceof UserTwoFactorInterface);
+
+        // Required here: the app can be replaced (set up again), not removed.
+        if ($this->authenticatorAppPolicy->isRequired()) {
+            $this->addFlash('error', 'security.two_factor.required.cannot_disable');
+
+            return;
+        }
 
         $user->setTotpSecret('');
 

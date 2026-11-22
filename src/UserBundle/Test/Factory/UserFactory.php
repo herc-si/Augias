@@ -75,6 +75,15 @@ final class UserFactory extends PersistentObjectFactory
         ];
     }
 
+    /**
+     * An account with an authenticator app set up: what the service
+     * requires before a company opens ({@see \Augias\UserBundle\Security\AuthenticatorAppPolicy}).
+     */
+    public function withAuthenticatorApp(): static
+    {
+        return $this->with(['totpSecret' => 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP']);
+    }
+
     public static function class(): string
     {
         return User::class;

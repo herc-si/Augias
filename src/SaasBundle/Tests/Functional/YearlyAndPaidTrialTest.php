@@ -163,7 +163,7 @@ final class YearlyAndPaidTrialTest extends WebTestCase
         $company = $this->em->find(Company::class, $company->getId());
         self::assertInstanceOf(Company::class, $company);
 
-        $owner = UserFactory::createOne(['companies' => []]);
+        $owner = UserFactory::new()->withAuthenticatorApp()->create(['companies' => []]);
         $owner = $this->em->find(User::class, $owner->getId());
         self::assertInstanceOf(User::class, $owner);
         $owner->addCompany($company, CompanyRole::Owner);

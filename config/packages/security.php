@@ -19,6 +19,7 @@ use Augias\ApiBundle\Security\ApiTokenAuthenticator;
 use Augias\ApiBundle\Security\Provider\ApiTokenUserProvider;
 use Augias\McpBundle\Security\McpOAuthAuthenticator;
 use Augias\McpBundle\Security\McpOAuthUserProvider;
+use Augias\UserBundle\Security\KeepTargetPathWhenTwoFactorRequired;
 use Augias\UserBundle\Security\OAuth\OAuthAuthenticator;
 use Augias\UserBundle\Security\UserChecker;
 use Augias\UserBundle\Security\VerifiedUserChecker;
@@ -153,6 +154,13 @@ $config = LoginExtension::defaultFormLoginConfig([
 // first. Move it to the end while keeping every value the helper merged into it.
 $firewalls = $config['security']['firewalls'];
 $main = $firewalls['main'];
+
+// Where the second factor is asked, the page someone was going to is kept
+// rather than replaced by the company picker, see the handler.
+if (isset($main['two_factor']) && is_array($main['two_factor'])) {
+    $main['two_factor']['authentication_required_handler'] = KeepTargetPathWhenTwoFactorRequired::class;
+}
+
 unset($firewalls['main']);
 $firewalls['main'] = $main;
 $config['security']['firewalls'] = $firewalls;

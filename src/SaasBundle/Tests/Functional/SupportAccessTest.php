@@ -34,6 +34,7 @@ use Augias\UserBundle\Test\Factory\UserFactory;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
+use OTPHP\TOTP;
 use Override;
 use PHPUnit\Framework\Attributes\Group;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
@@ -278,6 +279,10 @@ final class SupportAccessTest extends WebTestCase
             ->fillField('_username', (string) $operator->getEmail())
             ->fillField('_password', 'password')
             ->click('Sign in')
+            // The service asks every account for its authenticator app.
+            ->assertOn('/2fa')
+            ->fillField('_auth_code', TOTP::createFromSecret('JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP')->now())
+            ->click('button[type=submit]')
             ->assertOn('/dashboard')
             ->assertSee('Support session at Shop');
     }
@@ -557,7 +562,7 @@ final class SupportAccessTest extends WebTestCase
 
     private function outsider(): User
     {
-        $user = UserFactory::createOne(['companies' => []]);
+        $user = UserFactory::new()->withAuthenticatorApp()->create(['companies' => []]);
         $user = $this->em->find(User::class, $user->getId());
         self::assertInstanceOf(User::class, $user);
 

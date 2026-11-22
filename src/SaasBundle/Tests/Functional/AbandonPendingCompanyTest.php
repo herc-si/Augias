@@ -51,7 +51,7 @@ final class AbandonPendingCompanyTest extends WebTestCase
         $free = new Plan()->setName('Free')->setPlanId('0')->setPrice(0);
         $this->em->persist($free);
 
-        $owner = UserFactory::createOne(['companies' => []]);
+        $owner = UserFactory::new()->withAuthenticatorApp()->create(['companies' => []]);
         $owner = $this->em->find(User::class, $owner->getId());
         self::assertInstanceOf(User::class, $owner);
 
@@ -87,7 +87,7 @@ final class AbandonPendingCompanyTest extends WebTestCase
         $free = new Plan()->setName('Free')->setPlanId('0')->setPrice(0);
         $this->em->persist($free);
 
-        $owner = UserFactory::createOne(['companies' => []]);
+        $owner = UserFactory::new()->withAuthenticatorApp()->create(['companies' => []]);
         $owner = $this->em->find(User::class, $owner->getId());
         self::assertInstanceOf(User::class, $owner);
 

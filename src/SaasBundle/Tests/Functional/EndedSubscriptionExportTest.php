@@ -83,7 +83,7 @@ final class EndedSubscriptionExportTest extends WebTestCase
         self::assertInstanceOf(Company::class, $company);
         $company->scheduleClosure(new DateTimeImmutable('2026-12-19'), ClosureReason::SubscriptionEnded);
 
-        $owner = UserFactory::createOne(['companies' => []]);
+        $owner = UserFactory::new()->withAuthenticatorApp()->create(['companies' => []]);
         $owner = $this->em->find(User::class, $owner->getId());
         self::assertInstanceOf(User::class, $owner);
         $owner->addCompany($company, CompanyRole::Owner);
