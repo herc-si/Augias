@@ -29,6 +29,13 @@
                 </div>
             </div>
 
+            {% if authenticatorAppMissing|default(false) %}
+                <div class="alert alert-warning" role="alert">
+                    <h4 class="alert-title">{{ 'security.two_factor.required.title'|trans }}</h4>
+                    <div class="text-secondary">{{ 'security.two_factor.required.message'|trans }}</div>
+                </div>
+            {% endif %}
+
             {# New LiveComponent #}
             <twig:User:TwoFactorSettings />
         </div>

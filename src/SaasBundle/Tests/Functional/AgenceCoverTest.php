@@ -167,7 +167,7 @@ final class AgenceCoverTest extends WebTestCase
 
     private function user(): User
     {
-        $user = UserFactory::createOne(['companies' => []]);
+        $user = UserFactory::new()->withAuthenticatorApp()->create(['companies' => []]);
         $user = $this->em->find(User::class, $user->getId());
         self::assertInstanceOf(User::class, $user);
 

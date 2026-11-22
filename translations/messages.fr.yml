@@ -4042,6 +4042,11 @@ security:
             title: 'Vérification par e-mail'
         instead: à la place
         lost_authenticator: 'Vous avez perdu votre application d''authentification ? Utilisez un'
+        required:
+            cannot_disable: 'L''application d''authentification est obligatoire : vous pouvez la reconfigurer, pas la retirer.'
+            flash: 'Configurez une application d''authentification pour continuer.'
+            message: 'Pour protéger les données de votre entreprise, Augias demande une application d''authentification (Google Authenticator, Microsoft Authenticator, Aegis, 1Password…) à chaque connexion. Le code par e-mail ne suffit pas : une boîte mail piratée donnerait à la fois le lien de réinitialisation et le code. Cliquez sur « Configurer » à côté d''« Application d''authentification » ci-dessous.'
+            title: 'Application d''authentification obligatoire'
         security_notice: 'Ceci est une étape de sécurité supplémentaire pour protéger votre compte'
         settings:
             backup:

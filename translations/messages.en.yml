@@ -4042,6 +4042,11 @@ security:
             title: 'Email Verification'
         instead: instead
         lost_authenticator: 'Lost your authenticator? Use a'
+        required:
+            cannot_disable: 'An authenticator app is required: you can set it up again, not remove it.'
+            flash: 'Set up an authenticator app to continue.'
+            message: 'To protect your company data, Augias asks for an authenticator app (Google Authenticator, Microsoft Authenticator, Aegis, 1Password…) at every sign-in. A code by email is not enough: a hacked mailbox would hold both the reset link and the code. Click “Set Up” next to “Authenticator App” below.'
+            title: 'Authenticator app required'
         security_notice: 'This is an additional security step to protect your account'
         settings:
             backup:
