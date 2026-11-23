@@ -163,25 +163,39 @@
                 </div>
 
                 <div class="section-content">
-                    {% if isDeviceTrusted %}
-                        <div class="two-factor-section-content mb-3">
-                            <div class="two-factor-section-info">
-                                <div class="mb-2">
-                                    <span class="badge bg-success-lt">
-                                        {{ ux_icon('tabler:check', {width: 16, height: 16}) }}
-                                        {{ 'security.two_factor.settings.trusted.badge'|trans }}
-                                    </span>
+                    {% if trustedDeviceList is empty %}
+                        <p class="text-muted small mb-3">{{ 'security.two_factor.settings.trusted.none'|trans }}</p>
+                    {% else %}
+                        <div class="list-group list-group-flush mb-3">
+                            {% for device in trustedDeviceList %}
+                                <div class="list-group-item px-0">
+                                    <div class="row align-items-center g-3">
+                                        <div class="col-auto text-secondary">
+                                            {{ ux_icon((device.name ?? '') matches '/Android|iOS/' ? 'tabler:device-mobile' : 'tabler:device-laptop', {width: 24, height: 24}) }}
+                                        </div>
+                                        <div class="col text-truncate">
+                                            <div class="fw-medium" title="{{ device.userAgent }}">
+                                                {{ device.name ?? 'security.two_factor.settings.trusted.unknown'|trans }}
+                                                {% if device.id.toBase32 == currentTrustedDeviceId %}
+                                                    <span class="badge bg-success-lt ms-1">{{ 'security.two_factor.settings.trusted.this_device'|trans }}</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-secondary small">
+                                                {{ 'security.two_factor.settings.trusted.last_used'|trans({'%date%': device.lastUsedAt|format_datetime('medium', 'short'), '%ip%': device.lastIpAddress ?? '—'}) }}
+                                            </div>
+                                            <div class="text-secondary small">
+                                                {{ 'security.two_factor.settings.trusted.added'|trans({'%date%': device.createdAt|format_date('medium'), '%until%': device.expiresAt|format_date('medium')}) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <button type="button" class="btn btn-outline-danger btn-sm" {{ live_action('forgetTrustedDevice:prevent', {id: device.id.toBase32}) }}>
+                                                {{ ux_icon('tabler:x', {width: 16, height: 16}) }}
+                                                {{ 'security.two_factor.settings.trusted.revoke'|trans }}
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
-                                <p class="text-muted mb-0 small">
-                                    {{ 'security.two_factor.settings.trusted.note'|trans }}
-                                </p>
-                            </div>
-                            <div class="two-factor-section-actions">
-                                <button type="button" class="btn btn-outline-danger" {{ live_action('clearTrustedDevice:prevent') }}>
-                                    {{ ux_icon('tabler:x', {width: 18, height: 18}) }}
-                                    {{ 'security.two_factor.settings.trusted.revoke'|trans }}
-                                </button>
-                            </div>
+                            {% endfor %}
                         </div>
                     {% endif %}
                     {% if trustedDevicesForgotten %}

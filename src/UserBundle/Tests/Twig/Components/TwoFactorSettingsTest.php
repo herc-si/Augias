@@ -14,13 +14,17 @@ declare(strict_types=1);
 namespace Augias\UserBundle\Tests\Twig\Components;
 
 use Augias\CoreBundle\Test\LiveComponentTest;
+use Augias\UserBundle\Entity\TrustedDevice;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Test\Factory\UserFactory;
 use Augias\UserBundle\Twig\Components\TwoFactorSettings;
+use DateTimeImmutable;
 use Doctrine\Persistence\ObjectManager;
 use OTPHP\TOTP;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Totp\TotpAuthenticatorInterface;
 use Symfony\UX\LiveComponent\Test\TestLiveComponent;
 use function preg_replace;
+use function random_int;
 
 final class TwoFactorSettingsTest extends LiveComponentTest
 {
@@ -442,7 +446,41 @@ final class TwoFactorSettingsTest extends LiveComponentTest
             ->toString();
 
         self::assertStringContainsString('Forget all devices', $html);
-        self::assertStringNotContainsString('This device is trusted', $html);
+        self::assertStringContainsString('No trusted device yet', $html);
+    }
+
+    public function testTheListShowsEachTrustedDeviceAndRemovesOne(): void
+    {
+        $user = $this->getUser();
+        $user->enableEmailAuth(true);
+        $this->em->persist($laptop = $this->device($user, 'Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0'));
+        $this->em->persist($this->device($user, 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1'));
+        $this->em->flush();
+
+        $component = $this->createLiveComponent(name: TwoFactorSettings::class, client: $this->client)->actingAs($user);
+        $html = $component->render()->toString();
+        self::assertStringContainsString('Firefox · Linux', $html);
+        self::assertStringContainsString('Safari · iOS', $html);
+        self::assertStringContainsString('203.0.113.7', $html);
+
+        $component->call('forgetTrustedDevice', ['id' => $laptop->getId()->toBase32()]);
+
+        $html = $component->render()->toString();
+        self::assertStringNotContainsString('Firefox · Linux', $html);
+        self::assertStringContainsString('Safari · iOS', $html);
+    }
+
+    public function testSomeoneElsesDeviceCannotBeRemoved(): void
+    {
+        $other = UserFactory::createOne(['email' => 'other@example.com', 'companies' => []]);
+        $this->em->persist($theirs = $this->device($other, 'Firefox/133.0'));
+        $this->em->flush();
+        $id = $theirs->getId();
+
+        $this->component->call('forgetTrustedDevice', ['id' => $id->toBase32()]);
+
+        $this->em->clear();
+        self::assertNotNull($this->em->find(TrustedDevice::class, $id));
     }
 
     public function testGetQrContentReturnsDataUri(): void
@@ -555,5 +593,12 @@ final class TwoFactorSettingsTest extends LiveComponentTest
     private function replaceBackupCodes(string $content): string
     {
         return preg_replace('/[A-Z0-9]{6}-[A-Z0-9]{6}/', 'CODE-NORMALIZED', $content);
+    }
+
+    private function device(User $user, string $userAgent): TrustedDevice
+    {
+        $now = new DateTimeImmutable();
+
+        return new TrustedDevice($user, random_int(1, 1_000_000), $now, $now->modify('+30 days'), $userAgent, '203.0.113.7');
     }
 }

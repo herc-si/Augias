@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 namespace Augias\UserBundle\Twig\Components;
 
+use Augias\UserBundle\Entity\TrustedDevice;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Repository\UserRepository;
 use Augias\UserBundle\Security\AccountSecurity;
 use Augias\UserBundle\Security\AuthenticatorAppPolicy;
+use Augias\UserBundle\Security\TrustedDevices;
 use Carbon\Carbon;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Encoding\Encoding;
@@ -25,7 +27,6 @@ use Endroid\QrCode\RoundBlockSizeMode;
 use Endroid\QrCode\Writer\PngWriter;
 use Override;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\Totp\TotpAuthenticatorInterface;
-use Scheb\TwoFactorBundle\Security\TwoFactor\Trusted\TrustedDeviceManagerInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Trusted\TrustedDeviceTokenStorage;
 use SolidWorx\Platform\PlatformBundle\Contracts\Security\TwoFactor\UserTwoFactorInterface;
 use SolidWorx\Platform\PlatformBundle\Form\Type\Security\TwoFactorVerifyType;
@@ -37,8 +38,10 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Uid\Ulid;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
+use Symfony\UX\LiveComponent\Attribute\LiveArg;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\ComponentToolsTrait;
 use Symfony\UX\LiveComponent\ComponentWithFormTrait;
@@ -78,8 +81,7 @@ final class TwoFactorSettings extends AbstractController
         private readonly TotpAuthenticatorInterface $totpAuthenticator,
         #[Autowire(service: 'scheb_two_factor.trusted_token_storage')]
         private readonly TrustedDeviceTokenStorage $trustedDeviceTokenStorage,
-        #[Autowire(service: 'scheb_two_factor.default_trusted_device_manager')]
-        private readonly TrustedDeviceManagerInterface $trustedDeviceManager,
+        private readonly TrustedDevices $trustedDevices,
         private readonly BackupCodeGeneratorInterface $backupCodeGenerator,
         private readonly TokenStorageInterface $tokenStorage,
         private readonly AuthenticatorAppPolicy $authenticatorAppPolicy,
@@ -244,19 +246,42 @@ final class TwoFactorSettings extends AbstractController
     #[ExposeInTemplate]
     public function isDeviceTrusted(): bool
     {
-        $user = $this->getUser();
-        assert($user instanceof UserTwoFactorInterface);
+        return $this->trustedDevices->current($this->getUser()) instanceof TrustedDevice;
+    }
 
-        return $this->trustedDeviceManager->isTrustedDevice($user, 'main');
+    /**
+     * @return list<TrustedDevice>
+     */
+    #[ExposeInTemplate]
+    public function getTrustedDeviceList(): array
+    {
+        return $this->trustedDevices->of($this->getUser());
+    }
+
+    #[ExposeInTemplate]
+    public function getCurrentTrustedDeviceId(): ?string
+    {
+        return $this->trustedDevices->current($this->getUser())?->getId()->toBase32();
     }
 
     #[LiveAction]
     public function clearTrustedDevice(): void
     {
-        $user = $this->getUser();
-        assert($user instanceof UserInterface);
+        $current = $this->trustedDevices->current($this->getUser());
 
-        $this->trustedDeviceTokenStorage->clearTrustedToken($user->getUserIdentifier(), 'main');
+        if ($current instanceof TrustedDevice) {
+            $this->trustedDevices->forget($this->getUser(), $current->getId());
+        }
+    }
+
+    #[LiveAction]
+    public function forgetTrustedDevice(#[LiveArg] string $id): void
+    {
+        if (! Ulid::isValid($id)) {
+            return;
+        }
+
+        $this->trustedDevices->forget($this->getUser(), Ulid::fromString($id));
     }
 
     #[LiveAction]

@@ -17,6 +17,7 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\Test\SaasKernel;
+use Augias\UserBundle\Entity\TrustedDevice;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Security\AccountSecurity;
@@ -28,6 +29,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Zenstruck\Browser\KernelBrowser;
 use Zenstruck\Browser\Test\HasBrowser;
+use function sprintf;
 
 /**
  * The authenticator app is required on every account of the service; what
@@ -64,9 +66,37 @@ final class TrustedDeviceTest extends WebTestCase
             ->assertNotOn('/2fa');
         self::assertNotNull($browser->client()->getCookieJar()->get('trusted_device'));
 
+        $devices = $this->em->getRepository(TrustedDevice::class)->findAll();
+        self::assertCount(1, $devices);
+        $firstUse = $devices[0]->getLastUsedAt();
+
         $this->forgetSession($browser);
 
         $this->signIn($browser)->assertNotOn('/2fa')->assertNotOn('/login');
+
+        $this->em->clear();
+        $devices = $this->em->getRepository(TrustedDevice::class)->findAll();
+        self::assertCount(1, $devices, 'Signing in again on the same device adds no row.');
+        self::assertGreaterThanOrEqual($firstUse, $devices[0]->getLastUsedAt());
+    }
+
+    public function testRemovingOneDeviceAsksItForTheCodeAgain(): void
+    {
+        $user = $this->account();
+
+        $browser = $this->signIn($this->browser())->assertOn('/2fa');
+        $browser
+            ->fillField('_auth_code', $this->code())
+            ->checkField('_trusted')
+            ->click('button[type=submit]')
+            ->assertNotOn('/2fa');
+
+        self::assertSame(1, $this->em->createQuery(sprintf('DELETE FROM %s d', TrustedDevice::class))->execute());
+
+        $this->forgetSession($browser);
+
+        $this->signIn($browser)->assertOn('/2fa');
+        self::assertSame(0, $this->em->getRepository(TrustedDevice::class)->count(['user' => $user]));
     }
 
     public function testForgettingAllDevicesAsksForTheCodeAgainOnATrustedOne(): void
