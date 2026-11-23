@@ -16,6 +16,8 @@ namespace Augias\SaasBundle\Controller;
 use Augias\ElectronicInvoicingBundle\Onboarding\OnboardingProgressProviderInterface;
 use Augias\SaasBundle\Payment\Stripe\StripeCheckoutReturn;
 use Augias\SaasBundle\Service\SubscriptionService;
+use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Onboarding\Journey\SetupJourney;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,6 +31,7 @@ class PaymentSuccess extends AbstractController
         private readonly OnboardingProgressProviderInterface $einvoicingOnboarding,
         private readonly SubscriptionService $subscriptions,
         private readonly StripeCheckoutReturn $checkoutReturn,
+        private readonly SetupJourney $journey,
     ) {
     }
 
@@ -47,6 +50,12 @@ class PaymentSuccess extends AbstractController
         }
 
         $this->addFlash('success', 'saas.flash.subscription_activated');
+
+        // Subscribed from the setup journey: back to it, at its next step.
+        $user = $this->getUser();
+        if ($user instanceof User && $this->journey->isUnderWay($user)) {
+            return $this->redirectToRoute('_onboarding');
+        }
 
         return $this->redirectToRoute($this->einvoicingOnboarding->progress()->isDone() ? '_dashboard' : '_einvoicing_setup');
     }

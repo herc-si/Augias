@@ -89,7 +89,7 @@
                {% if value is defined and value is not null %}value="{{ value }}"{% endif %}
                {% if disabled %}disabled="disabled"{% endif %}
                {% if required %}required="required"{% endif %}
-               {% for attrname, attrvalue in attr %}{{ attrname }}="{{ attrvalue }}" {% endfor %}
+               {% for attrname, attrvalue in attr %}{% if attrname in ['placeholder', 'title'] %}{{ attrname }}="{{ attrvalue|trans({}, translation_domain) }}" {% else %}{{ attrname }}="{{ attrvalue }}" {% endif %}{% endfor %}
         >
     </div>
 {% endblock email_widget %}
@@ -164,7 +164,7 @@
                {% if disabled %}disabled="disabled"{% endif %}
                placeholder="{{ 'form.placeholder.vat_example'|trans }}"
                {{ stimulus_target('vat-validator', 'input') }}
-               {% for attrname, attrvalue in attr %}{{ attrname }}="{{ attrvalue }}" {% endfor %}
+               {% for attrname, attrvalue in attr %}{% if attrname in ['placeholder', 'title'] %}{{ attrname }}="{{ attrvalue|trans({}, translation_domain) }}" {% else %}{{ attrname }}="{{ attrvalue }}" {% endif %}{% endfor %}
         >
         <button type="button"
                 class="btn btn-outline-secondary btn-validate"

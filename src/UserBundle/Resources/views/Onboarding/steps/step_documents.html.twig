@@ -1,0 +1,25 @@
+{#
+# This file is part of Augias package.
+#
+# (c) Pierre du Plessis <open-source@solidworx.co>
+#
+# This source file is subject to the MIT license that is bundled
+# with this source code in the file LICENSE.
+#}
+
+<div class="onboarding-step-card">
+    <div class="step-icon">{{ ux_icon('tabler:file-description', {width: 32, height: 32}) }}</div>
+    <h2 class="h2 text-center mb-2">{{ 'onboarding.documents.title'|trans }}</h2>
+    <p class="text-muted text-center lead mb-4">{{ 'onboarding.documents.description'|trans }}</p>
+
+    {{ form_start(form) }}
+        {{ form_row(form.logo) }}
+        {{ form_row(form.bankName) }}
+        {{ form_row(form.iban) }}
+        {{ form_row(form.bic) }}
+        <div class="d-grid gap-2 mt-3">
+            {{ form_widget(form.save, {attr: {class: 'btn btn-primary btn-lg w-100'}}) }}
+        </div>
+    {{ form_end(form) }}
+    {% include '@AugiasUser/Onboarding/steps/_skip.html.twig' %}
+</div>

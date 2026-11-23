@@ -56,6 +56,7 @@ final class RoutePermissionMap
         '_oauth_connect' => null,
         '_oauth_connect_check' => null,
         '_onboarding' => null,
+        '_onboarding_step' => CompanyPermission::Settings,
         '_payments_create' => null, // The client paying online.
         '_payments_done' => null,
         '_profile' => null,

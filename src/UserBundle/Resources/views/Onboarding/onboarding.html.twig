@@ -9,48 +9,50 @@
 
 {% extends '@AugiasCore/Layout/base.html.twig' %}
 
-{% block page_title %}Get Started - {{ app_name }}{% endblock %}
+{% block page_title %}{{ 'onboarding.journey.title'|trans }} - {{ app_name }}{% endblock %}
 
 {% block body %}
+    {% set labels = {
+        company: ['onboarding.progress.company', 'building'],
+        identity: ['onboarding.progress.identity', 'id'],
+        documents: ['onboarding.progress.documents', 'file-description'],
+        security: ['onboarding.progress.security', 'shield-lock'],
+        einvoicing: ['onboarding.progress.einvoicing', 'building-broadcast-tower'],
+        first_invoice: ['onboarding.progress.first_invoice', 'file-invoice'],
+    } %}
     <div class="onboarding-container min-vh-100">
-        {# Progress Bar with Step Names #}
         <div class="onboarding-progress bg-white border-bottom">
             <div class="container py-3">
-                <div class="row align-items-center mb-2">
-                    <div class="col">
-                        <div class="d-flex justify-content-between align-items-center">
-                            {% set steps = [
-                                {name: 'company', label: 'onboarding.progress.company'|trans({}), icon: 'building'},
-                                {name: 'client', label: 'onboarding.progress.client'|trans({}), icon: 'users'},
-                                {name: 'invoice', label: 'onboarding.progress.invoice'|trans({}), icon: 'file-invoice'},
-                                {name: 'complete', label: 'onboarding.progress.complete'|trans({}), icon: 'circle-check'}
-                            ] %}
-                            {% for step in steps %}
-                                <div class="d-flex align-items-center {% if loop.last %}{% else %}flex-fill{% endif %}">
-                                    <div class="step-indicator {% if form.vars.cursor.stepIndex >= loop.index0 %}active{% endif %} {% if currentStep == step.name %}current{% endif %}">
-                                        <div class="step-number">
-                                            {{ ux_icon('tabler:' ~ step.icon, {width: 16, height: 16}) }}
-                                        </div>
-                                        <span class="step-label d-none d-md-inline">{{ step.label }}</span>
-                                    </div>
-                                    {% if not loop.last %}
-                                        <div class="step-connector {% if form.vars.cursor.stepIndex > loop.index0 %}completed{% endif %}"></div>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-secondary small" id="journey-position">{{ 'onboarding.journey.position'|trans({'%position%': position, '%count%': count}) }}</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    {% for name, label in labels %}
+                        {% set journeyStep = steps|filter(s => s.step.value == name)|first %}
+                        {% set settled = journeyStep and journeyStep.settled %}
+                        <div class="d-flex align-items-center {% if not loop.last %}flex-fill{% endif %}">
+                            <div class="step-indicator {% if settled or currentStep == name %}active{% endif %} {% if currentStep == name %}current{% endif %}">
+                                <div class="step-number">{{ ux_icon('tabler:' ~ label[1], {width: 16, height: 16}) }}</div>
+                                {% if settled and name != 'company' and currentStep != name %}
+                                    <a href="{{ path('_onboarding_step', {step: name}) }}" class="step-label d-none d-md-inline">{{ label[0]|trans }}</a>
+                                {% else %}
+                                    <span class="step-label d-none d-md-inline">{{ label[0]|trans }}</span>
+                                {% endif %}
+                            </div>
+                            {% if not loop.last %}<div class="step-connector {% if settled %}completed{% endif %}"></div>{% endif %}
                         </div>
-                    </div>
+                    {% endfor %}
                 </div>
                 <div class="progress" style="height: 3px;">
-                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ progress }}%" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ ((position - 1) / count * 100)|round }}%" aria-valuenow="{{ position - 1 }}" aria-valuemin="0" aria-valuemax="{{ count }}"></div>
                 </div>
             </div>
         </div>
 
-        {# Main Content #}
         <div class="container py-5">
             <div class="row justify-content-center">
                 <div class="col-12 col-lg-8 col-xl-6">
+                    {% include "@AugiasCore/flash.html.twig" %}
                     {% include '@AugiasUser/Onboarding/steps/step_' ~ currentStep ~ '.html.twig' %}
                 </div>
             </div>

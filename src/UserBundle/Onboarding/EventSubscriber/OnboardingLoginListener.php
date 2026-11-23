@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\UserBundle\Onboarding\EventSubscriber;
 
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Onboarding\Journey\SetupJourney;
 use Augias\UserBundle\Onboarding\Manager\OnboardingManager;
 use Augias\UserBundle\Security\SupportAccess;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -37,6 +38,7 @@ final readonly class OnboardingLoginListener implements EventSubscriberInterface
         private OnboardingManager $onboardingManager,
         private RouterInterface $router,
         private SupportAccess $supportAccess,
+        private SetupJourney $journey,
     ) {
     }
 
@@ -59,6 +61,13 @@ final readonly class OnboardingLoginListener implements EventSubscriberInterface
         // Check if user was invited (has a company already)
         // Invited users skip onboarding entirely
         if (count($user->getCompanies()) > 0) {
+            // A setup journey left half way is picked up where it stopped.
+            if ($this->journey->isUnderWay($user)) {
+                $event->setResponse(new RedirectResponse($this->router->generate('_onboarding')));
+
+                return;
+            }
+
             // User has a company - they were either invited or completed onboarding
             // Make sure onboarding is marked complete if not already
             if (! $this->onboardingManager->isOnboardingComplete($user)) {

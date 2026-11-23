@@ -1,0 +1,43 @@
+{#
+# This file is part of Augias package.
+#
+# (c) Pierre du Plessis <open-source@solidworx.co>
+#
+# This source file is subject to the MIT license that is bundled
+# with this source code in the file LICENSE.
+#}
+
+<div class="onboarding-step-card">
+    <div class="step-icon">{{ ux_icon('tabler:id', {width: 32, height: 32}) }}</div>
+    <h2 class="h2 text-center mb-2">{{ 'onboarding.identity.title'|trans }}</h2>
+    <p class="text-muted text-center lead mb-4">{{ 'onboarding.identity.description'|trans }}</p>
+
+    {% if lookedUp is same as(true) %}
+        <twig:Ui:Alert type="success" icon="tabler:building">{{ 'einvoicing.setup.identity.found'|trans({'%name%': form.vars.value.registryName}) }}</twig:Ui:Alert>
+    {% elseif lookedUp is same as(false) %}
+        <twig:Ui:Alert type="warning" icon="tabler:alert-triangle">{{ 'einvoicing.setup.identity.not_found'|trans }}</twig:Ui:Alert>
+    {% endif %}
+
+    {{ form_start(form) }}
+        {{ form_errors(form) }}
+        <div class="row g-3 align-items-start">
+            <div class="col-sm-8">{{ form_row(form.siren) }}</div>
+            <div class="col-sm-4 pt-sm-4">{{ form_widget(form.lookUp, {attr: {class: 'btn btn-outline-primary w-100 mt-sm-1'}}) }}</div>
+        </div>
+        <div class="row g-3">
+            <div class="col-sm-6">{{ form_row(form.siret) }}</div>
+            <div class="col-sm-6">{{ form_row(form.vatExempt) }}</div>
+        </div>
+        {{ form_row(form.vatNumber) }}
+        {{ form_row(form.street1) }}
+        {{ form_row(form.street2) }}
+        <div class="row g-3">
+            <div class="col-sm-4">{{ form_row(form.zip) }}</div>
+            <div class="col-sm-8">{{ form_row(form.city) }}</div>
+        </div>
+        {{ form_row(form.registryName) }}
+        <div class="d-grid gap-2 mt-3">
+            {{ form_widget(form.save, {label: 'onboarding.navigation.continue', attr: {class: 'btn btn-primary btn-lg w-100'}}) }}
+        </div>
+    {{ form_end(form) }}
+</div>

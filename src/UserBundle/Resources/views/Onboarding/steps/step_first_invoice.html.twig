@@ -1,0 +1,27 @@
+{#
+# This file is part of Augias package.
+#
+# (c) Pierre du Plessis <open-source@solidworx.co>
+#
+# This source file is subject to the MIT license that is bundled
+# with this source code in the file LICENSE.
+#}
+
+<div class="onboarding-step-card">
+    <div class="step-icon">{{ ux_icon('tabler:file-invoice', {width: 32, height: 32}) }}</div>
+    <h2 class="h2 text-center mb-2">{{ 'onboarding.first_invoice.title'|trans }}</h2>
+    <p class="text-muted text-center lead mb-4">{{ 'onboarding.first_invoice.description'|trans }}</p>
+
+    {{ form_start(form) }}
+        <h3 class="h4">{{ 'onboarding.first_invoice.client_heading'|trans }}</h3>
+        {{ form_row(form.client.clientName) }}
+        {{ form_row(form.client.clientEmail) }}
+        <h3 class="h4 mt-4">{{ 'onboarding.first_invoice.invoice_heading'|trans }} <span class="text-secondary small fw-normal">{{ 'onboarding.first_invoice.optional'|trans }}</span></h3>
+        {{ form_row(form.invoice.invoiceDescription) }}
+        {{ form_row(form.invoice.invoiceAmount) }}
+        <div class="d-grid gap-2 mt-3">
+            {{ form_widget(form.save, {attr: {class: 'btn btn-primary btn-lg w-100'}}) }}
+        </div>
+    {{ form_end(form) }}
+    {% include '@AugiasUser/Onboarding/steps/_skip.html.twig' with {label: 'onboarding.first_invoice.skip'} %}
+</div>

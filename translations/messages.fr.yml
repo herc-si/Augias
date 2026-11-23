@@ -2936,6 +2936,36 @@ notifications:
     subtitle: 'Choisissez les événements qui déclenchent des notifications et où vous les recevez'
     title: 'Préférences de notification'
 onboarding:
+    documents:
+        description: 'Ils figurent sur vos factures et vos devis. Sans IBAN, vos clients ne savent pas où vous payer.'
+        fields:
+            bank_name: 'Nom de la banque'
+            bic: BIC
+            iban: IBAN
+            logo: Logo
+        title: 'Vos documents'
+    einvoicing:
+        description: 'Recevez et envoyez vos factures électroniques, obligatoires pour les entreprises.'
+        title: 'Facturation électronique'
+    first_invoice:
+        client_heading: 'Le client'
+        description: 'Pour finir : qui allez-vous facturer, et pour quoi ?'
+        invoice_heading: 'La facture'
+        optional: '(facultatif)'
+        save: 'Enregistrer et terminer'
+        skip: 'Terminer sans créer de client'
+        title: 'Votre premier client'
+    identity:
+        description: 'Saisissez votre SIREN puis « Rechercher » : l''annuaire des entreprises remplit le reste. Ces informations figurent sur vos factures et servent à la facturation électronique.'
+        title: 'Qui est votre entreprise ?'
+    journey:
+        position: 'Étape %position% sur %count%'
+        title: 'Mise en route'
+    security:
+        description: 'Un code de votre téléphone en plus du mot de passe : personne n''ouvre votre compte avec votre seul mot de passe.'
+        how: "Installez une application d'authentification (Google Authenticator, Microsoft Authenticator, Aegis…)\nScannez le QR code, puis saisissez le code affiché\nGardez vos codes de secours en lieu sûr\nVous revenez ensuite ici pour la suite\n"
+        set_up: 'Configurer la double authentification'
+        title: 'Protégez votre compte'
     client:
         benefits: "Créez votre première facture à l'étape suivante\nGardez toutes les informations client organisées au même endroit\nSuivez l'historique des paiements et les factures impayées\nEnvoyez des factures directement par e-mail\n"
         description: 'Qui allez-vous facturer ? Cette étape est facultative, mais recommandée'
@@ -2951,7 +2981,7 @@ onboarding:
         title: 'Ajoutez votre premier client'
         why_title: 'Pourquoi ajouter un client maintenant ?'
     company:
-        benefits: "Les informations de votre société - Elles apparaissent sur toutes vos factures\nVotre premier client - Facultatif, mais vous permet de démarrer plus vite\nVotre première facture - Découvrez à quel point il est facile d'être payé\n"
+        benefits: "Votre société : son nom, puis son SIREN, son adresse et sa TVA\nVos documents : logo et coordonnées bancaires\nLa double authentification, qui protège votre compte\nLa facturation électronique\nVotre premier client et votre première facture\n"
         description: "Tout d'abord, nous avons besoin de quelques informations sur votre société. Cela nous permet de personnaliser votre expérience et de garantir que vos factures ont une apparence professionnelle."
         fields:
             currency:
@@ -2985,6 +3015,7 @@ onboarding:
         title: 'Tout est prêt !'
     flash:
         invoice_created: '🎉 Votre première facture est prête ! Vous pouvez la modifier, l''envoyer à votre client ou télécharger un PDF.'
+        journey_done_later: 'Votre compte est prêt. Ce que vous avez laissé pour plus tard vous attend dans « Quelques réglages à effectuer ».'
         onboarding_complete: 'Bienvenue sur Augias ! Tout est configuré et prêt à l''emploi.'
     invoice:
         aha_title: 'Envoyez votre première facture :'
@@ -3003,6 +3034,7 @@ onboarding:
         time: 'Seulement 30 secondes pour la créer'
         title: 'Créez votre première facture'
     navigation:
+        later: 'Plus tard'
         back: Retour
         continue: Continuer
         create_invoice: 'Créer et voir ma facture'
@@ -3010,6 +3042,11 @@ onboarding:
         skip: 'Je le ferai plus tard'
         skip_client: 'Ignorer — j''ajouterai des clients et factures depuis le tableau de bord'
     progress:
+        documents: 'Documents'
+        einvoicing: 'Facture électronique'
+        first_invoice: 'Premier client'
+        identity: 'Identité'
+        security: 'Sécurité'
         client: 'Premier client'
         company: 'Votre société'
         complete: Prêt !

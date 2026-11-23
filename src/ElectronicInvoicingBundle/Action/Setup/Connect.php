@@ -33,6 +33,9 @@ final class Connect extends AbstractController
     /** Read by the callback: the connection was started from the setup. */
     public const string SESSION_KEY = 'einvoicing_setup_return';
 
+    /** Posted as `return` by the setup journey: the callback goes back there. */
+    public const string RETURN_TO_ONBOARDING = 'onboarding';
+
     public function __construct(
         private readonly ElectronicInvoicingOnboarding $onboarding,
         private readonly SuperPdpConnector $connector,
@@ -56,13 +59,13 @@ final class Connect extends AbstractController
         if ($this->gate->waitsForCardUntil() !== null) {
             $this->addFlash('warning', 'einvoicing.setup.platform.trial_needs_card_flash');
 
-            return $this->redirectToRoute('_einvoicing_setup');
+            return $this->redirectToRoute($request->request->get('return') === self::RETURN_TO_ONBOARDING ? '_onboarding' : '_einvoicing_setup');
         }
 
         $setting = $this->onboarding->superPdpSetting();
         $this->entityManager->flush();
 
-        $request->getSession()->set(self::SESSION_KEY, true);
+        $request->getSession()->set(self::SESSION_KEY, $request->request->get('return') === self::RETURN_TO_ONBOARDING ? self::RETURN_TO_ONBOARDING : true);
 
         return $this->redirectToRoute('_einvoicing_super_pdp_connect', ['id' => (string) $setting->getId()]);
     }
