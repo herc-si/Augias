@@ -107,6 +107,28 @@ final readonly class StripeIntegration implements PaymentIntegrationInterface
     }
 
     /**
+     * One checkout open at a time for a subscription: the one opened in
+     * another tab, or left behind by the back button, is closed before a
+     * new one opens, so that paying both cannot open two subscriptions
+     * (Rémi, 23/11/2026). A failure here does not stop the checkout: the
+     * subscription sync still cancels a second subscription that gets paid.
+     */
+    private function expireOpenCheckouts(string $customer, string $reference): void
+    {
+        try {
+            $sessions = $this->api->get('checkout/sessions', ['customer' => $customer, 'status' => 'open', 'limit' => 20]);
+
+            foreach ($this->list($sessions, 'data') as $session) {
+                if (($session['client_reference_id'] ?? null) === $reference && is_string($session['id'] ?? null)) {
+                    $this->api->post('checkout/sessions/' . $session['id'] . '/expire');
+                }
+            }
+        } catch (PaymentIntegrationException $e) {
+            $this->logger?->warning('Could not close the open checkouts of the subscription.', ['exception' => $e]);
+        }
+    }
+
+    /**
      * The customer already made for the company. Listing by email comes
      * first: unlike search, which Stripe indexes up to a minute late (an
      * hour in an outage), a list sees a customer made a moment ago — the
@@ -214,6 +236,8 @@ final readonly class StripeIntegration implements PaymentIntegrationInterface
         $customer = $subscriber instanceof Company ? $this->customer($subscriber, $email) : null;
 
         if ($customer !== null) {
+            $this->expireOpenCheckouts($customer, $reference);
+
             // The page opens with what Augias knows of the company — its
             // name and address — and what is typed there is kept on the
             // customer, for the next payment (Rémi, 19/11/2026).

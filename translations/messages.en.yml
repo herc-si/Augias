@@ -3694,6 +3694,9 @@ saas:
         upgrade_to: 'Upgrade to %plan%'
     flash:
         abandon_refused: 'This company cannot be abandoned: only its owner can, and only before it is activated.'
+        checkout_already_subscribed: 'Your subscription is already paid: to move to another plan or to yearly billing, use “Change plan”. Nothing was charged.'
+        checkout_settle_first: 'A payment of your subscription is overdue: settle it first with “Manage payment method”. Nothing was charged.'
+        checkout_still_running: 'Your cancelled subscription stays paid until the end of its period: undo the cancellation rather than subscribing again. Nothing was charged.'
         checkout_failed: 'Unable to create checkout session. Please try again later.'
         portal_failed: 'Unable to open payment method management. Please try again later.'
         company_abandoned: 'The company "%name%" was deleted.'

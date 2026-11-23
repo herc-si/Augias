@@ -31,6 +31,7 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Clock\ClockInterface;
 use RuntimeException;
@@ -189,13 +190,38 @@ final class SubscribeControllerTest extends TestCase
         self::assertTrue($options->getValue(Options::SKIP_TRIAL));
     }
 
-    public function testExternallyBilledTrialSkipsTrial(): void
+    /**
+     * @return iterable<string, array{SubscriptionStatus, string, string}>
+     */
+    public static function billedElsewhere(): iterable
     {
-        $subscription = $this->trialSubscription(
-            SubscriptionStatus::TRIAL,
-            CarbonImmutable::parse('2024-01-10'),
-            'ls_existing_1',
-        );
+        yield 'paid' => [SubscriptionStatus::ACTIVE, '2024-01-31', 'saas.flash.checkout_already_subscribed'];
+        yield 'on a trial with a card' => [SubscriptionStatus::TRIAL, '2024-01-10', 'saas.flash.checkout_already_subscribed'];
+        yield 'paused' => [SubscriptionStatus::PAUSED, '2024-01-31', 'saas.flash.checkout_already_subscribed'];
+        yield 'a payment late' => [SubscriptionStatus::PAST_DUE, '2024-01-31', 'saas.flash.checkout_settle_first'];
+        yield 'unpaid' => [SubscriptionStatus::UNPAID, '2024-01-31', 'saas.flash.checkout_settle_first'];
+        yield 'cancelled, still running' => [SubscriptionStatus::CANCELLED, '2024-01-31', 'saas.flash.checkout_still_running'];
+    }
+
+    /**
+     * A second checkout would open a second subscription at Stripe, billed
+     * alongside the first (Rémi, 23/11/2026).
+     */
+    #[DataProvider('billedElsewhere')]
+    public function testASubscriptionBilledByStripeNeverOpensASecondCheckout(SubscriptionStatus $status, string $endsOn, string $reason): void
+    {
+        $subscription = $this->trialSubscription($status, CarbonImmutable::parse($endsOn), 'sub_existing');
+
+        [$response, $flashes] = $this->refused($subscription, CarbonImmutable::parse('2024-01-01'));
+
+        self::assertSame('/billing/', $response->getTargetUrl());
+        self::assertSame([$reason], $flashes['warning'] ?? []);
+        self::assertSame([], $this->bus->messages);
+    }
+
+    public function testAnEndedStripeSubscriptionMaySubscribeAgain(): void
+    {
+        $subscription = $this->trialSubscription(SubscriptionStatus::EXPIRED, CarbonImmutable::parse('2023-12-01'), 'sub_old');
 
         $options = $this->captureCheckoutOptions($subscription, CarbonImmutable::parse('2024-01-01'));
 
@@ -212,6 +238,66 @@ final class SubscribeControllerTest extends TestCase
         $options = $this->captureCheckoutOptions($subscription, CarbonImmutable::parse('2024-01-01'));
 
         self::assertTrue($options->getValue(Options::SKIP_TRIAL));
+    }
+
+    /**
+     * @return array{0: RedirectResponse, 1: array<string, list<string|Stringable>>}
+     */
+    private function refused(Subscription $subscription, DateTimeImmutable $now): array
+    {
+        $paymentIntegration = $this->createMock(PaymentIntegrationInterface::class);
+        $paymentIntegration->expects(self::never())->method('checkout');
+
+        $subscriptionRepository = $this->createStub(SubscriptionRepositoryInterface::class);
+        $subscriptionRepository->method('findOneBy')->willReturn($subscription);
+
+        $companySelector = $this->createStub(CompanySelectorInterface::class);
+        $companySelector->method('getCompany')->willReturn(new Ulid());
+
+        $companyRepository = $this->createStub(CompanyRepository::class);
+        $companyRepository->method('find')->willReturn(new Company());
+
+        $clock = $this->createStub(ClockInterface::class);
+        $clock->method('now')->willReturn($now);
+
+        $controller = new SubscribeController(
+            new SubscriptionManager($subscriptionRepository, $this->createStub(PlanRepositoryInterface::class), $paymentIntegration),
+            $companyRepository,
+            $companySelector,
+            $this->createStub(PlanRepositoryInterface::class),
+            $this->createStub(EntityManagerInterface::class),
+            $this->makeTelemetry(),
+            $clock,
+            $this->companyWithSiren(),
+        );
+
+        $session = new Session(new MockArraySessionStorage());
+        $request = Request::create('/billing/subscription/activate');
+        $request->setSession($session);
+
+        $router = $this->createStub(RouterInterface::class);
+        $router->method('generate')->willReturn('/billing/');
+
+        $user = new User();
+        $user->setEmail('test@example.com');
+
+        $token = $this->createStub(TokenInterface::class);
+        $token->method('getUser')->willReturn($user);
+
+        $tokenStorage = $this->createStub(TokenStorageInterface::class);
+        $tokenStorage->method('getToken')->willReturn($token);
+
+        $container = new Container();
+        $container->set('request_stack', new RequestStack([$request]));
+        $container->set('router', $router);
+        $container->set('security.token_storage', $tokenStorage);
+
+        $controller->setContainer($container);
+
+        /** @var RedirectResponse $response */
+        $response = $controller(new Request());
+
+        return [$response, $session->getFlashBag()->all()];
     }
 
     /**

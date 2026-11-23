@@ -18,6 +18,7 @@ use DateTimeImmutable;
 use InvalidArgumentException;
 use Psr\Log\LoggerInterface;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
+use SolidWorx\Platform\SaasBundle\Exception\PaymentIntegrationException;
 use SolidWorx\Platform\SaasBundle\Repository\SubscriptionRepositoryInterface;
 use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionManager;
 use Symfony\Component\Uid\Ulid;
@@ -76,6 +77,16 @@ final readonly class StripeSubscriptionSync
             return $subscription;
         }
 
+        // A second subscription paid while the first is still billed — two
+        // checkouts paid one after the other — would bill the company twice
+        // every month. The first one stays; the second is cancelled and its
+        // payment refunded (Rémi, 23/11/2026).
+        if ($current !== null && $current !== $stripeSubscriptionId && $this->stillBilled($current)) {
+            $this->cancelDuplicate($remote, $current);
+
+            return $subscription;
+        }
+
         if ($current !== $stripeSubscriptionId) {
             $subscription->setSubscriptionId($stripeSubscriptionId);
         }
@@ -117,6 +128,51 @@ final readonly class StripeSubscriptionSync
         }
 
         return $subscription;
+    }
+
+    private function stillBilled(string $stripeSubscriptionId): bool
+    {
+        try {
+            $remote = $this->api->get('subscriptions/' . $stripeSubscriptionId);
+        } catch (PaymentIntegrationException) {
+            return false;
+        }
+
+        return in_array($remote['status'] ?? null, ['active', 'trialing', 'past_due', 'unpaid', 'paused'], true)
+            && ($remote['cancel_at_period_end'] ?? false) !== true;
+    }
+
+    /**
+     * At error level, so that it reaches the error journal and its alert:
+     * HERC SI's invoice for the refunded payment still wants a credit note.
+     *
+     * @param array<string, mixed> $remote
+     */
+    private function cancelDuplicate(array $remote, string $kept): void
+    {
+        $duplicate = (string) ($remote['id'] ?? '');
+        $context = ['kept' => $kept, 'cancelled' => $duplicate, 'customer' => $remote['customer'] ?? null];
+
+        try {
+            $this->api->delete('subscriptions/' . $duplicate);
+
+            $invoiceId = $remote['latest_invoice'] ?? null;
+            $invoice = is_string($invoiceId) ? $this->api->get('invoices/' . $invoiceId) : [];
+            $paymentIntent = $invoice['payment_intent'] ?? null;
+
+            if (($invoice['status'] ?? null) === 'paid' && is_string($paymentIntent)) {
+                $refund = $this->api->post('refunds', ['payment_intent' => $paymentIntent, 'reason' => 'duplicate']);
+                $context['refund'] = $refund['id'] ?? null;
+                $context['invoice'] = $invoiceId;
+            }
+        } catch (PaymentIntegrationException $e) {
+            $context['exception'] = $e;
+            $this->logger->error('A second Stripe subscription was paid for a company already subscribed, and could not be cancelled or refunded: do it by hand.', $context);
+
+            return;
+        }
+
+        $this->logger->error('A second Stripe subscription was paid for a company already subscribed: cancelled and refunded. HERC SI\'s invoice for that payment needs a credit note.', $context);
     }
 
     /**
