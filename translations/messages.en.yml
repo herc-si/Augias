@@ -2759,6 +2759,11 @@ login_history:
         signed_out: 'Signed out'
         success: 'Signed in'
         two_factor_failure: 'Second factor refused'
+    second_factor:
+        code: 'with the code'
+        none: 'no second factor'
+        remember_me: '“Remember me”, no code'
+        trusted_device: 'trusted device, no code'
     table:
         device: Device
         outcome: Result

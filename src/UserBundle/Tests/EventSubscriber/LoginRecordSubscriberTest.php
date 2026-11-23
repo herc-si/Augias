@@ -16,20 +16,25 @@ namespace Augias\UserBundle\Tests\EventSubscriber;
 use Augias\UserBundle\Entity\LoginRecord;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\LoginOutcome;
+use Augias\UserBundle\Enum\SecondFactor;
 use Augias\UserBundle\EventSubscriber\LoginRecordSubscriber;
 use Augias\UserBundle\Repository\UserRepository;
+use Augias\UserBundle\Security\TrustedDevices;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use Mockery as M;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Clock\ClockInterface;
 use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Core\Authentication\Token\RememberMeToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
+use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPassport;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 
@@ -77,6 +82,8 @@ final class LoginRecordSubscriberTest extends TestCase
         $event->shouldReceive('getFirewallName')->andReturn('main');
         $event->shouldReceive('getAuthenticatedToken')->andReturn(M::mock(TokenInterface::class));
         $event->shouldReceive('getUser')->andReturn($user);
+        $event->shouldReceive('getPassport')->andReturn(new SelfValidatingPassport(new UserBadge('someone@example.com')));
+        $event->shouldReceive('getRequest')->andReturn(Request::create('/login'));
 
         $this->subscriber($entityManager)->onLoginSuccess($event);
 
@@ -84,6 +91,50 @@ final class LoginRecordSubscriberTest extends TestCase
         self::assertSame(LoginOutcome::Success, $recorded->getOutcome());
         self::assertSame('someone@example.com', $recorded->getIdentifier());
         self::assertSame('192.0.2.7', $recorded->getIpAddress());
+        self::assertSame(SecondFactor::None, $recorded->getSecondFactor());
+    }
+
+    /**
+     * @return iterable<string, array{TokenInterface, bool, SecondFactor}>
+     */
+    public static function skippedSecondFactors(): iterable
+    {
+        $user = new User();
+        $user->setEmail('someone@example.com');
+
+        yield 'a trusted device' => [M::mock(TokenInterface::class), true, SecondFactor::TrustedDevice];
+        yield 'the remember-me cookie' => [new RememberMeToken($user, 'main'), false, SecondFactor::RememberMe];
+    }
+
+    #[DataProvider('skippedSecondFactors')]
+    public function testASignInThatOwedNoCodeSaysWhy(TokenInterface $token, bool $trustedDeviceUsed, SecondFactor $expected): void
+    {
+        $user = new User();
+        $user->setEmail('someone@example.com');
+
+        $recorded = null;
+        $entityManager = M::mock(EntityManagerInterface::class);
+        $entityManager->shouldReceive('persist')->once()->with(M::on(static function (LoginRecord $record) use (&$recorded): bool {
+            $recorded = $record;
+
+            return true;
+        }));
+        $entityManager->shouldReceive('flush')->once();
+
+        $request = Request::create('/login');
+        $request->attributes->set(TrustedDevices::USED_ON_REQUEST, $trustedDeviceUsed);
+
+        $event = M::mock(LoginSuccessEvent::class);
+        $event->shouldReceive('getFirewallName')->andReturn('main');
+        $event->shouldReceive('getAuthenticatedToken')->andReturn($token);
+        $event->shouldReceive('getUser')->andReturn($user);
+        $event->shouldReceive('getPassport')->andReturn(new SelfValidatingPassport(new UserBadge('someone@example.com')));
+        $event->shouldReceive('getRequest')->andReturn($request);
+
+        $this->subscriber($entityManager)->onLoginSuccess($event);
+
+        self::assertInstanceOf(LoginRecord::class, $recorded);
+        self::assertSame($expected, $recorded->getSecondFactor());
     }
 
     /**

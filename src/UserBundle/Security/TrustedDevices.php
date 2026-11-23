@@ -43,6 +43,12 @@ use function sprintf;
  */
 final readonly class TrustedDevices implements TrustedDeviceManagerInterface
 {
+    /**
+     * Set on the sign-in request when a trusted device skipped the second
+     * factor, so the journal can say so.
+     */
+    public const string USED_ON_REQUEST = '_augias_trusted_device';
+
     private const string FIREWALL = 'main';
 
     public function __construct(
@@ -105,8 +111,10 @@ final readonly class TrustedDevices implements TrustedDeviceManagerInterface
             return false;
         }
 
-        $device->usedAt($this->clock->now(), $this->requestStack->getMainRequest()?->getClientIp());
+        $request = $this->requestStack->getMainRequest();
+        $device->usedAt($this->clock->now(), $request?->getClientIp());
         $this->entityManager->flush();
+        $request?->attributes->set(self::USED_ON_REQUEST, true);
 
         return true;
     }
