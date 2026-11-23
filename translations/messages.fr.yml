@@ -396,6 +396,20 @@ add_client: 'Ajouter un client'
 add_info: 'Ajouter des informations'
 address: Adresse
 all_clients: 'Tous les clients'
+assistant:
+    ask: Demander
+    example_1: 'Qui me doit de l''argent, et depuis quand ?'
+    example_2: 'Quel est mon chiffre d''affaires du trimestre ?'
+    example_3: 'Quelles factures électroniques ai-je reçues cette semaine ?'
+    examples_title: 'Par exemple :'
+    gave_up: 'Je n''ai pas réussi à répondre à cette question. Reformulez-la, ou posez une question plus précise.'
+    intro: 'Posez une question sur %company% : l''assistant lit vos factures, devis, clients et chiffres pour y répondre.'
+    invalid_token: 'La page a expiré : posez votre question à nouveau.'
+    question: 'Votre question'
+    read_only: 'L''assistant lit vos données mais ne modifie, n''envoie ni ne supprime rien. Vos questions sont traitées par Infomaniak, en Suisse.'
+    reset: 'Nouvelle conversation'
+    title: Assistant
+    unavailable: 'L''assistant ne répond pas pour le moment. Réessayez dans quelques minutes.'
 bill:
     create:
         success: 'Facture créée avec succès'

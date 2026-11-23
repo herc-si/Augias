@@ -396,6 +396,20 @@ add_client: 'Add Client'
 add_info: 'Add Info'
 address: Address
 all_clients: 'All Clients'
+assistant:
+    ask: Ask
+    example_1: 'Who owes me money, and since when?'
+    example_2: 'What is my turnover this quarter?'
+    example_3: 'Which electronic invoices did I receive this week?'
+    examples_title: 'For example:'
+    gave_up: 'I could not answer that question. Rephrase it, or ask something more specific.'
+    intro: 'Ask a question about %company%: the assistant reads your invoices, quotes, clients and figures to answer it.'
+    invalid_token: 'The page expired: ask your question again.'
+    question: 'Your question'
+    read_only: 'The assistant reads your data but never changes, sends or deletes anything. Your questions are processed by Infomaniak, in Switzerland.'
+    reset: 'New conversation'
+    title: Assistant
+    unavailable: 'The assistant is not answering right now. Try again in a few minutes.'
 bill:
     create:
         success: 'Bill created successfully'

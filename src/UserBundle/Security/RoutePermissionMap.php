@@ -63,6 +63,7 @@ final class RoutePermissionMap
         '_profile_notifications' => null,
         '_register' => null,
         '_register_challenge' => null,
+        '_assistant' => CompanyPermission::BillingRead, // Read-only tools only, see AssistantToolbox.
         '_search' => CompanyPermission::BillingRead,
         '_search_suggestions' => CompanyPermission::BillingRead,
         '_select_company' => null,
