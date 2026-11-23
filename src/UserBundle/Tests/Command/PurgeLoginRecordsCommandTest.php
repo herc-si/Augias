@@ -18,6 +18,7 @@ use Augias\CoreBundle\Test\Traits\ConsoleTesterTrait;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\UserBundle\Command\PurgeLoginRecordsCommand;
 use Augias\UserBundle\Entity\LoginRecord;
+use Augias\UserBundle\Entity\TrustedDevice;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\LoginOutcome;
 use Augias\UserBundle\LoginRecordRetention;
@@ -70,6 +71,30 @@ final class PurgeLoginRecordsCommandTest extends KernelTestCase
         sort($remaining);
 
         self::assertSame(['just-inside', 'yesterday'], $remaining);
+    }
+
+    public function testItForgetsTrustedDevicesWhoseTrustHasRunOut(): void
+    {
+        $user = UserFactory::createOne([
+            'email' => 'devices@sign-ins.test',
+            'companies' => [CompanyFactory::createOne()],
+        ]);
+
+        $now = new DateTimeImmutable();
+        $this->em->persist(new TrustedDevice($user, 1, $now->modify('-40 days'), $now->modify('-10 days'), 'expired', null));
+        $this->em->persist(new TrustedDevice($user, 2, $now->modify('-1 day'), $now->modify('+29 days'), 'trusted', null));
+        $this->em->flush();
+
+        $this->runPurge();
+
+        $this->em->clear();
+
+        $remaining = array_map(
+            static fn (TrustedDevice $device): ?string => $device->getUserAgent(),
+            $this->em->getRepository(TrustedDevice::class)->findBy(['user' => $user->getId()]),
+        );
+
+        self::assertSame(['trusted'], $remaining);
     }
 
     private function record(User $user, string $identifier, string $age): void

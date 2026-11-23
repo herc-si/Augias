@@ -1581,19 +1581,13 @@ parameters:
 		-
 			message: '#^Call to function assert\(\) with true will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
-			count: 5
+			count: 3
 			path: src/UserBundle/Twig/Components/TwoFactorSettings.php
 
 		-
 			message: '#^Instanceof between Augias\\UserBundle\\Entity\\User and SolidWorx\\Platform\\PlatformBundle\\Contracts\\Security\\TwoFactor\\UserTwoFactorInterface will always evaluate to true\.$#'
 			identifier: instanceof.alwaysTrue
-			count: 4
-			path: src/UserBundle/Twig/Components/TwoFactorSettings.php
-
-		-
-			message: '#^Instanceof between Augias\\UserBundle\\Entity\\User and Symfony\\Component\\Security\\Core\\User\\UserInterface will always evaluate to true\.$#'
-			identifier: instanceof.alwaysTrue
-			count: 1
+			count: 3
 			path: src/UserBundle/Twig/Components/TwoFactorSettings.php
 
 		-

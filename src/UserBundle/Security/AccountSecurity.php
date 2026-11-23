@@ -15,6 +15,7 @@ namespace Augias\UserBundle\Security;
 
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Repository\ResetPasswordRequestRepository;
+use Augias\UserBundle\Repository\TrustedDeviceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -44,6 +45,7 @@ final readonly class AccountSecurity
     public function __construct(
         private EntityManagerInterface $entityManager,
         private ResetPasswordRequestRepository $resetRequests,
+        private TrustedDeviceRepository $trustedDevices,
         private MailerInterface $mailer,
         private TranslatorInterface $translator,
         private LoggerInterface $logger,
@@ -64,7 +66,8 @@ final readonly class AccountSecurity
 
     /**
      * Every device trusted to skip the second factor asks for it again on
-     * its next sign-in: the trust cookies carry this version, now stale.
+     * its next sign-in: their rows go, and so their cookies are no longer
+     * honoured. The version is raised as well, for scheb's own manager.
      * Also what the holder does from the two-factor page after losing a
      * computer, or ticking the box on a shared one (Rémi, 23/11/2026).
      */
@@ -73,6 +76,8 @@ final readonly class AccountSecurity
         $this->entityManager->createQuery(sprintf('UPDATE %s u SET u.trustedVersion = u.trustedVersion + 1 WHERE u.id = :id', User::class))
             ->setParameter('id', $user->getId(), 'ulid')
             ->execute();
+
+        $this->trustedDevices->forgetAll($user);
     }
 
     private function secure(User $user): void

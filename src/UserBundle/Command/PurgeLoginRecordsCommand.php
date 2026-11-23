@@ -15,6 +15,7 @@ namespace Augias\UserBundle\Command;
 
 use Augias\UserBundle\LoginRecordRetention;
 use Augias\UserBundle\Repository\LoginRecordRepository;
+use Augias\UserBundle\Repository\TrustedDeviceRepository;
 use Psr\Clock\ClockInterface;
 use SolidWorx\Platform\PlatformBundle\Console\Command;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -40,6 +41,7 @@ final class PurgeLoginRecordsCommand extends Command
 {
     public function __construct(
         private readonly LoginRecordRepository $repository,
+        private readonly TrustedDeviceRepository $trustedDevices,
         private readonly ClockInterface $clock,
     ) {
         parent::__construct();
@@ -56,6 +58,9 @@ final class PurgeLoginRecordsCommand extends Command
             $deleted,
             $cutoff->format('Y-m-d'),
         ));
+
+        // Same short memory for the devices whose trust has run out.
+        $this->io->success(sprintf('Deleted %d expired trusted device(s).', $this->trustedDevices->purgeExpired($this->clock->now())));
 
         return self::SUCCESS;
     }
