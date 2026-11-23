@@ -3656,6 +3656,9 @@ saas:
         invoice_line:
             subscription: 'Augias %plan% subscription from %from% to %to%'
             plan_change: 'Change to Augias %plan%, prorated from %from% to %to%'
+        credit_note_line:
+            partial_refund: 'Partial refund: %line%'
+        credit_note_notes: 'Refunded by card (Stripe) on %date%.'
     cancelled:
         feature_clients: 'Client and contact management'
         feature_history: 'Access to payment history and reports'

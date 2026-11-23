@@ -172,7 +172,7 @@ final readonly class StripeSubscriptionSync
             return;
         }
 
-        $this->logger->error('A second Stripe subscription was paid for a company already subscribed: cancelled and refunded. HERC SI\'s invoice for that payment needs a credit note.', $context);
+        $this->logger->error('A second Stripe subscription was paid for a company already subscribed: cancelled and refunded; the credit note follows when Stripe reports the refund.', $context);
     }
 
     /**

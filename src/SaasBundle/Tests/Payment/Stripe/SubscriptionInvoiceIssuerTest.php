@@ -41,6 +41,7 @@ use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use function array_fill;
 use function strrpos;
+use function strtok;
 use function substr;
 
 /**
@@ -261,7 +262,8 @@ final class SubscriptionInvoiceIssuerTest extends KernelTestCase
         $this->setupDoctrine();
 
         $factory = function (string $method, string $url) use ($overrides): JsonMockResponse {
-            $id = substr($url, strrpos($url, '/') + 1);
+            $path = strtok($url, '?');
+            $id = substr($path, strrpos($path, '/') + 1);
 
             return new JsonMockResponse($this->stripeInvoice(['id' => $id] + $this->stripeOverrides + $overrides));
         };
