@@ -4050,6 +4050,9 @@ security:
             cannot_disable: 'An authenticator app is required: you can set it up again, not remove it.'
             flash: 'Set up an authenticator app to continue.'
             message: 'Your IBAN is on your invoices: Augias protects your account the way your bank protects its own. At every sign-in you are asked for a 6-digit code from an authenticator app on your phone (Google Authenticator, Microsoft Authenticator, Aegis, 1Password…). Tick “Trust this device” when you enter it: you will only be asked again every 30 days on that computer or phone. A code by email is not enough, as a hacked mailbox would hold both the reset link and the code. Click “Set Up” next to “Authenticator App” below.'
+            resume: 'Carry on'
+            resume_saved: 'I have saved my codes, carry on'
+            resume_text: 'Your authenticator app is set up. Pick up where you were: your company, your plan, electronic invoicing.'
             title: 'Authenticator app required'
         security_notice: 'This is an additional security step to protect your account'
         settings:

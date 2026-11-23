@@ -4050,6 +4050,9 @@ security:
             cannot_disable: 'L''application d''authentification est obligatoire : vous pouvez la reconfigurer, pas la retirer.'
             flash: 'Configurez une application d''authentification pour continuer.'
             message: 'Votre IBAN figure sur vos factures : Augias protège votre compte comme votre banque protège le sien. À chaque connexion, un code à 6 chiffres vous est demandé, donné par une application d''authentification sur votre téléphone (Google Authenticator, Microsoft Authenticator, Aegis, 1Password…). Cochez « Faire confiance à cet appareil » en le saisissant : il ne vous sera redemandé que tous les 30 jours sur cet ordinateur ou ce téléphone. Le code par e-mail ne suffit pas, car une boîte mail piratée donnerait à la fois le lien de réinitialisation et le code. Cliquez sur « Configurer » à côté d''« Application d''authentification » ci-dessous.'
+            resume: 'Continuer'
+            resume_saved: 'J''ai noté mes codes, continuer'
+            resume_text: 'Votre application d''authentification est configurée. Reprenez où vous en étiez : votre entreprise, votre offre, la facturation électronique.'
             title: 'Application d''authentification obligatoire'
         security_notice: 'Ceci est une étape de sécurité supplémentaire pour protéger votre compte'
         settings:

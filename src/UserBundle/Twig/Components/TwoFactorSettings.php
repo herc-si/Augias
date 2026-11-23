@@ -15,6 +15,7 @@ namespace Augias\UserBundle\Twig\Components;
 
 use Augias\UserBundle\Entity\TrustedDevice;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Listener\RequireAuthenticatorAppListener;
 use Augias\UserBundle\Repository\UserRepository;
 use Augias\UserBundle\Security\AccountSecurity;
 use Augias\UserBundle\Security\AuthenticatorAppPolicy;
@@ -34,6 +35,8 @@ use SolidWorx\Platform\PlatformBundle\Security\TwoFactor\BackupCodeGeneratorInte
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
@@ -49,6 +52,8 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 use Symfony\UX\TwigComponent\Attribute\PreMount;
 use function assert;
+use function is_string;
+use function str_starts_with;
 
 /**
  * @see \Augias\UserBundle\Tests\Twig\Components\TwoFactorSettingsTest
@@ -85,6 +90,7 @@ final class TwoFactorSettings extends AbstractController
         private readonly BackupCodeGeneratorInterface $backupCodeGenerator,
         private readonly TokenStorageInterface $tokenStorage,
         private readonly AuthenticatorAppPolicy $authenticatorAppPolicy,
+        private readonly RequestStack $requestStack,
         private readonly AccountSecurity $accountSecurity,
     ) {
     }
@@ -241,6 +247,32 @@ final class TwoFactorSettings extends AbstractController
 
         // Keep modal open after download
         $this->showBackupCodes = true;
+    }
+
+    /**
+     * Where to carry on once the app is set up, when the person was sent
+     * here on their way somewhere (see RequireAuthenticatorAppListener).
+     * Only once the app is there: before, the page is the next step.
+     */
+    #[ExposeInTemplate]
+    public function getResumeUrl(): ?string
+    {
+        if (! $this->getUser()->isTotpAuthenticationEnabled()) {
+            return null;
+        }
+
+        $resume = $this->requestStack->getSession()->get(RequireAuthenticatorAppListener::RESUME_SESSION_KEY);
+
+        return is_string($resume) && str_starts_with($resume, '/') && ! str_starts_with($resume, '//') ? $resume : null;
+    }
+
+    #[LiveAction]
+    public function resume(): RedirectResponse
+    {
+        $resume = $this->getResumeUrl() ?? $this->generateUrl('_dashboard');
+        $this->requestStack->getSession()->remove(RequireAuthenticatorAppListener::RESUME_SESSION_KEY);
+
+        return new RedirectResponse($resume);
     }
 
     #[ExposeInTemplate]

@@ -41,6 +41,14 @@ use function str_starts_with;
 #[AsEventListener(KernelEvents::REQUEST, priority: 0)]
 final readonly class RequireAuthenticatorAppListener
 {
+    /**
+     * Where the person was going when sent to set the app up: entering
+     * their company, choosing a plan, activating electronic invoicing. The
+     * settings page offers to carry on there once the app is set up, so
+     * signing up does not stop at the second factor (Rémi, 23/11/2026).
+     */
+    public const string RESUME_SESSION_KEY = '_augias_after_authenticator_app';
+
     private const array OPEN_ROUTES = [
         '_2fa_list',
         '_logout',
@@ -103,6 +111,10 @@ final readonly class RequireAuthenticatorAppListener
 
         if ($session instanceof FlashBagAwareSessionInterface && ! $session->getFlashBag()->has('warning')) {
             $session->getFlashBag()->add('warning', 'security.two_factor.required.flash');
+        }
+
+        if ($session !== null && $request->isMethod('GET') && ! $request->isXmlHttpRequest()) {
+            $session->set(self::RESUME_SESSION_KEY, $request->getRequestUri());
         }
 
         $event->setResponse(new RedirectResponse($this->urlGenerator->generate('_2fa_list')));

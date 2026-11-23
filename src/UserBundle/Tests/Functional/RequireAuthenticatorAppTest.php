@@ -59,6 +59,30 @@ final class RequireAuthenticatorAppTest extends WebTestCase
             ->assertSee('Authenticator app required');
     }
 
+    /**
+     * Signing up used to stop at the second factor: once the app was set up,
+     * nothing led back to entering the company or electronic invoicing
+     * (Rémi, 23/11/2026).
+     */
+    public function testOnceTheAppIsSetUpThePageOffersToCarryOnWhereThePersonWasGoing(): void
+    {
+        $user = $this->user(totp: false);
+        $browser = $this->browser()->actingAs($user)->interceptRedirects();
+
+        $browser->visit('/electronic-invoicing/setup')->assertRedirectedTo('/profile/2fa');
+        $browser->visit('/profile/2fa')->assertNotSee('Pick up where you were');
+
+        // Set up meanwhile, as the settings page does; the session — and
+        // where the person was going — stays.
+        $this->em->getConnection()->executeStatement('UPDATE users SET totp_secret = ? WHERE email = ?', ['JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP', 'jo@totp.test']);
+
+        $browser
+            ->visit('/profile/2fa')
+            ->assertSuccessful()
+            ->assertSee('Pick up where you were')
+            ->assertSee('Carry on');
+    }
+
     public function testACodeByEmailIsNotEnough(): void
     {
         $user = $this->user(totp: false);
