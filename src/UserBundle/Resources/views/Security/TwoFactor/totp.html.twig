@@ -55,9 +55,7 @@
                                         name="{{ authCodeParameterName }}"
                                         type="text"
                                         class="form-control two-factor-code-input"
-                                        maxlength="6"
-                                        pattern="[0-9]*"
-                                        inputmode="numeric"
+                                        maxlength="13"
                                         autocomplete="one-time-code"
                                         placeholder="{{ 'security.two_factor.code_placeholder'|trans }}"
                                         autofocus
@@ -65,8 +63,6 @@
                                     />
                                     <div class="two-factor-form-hint">
                                         {{ 'security.two_factor.lost_authenticator'|trans }}
-                                        <a href="#" onclick="return false;">{{ 'security.two_factor.backup_code'|trans }}</a>
-                                        {{ 'security.two_factor.instead'|trans }}
                                     </div>
                                 </div>
 
