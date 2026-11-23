@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Augias\UserBundle\Entity;
 
 use Augias\UserBundle\Enum\LoginOutcome;
+use Augias\UserBundle\Enum\SecondFactor;
 use Augias\UserBundle\Repository\LoginRecordRepository;
+use Augias\UserBundle\Security\DeviceName;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
@@ -101,6 +103,12 @@ class LoginRecord
         private readonly ?string $ipAddress = null,
         #[ORM\Column(name: 'user_agent', type: Types::STRING, length: self::USER_AGENT_LENGTH, nullable: true)]
         private ?string $userAgent = null,
+        /**
+         * How a successful sign-in got past the second factor. Null on the
+         * other outcomes, and on rows written before it was recorded.
+         */
+        #[ORM\Column(name: 'second_factor', type: Types::STRING, length: 16, nullable: true, enumType: SecondFactor::class)]
+        private readonly ?SecondFactor $secondFactor = null,
     ) {
         $this->user = $user;
         $this->userAgent = $userAgent === null ? null : mb_substr($userAgent, 0, self::USER_AGENT_LENGTH);
@@ -139,5 +147,18 @@ class LoginRecord
     public function getUserAgent(): ?string
     {
         return $this->userAgent;
+    }
+
+    /**
+     * "Firefox · Linux", for a person reading the journal.
+     */
+    public function getDeviceName(): ?string
+    {
+        return DeviceName::of($this->userAgent);
+    }
+
+    public function getSecondFactor(): ?SecondFactor
+    {
+        return $this->secondFactor;
     }
 }

@@ -16,15 +16,19 @@ namespace Augias\UserBundle\EventSubscriber;
 use Augias\UserBundle\Entity\LoginRecord;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\LoginOutcome;
+use Augias\UserBundle\Enum\SecondFactor;
 use Augias\UserBundle\Repository\UserRepository;
+use Augias\UserBundle\Security\TrustedDevices;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Clock\ClockInterface;
 use Scheb\TwoFactorBundle\Security\Authentication\Token\TwoFactorTokenInterface;
+use Scheb\TwoFactorBundle\Security\Http\Authenticator\Passport\Credentials\TwoFactorCodeCredentials;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Event\TwoFactorAuthenticationEvent;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Event\TwoFactorAuthenticationEvents;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Core\Authentication\Token\RememberMeToken;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Event\LoginFailureEvent;
@@ -90,13 +94,33 @@ final readonly class LoginRecordSubscriber implements EventSubscriberInterface
             return;
         }
 
+        if ($event->getPassport()->hasBadge(TwoFactorCodeCredentials::class)) {
+            // The code that completed it was just checked: recorded once, by
+            // onTwoFactorComplete. Both fire, so a sign-in with a code used
+            // to be in the journal twice.
+            return;
+        }
+
         $user = $event->getUser();
 
         if (! $user instanceof User) {
             return;
         }
 
-        $this->record($user, $user->getUserIdentifier(), LoginOutcome::Success);
+        $this->record($user, $user->getUserIdentifier(), LoginOutcome::Success, $this->secondFactorSkipped($event));
+    }
+
+    /**
+     * A sign-in that owed no code: why. The trusted-device manager marks the
+     * request when it is the one that let it through.
+     */
+    private function secondFactorSkipped(LoginSuccessEvent $event): SecondFactor
+    {
+        return match (true) {
+            $event->getAuthenticatedToken() instanceof RememberMeToken => SecondFactor::RememberMe,
+            $event->getRequest()->attributes->getBoolean(TrustedDevices::USED_ON_REQUEST) => SecondFactor::TrustedDevice,
+            default => SecondFactor::None,
+        };
     }
 
     public function onLoginFailure(LoginFailureEvent $event): void
@@ -119,7 +143,7 @@ final readonly class LoginRecordSubscriber implements EventSubscriberInterface
 
     public function onTwoFactorComplete(TwoFactorAuthenticationEvent $event): void
     {
-        $this->recordFromToken($event->getToken(), LoginOutcome::Success);
+        $this->recordFromToken($event->getToken(), LoginOutcome::Success, SecondFactor::Code);
     }
 
     public function onTwoFactorFailure(TwoFactorAuthenticationEvent $event): void
@@ -138,7 +162,7 @@ final readonly class LoginRecordSubscriber implements EventSubscriberInterface
         $this->recordFromToken($token, LoginOutcome::SignedOut);
     }
 
-    private function recordFromToken(TokenInterface $token, LoginOutcome $outcome): void
+    private function recordFromToken(TokenInterface $token, LoginOutcome $outcome, ?SecondFactor $secondFactor = null): void
     {
         $user = $token->getUser();
 
@@ -146,10 +170,10 @@ final readonly class LoginRecordSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->record($user, $user->getUserIdentifier(), $outcome);
+        $this->record($user, $user->getUserIdentifier(), $outcome, $secondFactor);
     }
 
-    private function record(?User $user, string $identifier, LoginOutcome $outcome): void
+    private function record(?User $user, string $identifier, LoginOutcome $outcome, ?SecondFactor $secondFactor = null): void
     {
         $request = $this->requestStack->getMainRequest();
 
@@ -161,6 +185,7 @@ final readonly class LoginRecordSubscriber implements EventSubscriberInterface
                 $this->clock->now(),
                 $request?->getClientIp(),
                 $request instanceof Request ? $request->headers->get('User-Agent') : null,
+                $secondFactor,
             ),
         );
 

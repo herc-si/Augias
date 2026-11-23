@@ -2759,6 +2759,11 @@ login_history:
         signed_out: Déconnexion
         success: Connexion
         two_factor_failure: 'Second facteur refusé'
+    second_factor:
+        code: 'avec le code'
+        none: 'sans second facteur'
+        remember_me: '« Rester connecté », sans code'
+        trusted_device: 'appareil de confiance, sans code'
     table:
         device: Appareil
         outcome: Résultat

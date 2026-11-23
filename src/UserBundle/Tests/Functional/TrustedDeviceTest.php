@@ -17,9 +17,12 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Test\Factory\CompanyFactory;
 use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\Test\SaasKernel;
+use Augias\UserBundle\Entity\LoginRecord;
 use Augias\UserBundle\Entity\TrustedDevice;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\CompanyRole;
+use Augias\UserBundle\Enum\LoginOutcome;
+use Augias\UserBundle\Enum\SecondFactor;
 use Augias\UserBundle\Security\AccountSecurity;
 use Augias\UserBundle\Test\Factory\UserFactory;
 use OTPHP\TOTP;
@@ -29,6 +32,7 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Zenstruck\Browser\KernelBrowser;
 use Zenstruck\Browser\Test\HasBrowser;
+use function array_map;
 use function sprintf;
 
 /**
@@ -78,6 +82,12 @@ final class TrustedDeviceTest extends WebTestCase
         $devices = $this->em->getRepository(TrustedDevice::class)->findAll();
         self::assertCount(1, $devices, 'Signing in again on the same device adds no row.');
         self::assertGreaterThanOrEqual($firstUse, $devices[0]->getLastUsedAt());
+
+        $journal = array_map(
+            static fn (LoginRecord $record): ?SecondFactor => $record->getSecondFactor(),
+            $this->em->getRepository(LoginRecord::class)->findBy(['outcome' => LoginOutcome::Success], ['occurredAt' => 'ASC']),
+        );
+        self::assertSame([SecondFactor::Code, SecondFactor::TrustedDevice], $journal, 'One row per sign-in, saying how it got past the second factor.');
     }
 
     public function testRemovingOneDeviceAsksItForTheCodeAgain(): void

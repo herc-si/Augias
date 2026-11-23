@@ -32,10 +32,13 @@
                         <span class="badge {{ record.outcome.badgeClass }}">
                             {{ record.outcome.translationKey|trans }}
                         </span>
+                        {% if record.secondFactor %}
+                            <div class="text-secondary small mt-1">{{ record.secondFactor.translationKey|trans }}</div>
+                        {% endif %}
                     </td>
                     <td class="text-secondary font-monospace">{{ record.ipAddress ?? '—' }}</td>
                     <td class="text-secondary text-truncate" style="max-width: 22rem;" title="{{ record.userAgent }}">
-                        {{ record.userAgent ?? '—' }}
+                        {{ record.deviceName ?? record.userAgent ?? '—' }}
                     </td>
                 </tr>
             {% endfor %}
