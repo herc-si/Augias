@@ -90,6 +90,10 @@ email:
             message: 'Le mot de passe du compte Augias %email% vient d''être modifié. Les appareils de confiance ont été oubliés : la double authentification sera redemandée à la prochaine connexion.'
             subject: 'Le mot de passe de votre compte Augias a été modifié'
             title: 'Mot de passe modifié'
+        two_factor_reset:
+            message: 'La double authentification du compte Augias %email% a été réinitialisée par l''assistance, à votre demande : l''application d''authentification, les codes de secours et les appareils de confiance ont été effacés. À votre prochaine connexion, Augias vous demandera de configurer à nouveau une application d''authentification.'
+            subject: 'La double authentification de votre compte Augias a été réinitialisée'
+            title: 'Double authentification réinitialisée'
     confirmation:
         alternative: "Si le bouton ci-dessus ne fonctionne pas, copiez-collez ce lien dans votre navigateur :"
         button: 'Confirmer l''adresse e-mail'

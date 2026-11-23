@@ -65,6 +65,27 @@ final readonly class AccountSecurity
     }
 
     /**
+     * Removes every second factor of an account, for a holder who lost their
+     * phone and their backup codes (Rémi, 23/11/2026). Done by the people
+     * running the service once they have checked who is asking; the next
+     * sign-in then leads to setting up an authenticator app again, required
+     * on the service.
+     *
+     * The holder is told at the account's address: if someone else talked
+     * the reset out of support, that is where the real holder finds out.
+     */
+    public function secondFactorReset(User $user): void
+    {
+        $user->setTotpSecret('');
+        $user->enableEmailAuth(false);
+        $user->setBackUpCodes([]);
+        $this->entityManager->flush();
+
+        $this->forgetTrustedDevices($user);
+        $this->notify($user->getEmail(), 'two_factor_reset', ['%email%' => $user->getEmail()]);
+    }
+
+    /**
      * Every device trusted to skip the second factor asks for it again on
      * its next sign-in: their rows go, and so their cookies are no longer
      * honoured. The version is raised as well, for scheb's own manager.

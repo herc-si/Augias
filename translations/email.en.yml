@@ -90,6 +90,10 @@ email:
             message: 'The password of the Augias account %email% was just changed. Trusted devices were forgotten: two-factor authentication will be asked again at the next sign-in.'
             subject: 'Your Augias account password was changed'
             title: 'Password changed'
+        two_factor_reset:
+            message: 'The two-factor authentication of the Augias account %email% was reset by support, at your request: the authenticator app, the backup codes and the trusted devices were removed. At your next sign-in, Augias will ask you to set up an authenticator app again.'
+            subject: 'The two-factor authentication of your Augias account was reset'
+            title: 'Two-factor authentication reset'
     confirmation:
         alternative: "If the button above doesn't work, copy and paste this link into your browser:"
         button: 'Confirm Email Address'
