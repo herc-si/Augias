@@ -55,9 +55,14 @@ final readonly class Callback
         $session = $request->getSession();
         assert($session instanceof Session);
         $flashes = $session->getFlashBag();
-        // Back to the setup when the connection was started from there.
-        $fromSetup = true === $session->remove(SetupConnect::SESSION_KEY);
-        $redirect = new RedirectResponse($this->router->generate($fromSetup ? '_einvoicing_setup' : '_einvoicing_providers'));
+        // Back to where the connection was started: the setup, or the setup
+        // journey of a new account.
+        $from = $session->remove(SetupConnect::SESSION_KEY);
+        $redirect = new RedirectResponse($this->router->generate(match ($from) {
+            SetupConnect::RETURN_TO_ONBOARDING => '_onboarding',
+            true => '_einvoicing_setup',
+            default => '_einvoicing_providers',
+        }));
 
         $code = $request->query->getString('code');
 

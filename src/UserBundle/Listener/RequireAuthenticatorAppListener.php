@@ -66,6 +66,10 @@ final readonly class RequireAuthenticatorAppListener
         '_switch_company',
         '_create_company',
         '_onboarding',
+        // The setup journey asks for the app itself, after who the company
+        // is and before its e-invoicing platform (Rémi, 23/11/2026); the
+        // steps after it cannot be reached before it is done (SetupJourney).
+        '_onboarding_step',
     ];
 
     public function __construct(

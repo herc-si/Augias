@@ -1,0 +1,31 @@
+{#
+# This file is part of Augias package.
+#
+# (c) Pierre du Plessis <open-source@solidworx.co>
+#
+# This source file is subject to the MIT license that is bundled
+# with this source code in the file LICENSE.
+#}
+
+<div class="onboarding-step-card">
+    <div class="step-icon">{{ ux_icon('tabler:shield-lock', {width: 32, height: 32}) }}</div>
+    <h2 class="h2 text-center mb-2">{{ 'onboarding.security.title'|trans }}</h2>
+    <p class="text-muted text-center lead mb-4">{{ 'onboarding.security.description'|trans }}</p>
+
+    <div class="step-benefits">
+        <ul class="mb-0">
+            {% for line in 'onboarding.security.how'|trans|trim|split("\n") %}<li>{{ line }}</li>{% endfor %}
+        </ul>
+    </div>
+
+    <form method="post" action="{{ path('_onboarding_step', {step: 'security'}) }}" class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary btn-lg w-100">
+            {% if step.done %}
+                {{ 'onboarding.navigation.continue'|trans }}
+            {% else %}
+                {{ ux_icon('tabler:device-mobile', {width: 18, height: 18}) }} {{ 'onboarding.security.set_up'|trans }}
+            {% endif %}
+        </button>
+    </form>
+    {% include '@AugiasUser/Onboarding/steps/_skip.html.twig' %}
+</div>

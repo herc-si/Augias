@@ -144,6 +144,44 @@ final readonly class OnboardingManager
     }
 
     /**
+     * The journey's first step: the company exists from here on, so that
+     * the steps after it can fill it in (SetupJourney).
+     */
+    public function createCompanyFor(User $user, OnboardingData $data): Company
+    {
+        $company = $this->createCompany($data);
+        $user->addCompany($company, CompanyRole::Owner);
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        return $company;
+    }
+
+    /**
+     * The journey's last step: a first client, and a first draft invoice
+     * when it was described. Null when there was no client to create.
+     */
+    public function createFirstInvoice(Company $company, OnboardingData $data): ?Invoice
+    {
+        if (! $data->clientName || ! $data->clientEmail) {
+            return null;
+        }
+
+        $client = $this->createClient($data, $company);
+
+        if (! $data->invoiceDescription || ! $data->invoiceAmount) {
+            $this->entityManager->flush();
+
+            return null;
+        }
+
+        $invoice = $this->createInvoice($data, $client, $company);
+        $this->entityManager->flush();
+
+        return $invoice;
+    }
+
+    /**
      * Start onboarding (called after registration)
      */
     public function startOnboarding(User $user): void

@@ -1,0 +1,53 @@
+{#
+# This file is part of Augias package.
+#
+# (c) Pierre du Plessis <open-source@solidworx.co>
+#
+# This source file is subject to the MIT license that is bundled
+# with this source code in the file LICENSE.
+#}
+
+<div class="onboarding-step-card">
+    <div class="step-icon">{{ ux_icon('tabler:building-broadcast-tower', {width: 32, height: 32}) }}</div>
+    <h2 class="h2 text-center mb-2">{{ 'onboarding.einvoicing.title'|trans }}</h2>
+    <p class="text-muted text-center lead mb-4">{{ 'onboarding.einvoicing.description'|trans }}</p>
+
+    {% if progress.connected %}
+        <twig:Ui:Alert type="success" icon="tabler:circle-check">{{ 'einvoicing.setup.platform.connected'|trans({'%name%': progress.platform.name}) }}</twig:Ui:Alert>
+        <form method="post" action="{{ path('_onboarding_step', {step: 'einvoicing'}) }}" class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg w-100">{{ 'onboarding.navigation.continue'|trans }}</button>
+        </form>
+    {% elseif waitsForCardUntil %}
+        <div class="alert alert-info" role="status" id="trial-needs-card">
+            <h4 class="alert-heading">{{ 'einvoicing.setup.platform.trial_needs_card_title'|trans }}</h4>
+            <p class="mb-0">{{ 'einvoicing.setup.platform.trial_needs_card'|trans({'%date%': waitsForCardUntil|format_date('long')}) }}</p>
+        </div>
+        <div class="d-grid">
+            <a href="{{ path('billing_index') }}" class="btn btn-primary btn-lg w-100">
+                {{ ux_icon('tabler:credit-card', {width: 18, height: 18}) }} {{ 'einvoicing.setup.platform.trial_needs_card_cta'|trans }}
+            </a>
+        </div>
+    {% elseif progress.canConnectHere %}
+        <div class="step-benefits">
+            <p>{{ 'einvoicing.setup.platform.help'|trans }}</p>
+            <ul class="mb-0">
+                <li>{{ 'einvoicing.setup.platform.what_1'|trans }}</li>
+                <li>{{ 'einvoicing.setup.platform.what_2'|trans }}</li>
+                <li>{{ 'einvoicing.setup.platform.what_3'|trans }}</li>
+            </ul>
+        </div>
+        <form method="post" action="{{ path('_einvoicing_setup_connect') }}" class="d-grid">
+            <input type="hidden" name="_token" value="{{ csrf_token('einvoicing_setup_connect') }}">
+            <input type="hidden" name="return" value="{{ connectReturn }}">
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+                {{ ux_icon('tabler:plug-connected', {width: 18, height: 18}) }} {{ 'einvoicing.setup.platform.connect'|trans }}
+            </button>
+        </form>
+    {% else %}
+        <p>{{ 'einvoicing.setup.platform.self_hosted'|trans }}</p>
+        <div class="d-grid">
+            <a href="{{ path('_einvoicing_providers') }}" class="btn btn-outline-primary btn-lg w-100">{{ 'einvoicing.setup.platform.choose'|trans }}</a>
+        </div>
+    {% endif %}
+    {% include '@AugiasUser/Onboarding/steps/_skip.html.twig' %}
+</div>

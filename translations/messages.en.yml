@@ -2936,6 +2936,36 @@ notifications:
     subtitle: 'Choose which events trigger notifications and where you receive them'
     title: 'Notification Preferences'
 onboarding:
+    documents:
+        description: 'They appear on your invoices and quotes. Without an IBAN, your clients do not know where to pay you.'
+        fields:
+            bank_name: 'Bank name'
+            bic: BIC
+            iban: IBAN
+            logo: Logo
+        title: 'Your documents'
+    einvoicing:
+        description: 'Receive and send your electronic invoices, required of businesses.'
+        title: 'Electronic invoicing'
+    first_invoice:
+        client_heading: 'The client'
+        description: 'Last: who are you invoicing, and for what?'
+        invoice_heading: 'The invoice'
+        optional: '(optional)'
+        save: 'Save and finish'
+        skip: 'Finish without a client'
+        title: 'Your first client'
+    identity:
+        description: 'Type your SIREN, then "Look up": the business register fills in the rest. This appears on your invoices and is used for electronic invoicing.'
+        title: 'Who is your company?'
+    journey:
+        position: 'Step %position% of %count%'
+        title: 'Getting started'
+    security:
+        description: 'A code from your phone on top of your password: nobody opens your account with your password alone.'
+        how: "Install an authenticator app (Google Authenticator, Microsoft Authenticator, Aegis…)\nScan the QR code, then type the code shown\nKeep your backup codes somewhere safe\nYou then come back here for what follows\n"
+        set_up: 'Set up two-factor authentication'
+        title: 'Protect your account'
     client:
         benefits: "Create your first invoice in the next step\nKeep all client info organized in one place\nTrack payment history and outstanding invoices\nSend invoices directly via email\n"
         description: 'Who will you be invoicing? This step is optional, but recommended'
@@ -2951,7 +2981,7 @@ onboarding:
         title: 'Add your first client'
         why_title: 'Why add a client now?'
     company:
-        benefits: "Your business details - This appears on all your invoices\nYour first client - Optional, but gets you started faster\nYour first invoice - See how easy it is to get paid\n"
+        benefits: "Your company: its name, then its SIREN, address and VAT\nYour documents: logo and bank details\nTwo-factor authentication, which protects your account\nElectronic invoicing\nYour first client and your first invoice\n"
         description: "First, we'll need a bit of information about your business. This helps us customize your experience and ensures your invoices look professional."
         fields:
             currency:
@@ -2985,6 +3015,7 @@ onboarding:
         title: "You're all set!"
     flash:
         invoice_created: '🎉 Your first invoice is ready! You can edit it, send it to your client, or download a PDF.'
+        journey_done_later: 'Your account is ready. What you left for later is waiting in the setup checklist.'
         onboarding_complete: "Welcome to Augias! You're all set up and ready to go."
     invoice:
         aha_title: 'Send your first invoice:'
@@ -3003,6 +3034,7 @@ onboarding:
         time: 'Takes just 30 seconds to create'
         title: 'Create your first invoice'
     navigation:
+        later: Later
         back: Back
         continue: Continue
         create_invoice: 'Create & View My Invoice'
@@ -3010,6 +3042,11 @@ onboarding:
         skip: "I'll do this later"
         skip_client: "Skip — I'll add clients & invoices from the dashboard"
     progress:
+        documents: Documents
+        einvoicing: 'E-invoicing'
+        first_invoice: 'First client'
+        identity: Identity
+        security: Security
         client: 'First Client'
         company: 'Your Business'
         complete: Ready!

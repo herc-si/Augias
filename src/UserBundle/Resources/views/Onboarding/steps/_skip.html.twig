@@ -1,0 +1,16 @@
+{#
+# This file is part of Augias package.
+#
+# (c) Pierre du Plessis <open-source@solidworx.co>
+#
+# This source file is subject to the MIT license that is bundled
+# with this source code in the file LICENSE.
+#}
+
+{# "Later": the step is left for the checklist on the dashboard. #}
+{% if step.skippable %}
+    <form method="post" action="{{ path('_onboarding_step', {step: step.step.value}) }}" class="mt-2">
+        <input type="hidden" name="_token" value="{{ csrf_token('onboarding_skip') }}">
+        <button type="submit" name="skip" value="1" class="btn btn-link w-100 text-muted">{{ (label ?? 'onboarding.navigation.later')|trans }}</button>
+    </form>
+{% endif %}

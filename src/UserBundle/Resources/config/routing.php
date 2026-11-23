@@ -38,6 +38,7 @@ use Augias\UserBundle\Action\Security\TwoFactorIndex;
 use Augias\UserBundle\Action\Security\VerifyEmail;
 use Augias\UserBundle\Action\Users;
 use Augias\UserBundle\Onboarding\Action\Onboarding;
+use Augias\UserBundle\Onboarding\Action\OnboardingStep;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 return static function (RoutingConfigurator $routingConfigurator): void {
@@ -110,6 +111,12 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_onboarding', '/onboarding')
         ->controller(Onboarding::class);
+
+    $routingConfigurator
+        ->add('_onboarding_step', '/onboarding/{step}')
+        ->controller(OnboardingStep::class)
+        ->requirements(['step' => '[a-z_]+'])
+        ->methods(['GET', 'POST']);
 
     $routingConfigurator->add('_logout', '/logout');
 
