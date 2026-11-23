@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\UserBundle\Tests\Twig\Components;
 
 use Augias\CoreBundle\Test\LiveComponentTest;
+use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Twig\Components\TwoFactorSettings;
 use Doctrine\Persistence\ObjectManager;
 use OTPHP\TOTP;
@@ -398,7 +399,7 @@ final class TwoFactorSettingsTest extends LiveComponentTest
         $html = $this->component->render()->toString();
 
         // Trusted device section should not be visible by default
-        self::assertStringNotContainsString('Trusted Device', $html);
+        self::assertStringNotContainsString('Trusted devices', $html);
     }
 
     public function testClearTrustedDeviceClearsTheToken(): void
@@ -409,6 +410,39 @@ final class TwoFactorSettingsTest extends LiveComponentTest
 
         $html = $this->component->render()->toString();
         self::assertStringContainsString('Email Authentication', $html);
+    }
+
+    public function testForgetAllTrustedDevicesMakesEveryTrustCookieStale(): void
+    {
+        $user = $this->getUser();
+        $user->enableEmailAuth(true);
+        $this->em->flush();
+        $before = $user->getTrustedTokenVersion();
+
+        $this->component->call('forgetAllTrustedDevices');
+        self::assertStringContainsString('All your devices have been forgotten', $this->component->render()->toString());
+
+        $this->em->clear();
+        $fresh = $this->em->find(User::class, $user->getId());
+        self::assertInstanceOf(User::class, $fresh);
+        self::assertSame($before + 1, $fresh->getTrustedTokenVersion());
+    }
+
+    public function testTheTrustedDevicesSectionOffersToForgetThemAllOnceTwoFactorIsOn(): void
+    {
+        self::assertStringNotContainsString('Forget all devices', $this->component->render()->toString());
+
+        $user = $this->getUser();
+        $user->enableEmailAuth(true);
+        $this->em->flush();
+
+        $html = $this->createLiveComponent(name: TwoFactorSettings::class, client: $this->client)
+            ->actingAs($user)
+            ->render()
+            ->toString();
+
+        self::assertStringContainsString('Forget all devices', $html);
+        self::assertStringNotContainsString('This device is trusted', $html);
     }
 
     public function testGetQrContentReturnsDataUri(): void

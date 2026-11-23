@@ -4031,7 +4031,6 @@ security:
             encryption: 'Chiffrement de niveau bancaire'
             opensource: 'Open source'
     two_factor:
-        backup_code: 'code de secours'
         code_aria_label: 'Saisir le code de vérification à 6 chiffres'
         code_placeholder: '000000'
         email:
@@ -4041,12 +4040,11 @@ security:
             no_code: "Vous n'avez pas reçu le code ?"
             resend: 'Renvoyer le code'
             title: 'Vérification par e-mail'
-        instead: à la place
-        lost_authenticator: 'Vous avez perdu votre application d''authentification ? Utilisez un'
+        lost_authenticator: 'Vous avez perdu votre téléphone ? Saisissez à la place l''un de vos codes de secours (de la forme A1B2C3-D4E5F6).'
         required:
             cannot_disable: 'L''application d''authentification est obligatoire : vous pouvez la reconfigurer, pas la retirer.'
             flash: 'Configurez une application d''authentification pour continuer.'
-            message: 'Pour protéger les données de votre entreprise, Augias demande une application d''authentification (Google Authenticator, Microsoft Authenticator, Aegis, 1Password…) à chaque connexion. Le code par e-mail ne suffit pas : une boîte mail piratée donnerait à la fois le lien de réinitialisation et le code. Cliquez sur « Configurer » à côté d''« Application d''authentification » ci-dessous.'
+            message: 'Votre IBAN figure sur vos factures : Augias protège votre compte comme votre banque protège le sien. À chaque connexion, un code à 6 chiffres vous est demandé, donné par une application d''authentification sur votre téléphone (Google Authenticator, Microsoft Authenticator, Aegis, 1Password…). Cochez « Faire confiance à cet appareil » en le saisissant : il ne vous sera redemandé que tous les 30 jours sur cet ordinateur ou ce téléphone. Le code par e-mail ne suffit pas, car une boîte mail piratée donnerait à la fois le lien de réinitialisation et le code. Cliquez sur « Configurer » à côté d''« Application d''authentification » ci-dessous.'
             title: 'Application d''authentification obligatoire'
         security_notice: 'Ceci est une étape de sécurité supplémentaire pour protéger votre compte'
         settings:
@@ -4087,11 +4085,14 @@ security:
                 not_configured: 'Configurez une application d''authentification pour une sécurité renforcée'
                 title: 'Application d''authentification'
             trusted:
-                badge: 'Appareil de confiance'
-                description: "Cet appareil est approuvé et ne nécessitera pas de vérification 2FA"
-                note: "Vous ne serez pas invité à saisir de code de vérification sur cet appareil"
-                revoke: 'Révoquer la confiance'
-                title: 'Appareil de confiance'
+                badge: 'Cet appareil est de confiance'
+                description: 'Les appareils sur lesquels vous avez coché « Faire confiance à cet appareil » ne vous demandent le code que tous les 30 jours.'
+                forget_all: 'Oublier tous les appareils'
+                forget_all_note: 'Ordinateur perdu, case cochée sur un poste partagé ? Le code sera redemandé à la prochaine connexion sur chacun de vos appareils, y compris celui-ci.'
+                forgotten: 'Tous vos appareils ont été oubliés : le code sera redemandé à la prochaine connexion sur chacun d''eux.'
+                note: 'Le code ne vous sera pas redemandé ici avant 30 jours.'
+                revoke: 'Retirer cet appareil'
+                title: 'Appareils de confiance'
         subtitle: 'Ajoutez une couche de sécurité supplémentaire à votre compte'
         title: 'Authentification à deux facteurs'
         totp:

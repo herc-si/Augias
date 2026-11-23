@@ -69,7 +69,8 @@
          inside them. Tests inspect what would be sent; they send nothing. -->
     <env name="AUGIAS_MAILER_DSN" value="null://null" force="true"/>
     <env name="AUGIAS_DATABASE_URL" value="sqlite:///%kernel.cache_dir%/augias_%app_mode%_%env(default:app_mode:TEST_TOKEN)%.db"/>
-    <server name="AUGIAS_APP_SECRET" value="$ecretf0rt3st"/>
+    <!-- At least 32 bytes: the trusted-device cookie is a JWT signed with it. -->
+    <server name="AUGIAS_APP_SECRET" value="$ecretf0rt3st-at-least-32-bytes-long"/>
     <server name="AUGIAS_ENV" value="test"/>
     <server name="AUGIAS_DEBUG" value="0"/>
     <server name="APP_ENV" value="test"/>

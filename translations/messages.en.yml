@@ -4031,7 +4031,6 @@ security:
             encryption: 'Bank-level encryption'
             opensource: 'Open Source'
     two_factor:
-        backup_code: 'backup code'
         code_aria_label: 'Enter 6-digit verification code'
         code_placeholder: '000000'
         email:
@@ -4041,12 +4040,11 @@ security:
             no_code: "Didn't receive the code?"
             resend: 'Resend code'
             title: 'Email Verification'
-        instead: instead
-        lost_authenticator: 'Lost your authenticator? Use a'
+        lost_authenticator: 'Lost your phone? Enter one of your backup codes instead (they look like A1B2C3-D4E5F6).'
         required:
             cannot_disable: 'An authenticator app is required: you can set it up again, not remove it.'
             flash: 'Set up an authenticator app to continue.'
-            message: 'To protect your company data, Augias asks for an authenticator app (Google Authenticator, Microsoft Authenticator, Aegis, 1Password…) at every sign-in. A code by email is not enough: a hacked mailbox would hold both the reset link and the code. Click “Set Up” next to “Authenticator App” below.'
+            message: 'Your IBAN is on your invoices: Augias protects your account the way your bank protects its own. At every sign-in you are asked for a 6-digit code from an authenticator app on your phone (Google Authenticator, Microsoft Authenticator, Aegis, 1Password…). Tick “Trust this device” when you enter it: you will only be asked again every 30 days on that computer or phone. A code by email is not enough, as a hacked mailbox would hold both the reset link and the code. Click “Set Up” next to “Authenticator App” below.'
             title: 'Authenticator app required'
         security_notice: 'This is an additional security step to protect your account'
         settings:
@@ -4087,11 +4085,14 @@ security:
                 not_configured: 'Set up an authenticator app for enhanced security'
                 title: 'Authenticator App'
             trusted:
-                badge: 'Device Trusted'
-                description: "This device is trusted and won't require 2FA verification"
-                note: "You won't be asked for verification codes on this device"
-                revoke: 'Revoke Trust'
-                title: 'Trusted Device'
+                badge: 'This device is trusted'
+                description: 'Devices where you ticked “Trust this device” only ask for the code every 30 days.'
+                forget_all: 'Forget all devices'
+                forget_all_note: 'Lost a computer, ticked the box on a shared one? The code will be asked again at the next sign-in on each of your devices, this one included.'
+                forgotten: 'All your devices have been forgotten: the code will be asked again at the next sign-in on each of them.'
+                note: 'You will not be asked for the code here for 30 days.'
+                revoke: 'Remove this device'
+                title: 'Trusted devices'
         subtitle: 'Add an extra layer of security to your account'
         title: 'Two-Factor Authentication'
         totp:
