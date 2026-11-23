@@ -435,6 +435,12 @@ final class CreditNoteFlowTest extends WebTestCase
         self::assertCount(1, $sent);
         self::assertEquals([new Address('accounts@example.com', 'Ada Lovelace')], $sent[0]->getTo());
         self::assertCount(1, $sent[0]->getAttachments());
+
+        // The title had no translation in the email domain: subscribers got
+        // "credit_note.title" as the heading (Rémi, 23/11/2026).
+        $html = (string) $sent[0]->getHtmlBody();
+        self::assertStringNotContainsString('credit_note.', $html);
+        self::assertStringNotContainsString('billing.', $html);
     }
 
     /**

@@ -513,6 +513,7 @@ bill:
         tax: 'TVA'
         total: Total
 billing:
+    notes: Notes
     seller_identity:
         address: "Vos documents partiront sans l'adresse de votre société."
         both: "Vos documents partiront sans l'adresse ni l'identifiant de votre société (SIRET, n° de TVA…)."
@@ -1676,6 +1677,8 @@ einvoicing:
         title: E-reporting
         intro: "Les ventes à des particuliers ne passent pas par la facture électronique : Augias les déclare à votre plateforme, qui les regroupe et les transmet à l'administration fiscale selon le calendrier de votre régime de TVA."
         period: 'du %start% au %end%'
+        declaration:
+            period: '%kind% du %start% au %end%'
         not_connected:
             title: 'Aucune plateforme branchée'
             description: "L'e-reporting passe par votre plateforme de facturation électronique. Branchez-en une pour que vos ventes aux particuliers soient déclarées."

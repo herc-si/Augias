@@ -5,6 +5,9 @@ accounting:
 bill:
     constraint:
         supplier_required: 'Choose an existing supplier, or type a name below to create a new one.'
+category:
+    constraint:
+        at_least_one_usage: 'Choose at least one use: purchases or catalogue.'
 client:
     constraint:
         contacts:
@@ -23,6 +26,11 @@ core:
         field_key: 'Field key must start with a lowercase letter and contain only lowercase letters, digits, and underscores.'
         similar_label: 'A custom field with a similar label already exists for the selected target.'
         unique_label: 'A custom field with this label already exists for the selected target.'
+credit_note:
+    lines:
+        min: 'A credit note needs at least one line.'
+    users:
+        min: 'Choose at least one contact to send the credit note to.'
 einvoicing:
     setup:
         identity:

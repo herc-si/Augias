@@ -24,6 +24,7 @@ client:
         view_client: 'Voir le client'
 credit_note:
     subject: 'Avoir %id% – %company%'
+    title: 'Avoir %id%'
 einvoicing:
     notification_disputed:
         alert: 'Facture électronique en litige'
