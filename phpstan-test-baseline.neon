@@ -50,4 +50,9 @@ parameters:
 			identifier: symfonyContainer.serviceNotFound
 			count: 1
 			path: src/SaasBundle/Tests/Payment/Stripe/SubscriptionRefundCreditorTest.php
+		-
+			message: '#^Service "Augias\\SaasBundle\\Payment\\Stripe\\StripeCheckoutReturn" is not registered in the container\.$#'
+			identifier: symfonyContainer.serviceNotFound
+			count: 1
+			path: src/SaasBundle/Tests/Payment/Stripe/StripeCheckoutReturnTest.php
 

@@ -226,7 +226,10 @@ final readonly class StripeIntegration implements PaymentIntegrationInterface
             'locale' => 'auto',
             'client_reference_id' => $reference,
             'subscription_data' => ['metadata' => [self::METADATA_KEY => $reference]],
-            'success_url' => $this->router->generate($this->returnRoute, referenceType: UrlGeneratorInterface::ABSOLUTE_URL),
+            // Stripe fills the session in: the return reads the subscription
+            // at once (StripeCheckoutReturn). Appended, as the router would
+            // encode the braces.
+            'success_url' => $this->router->generate($this->returnRoute, referenceType: UrlGeneratorInterface::ABSOLUTE_URL) . '?session_id={CHECKOUT_SESSION_ID}',
             'cancel_url' => $this->router->generate('billing_index', referenceType: UrlGeneratorInterface::ABSOLUTE_URL),
         ];
 

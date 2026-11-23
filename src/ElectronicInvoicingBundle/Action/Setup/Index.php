@@ -17,6 +17,7 @@ use const PHP_URL_HOST;
 use Augias\ElectronicInvoicingBundle\Form\Type\CompanyIdentityType;
 use Augias\ElectronicInvoicingBundle\Onboarding\CompanyIdentity;
 use Augias\ElectronicInvoicingBundle\Onboarding\ElectronicInvoicingOnboarding;
+use Augias\ElectronicInvoicingBundle\Onboarding\PlatformConnectionGate;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\Form\ClickableInterface;
 use Symfony\Component\Form\FormFactoryInterface;
@@ -45,6 +46,7 @@ final readonly class Index
         private ElectronicInvoicingOnboarding $onboarding,
         private FormFactoryInterface $formFactory,
         private RouterInterface $router,
+        private PlatformConnectionGate $gate,
     ) {
     }
 
@@ -95,6 +97,7 @@ final readonly class Index
             'progress' => $this->onboarding->progress(),
             'lookedUp' => $lookedUp,
             'next' => $next,
+            'waitsForCardUntil' => $this->gate->waitsForCardUntil(),
             'editing' => $request->query->getBoolean('edit') || $form->isSubmitted(),
         ];
     }
