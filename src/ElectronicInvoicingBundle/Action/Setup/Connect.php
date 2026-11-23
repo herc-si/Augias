@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Action\Setup;
 
 use Augias\ElectronicInvoicingBundle\Onboarding\ElectronicInvoicingOnboarding;
+use Augias\ElectronicInvoicingBundle\Onboarding\PlatformConnectionGate;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpConnector;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -36,6 +37,7 @@ final class Connect extends AbstractController
         private readonly ElectronicInvoicingOnboarding $onboarding,
         private readonly SuperPdpConnector $connector,
         private readonly EntityManagerInterface $entityManager,
+        private readonly PlatformConnectionGate $gate,
     ) {
     }
 
@@ -47,6 +49,12 @@ final class Connect extends AbstractController
 
         if (! $this->isCsrfTokenValid(self::CSRF, (string) $request->request->get('_token'))) {
             $this->addFlash('error', 'einvoicing.setup.invalid_token');
+
+            return $this->redirectToRoute('_einvoicing_setup');
+        }
+
+        if ($this->gate->waitsForCardUntil() !== null) {
+            $this->addFlash('warning', 'einvoicing.setup.platform.trial_needs_card_flash');
 
             return $this->redirectToRoute('_einvoicing_setup');
         }

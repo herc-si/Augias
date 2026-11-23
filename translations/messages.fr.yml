@@ -1659,6 +1659,10 @@ einvoicing:
             connected: 'Votre compte %name% est connecté.'
             self_hosted: 'Choisissez la plateforme agréée par laquelle passeront vos factures, et saisissez les identifiants qu''elle vous a donnés.'
             choose: 'Choisir une plateforme'
+            trial_needs_card_title: 'Ajoutez un moyen de paiement pour l''activer'
+            trial_needs_card: 'Pendant l''essai gratuit, la facturation électronique s''active une fois un moyen de paiement enregistré. Vous restez en essai jusqu''au %date% : le premier paiement n''a lieu qu''à cette date, et vous pouvez résilier avant sans frais.'
+            trial_needs_card_cta: 'Ajouter un moyen de paiement'
+            trial_needs_card_flash: 'Pendant l''essai gratuit, la facturation électronique s''active une fois un moyen de paiement enregistré : le premier paiement n''a lieu qu''à la fin de l''essai.'
         verification:
             title: 'Vérification'
             later: 'Une fois votre compte connecté, la plateforme vérifie votre identité.'

@@ -113,7 +113,15 @@
                         <li>{{ 'einvoicing.setup.platform.what_2'|trans }}</li>
                         <li>{{ 'einvoicing.setup.platform.what_3'|trans }}</li>
                     </ul>
-                    {% if progress.identityDone %}
+                    {% if waitsForCardUntil %}
+                        <div class="alert alert-info" role="status" id="trial-needs-card">
+                            <h4 class="alert-heading">{{ 'einvoicing.setup.platform.trial_needs_card_title'|trans }}</h4>
+                            <p>{{ 'einvoicing.setup.platform.trial_needs_card'|trans({'%date%': waitsForCardUntil|format_date('long')}) }}</p>
+                            <a href="{{ path('billing_index') }}" class="btn btn-primary">
+                                {{ ux_icon('tabler:credit-card', {width: 18, height: 18}) }} {{ 'einvoicing.setup.platform.trial_needs_card_cta'|trans }}
+                            </a>
+                        </div>
+                    {% elseif progress.identityDone %}
                         <form method="post" action="{{ path('_einvoicing_setup_connect') }}">
                             <input type="hidden" name="_token" value="{{ csrf_token('einvoicing_setup_connect') }}">
                             <button type="submit" class="btn btn-primary">

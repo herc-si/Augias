@@ -17,6 +17,7 @@ use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Exception;
+use SolidWorx\Platform\SaasBundle\Entity\Subscription;
 use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
 use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionProviderInterface;
 use SolidWorx\Toggler\ToggleInterface;
@@ -34,29 +35,46 @@ final readonly class SubscriptionService
 
     public function isTrialSubscription(): bool
     {
-        // Return false if SaaS is not enabled
+        return $this->unbilledTrial() instanceof Subscription;
+    }
+
+    /**
+     * The current company's trial when no card is on file yet: the 30 days
+     * of Découverte nobody has committed to. Null otherwise, and outside the
+     * service.
+     */
+    public function unbilledTrial(): ?Subscription
+    {
+        $subscription = $this->current();
+
+        // Subscribed during the trial (billed at its end): not restricted.
+        return $subscription?->getStatus() === SubscriptionStatus::TRIAL && ! $subscription->isExternallyBilled() ? $subscription : null;
+    }
+
+    /**
+     * The current company's subscription; null outside the service.
+     */
+    public function current(): ?Subscription
+    {
         if (! $this->toggler->isActive('saas_enabled')) {
-            return false;
+            return null;
         }
 
         try {
             $companyId = $this->companySelector->getCompany();
             if (! $companyId instanceof Ulid) {
-                return false;
+                return null;
             }
 
             $company = $this->companyRepository->find($companyId);
             if (! $company instanceof Company) {
-                return false;
+                return null;
             }
 
-            $subscription = $this->subscriptionProvider->getSubscriptionFor($company);
-
-            // Subscribed during the trial (billed at its end): not restricted.
-            return $subscription?->getStatus() === SubscriptionStatus::TRIAL && ! $subscription->isExternallyBilled();
+            return $this->subscriptionProvider->getSubscriptionFor($company);
         } catch (Exception) {
             // Handle cases where subscription tables don't exist (self-hosted, dev environments)
-            return false;
+            return null;
         }
     }
 }

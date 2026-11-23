@@ -14,12 +14,15 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Action\SuperPdp;
 
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
+use Augias\ElectronicInvoicingBundle\Onboarding\PlatformConnectionGate;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdp\SuperPdpConnector;
 use Augias\ElectronicInvoicingBundle\Provider\SuperPdpProvider;
 use Augias\UserBundle\Entity\User;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 
 /**
@@ -32,6 +35,8 @@ final readonly class Connect
 {
     public function __construct(
         private SuperPdpConnector $connector,
+        private PlatformConnectionGate $gate,
+        private UrlGeneratorInterface $urlGenerator,
     ) {
     }
 
@@ -39,6 +44,17 @@ final readonly class Connect
     {
         if (SuperPdpProvider::getName() !== $setting->getProvider() || ! $this->connector->isAvailable()) {
             throw new NotFoundHttpException();
+        }
+
+        // Every way in comes through here: the setup, and the platform's
+        // settings page.
+        if ($this->gate->waitsForCardUntil() !== null) {
+            $session = $request->getSession();
+            if ($session instanceof FlashBagAwareSessionInterface) {
+                $session->getFlashBag()->add('warning', 'einvoicing.setup.platform.trial_needs_card_flash');
+            }
+
+            return new RedirectResponse($this->urlGenerator->generate('_einvoicing_setup'));
         }
 
         return new RedirectResponse($this->connector->start($setting, $request->getSession(), $user->getEmail()));

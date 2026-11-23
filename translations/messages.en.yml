@@ -1659,6 +1659,10 @@ einvoicing:
             connected: 'Your %name% account is connected.'
             self_hosted: 'Choose the approved platform your invoices will go through, and enter the credentials it gave you.'
             choose: 'Choose a platform'
+            trial_needs_card_title: 'Add a payment method to switch it on'
+            trial_needs_card: 'During the free trial, electronic invoicing is switched on once a payment method is on file. Your trial runs until %date%: the first payment is only taken then, and you can cancel before at no cost.'
+            trial_needs_card_cta: 'Add a payment method'
+            trial_needs_card_flash: 'During the free trial, electronic invoicing is switched on once a payment method is on file: the first payment is only taken at the end of the trial.'
         verification:
             title: 'Verification'
             later: 'Once your account is connected, the platform verifies your identity.'

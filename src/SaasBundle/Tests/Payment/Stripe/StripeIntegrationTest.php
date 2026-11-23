@@ -61,7 +61,7 @@ final class StripeIntegrationTest extends TestCase
         self::assertSame($subscription->getId()->toBase58(), $body['client_reference_id']);
         self::assertSame(['metadata' => ['subscription_id' => $subscription->getId()->toBase58()]], $body['subscription_data']);
         self::assertSame('https://app.test/billing_index', $body['cancel_url']);
-        self::assertSame('https://app.test/saas_payment_success', $body['success_url']);
+        self::assertSame('https://app.test/saas_payment_success?session_id={CHECKOUT_SESSION_ID}', $body['success_url']);
     }
 
     public function testTheRemainingTrialCarriesOverToStripe(): void
