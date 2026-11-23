@@ -29,7 +29,8 @@ use function str_starts_with;
  *
  * Every `customer.subscription.*` event re-reads its subscription from
  * Stripe (StripeSubscriptionSync); `invoice.paid` has HERC SI's invoice
- * issued (SubscriptionInvoiceIssuer). Any other event is acknowledged and
+ * issued (SubscriptionInvoiceIssuer); `charge.refunded` its credit note
+ * (SubscriptionRefundCreditor). Any other event is acknowledged and
  * left alone: refusing it would only make Stripe send it again.
  *
  * @see \Augias\SaasBundle\Tests\Payment\Stripe\StripeWebhookConsumerTest
@@ -40,6 +41,7 @@ final readonly class StripeWebhookConsumer implements ConsumerInterface
     public function __construct(
         private StripeSubscriptionSync $sync,
         private SubscriptionInvoiceIssuer $invoiceIssuer,
+        private SubscriptionRefundCreditor $refundCreditor,
         private RequestStack $requestStack,
     ) {
     }
@@ -57,6 +59,12 @@ final readonly class StripeWebhookConsumer implements ConsumerInterface
 
         if ($event->getName() === 'invoice.paid') {
             $this->invoiceIssuer->issue($objectId);
+
+            return;
+        }
+
+        if ($event->getName() === 'charge.refunded') {
+            $this->refundCreditor->refunded($objectId);
 
             return;
         }

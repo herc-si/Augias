@@ -71,6 +71,8 @@ use function strtoupper;
  * kept as the payment's reference, and a payment already recorded under it
  * means the invoice exists.
  *
+ * A payment Stripe gives back gets its credit note (SubscriptionRefundCreditor).
+ *
  * The subscriber is found among HERC SI's clients by SIREN, then by email,
  * so that one already invoiced for something else stays one client. Each
  * invoice brings that client up to date with what the subscriber declares
@@ -103,6 +105,7 @@ final readonly class SubscriptionInvoiceIssuer
         private TranslatorInterface $translator,
         private LoggerInterface $logger,
         private SubscriberPurchaseRecorder $subscriberPurchases,
+        private SubscriptionRefundCreditor $refunds,
         #[Autowire(env: 'AUGIAS_SAAS_BILLING_COMPANY')]
         private string $billingCompany,
     ) {
@@ -110,13 +113,31 @@ final readonly class SubscriptionInvoiceIssuer
 
     public function issue(string $stripeInvoiceId): ?Invoice
     {
+        $remote = [];
+        $invoice = $this->issueInvoice($stripeInvoiceId, $remote);
+
+        // Refunded before Stripe reported it paid — a second subscription
+        // cancelled at once (StripeSubscriptionSync): its refund found no
+        // invoice to credit then.
+        if ($invoice instanceof Invoice && is_array($remote['charge'] ?? null)) {
+            $this->refunds->credit($remote['charge']);
+        }
+
+        return $invoice;
+    }
+
+    /**
+     * @param array<string, mixed> $remote set to Stripe's invoice, its charge expanded
+     */
+    private function issueInvoice(string $stripeInvoiceId, array &$remote): ?Invoice
+    {
         if ($this->billingCompany === '') {
             $this->logger->warning('AUGIAS_SAAS_BILLING_COMPANY is not set: no invoice issued for a Stripe payment.', ['stripe_invoice' => $stripeInvoiceId]);
 
             return null;
         }
 
-        $remote = $this->api->get('invoices/' . $stripeInvoiceId);
+        $remote = $this->api->get('invoices/' . $stripeInvoiceId, ['expand' => ['charge.refunds']]);
         $amount = $remote['amount_paid'] ?? 0;
 
         // A trial's first invoice, or one a credit covered: nothing was paid.

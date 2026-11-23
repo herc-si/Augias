@@ -20,6 +20,7 @@ use Augias\CoreBundle\Telemetry\Telemetry;
 use Augias\CoreBundle\Telemetry\TelemetryEvent;
 use Augias\ElectronicInvoicingBundle\Onboarding\OnboardingProgressProviderInterface;
 use Augias\SaasBundle\Action\ChoosePlanAction;
+use Augias\SaasBundle\Payment\CheckoutGuard;
 use Augias\UserBundle\Entity\User;
 use DateInterval;
 use Doctrine\ORM\EntityManagerInterface;
@@ -68,6 +69,14 @@ class SubscribeController extends AbstractController
         if (! $subscription instanceof Subscription) {
             $this->addFlash('error', 'saas.flash.no_subscription_short');
             return $this->redirectToRoute('_dashboard');
+        }
+
+        $refusal = CheckoutGuard::refusal($subscription, $this->clock->now());
+
+        if ($refusal !== null) {
+            $this->addFlash('warning', $refusal);
+
+            return $this->redirectToRoute('billing_index');
         }
 
         // HERC SI invoices the subscriber: without a SIREN it would be a

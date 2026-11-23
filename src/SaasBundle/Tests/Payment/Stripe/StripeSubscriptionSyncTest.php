@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\SaasBundle\Tests\Payment\Stripe;
 
+use const PHP_URL_PATH;
 use Augias\CoreBundle\ConfigWriter;
 use Augias\CoreBundle\Telemetry\Telemetry;
 use Augias\CoreBundle\Tests\Telemetry\CollectingMessageBus;
@@ -24,6 +25,8 @@ use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\AbstractLogger;
+use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use ReflectionProperty;
 use SolidWorx\Platform\SaasBundle\Entity\Plan;
@@ -33,10 +36,15 @@ use SolidWorx\Platform\SaasBundle\Integration\PaymentIntegrationInterface;
 use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
 use SolidWorx\Platform\SaasBundle\Repository\SubscriptionRepositoryInterface;
 use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionManager;
+use Stringable;
 use Symfony\Bundle\FrameworkBundle\Secrets\AbstractVault;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use Symfony\Component\Uid\Ulid;
+use function array_shift;
+use function parse_url;
+use function strlen;
+use function substr;
 
 #[CoversClass(StripeSubscriptionSync::class)]
 final class StripeSubscriptionSyncTest extends TestCase
@@ -125,6 +133,54 @@ final class StripeSubscriptionSyncTest extends TestCase
         self::assertNull($this->subscription->getSubscriptionId());
     }
 
+    /**
+     * Two checkouts paid one after the other: the second subscription is
+     * cancelled and refunded, the first one stays (Rémi, 23/11/2026).
+     */
+    public function testASecondSubscriptionPaidWhileTheFirstIsBilledIsCancelledAndRefunded(): void
+    {
+        $this->subscription->setPlan($this->solo)->setSubscriptionId('sub_first')->setStatus(SubscriptionStatus::ACTIVE);
+        $requests = [];
+        $logger = new class() extends AbstractLogger {
+            /** @var list<string> */
+            public array $errors = [];
+
+            public function log($level, string | Stringable $message, array $context = []): void
+            {
+                if ($level === 'error') {
+                    $this->errors[] = (string) $message;
+                }
+            }
+        };
+
+        $this->makeSync(['id' => 'sub_second', 'status' => 'active', 'customer' => 'cus_1', 'latest_invoice' => 'in_second'], responses: [
+            new JsonMockResponse(['id' => 'sub_first', 'status' => 'active']),
+            new JsonMockResponse(['id' => 'sub_second', 'status' => 'canceled']),
+            new JsonMockResponse(['id' => 'in_second', 'status' => 'paid', 'payment_intent' => 'pi_second']),
+            new JsonMockResponse(['id' => 're_1', 'status' => 'succeeded']),
+        ], requests: $requests, logger: $logger)->sync('sub_second');
+
+        self::assertSame('sub_first', $this->subscription->getSubscriptionId());
+        self::assertSame(SubscriptionStatus::ACTIVE, $this->subscription->getStatus());
+        self::assertSame(['GET subscriptions/sub_second', 'GET subscriptions/sub_first', 'DELETE subscriptions/sub_second', 'GET invoices/in_second', 'POST refunds'], $requests);
+        self::assertCount(1, $logger->errors);
+        self::assertStringContainsString('cancelled and refunded', $logger->errors[0]);
+    }
+
+    public function testANewSubscriptionTakesOverFromOneNoLongerBilled(): void
+    {
+        $this->subscription->setPlan($this->solo)->setSubscriptionId('sub_first')->setStatus(SubscriptionStatus::EXPIRED);
+        $requests = [];
+
+        $this->makeSync(['id' => 'sub_second', 'status' => 'active'], responses: [
+            new JsonMockResponse(['id' => 'sub_first', 'status' => 'canceled']),
+        ], requests: $requests)->sync('sub_second');
+
+        self::assertSame('sub_second', $this->subscription->getSubscriptionId());
+        self::assertSame(SubscriptionStatus::ACTIVE, $this->subscription->getStatus());
+        self::assertSame(['GET subscriptions/sub_second', 'GET subscriptions/sub_first'], $requests);
+    }
+
     public function testASubscriptionUnknownHereIsIgnored(): void
     {
         $sync = $this->makeSync(['status' => 'active', 'metadata' => []], found: false);
@@ -157,9 +213,11 @@ final class StripeSubscriptionSyncTest extends TestCase
     }
 
     /**
-     * @param array<string, mixed> $remote
+     * @param array<string, mixed>   $remote
+     * @param list<JsonMockResponse> $responses what Stripe answers after the subscription itself
+     * @param list<string>           $requests  filled with "METHOD path" for each request
      */
-    private function makeSync(array $remote, bool $found = true): StripeSubscriptionSync
+    private function makeSync(array $remote, bool $found = true, array $responses = [], array &$requests = [], ?LoggerInterface $logger = null): StripeSubscriptionSync
     {
         $remote += [
             'id' => 'sub_1',
@@ -175,11 +233,15 @@ final class StripeSubscriptionSyncTest extends TestCase
         $plans->method('find')->willReturnCallback(fn (string $id): ?Plan => ['price_solo' => $this->solo, '0' => $this->free][$id] ?? null);
 
         return new StripeSubscriptionSync(
-            new StripeApi(new MockHttpClient([new JsonMockResponse($remote)], 'https://api.stripe.com/v1/')),
+            new StripeApi(new MockHttpClient(static function (string $method, string $url) use (&$responses, &$requests, $remote): JsonMockResponse {
+                $requests[] = $method . ' ' . substr((string) parse_url($url, PHP_URL_PATH), strlen('/v1/'));
+
+                return $requests === [$requests[0]] ? new JsonMockResponse($remote) : (array_shift($responses) ?? new JsonMockResponse(['error' => ['message' => 'unexpected']], ['http_code' => 500]));
+            }, 'https://api.stripe.com/v1/')),
             $subscriptions,
             new SubscriptionManager($subscriptions, $plans, $this->createStub(PaymentIntegrationInterface::class)),
             new RemotePlanSync($subscriptions, $plans, new NullLogger(), $this->telemetry()),
-            new NullLogger(),
+            $logger ?? new NullLogger(),
         );
     }
 }

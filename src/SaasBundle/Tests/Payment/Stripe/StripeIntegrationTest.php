@@ -94,6 +94,7 @@ final class StripeIntegrationTest extends TestCase
             new JsonMockResponse(['data' => [['id' => 'cus_other', 'metadata' => ['augias_company' => 'someone-else']]]]),
             new JsonMockResponse(['data' => []]),
             new JsonMockResponse(['id' => 'cus_new']),
+            new JsonMockResponse(['data' => []]),
             new JsonMockResponse(['url' => 'https://checkout.stripe.com/x']),
         ], $address)->checkout($subscription, Options::new()->withEmail('jo@acme.fr')->withSkipTrial(true));
 
@@ -107,7 +108,7 @@ final class StripeIntegrationTest extends TestCase
             'address' => ['line1' => '12 rue des Essais', 'postal_code' => '69001', 'city' => 'Lyon', 'country' => 'FR'],
         ], $this->requests[2]['body']);
 
-        $body = $this->requests[3]['body'];
+        $body = $this->requests[4]['body'];
         self::assertSame('cus_new', $body['customer']);
         self::assertSame(['address' => 'auto', 'name' => 'auto'], $body['customer_update']);
         self::assertArrayNotHasKey('customer_email', $body);
@@ -122,12 +123,56 @@ final class StripeIntegrationTest extends TestCase
         $this->integration([
             new JsonMockResponse(['data' => [['id' => 'cus_1', 'metadata' => ['augias_company' => $company->getId()->toBase58()]]]]),
             new JsonMockResponse(['id' => 'cus_1']),
+            new JsonMockResponse(['data' => []]),
             new JsonMockResponse(['url' => 'https://checkout.stripe.com/x']),
         ])->checkout($subscription, Options::new()->withEmail('jo@acme.fr')->withSkipTrial(true));
 
         self::assertStringEndsWith('/v1/customers/cus_1', $this->requests[1]['url']);
         self::assertSame('Acme SARL', $this->requests[1]['body']['name']);
-        self::assertSame('cus_1', $this->requests[2]['body']['customer']);
+        self::assertSame('cus_1', $this->requests[3]['body']['customer']);
+    }
+
+    /**
+     * The checkout opened in another tab, or left by the back button, is
+     * closed first: paying both would open two subscriptions (23/11/2026).
+     */
+    public function testACheckoutStillOpenForTheSubscriptionIsClosedBeforeANewOne(): void
+    {
+        $company = $this->company('Acme SARL');
+        $subscription = $this->subscription('price_solo', '+10 days')->setSubscriber($company);
+        $reference = $subscription->getId()->toBase58();
+
+        $this->integration([
+            new JsonMockResponse(['data' => [['id' => 'cus_1', 'metadata' => ['augias_company' => $company->getId()->toBase58()]]]]),
+            new JsonMockResponse(['id' => 'cus_1']),
+            new JsonMockResponse(['data' => [
+                ['id' => 'cs_mine', 'client_reference_id' => $reference],
+                ['id' => 'cs_other_subscription', 'client_reference_id' => 'another-one'],
+            ]]),
+            new JsonMockResponse(['id' => 'cs_mine', 'status' => 'expired']),
+            new JsonMockResponse(['url' => 'https://checkout.stripe.com/x']),
+        ])->checkout($subscription, Options::new()->withEmail('jo@acme.fr')->withSkipTrial(true));
+
+        self::assertStringContainsString('/v1/checkout/sessions?customer=cus_1&status=open', $this->requests[2]['url']);
+        self::assertSame('POST', $this->requests[3]['method']);
+        self::assertStringEndsWith('/v1/checkout/sessions/cs_mine/expire', $this->requests[3]['url']);
+        self::assertStringEndsWith('/v1/checkout/sessions', $this->requests[4]['url']);
+        self::assertCount(5, $this->requests, 'The other subscription\'s checkout is left alone.');
+    }
+
+    public function testTheCheckoutStillOpensWhenTheOpenOnesCannotBeListed(): void
+    {
+        $company = $this->company('Acme SARL');
+        $subscription = $this->subscription('price_solo', '+10 days')->setSubscriber($company);
+
+        $url = $this->integration([
+            new JsonMockResponse(['data' => [['id' => 'cus_1', 'metadata' => ['augias_company' => $company->getId()->toBase58()]]]]),
+            new JsonMockResponse(['id' => 'cus_1']),
+            new JsonMockResponse(['error' => ['message' => 'Rate limited']], ['http_code' => 429]),
+            new JsonMockResponse(['url' => 'https://checkout.stripe.com/x']),
+        ])->checkout($subscription, Options::new()->withEmail('jo@acme.fr')->withSkipTrial(true));
+
+        self::assertSame('https://checkout.stripe.com/x', $url);
     }
 
     public function testTheCheckoutStillOpensWhenTheCustomerCannotBePrepared(): void

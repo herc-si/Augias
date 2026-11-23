@@ -65,6 +65,16 @@ final readonly class StripeApi
     }
 
     /**
+     * @return array<string, mixed>
+     *
+     * @throws PaymentIntegrationException
+     */
+    public function delete(string $path): array
+    {
+        return $this->request('DELETE', $path, []);
+    }
+
+    /**
      * @param array<string, mixed> $options
      *
      * @return array<string, mixed>
