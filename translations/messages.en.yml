@@ -513,6 +513,7 @@ bill:
         tax: 'VAT'
         total: Total
 billing:
+    notes: Notes
     seller_identity:
         address: "Your documents will go out without your company's address."
         both: "Your documents will go out without your company's address or identifier (registration number, VAT number…)."
@@ -1676,6 +1677,8 @@ einvoicing:
         title: E-reporting
         intro: 'Sales to private individuals do not go through electronic invoicing: Augias reports them to your platform, which aggregates them and sends them to the tax administration on the schedule of your VAT regime.'
         period: 'from %start% to %end%'
+        declaration:
+            period: '%kind% from %start% to %end%'
         not_connected:
             title: 'No platform connected'
             description: 'E-reporting goes through your electronic invoicing platform. Connect one so your sales to private individuals are reported.'

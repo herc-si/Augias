@@ -5,6 +5,9 @@ accounting:
 bill:
     constraint:
         supplier_required: 'Choisissez un fournisseur existant, ou saisissez un nom ci-dessous pour en créer un nouveau.'
+category:
+    constraint:
+        at_least_one_usage: 'Choisissez au moins un usage : achats ou catalogue.'
 client:
     constraint:
         contacts:
@@ -23,6 +26,11 @@ core:
         field_key: 'La clé du champ doit commencer par une lettre minuscule et ne contenir que des lettres minuscules, des chiffres et des underscores.'
         similar_label: 'Un champ personnalisé avec un libellé similaire existe déjà pour la cible sélectionnée.'
         unique_label: 'Un champ personnalisé avec ce libellé existe déjà pour la cible sélectionnée.'
+credit_note:
+    lines:
+        min: 'Un avoir doit avoir au moins une ligne.'
+    users:
+        min: 'Choisissez au moins un contact à qui envoyer l''avoir.'
 einvoicing:
     setup:
         identity:

@@ -24,6 +24,7 @@ client:
         view_client: 'View Client'
 credit_note:
     subject: 'Credit note %id% - %company%'
+    title: 'Credit note %id%'
 einvoicing:
     notification_disputed:
         alert: 'Electronic Invoice Disputed'
