@@ -15,6 +15,7 @@ namespace Augias\UserBundle\Twig\Components;
 
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Repository\UserRepository;
+use Augias\UserBundle\Security\AccountSecurity;
 use Augias\UserBundle\Security\AuthenticatorAppPolicy;
 use Carbon\Carbon;
 use Endroid\QrCode\Builder\Builder;
@@ -65,6 +66,13 @@ final class TwoFactorSettings extends AbstractController
     #[LiveProp(writable: true)]
     public bool $showQrModal = false;
 
+    /**
+     * Said on the page itself: a flash message would only show on the next
+     * page load.
+     */
+    #[LiveProp]
+    public bool $trustedDevicesForgotten = false;
+
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly TotpAuthenticatorInterface $totpAuthenticator,
@@ -75,6 +83,7 @@ final class TwoFactorSettings extends AbstractController
         private readonly BackupCodeGeneratorInterface $backupCodeGenerator,
         private readonly TokenStorageInterface $tokenStorage,
         private readonly AuthenticatorAppPolicy $authenticatorAppPolicy,
+        private readonly AccountSecurity $accountSecurity,
     ) {
     }
 
@@ -248,6 +257,17 @@ final class TwoFactorSettings extends AbstractController
         assert($user instanceof UserInterface);
 
         $this->trustedDeviceTokenStorage->clearTrustedToken($user->getUserIdentifier(), 'main');
+    }
+
+    #[LiveAction]
+    public function forgetAllTrustedDevices(): void
+    {
+        $user = $this->getUser();
+
+        $this->accountSecurity->forgetTrustedDevices($user);
+        $this->trustedDeviceTokenStorage->clearTrustedToken($user->getUserIdentifier(), 'main');
+
+        $this->trustedDevicesForgotten = true;
     }
 
     #[Override]

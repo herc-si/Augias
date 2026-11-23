@@ -150,7 +150,7 @@
         {# ============================================ #}
         {# Section 4: Trusted Device                   #}
         {# ============================================ #}
-        {% if isDeviceTrusted %}
+        {% if app.user.is2FaEnabled %}
             <section class="form-page-section">
                 <div class="section-header">
                     <div class="section-icon section-icon--security">
@@ -163,22 +163,42 @@
                 </div>
 
                 <div class="section-content">
+                    {% if isDeviceTrusted %}
+                        <div class="two-factor-section-content mb-3">
+                            <div class="two-factor-section-info">
+                                <div class="mb-2">
+                                    <span class="badge bg-success-lt">
+                                        {{ ux_icon('tabler:check', {width: 16, height: 16}) }}
+                                        {{ 'security.two_factor.settings.trusted.badge'|trans }}
+                                    </span>
+                                </div>
+                                <p class="text-muted mb-0 small">
+                                    {{ 'security.two_factor.settings.trusted.note'|trans }}
+                                </p>
+                            </div>
+                            <div class="two-factor-section-actions">
+                                <button type="button" class="btn btn-outline-danger" {{ live_action('clearTrustedDevice:prevent') }}>
+                                    {{ ux_icon('tabler:x', {width: 18, height: 18}) }}
+                                    {{ 'security.two_factor.settings.trusted.revoke'|trans }}
+                                </button>
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if trustedDevicesForgotten %}
+                        <div class="alert alert-success" role="status">
+                            {{ 'security.two_factor.settings.trusted.forgotten'|trans }}
+                        </div>
+                    {% endif %}
                     <div class="two-factor-section-content">
                         <div class="two-factor-section-info">
-                            <div class="mb-2">
-                                <span class="badge bg-success-lt">
-                                    {{ ux_icon('tabler:check', {width: 16, height: 16}) }}
-                                    {{ 'security.two_factor.settings.trusted.badge'|trans }}
-                                </span>
-                            </div>
                             <p class="text-muted mb-0 small">
-                                {{ 'security.two_factor.settings.trusted.note'|trans }}
+                                {{ 'security.two_factor.settings.trusted.forget_all_note'|trans }}
                             </p>
                         </div>
                         <div class="two-factor-section-actions">
-                            <button type="button" class="btn btn-danger" {{ live_action('clearTrustedDevice:prevent') }}>
-                                {{ ux_icon('tabler:x', {width: 18, height: 18}) }}
-                                {{ 'security.two_factor.settings.trusted.revoke'|trans }}
+                            <button type="button" class="btn btn-danger" {{ live_action('forgetAllTrustedDevices:prevent') }}>
+                                {{ ux_icon('tabler:logout', {width: 18, height: 18}) }}
+                                {{ 'security.two_factor.settings.trusted.forget_all'|trans }}
                             </button>
                         </div>
                     </div>

@@ -19,6 +19,7 @@ use Augias\CoreBundle\Test\Traits\DoctrineTestTrait;
 use Augias\Test\SaasKernel;
 use Augias\UserBundle\Entity\User;
 use Augias\UserBundle\Enum\CompanyRole;
+use Augias\UserBundle\Security\AccountSecurity;
 use Augias\UserBundle\Test\Factory\UserFactory;
 use OTPHP\TOTP;
 use Override;
@@ -66,6 +67,26 @@ final class TrustedDeviceTest extends WebTestCase
         $this->forgetSession($browser);
 
         $this->signIn($browser)->assertNotOn('/2fa')->assertNotOn('/login');
+    }
+
+    public function testForgettingAllDevicesAsksForTheCodeAgainOnATrustedOne(): void
+    {
+        $user = $this->account();
+
+        $browser = $this->signIn($this->browser())->assertOn('/2fa');
+        $browser
+            ->fillField('_auth_code', $this->code())
+            ->checkField('_trusted')
+            ->click('button[type=submit]')
+            ->assertNotOn('/2fa');
+
+        $security = self::getContainer()->get(AccountSecurity::class);
+        self::assertInstanceOf(AccountSecurity::class, $security);
+        $security->forgetTrustedDevices($user);
+
+        $this->forgetSession($browser);
+
+        $this->signIn($browser)->assertOn('/2fa');
     }
 
     public function testAnUntrustedDeviceIsAskedForTheCodeAgain(): void
@@ -123,7 +144,7 @@ final class TrustedDeviceTest extends WebTestCase
         return TOTP::createFromSecret(self::SECRET)->now();
     }
 
-    private function account(): void
+    private function account(): User
     {
         $company = CompanyFactory::createOne(['name' => 'Shop']);
         $company = $this->em->find(Company::class, $company->getId());
@@ -141,5 +162,7 @@ final class TrustedDeviceTest extends WebTestCase
         $user->setTotpSecret(self::SECRET);
         $user->setBackUpCodes(['A1B2C3-D4E5F6']);
         $this->em->flush();
+
+        return $user;
     }
 }

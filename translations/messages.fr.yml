@@ -4085,11 +4085,14 @@ security:
                 not_configured: 'Configurez une application d''authentification pour une sécurité renforcée'
                 title: 'Application d''authentification'
             trusted:
-                badge: 'Appareil de confiance'
-                description: "Cet appareil est approuvé et ne nécessitera pas de vérification 2FA"
-                note: "Vous ne serez pas invité à saisir de code de vérification sur cet appareil"
-                revoke: 'Révoquer la confiance'
-                title: 'Appareil de confiance'
+                badge: 'Cet appareil est de confiance'
+                description: 'Les appareils sur lesquels vous avez coché « Faire confiance à cet appareil » ne vous demandent le code que tous les 30 jours.'
+                forget_all: 'Oublier tous les appareils'
+                forget_all_note: 'Ordinateur perdu, case cochée sur un poste partagé ? Le code sera redemandé à la prochaine connexion sur chacun de vos appareils, y compris celui-ci.'
+                forgotten: 'Tous vos appareils ont été oubliés : le code sera redemandé à la prochaine connexion sur chacun d''eux.'
+                note: 'Le code ne vous sera pas redemandé ici avant 30 jours.'
+                revoke: 'Retirer cet appareil'
+                title: 'Appareils de confiance'
         subtitle: 'Ajoutez une couche de sécurité supplémentaire à votre compte'
         title: 'Authentification à deux facteurs'
         totp:

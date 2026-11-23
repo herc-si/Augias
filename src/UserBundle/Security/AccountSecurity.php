@@ -62,12 +62,22 @@ final readonly class AccountSecurity
         $this->notify($previousEmail, 'email_changed', ['%email%' => $previousEmail, '%new_email%' => $user->getEmail()]);
     }
 
-    private function secure(User $user): void
+    /**
+     * Every device trusted to skip the second factor asks for it again on
+     * its next sign-in: the trust cookies carry this version, now stale.
+     * Also what the holder does from the two-factor page after losing a
+     * computer, or ticking the box on a shared one (Rémi, 23/11/2026).
+     */
+    public function forgetTrustedDevices(User $user): void
     {
         $this->entityManager->createQuery(sprintf('UPDATE %s u SET u.trustedVersion = u.trustedVersion + 1 WHERE u.id = :id', User::class))
             ->setParameter('id', $user->getId(), 'ulid')
             ->execute();
+    }
 
+    private function secure(User $user): void
+    {
+        $this->forgetTrustedDevices($user);
         $this->resetRequests->removeRequests($user);
     }
 
