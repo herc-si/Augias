@@ -3965,6 +3965,7 @@ saas:
         continue_free: 'Continuer avec le plan gratuit'
         current: 'Plan actuel'
         feature:
+            assistant_questions_per_month: 'Questions à l''assistant par mois'
             automated_reminders: 'Relances automatiques'
             companies: 'Sociétés couvertes'
             custom_branding: 'Votre marque sur les documents'
