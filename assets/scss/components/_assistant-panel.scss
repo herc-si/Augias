@@ -1,22 +1,21 @@
 /**
  * Assistant panel
  *
- * Docked on the right of every page and left open from one page to the
- * next (assistant-panel controller). From lg up it takes its width from
- * the page instead of covering it; below, it covers the screen.
+ * A window floating over the page, under the top bar button that opens it,
+ * left open from one page to the next (assistant-panel controller). It
+ * covers the content rather than pushing it; on phones it takes the screen.
  */
 
 $assistant-panel-width: 400px;
+$assistant-panel-height: 640px;
 
 .assistant-panel {
     position: fixed;
-    inset: 0 0 0 auto;
+    inset: 0;
     z-index: var(--swp-z-fixed);
-    width: 100%;
     display: flex;
     flex-direction: column;
     background: var(--tblr-bg-surface, #ffffff);
-    border-left: 1px solid var(--tblr-border-color);
     box-shadow: var(--swp-shadow-lg);
 
     &[hidden] {
@@ -24,19 +23,12 @@ $assistant-panel-width: 400px;
     }
 
     @include media-breakpoint-up(lg) {
+        inset: 4.25rem var(--swp-space-4) auto auto;
         width: $assistant-panel-width;
-        box-shadow: var(--swp-shadow-md);
-    }
-}
-
-@include media-breakpoint-up(lg) {
-
-    body.assistant-open {
-
-        .page-wrapper,
-        > header.navbar {
-            margin-right: $assistant-panel-width;
-        }
+        height: min(#{$assistant-panel-height}, calc(100vh - 5.25rem));
+        border: 1px solid var(--tblr-border-color);
+        border-radius: var(--swp-radius-lg);
+        overflow: hidden;
     }
 }
 
