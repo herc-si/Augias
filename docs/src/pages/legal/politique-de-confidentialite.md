@@ -5,7 +5,7 @@ description: Quelles données Augias traite, à quel titre, avec qui, et pendant
 
 # Politique de confidentialité
 
-Dernière mise à jour : 18 novembre 2026
+Dernière mise à jour : 24 novembre 2026
 
 :::warning À compléter avant publication
 Projet rédigé à partir du fonctionnement réel de l'application, à relire par un juriste. Les mentions **[À COMPLÉTER]** attendent une information ou une décision de HERC SI. Une politique qui décrirait des traitements différents de ceux réellement effectués serait sans valeur, et la section 4 dépend de choix d'exploitation encore ouverts.
@@ -34,6 +34,9 @@ Concrètement : c'est à vous d'avoir une base légale pour traiter les données
 | Abonnement | plan, statut, dates, consommation des quotas | exécuter le contrat et facturer |
 | Invitations | adresse électronique des personnes que vous invitez dans votre équipe | leur ouvrir un accès |
 | Journaux techniques | adresse IP, date, page consultée, agent utilisateur, erreurs applicatives | sécurité, diagnostic de panne |
+| Journal de l'assistant intégré : qui l'a utilisé, quand, quel outil il a appelé, ce qui a été proposé, confirmé ou annulé ; ni les questions ni les réponses | **12 mois**, puis suppression automatique |
+| Conversation en cours avec l'assistant (questions et réponses) | le temps de la session : effacée à la déconnexion, par « Nouvelle conversation » ou à la désactivation de l'assistant |
+| Enregistrement de la voix d'une question dictée | non conservé par HERC SI : transmis pour transcription puis supprimé |
 | Journal de vos consultations | les dossiers que vous ouvrez — facture, devis, avoir, client, facture d'achat — avec leur nom et la date | vous permettre de retrouver ce que vous avez consulté ; ce journal est le vôtre et n'est visible que de vous |
 | Demandes d'assistance | le message que vous rédigez, l'adresse de la personne qui l'envoie, la durée d'accès choisie, l'intervenant de HERC SI qui la prend en charge, les dates, et le compte rendu d'intervention | vous assister à votre demande, et garder la trace de chaque accès ouvert à HERC SI |
 
@@ -62,6 +65,7 @@ Sous-traitants ultérieurs, au jour de cette mise à jour :
 | Sous-traitant | Rôle | Données concernées | Localisation |
 |---|---|---|---|
 | Infomaniak Network SA | hébergement de l'application et de la base, envoi des courriers électroniques (SMTP) | l'ensemble des données ; pour le SMTP, les destinataires et le contenu des messages envoyés | Suisse |
+| Infomaniak Network SA (AI Services) | traitement par intelligence artificielle des questions posées à l'assistant intégré, et transcription des questions dictées, **uniquement si le propriétaire de l'entreprise a activé l'assistant** | la question, et les données de l'entreprise nécessaires pour y répondre (clients, documents, montants) ; l'enregistrement de la voix pour une question dictée. Selon Infomaniak, les requêtes ne sont ni conservées ni utilisées pour entraîner les modèles | Suisse |
 | Stripe Payments Europe, Limited | encaissement des abonnements, par carte ou prélèvement SEPA | nom, adresse électronique et adresse de facturation du Client, moyen de paiement ; HERC SI ne reçoit ni les numéros de carte ni les coordonnées bancaires | Irlande ; **[À VÉRIFIER : transferts hors de l'Union prévus par l'accord de traitement des données de Stripe, et qualité de Stripe (sous-traitant ou responsable de traitement distinct) pour les données de paiement]** |
 | **[À COMPLÉTER : dénomination et siège de l'exploitant de SUPER PDP]** | plateforme agréée de facturation électronique : transmission et réception des factures électroniques, e-reporting, lorsque vous connectez votre compte | les factures et avoirs transmis ou reçus, avec l'identité et les coordonnées des parties qui y figurent | **[À COMPLÉTER]** |
 | Annuaire des entreprises (API de l'État, `recherche-entreprises.api.gouv.fr`) | recherche d'une entreprise pour préremplir une fiche client | le nom ou le numéro SIREN que vous saisissez dans la recherche | France |

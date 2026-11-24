@@ -20,10 +20,18 @@ interface Action {
     details: { label: string; value: string }[];
 }
 
+interface Notice {
+    text: string;
+    button: { label: string; action?: string; href?: string } | null;
+}
+
 interface State {
     messages: Message[];
     pending: boolean;
     action: Action | null;
+    notice?: Notice | null;
+    usage?: string | null;
+    canDeactivate?: boolean;
     error: string | null;
 }
 
@@ -43,7 +51,7 @@ const MAX_RECORDING_MS = 60000;
  * records a question and has it written out (AssistantTranscribeAction).
  */
 export default class extends Controller<HTMLElement> {
-    static targets = ['messages', 'empty', 'thinking', 'error', 'input', 'submit', 'scroller', 'reset', 'action', 'mic', 'status'];
+    static targets = ['messages', 'empty', 'thinking', 'error', 'input', 'submit', 'scroller', 'reset', 'action', 'mic', 'status', 'notice', 'usage', 'deactivate'];
 
     static values = {
         url: String,
@@ -54,6 +62,7 @@ export default class extends Controller<HTMLElement> {
         transcribeUrl: String,
         listeningLabel: String,
         transcribingLabel: String,
+        deactivateConfirm: String,
     };
 
     declare readonly messagesTarget: HTMLElement;
@@ -67,6 +76,9 @@ export default class extends Controller<HTMLElement> {
     declare readonly actionTarget: HTMLElement;
     declare readonly micTarget: HTMLButtonElement;
     declare readonly statusTarget: HTMLElement;
+    declare readonly noticeTarget: HTMLElement;
+    declare readonly usageTarget: HTMLElement;
+    declare readonly deactivateTarget: HTMLButtonElement;
 
     declare readonly urlValue: string;
     declare readonly tokenValue: string;
@@ -76,6 +88,7 @@ export default class extends Controller<HTMLElement> {
     declare readonly transcribeUrlValue: string;
     declare readonly listeningLabelValue: string;
     declare readonly transcribingLabelValue: string;
+    declare readonly deactivateConfirmValue: string;
 
     private busy = false;
     private poll: number | null = null;
@@ -85,6 +98,8 @@ export default class extends Controller<HTMLElement> {
     private recorder: MediaRecorder | null = null;
     private recordingTimer: number | null = null;
     private hint = '';
+    private blocked = false;
+    private lastNotice: Notice | null = null;
 
     private readonly onToggleClick = (event: Event): void => {
         const toggle = (event.target as Element | null)?.closest('[data-assistant-toggle]');
@@ -171,7 +186,7 @@ export default class extends Controller<HTMLElement> {
 
         const question = this.inputTarget.value.trim();
 
-        if (question === '' || this.busy) {
+        if (question === '' || this.busy || this.blocked) {
             return;
         }
 
@@ -192,6 +207,17 @@ export default class extends Controller<HTMLElement> {
 
         await this.send(new URLSearchParams({ reset: '1', _token: this.tokenValue }));
         this.inputTarget.focus();
+    }
+
+    async activate(): Promise<void> {
+        await this.send(new URLSearchParams({ activate: '1', _token: this.tokenValue }));
+        this.inputTarget.focus();
+    }
+
+    async deactivate(): Promise<void> {
+        if (window.confirm(this.deactivateConfirmValue)) {
+            await this.send(new URLSearchParams({ deactivate: '1', _token: this.tokenValue }));
+        }
     }
 
     async confirm(event: Event): Promise<void> {
@@ -365,6 +391,7 @@ export default class extends Controller<HTMLElement> {
         this.errorTarget.textContent = state.error ?? '';
         this.resetTarget.disabled = state.messages.length === 0 && state.action === null;
         this.renderAction(state.action);
+        this.renderAccess(state);
 
         // A question asked from another page: its answer is looked for again.
         if (state.pending && !this.busy) {
@@ -374,6 +401,50 @@ export default class extends Controller<HTMLElement> {
         }
 
         this.scrollerTarget.scrollTop = this.scrollerTarget.scrollHeight;
+    }
+
+    private renderAccess(state: State): void {
+        const notice = state.notice === undefined ? this.lastNotice : state.notice;
+        this.lastNotice = notice;
+        this.blocked = notice !== null;
+        this.noticeTarget.hidden = notice === null;
+        this.noticeTarget.replaceChildren();
+        this.inputTarget.disabled = this.blocked;
+        this.submitTarget.disabled = this.blocked || this.busy;
+        this.micTarget.disabled = this.blocked;
+        if (state.usage !== undefined) {
+            this.usageTarget.textContent = state.usage ?? '';
+        }
+
+        if (state.canDeactivate !== undefined) {
+            this.deactivateTarget.hidden = !state.canDeactivate;
+        }
+
+        if (notice === null) {
+            return;
+        }
+
+        // The examples invite a question that cannot be asked yet.
+        this.emptyTarget.hidden = true;
+
+        const text = document.createElement('p');
+        text.textContent = notice.text;
+        this.noticeTarget.append(text);
+
+        if (notice.button?.href) {
+            const link = document.createElement('a');
+            link.className = 'btn btn-primary';
+            link.href = notice.button.href;
+            link.textContent = notice.button.label;
+            this.noticeTarget.append(link);
+        } else if (notice.button?.action === 'activate') {
+            const button = document.createElement('button');
+            button.type = 'button';
+            button.className = 'btn btn-primary';
+            button.textContent = notice.button.label;
+            button.dataset.action = 'assistant-panel#activate';
+            this.noticeTarget.append(button);
+        }
     }
 
     private renderAction(action: Action | null): void {
@@ -434,7 +505,7 @@ export default class extends Controller<HTMLElement> {
 
     private setBusy(busy: boolean): void {
         this.busy = busy;
-        this.submitTarget.disabled = busy;
+        this.submitTarget.disabled = busy || this.blocked;
     }
 
     private startPolling(): void {

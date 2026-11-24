@@ -424,6 +424,7 @@ assistant:
     action_done: 'C''est fait, mais l''assistant ne répond plus pour le résumer : vérifiez dans Augias.'
     action_failed: 'L''action n''a pas pu être faite.'
     action_gone: 'Cette action n''attend plus de confirmation.'
+    activate: 'Activer l''assistant'
     ask: Demander
     busy: 'L''assistant répond déjà à une question : attendez sa réponse.'
     cancel: 'Annuler'
@@ -431,6 +432,8 @@ assistant:
     close: 'Fermer l''assistant'
     confirm: 'Confirmer'
     confirm_hint: 'Chaque modification vous est montrée avant d''être faite.'
+    deactivate: 'Désactiver l''assistant'
+    deactivate_confirm: 'Désactiver l''assistant pour toute l''entreprise ? La conversation en cours sera effacée.'
     draft_invoice: 'Facture brouillon'
     draft_quote: 'Devis brouillon'
     example_1: 'Qui me doit de l''argent, et depuis quand ?'
@@ -496,15 +499,23 @@ assistant:
     invalid_token: 'La page a expiré : posez votre question à nouveau.'
     listening: 'Je vous écoute… touchez le micro pour terminer.'
     no: 'Non'
+    notice:
+        not_in_plan: 'Votre offre ne comprend pas l''assistant. Il est inclus à partir de l''offre Solo.'
+        off_member: 'L''assistant n''est pas activé pour cette entreprise. Seul son propriétaire peut l''activer.'
+        off_owner: 'L''assistant est désactivé. En l''activant, vous acceptez que vos questions, et les données de l''entreprise nécessaires pour y répondre (clients, documents, montants), soient envoyées au service d''IA d''Infomaniak, en Suisse. Infomaniak ne les conserve pas et ne s''en sert pas pour entraîner ses modèles. Chaque modification vous est montrée avant d''être faite. Vous pourrez le désactiver à tout moment.'
+        quota_reached: 'Les %limit% questions de ce mois-ci sont utilisées. L''assistant reprend le %date%.'
     open: 'Ouvrir l''assistant'
+    owner_only: 'Seul le propriétaire de l''entreprise peut activer ou désactiver l''assistant.'
     question: 'Votre question'
     reset: 'Nouvelle conversation'
+    see_plans: 'Voir les offres'
     speak: 'Parler'
     thinking: 'L''assistant réfléchit…'
     title: Assistant
     transcribing: 'Transcription…'
     unavailable: 'L''assistant ne répond pas pour le moment. Réessayez dans quelques minutes.'
     unknown: 'Inconnu'
+    usage: '%used% / %limit% questions ce mois-ci'
     value:
         discount_type:
             money: 'Montant'

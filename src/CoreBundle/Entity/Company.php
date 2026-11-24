@@ -104,6 +104,18 @@ class Company implements Stringable, SubscribableInterface
     private ?DateTimeImmutable $closesAt = null;
 
     /**
+     * When the owner turned the built-in assistant on, having been told that
+     * questions and the data that answers them go to the AI provider; null
+     * while it is off, as it is to begin with.
+     */
+    #[ORM\Column(name: 'assistant_enabled_at', type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?DateTimeImmutable $assistantEnabledAt = null;
+
+    /** Who turned it on, as they signed in then. */
+    #[ORM\Column(name: 'assistant_enabled_by', type: Types::STRING, length: 180, nullable: true)]
+    private ?string $assistantEnabledBy = null;
+
+    /**
      * When the last reminder that the closure is near went out — once per
      * closure, so that a daily task does not send it every day.
      */
@@ -381,6 +393,37 @@ class Company implements Stringable, SubscribableInterface
         $this->closureRemindedAt = null;
         $this->closureReason = null;
         $this->closureScheduledAt = null;
+
+        return $this;
+    }
+
+    public function isAssistantEnabled(): bool
+    {
+        return $this->assistantEnabledAt instanceof DateTimeImmutable;
+    }
+
+    public function getAssistantEnabledAt(): ?DateTimeImmutable
+    {
+        return $this->assistantEnabledAt;
+    }
+
+    public function getAssistantEnabledBy(): ?string
+    {
+        return $this->assistantEnabledBy;
+    }
+
+    public function enableAssistant(DateTimeImmutable $at, string $by): self
+    {
+        $this->assistantEnabledAt = $at;
+        $this->assistantEnabledBy = $by;
+
+        return $this;
+    }
+
+    public function disableAssistant(): self
+    {
+        $this->assistantEnabledAt = null;
+        $this->assistantEnabledBy = null;
 
         return $this;
     }

@@ -157,6 +157,16 @@ final readonly class FeatureCopyRegistry
                     'New companies are covered as you open them',
                 ],
             ),
+            Feature::AssistantQuestionsPerMonth => new FeatureCopy(
+                icon: 'tabler:sparkles',
+                headline: 'Ask your books, by voice or text',
+                description: 'An assistant on every page answers questions about your figures and prepares quotes, invoices and catalogue items, each shown to you before it is made.',
+                bullets: [
+                    'Questions answered from your own data',
+                    'Every change confirmed by you first',
+                    'Processed in Switzerland, never used for training',
+                ],
+            ),
             Feature::McpAccess => new FeatureCopy(
                 icon: 'tabler:robot',
                 headline: 'Let AI agents work for you',

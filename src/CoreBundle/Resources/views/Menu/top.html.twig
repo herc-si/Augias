@@ -38,7 +38,7 @@
                     </div>
                 {% endif %}
 
-                {% if assistant_available() and route_allowed('_assistant_messages') %}
+                {% if assistant_available() and route_allowed('_assistant_messages') and not support_visit() %}
                     <div class="nav-item ms-3">
                         <button type="button" class="btn btn-outline-primary" data-assistant-toggle aria-controls="assistant-panel" aria-expanded="false" title="{{ 'assistant.open'|trans }}">
                             {{ ux_icon('tabler:sparkles', {width: 16, height: 16}) }}

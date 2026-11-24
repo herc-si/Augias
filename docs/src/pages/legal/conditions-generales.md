@@ -5,7 +5,7 @@ description: Conditions générales d'utilisation et de vente du service héberg
 
 # Conditions générales d'utilisation et de vente
 
-Dernière mise à jour : 16 novembre 2026
+Dernière mise à jour : 24 novembre 2026
 
 :::warning À compléter avant publication
 Ce document est un projet rédigé à partir du fonctionnement réel de l'application. Les mentions **[À COMPLÉTER]** attendent des informations ou des décisions de HERC SI, et l'ensemble doit être relu par un juriste avant d'engager HERC SI.
@@ -123,11 +123,13 @@ Sa responsabilité ne peut être engagée qu'en cas de faute prouvée et pour le
 
 En tout état de cause, et sauf faute lourde ou dolosive, la responsabilité du Prestataire au titre du contrat est plafonnée aux sommes effectivement versées par le Client au cours des douze mois précédant le fait générateur.
 
+Les réponses de l'assistant intégré sont produites par un modèle d'intelligence artificielle et peuvent être inexactes. Elles ne constituent pas un conseil comptable, fiscal ou juridique. Le Client vérifie ce que l'assistant lui propose avant de le confirmer, et reste responsable des documents émis et des paiements enregistrés, y compris lorsqu'il les a préparés au moyen de l'assistant.
+
 Aucune de ces limitations ne joue à l'égard des obligations que la loi rend impératives, notamment en matière de protection des données personnelles et de dommages corporels.
 
 ## 13. Sous-traitance et évolution du service
 
-Le Prestataire peut recourir à des sous-traitants pour l'hébergement, l'envoi des courriers électroniques, l'encaissement des paiements, le suivi des erreurs et la protection contre les inscriptions automatisées. Leur liste à jour figure dans la [politique de confidentialité](./politique-de-confidentialite.md).
+Le Prestataire peut recourir à des sous-traitants pour l'hébergement, l'envoi des courriers électroniques, l'encaissement des paiements, le suivi des erreurs, la protection contre les inscriptions automatisées et le traitement par intelligence artificielle des questions posées à l'assistant intégré, lorsque le propriétaire de l'entreprise l'a activé. Leur liste à jour figure dans la [politique de confidentialité](./politique-de-confidentialite.md).
 
 Le Prestataire peut faire évoluer le service. Aucune évolution ne peut supprimer une fonctionnalité substantielle du plan souscrit sans que le Client en soit informé dans les conditions de l'article 5.
 

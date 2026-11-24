@@ -41,6 +41,7 @@ enum Feature: string
     case CustomTemplates = 'custom_templates';
     case SupportAccess = 'support_access';
     case Companies = 'companies';
+    case AssistantQuestionsPerMonth = 'assistant_questions_per_month';
 
     public function getType(): FeatureType
     {
@@ -48,7 +49,8 @@ enum Feature: string
             self::TotalClients,
             self::InvoicesPerMonth,
             self::TeamSeats,
-            self::Companies => FeatureType::INTEGER,
+            self::Companies,
+            self::AssistantQuestionsPerMonth => FeatureType::INTEGER,
             self::Quotes,
             self::OnlinePayments,
             self::RecurringInvoices,

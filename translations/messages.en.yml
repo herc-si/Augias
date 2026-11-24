@@ -424,6 +424,7 @@ assistant:
     action_done: 'Done, but the assistant no longer answers to sum it up: check in Augias.'
     action_failed: 'The change could not be made.'
     action_gone: 'This change no longer waits for a confirmation.'
+    activate: 'Turn the assistant on'
     ask: Ask
     busy: 'The assistant is already answering a question: wait for its answer.'
     cancel: 'Cancel'
@@ -431,6 +432,8 @@ assistant:
     close: 'Close the assistant'
     confirm: 'Confirm'
     confirm_hint: 'Every change is shown to you before it is made.'
+    deactivate: 'Turn the assistant off'
+    deactivate_confirm: 'Turn the assistant off for the whole company? The current conversation will be cleared.'
     draft_invoice: 'Draft invoice'
     draft_quote: 'Draft quote'
     example_1: 'Who owes me money, and since when?'
@@ -496,15 +499,23 @@ assistant:
     invalid_token: 'The page expired: ask your question again.'
     listening: 'Listening… tap the microphone to finish.'
     no: 'No'
+    notice:
+        not_in_plan: 'Your plan does not include the assistant. It comes with the Solo plan and above.'
+        off_member: 'The assistant is not turned on for this company. Only its owner can turn it on.'
+        off_owner: 'The assistant is off. By turning it on, you agree that your questions, and the company data needed to answer them (clients, documents, amounts), are sent to Infomaniak''s AI service in Switzerland. Infomaniak does not keep them nor use them to train its models. Every change is shown to you before it is made. You can turn it off at any time.'
+        quota_reached: 'This month''s %limit% questions are used. The assistant is back on %date%.'
     open: 'Open the assistant'
+    owner_only: 'Only the company''s owner can turn the assistant on or off.'
     question: 'Your question'
     reset: 'New conversation'
+    see_plans: 'See plans'
     speak: 'Speak'
     thinking: 'The assistant is thinking…'
     title: Assistant
     transcribing: 'Transcribing…'
     unavailable: 'The assistant is not answering right now. Try again in a few minutes.'
     unknown: 'Unknown'
+    usage: '%used% / %limit% questions this month'
     value:
         discount_type:
             money: 'Amount'

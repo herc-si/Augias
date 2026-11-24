@@ -14,13 +14,17 @@ declare(strict_types=1);
 namespace Augias\McpBundle\Tests\Assistant;
 
 use Augias\CatalogBundle\Entity\Product;
+use Augias\CoreBundle\Entity\Company;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\McpBundle\Action\AssistantMessagesAction;
 use Augias\McpBundle\Action\AssistantTranscribeAction;
 use Augias\McpBundle\Assistant\AssistantClient;
 use Augias\McpBundle\Assistant\AssistantTranscriber;
+use Augias\McpBundle\Entity\AssistantEvent;
 use Augias\UserBundle\Entity\User;
+use Augias\UserBundle\Enum\CompanyRole;
 use Augias\UserBundle\Test\Factory\UserFactory;
+use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
@@ -30,6 +34,7 @@ use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use function array_key_last;
+use function array_map;
 use function file_put_contents;
 use function is_array;
 use function json_decode;
@@ -231,6 +236,56 @@ final class AssistantPanelTest extends WebTestCase
         self::assertResponseStatusCodeSame(404);
     }
 
+    public function testTheAssistantIsOffUntilTheOwnerTurnsItOn(): void
+    {
+        $client = $this->client(CompanyRole::Admin, false);
+        $this->configure(['Aucune facture en retard.']);
+        $token = $this->token($client);
+
+        $client->request('GET', '/assistant/messages');
+        $state = $this->state($client);
+        self::assertNotNull($state['notice']);
+        self::assertStringContainsString('Only its owner can turn it on', $state['notice']['text']);
+
+        // No question, no switch for a member who is not the owner.
+        $client->request('POST', '/assistant/messages', ['question' => 'Des factures en retard ?', '_token' => $token]);
+        self::assertResponseStatusCodeSame(403);
+        $client->request('POST', '/assistant/messages', ['activate' => '1', '_token' => $token]);
+        self::assertResponseStatusCodeSame(403);
+        self::assertFalse($this->company()->isAssistantEnabled());
+    }
+
+    public function testTheOwnerIsToldWhereTheDataGoesAndTurnsItOnAndOff(): void
+    {
+        $client = $this->client(CompanyRole::Owner, false);
+        $this->configure(['Aucune facture en retard.']);
+        $token = $this->token($client);
+
+        $client->request('GET', '/assistant/messages');
+        $notice = $this->state($client)['notice'];
+        self::assertNotNull($notice);
+        self::assertStringContainsString('Infomaniak', $notice['text']);
+        self::assertSame('activate', $notice['button']['action'] ?? null);
+
+        $client->request('POST', '/assistant/messages', ['activate' => '1', '_token' => $token]);
+        self::assertResponseIsSuccessful();
+        $state = $this->state($client);
+        self::assertNull($state['notice']);
+        self::assertTrue($state['canDeactivate']);
+        self::assertTrue($this->company()->isAssistantEnabled());
+
+        $client->request('POST', '/assistant/messages', ['question' => 'Des factures en retard ?', '_token' => $token]);
+        self::assertResponseIsSuccessful();
+
+        $client->request('POST', '/assistant/messages', ['deactivate' => '1', '_token' => $token]);
+        self::assertResponseIsSuccessful();
+        self::assertFalse($this->company()->isAssistantEnabled());
+        self::assertSame([], $this->state($client)['messages']);
+
+        // Who did what is kept; what was asked and answered is not.
+        self::assertSame(['activated', 'question', 'deactivated'], $this->journal());
+    }
+
     private function token(KernelBrowser $client): string
     {
         $crawler = $client->request('GET', '/clients/');
@@ -261,24 +316,56 @@ final class AssistantPanelTest extends WebTestCase
     }
 
     /**
-     * @return array{messages: list<array{role: string, content: string}>, pending: bool, action: ?array{id: string, title: string, details: list<array{label: string, value: string}>}, error: ?string}
+     * @return array{messages: list<array{role: string, content: string}>, pending: bool, action: ?array{id: string, title: string, details: list<array{label: string, value: string}>}, notice: ?array{text: string, button: ?array{label: string, action?: string, href?: string}}, usage: ?string, canDeactivate: bool, error: ?string}
      */
     private function state(KernelBrowser $client): array
     {
-        /** @var array{messages: list<array{role: string, content: string}>, pending: bool, action: ?array{id: string, title: string, details: list<array{label: string, value: string}>}, error: ?string} */
+        /** @var array{messages: list<array{role: string, content: string}>, pending: bool, action: ?array{id: string, title: string, details: list<array{label: string, value: string}>}, notice: ?array{text: string, button: ?array{label: string, action?: string, href?: string}}, usage: ?string, canDeactivate: bool, error: ?string} */
         return json_decode((string) $client->getResponse()->getContent(), true, flags: JSON_THROW_ON_ERROR);
     }
 
-    private function client(): KernelBrowser
+    /**
+     * A member signed in, the assistant turned on unless said otherwise.
+     */
+    private function client(CompanyRole $role = CompanyRole::Admin, bool $enabled = true): KernelBrowser
     {
         self::ensureKernelShutdown();
         $client = self::createClient();
         $client->disableReboot();
 
-        $user = UserFactory::createOne(['companies' => [$this->company]]);
+        $em = self::getContainer()->get('doctrine')->getManager();
+        $user = UserFactory::createOne(['companies' => []]);
+        $user = $em->find(User::class, $user->getId());
+        $company = $em->find(Company::class, $this->company->getId());
         self::assertInstanceOf(User::class, $user);
+        self::assertInstanceOf(Company::class, $company);
+        $user->addCompany($company, $role);
+
+        if ($enabled) {
+            $company->enableAssistant(new DateTimeImmutable(), 'owner@example.com');
+        }
+
+        $em->flush();
         $client->loginUser($user);
 
         return $client;
+    }
+
+    private function company(): Company
+    {
+        $company = self::getContainer()->get('doctrine')->getManager()->find(Company::class, $this->company->getId());
+        self::assertInstanceOf(Company::class, $company);
+
+        return $company;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function journal(): array
+    {
+        $events = self::getContainer()->get('doctrine')->getManager()->getRepository(AssistantEvent::class)->findBy([], ['occurredAt' => 'ASC']);
+
+        return array_map(static fn (AssistantEvent $e): string => $e->getKind()->value . ($e->getTool() !== null ? ':' . $e->getTool() : ''), $events);
     }
 }

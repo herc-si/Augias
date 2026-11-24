@@ -14,9 +14,11 @@ declare(strict_types=1);
 namespace Augias\McpBundle\Action;
 
 use Augias\McpBundle\Assistant\Assistant;
+use Augias\McpBundle\Assistant\AssistantAccess;
 use Augias\McpBundle\Assistant\AssistantTranscriber;
 use Augias\McpBundle\Assistant\AssistantUnavailable;
 use Augias\McpBundle\Assistant\CurrentCompany;
+use Augias\UserBundle\Security\CompanyAccess;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -48,13 +50,22 @@ final class AssistantTranscribeAction extends AbstractController
         private readonly AssistantTranscriber $transcriber,
         private readonly CurrentCompany $currentCompany,
         private readonly TranslatorInterface $translator,
+        private readonly AssistantAccess $access,
+        private readonly CompanyAccess $companyAccess,
     ) {
     }
 
     public function __invoke(Request $request): Response
     {
-        if (! $this->assistant->isAvailable() || ! $this->transcriber->isConfigured() || $this->currentCompany->get() === null) {
+        $company = $this->currentCompany->get();
+
+        if (! $this->assistant->isAvailable() || ! $this->transcriber->isConfigured() || $company === null || $this->companyAccess->pass() !== null) {
             throw new NotFoundHttpException();
+        }
+
+        // Spoken or typed, a question needs the assistant on and the month's quota not used up.
+        if (! $this->access->state($company)->isReady()) {
+            return new JsonResponse(['error' => $this->translator->trans('assistant.unavailable')], Response::HTTP_FORBIDDEN);
         }
 
         if (! $this->isCsrfTokenValid(AssistantMessagesAction::CSRF, (string) $request->request->get('_token'))) {

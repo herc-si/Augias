@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\McpBundle\Assistant;
 
 use const JSON_THROW_ON_ERROR;
+use Augias\McpBundle\Enum\AssistantEventKind;
 use JsonException;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
@@ -21,7 +22,9 @@ use function array_values;
 use function is_array;
 use function is_string;
 use function json_decode;
+use function mb_substr;
 use function sprintf;
+use function str_starts_with;
 
 /**
  * Answers a question about the current company with the model and the
@@ -30,8 +33,9 @@ use function sprintf;
  *
  * The data the tools return — a received invoice's notes, a client's name —
  * is shown to the model as data; the system prompt says never to take
- * instructions from it, and nothing it says can change anything anyway,
- * since no tool here writes.
+ * instructions from it, and nothing it says can change anything anyway:
+ * a tool that writes is handed back as a proposal, made only once the
+ * person confirms it (AssistantMessagesAction).
  *
  * @see \Augias\McpBundle\Tests\Assistant\AssistantTest
  */
@@ -45,6 +49,7 @@ final readonly class Assistant
         private AssistantToolbox $toolbox,
         private ClockInterface $clock,
         private LoggerInterface $logger,
+        private AssistantJournal $journal,
     ) {
     }
 
@@ -129,12 +134,15 @@ final readonly class Assistant
                 }
 
                 $used[] = $name;
+                $content = $this->toolbox->call($name, $arguments);
                 $this->logger->info('Assistant ran a tool.', ['tool' => $name]);
-                $results[] = ['id' => $id, 'name' => $name, 'content' => $this->toolbox->call($name, $arguments)];
+                $this->journal->record(AssistantEventKind::Tool, mb_substr($name, 0, 64), str_starts_with($content, 'Error:'));
+                $results[] = ['id' => $id, 'name' => $name, 'content' => $content];
             }
 
             if ($proposal !== null) {
                 $this->logger->info('Assistant proposed a change.', ['tool' => $proposal[1]]);
+                $this->journal->record(AssistantEventKind::Proposed, $proposal[1]);
 
                 return new AssistantAnswer(is_string($message['content'] ?? null) ? $message['content'] : '', $used, false, new AssistantProposal($proposal[0], $proposal[1], $proposal[2], $messages, $results));
             }

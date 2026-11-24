@@ -182,3 +182,15 @@ $assistant-panel-height: 640px;
         box-shadow: 0 0 0 6px color-mix(in srgb, var(--swp-danger) 25%, transparent);
     }
 }
+
+.assistant-notice {
+    margin-bottom: var(--swp-space-3);
+    padding: var(--swp-space-3);
+    border-radius: var(--swp-radius-lg);
+    background: var(--swp-primary-light);
+    color: var(--swp-primary-dark);
+
+    p {
+        margin-bottom: var(--swp-space-3);
+    }
+}
