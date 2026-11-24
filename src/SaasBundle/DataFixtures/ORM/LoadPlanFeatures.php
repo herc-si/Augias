@@ -36,7 +36,7 @@ final class LoadPlanFeatures extends Fixture implements DependentFixtureInterfac
     private const array MATRIX = [
         LoadPlans::REF_FREE => [
             Feature::TotalClients->value => 5,
-            Feature::InvoicesPerMonth->value => 10,
+            Feature::InvoicesPerMonth->value => 50,
             Feature::TeamSeats->value => 1,
             Feature::Companies->value => 1,
             Feature::AssistantQuestionsPerMonth->value => 0,
@@ -55,7 +55,7 @@ final class LoadPlanFeatures extends Fixture implements DependentFixtureInterfac
         ],
         LoadPlans::REF_SOLO => [
             Feature::TotalClients->value => 25,
-            Feature::InvoicesPerMonth->value => 100,
+            Feature::InvoicesPerMonth->value => 250,
             Feature::TeamSeats->value => 1,
             Feature::Companies->value => 1,
             Feature::AssistantQuestionsPerMonth->value => 200,
@@ -66,7 +66,7 @@ final class LoadPlanFeatures extends Fixture implements DependentFixtureInterfac
             Feature::MultiCurrency->value => false,
             Feature::CustomBranding->value => false,
             Feature::RestApiAccess->value => false,
-            Feature::McpAccess->value => false,
+            Feature::McpAccess->value => true,
             Feature::CustomDomain->value => false,
             Feature::CustomFields->value => false,
             Feature::CustomTemplates->value => false,
@@ -105,7 +105,7 @@ final class LoadPlanFeatures extends Fixture implements DependentFixtureInterfac
             Feature::CustomBranding->value => true,
             Feature::RestApiAccess->value => true,
             Feature::McpAccess->value => true,
-            Feature::CustomDomain->value => true,
+            Feature::CustomDomain->value => false,
             Feature::CustomFields->value => true,
             Feature::CustomTemplates->value => true,
         Feature::SupportAccess->value => true,

@@ -63,7 +63,7 @@ Regardez surtout les montants sur la carte : c'est là qu'une erreur de compréh
 
 ## Parler à l'assistant
 
-Touchez le bouton micro à côté de `Demander`, parlez, puis touchez-le à nouveau pour terminer. Votre question est transcrite et envoyée automatiquement. Un enregistrement s'arrête de lui-même au bout d'une minute.
+Touchez le bouton micro à côté de `Demander`, parlez, puis touchez-le à nouveau pour terminer. Votre question est transcrite et envoyée automatiquement. Un enregistrement s'arrête de lui-même au bout de 30 secondes.
 
 La première fois, le navigateur vous demande l'autorisation d'utiliser le micro. La voix est transcrite par Infomaniak, en Suisse, comme les questions écrites ; HERC SI ne conserve pas l'enregistrement. Une modification demandée à la voix passe, elle aussi, par la carte de confirmation.
 

@@ -42,7 +42,7 @@ const DRAFT_KEY = 'augias.assistant.draft';
 /** How often a question asked from another page is looked at again. */
 const POLL_MS = 2000;
 /** A recording is cut there: a question, not a dictation. */
-const MAX_RECORDING_MS = 60000;
+const MAX_RECORDING_MS = 30000;
 
 /**
  * The assistant's side panel, on every page: the conversation is the

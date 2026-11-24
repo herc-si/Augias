@@ -120,7 +120,7 @@
                         <p class="text-subtle">{{ offer.description }}</p>
                     {% endif %}
 
-                    {{ macros.feature_list(offer.features) }}
+                    {{ macros.feature_list(offer.features, offer.trialDuration is not null) }}
 
                     {% if isCurrent %}
                         <button type="button" class="btn btn-outline-success w-100 mt-auto" disabled>
@@ -160,7 +160,7 @@
                         </div>
 
                         <div class="flex-grow-1">
-                            {{ macros.feature_list_inline(freePlan.features) }}
+                            {{ macros.feature_list_inline(freePlan.features, freePlan.trialDuration is not null) }}
                         </div>
 
                         <div class="plan-card-free-cta">
@@ -186,10 +186,15 @@
     </div>
 {% endif %}
 
-{% macro feature_list(features) %}
+{% macro feature_list(features, trial = false) %}
     {% import _self as macros %}
     {% if features|length > 0 %}
         <ul class="list-unstyled mb-4 plan-card-features">
+            {# Not a right: every plan has it, a trial without a card excepted (Rémi, 24/11/2026). #}
+            <li class="d-flex align-items-start gap-2 mb-2">
+                {{ ux_icon('tabler:check', {width: 18, height: 18, class: 'text-success mt-1 flex-shrink-0'}) }}
+                <span><strong>{{ 'saas.plan.einvoicing'|trans }}</strong>{% if trial %} <span class="text-subtle">{{ 'saas.plan.einvoicing_outside_trial'|trans }}</span>{% endif %}</span>
+            </li>
             {% for feature in features|sort((a, b) => b.featureKey <=> a.featureKey)|sort((a, b) => b.toFeatureValue.enabled <=> a.toFeatureValue.enabled) %}
                 {% set isBool = feature.type.value == 'boolean' %}
                 {% set isEnabled = feature.toFeatureValue.enabled %}
@@ -207,10 +212,14 @@
     {% endif %}
 {% endmacro %}
 
-{% macro feature_list_inline(features) %}
+{% macro feature_list_inline(features, trial = false) %}
     {% import _self as macros %}
     {% if features|length > 0 %}
         <ul class="list-unstyled mb-0 plan-card-features-inline">
+            <li>
+                {{ ux_icon('tabler:check', {width: 16, height: 16, class: 'text-success flex-shrink-0'}) }}
+                <span><strong>{{ 'saas.plan.einvoicing'|trans }}</strong>{% if trial %} <span class="text-subtle">{{ 'saas.plan.einvoicing_outside_trial'|trans }}</span>{% endif %}</span>
+            </li>
             {% for feature in features|sort((a, b) => b.featureKey <=> a.featureKey)|sort((a, b) => b.toFeatureValue.enabled <=> a.toFeatureValue.enabled) %}
                 {% set isBool = feature.type.value == 'boolean' %}
                 {% set isEnabled = feature.toFeatureValue.enabled %}

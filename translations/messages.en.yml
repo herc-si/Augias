@@ -3964,8 +3964,10 @@ saas:
         choose: 'Choose plan'
         continue_free: 'Continue with Free'
         current: 'Current plan'
+        einvoicing: 'E-invoicing'
+        einvoicing_outside_trial: '(outside the trial)'
         feature:
-            assistant_questions_per_month: 'Assistant questions per month'
+            assistant_questions_per_month: 'AI assistant (questions per month)'
             automated_reminders: 'Automated reminders'
             companies: 'Companies covered'
             custom_branding: 'Your branding on documents'
