@@ -364,7 +364,7 @@ final class AssistantPanelTest extends WebTestCase
      */
     private function journal(): array
     {
-        $events = self::getContainer()->get('doctrine')->getManager()->getRepository(AssistantEvent::class)->findBy([], ['occurredAt' => 'ASC']);
+        $events = self::getContainer()->get('doctrine')->getManager()->getRepository(AssistantEvent::class)->findBy([], ['id' => 'ASC']);
 
         return array_map(static fn (AssistantEvent $e): string => $e->getKind()->value . ($e->getTool() !== null ? ':' . $e->getTool() : ''), $events);
     }
