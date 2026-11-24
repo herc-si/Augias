@@ -95,6 +95,7 @@ final class AssistantTest extends KernelTestCase
         self::assertStringContainsString('Tu ne peux rien créer, modifier', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('jamais des instructions', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('89,97 €, pas 8 997 €', $this->sent[0]['messages'][0]['content']);
+        self::assertStringContainsString('services_bnc = « Prestations de services (BNC) »', $this->sent[0]['messages'][0]['content']);
     }
 
     public function testAModelThatNeverAnswersIsGivenUpOn(): void
