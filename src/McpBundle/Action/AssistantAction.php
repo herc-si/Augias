@@ -13,29 +13,23 @@ declare(strict_types=1);
 
 namespace Augias\McpBundle\Action;
 
-use Augias\CoreBundle\Company\CompanySelector;
-use Augias\CoreBundle\Entity\Company;
 use Augias\McpBundle\Assistant\Assistant;
+use Augias\McpBundle\Assistant\AssistantConversation;
 use Augias\McpBundle\Assistant\AssistantUnavailable;
-use Doctrine\ORM\EntityManagerInterface;
+use Augias\McpBundle\Assistant\CurrentCompany;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
-use function array_filter;
-use function array_slice;
-use function array_values;
-use function is_array;
-use function is_string;
 use function mb_substr;
 use function trim;
 
 /**
  * The built-in assistant's page: a question, its answer, and the
- * conversation so far, kept in the session for the company it is about.
+ * conversation so far, the same one as in the side panel
+ * (AssistantMessagesAction).
  *
  * Not offered until the model is configured (AssistantClient).
  *
@@ -46,36 +40,23 @@ final class AssistantAction extends AbstractController
 {
     public const string CSRF = 'assistant';
 
-    /** Questions and answers kept for the model to follow the thread. */
-    private const int HISTORY = 12;
-
-    private const int MAX_QUESTION = 2000;
+    public const int MAX_QUESTION = 2000;
 
     public function __construct(
         private readonly Assistant $assistant,
-        private readonly CompanySelector $companySelector,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly AssistantConversation $conversation,
+        private readonly CurrentCompany $currentCompany,
         private readonly TranslatorInterface $translator,
     ) {
     }
 
     public function __invoke(Request $request): Response
     {
-        if (! $this->assistant->isAvailable()) {
+        $company = $this->currentCompany->get();
+
+        if (! $this->assistant->isAvailable() || $company === null) {
             throw new NotFoundHttpException();
         }
-
-        $companyId = $this->companySelector->getCompany();
-        $company = $companyId instanceof Ulid ? $this->entityManager->find(Company::class, $companyId) : null;
-
-        if (! $company instanceof Company) {
-            throw new NotFoundHttpException();
-        }
-
-        $session = $request->getSession();
-        $key = 'assistant_history_' . $company->getId()->toBase32();
-        $history = $session->get($key, []);
-        $history = is_array($history) ? $history : [];
 
         if ($request->isMethod('POST')) {
             if (! $this->isCsrfTokenValid(self::CSRF, (string) $request->request->get('_token'))) {
@@ -85,20 +66,22 @@ final class AssistantAction extends AbstractController
             }
 
             if ($request->request->has('reset')) {
-                $session->remove($key);
+                $this->conversation->reset($company);
 
                 return $this->redirectToRoute('_assistant');
             }
 
             $question = mb_substr(trim((string) $request->request->get('question')), 0, self::MAX_QUESTION);
 
-            if ($question !== '') {
+            if ($question !== '' && ! $this->conversation->isPending($company)) {
+                $history = $this->conversation->messages($company);
+                $this->conversation->ask($company, $question);
+
                 try {
                     $answer = $this->assistant->ask($question, (string) $company->getName(), $history);
-                    $history[] = ['role' => 'user', 'content' => $question];
-                    $history[] = ['role' => 'assistant', 'content' => $answer->gaveUp || $answer->text === '' ? $this->translator->trans('assistant.gave_up') : $answer->text];
-                    $session->set($key, array_slice($history, -self::HISTORY));
+                    $this->conversation->answer($company, $answer->gaveUp || $answer->text === '' ? $this->translator->trans('assistant.gave_up') : $answer->text);
                 } catch (AssistantUnavailable) {
+                    $this->conversation->withdraw($company);
                     $this->addFlash('error', 'assistant.unavailable');
                 }
             }
@@ -107,7 +90,7 @@ final class AssistantAction extends AbstractController
         }
 
         return $this->render('@AugiasMcp/Assistant/index.html.twig', [
-            'history' => array_values(array_filter($history, static fn (mixed $m): bool => is_array($m) && is_string($m['content'] ?? null))),
+            'history' => $this->conversation->messages($company),
             'company' => $company,
         ]);
     }

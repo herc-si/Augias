@@ -135,4 +135,9 @@
             </div>
         </div>
     </div>
+
+    {# The assistant, docked on the right of every page. #}
+    {% if assistant_available() and route_allowed('_assistant_messages') %}
+        {% include '@AugiasMcp/Assistant/_panel.html.twig' %}
+    {% endif %}
 {% endblock body %}

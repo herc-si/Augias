@@ -1,0 +1,143 @@
+/**
+ * Assistant panel
+ *
+ * Docked on the right of every page and left open from one page to the
+ * next (assistant-panel controller). From lg up it takes its width from
+ * the page instead of covering it; below, it covers the screen.
+ */
+
+$assistant-panel-width: 400px;
+
+.assistant-panel {
+    position: fixed;
+    inset: 0 0 0 auto;
+    z-index: var(--swp-z-fixed);
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--tblr-bg-surface, #ffffff);
+    border-left: 1px solid var(--tblr-border-color);
+    box-shadow: var(--swp-shadow-lg);
+
+    &[hidden] {
+        display: none;
+    }
+
+    @include media-breakpoint-up(lg) {
+        width: $assistant-panel-width;
+        box-shadow: var(--swp-shadow-md);
+    }
+}
+
+@include media-breakpoint-up(lg) {
+
+    body.assistant-open {
+
+        .page-wrapper,
+        > header.navbar {
+            margin-right: $assistant-panel-width;
+        }
+    }
+}
+
+.assistant-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--swp-space-2);
+    padding: var(--swp-space-3) var(--swp-space-4);
+    border-bottom: 1px solid var(--tblr-border-color);
+}
+
+.assistant-panel-title {
+    display: flex;
+    align-items: center;
+    gap: var(--swp-space-2);
+    margin: 0;
+    font-size: var(--swp-text-lg);
+    font-weight: 600;
+}
+
+.assistant-panel-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: var(--swp-space-4);
+}
+
+.assistant-example {
+    display: block;
+    width: 100%;
+    margin-bottom: var(--swp-space-2);
+    padding: var(--swp-space-2) var(--swp-space-3);
+    text-align: left;
+    color: var(--swp-primary);
+    background: var(--swp-primary-light);
+    border: 0;
+    border-radius: var(--swp-radius-md);
+
+    &:hover,
+    &:focus-visible {
+        background: color-mix(in srgb, var(--swp-primary-light) 80%, var(--swp-primary) 20%);
+    }
+}
+
+.assistant-message {
+    max-width: 90%;
+    margin-bottom: var(--swp-space-3);
+    padding: var(--swp-space-2) var(--swp-space-3);
+    border-radius: var(--swp-radius-lg);
+    overflow-wrap: anywhere;
+
+    p,
+    ul {
+        margin-bottom: var(--swp-space-2);
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    ul {
+        padding-left: var(--swp-space-4);
+    }
+}
+
+.assistant-message-user {
+    margin-left: auto;
+    white-space: pre-wrap;
+    color: var(--swp-primary-dark);
+    background: var(--swp-primary-light);
+}
+
+.assistant-message-assistant {
+    margin-right: auto;
+    background: var(--swp-gray-100, #f1f3f5);
+}
+
+.assistant-thinking {
+    color: var(--swp-text-secondary);
+}
+
+.assistant-panel-form {
+    padding: var(--swp-space-3) var(--swp-space-4);
+    border-top: 1px solid var(--tblr-border-color);
+
+    textarea {
+        resize: none;
+    }
+}
+
+.assistant-fab {
+    position: fixed;
+    right: var(--swp-space-4);
+    bottom: var(--swp-space-4);
+    z-index: var(--swp-z-sticky);
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    box-shadow: var(--swp-shadow-md);
+
+    body.assistant-open & {
+        display: none;
+    }
+}

@@ -38,6 +38,15 @@
                     </div>
                 {% endif %}
 
+                {% if assistant_available() and route_allowed('_assistant_messages') %}
+                    <div class="nav-item ms-3">
+                        <button type="button" class="btn btn-outline-primary" data-assistant-toggle aria-controls="assistant-panel" aria-expanded="false" title="{{ 'assistant.open'|trans }}">
+                            {{ ux_icon('tabler:sparkles', {width: 16, height: 16}) }}
+                            {{ 'assistant.title'|trans }}
+                        </button>
+                    </div>
+                {% endif %}
+
                 {# Everything in it creates a document: a role that creates none gets no button. #}
                 {% if route_allowed('_invoices_create') %}
                 <div class="nav-item dropdown mx-4">
