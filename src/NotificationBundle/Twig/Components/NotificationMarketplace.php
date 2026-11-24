@@ -35,7 +35,6 @@ use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 use Throwable;
 use function array_filter;
 use function array_values;
-use function in_array;
 use function str_contains;
 use function str_replace;
 use function strtolower;
