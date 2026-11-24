@@ -153,7 +153,7 @@ Cette annexe vaut accord de sous-traitance entre le Client, responsable de trait
 
 **Sécurité.** HERC SI met en œuvre les mesures décrites à l'article 6.
 
-**Sous-traitance ultérieure.** Le Client autorise les sous-traitants énumérés à l'article 4. Tout ajout est notifié avant sa mise en œuvre et le Client peut s'y opposer, la résiliation étant alors ouverte sans frais. HERC SI impose à ses sous-traitants des obligations de protection des données équivalentes à celles de la présente annexe et demeure responsable envers le Client de leur exécution.
+**Sous-traitance ultérieure.** Le Client autorise les sous-traitants énumérés à l'article 4. Tout ajout est notifié avant sa mise en œuvre et le Client peut s'y opposer, la résiliation étant alors ouverte sans frais. Un sous-traitant qui ne sert qu'une fonction que le Client active lui-même, comme le service d'intelligence artificielle d'Infomaniak pour l'assistant intégré, n'est mis en œuvre pour une entreprise qu'après cette activation par son propriétaire, qui vaut autorisation écrite ; il cesse de l'être dès la désactivation. HERC SI impose à ses sous-traitants des obligations de protection des données équivalentes à celles de la présente annexe et demeure responsable envers le Client de leur exécution.
 
 **Assistance.** HERC SI assiste le Client, dans la mesure du possible, pour répondre aux demandes d'exercice de droits, pour la notification des violations de données et, le cas échéant, pour les analyses d'impact.
 
