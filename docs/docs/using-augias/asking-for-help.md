@@ -9,12 +9,12 @@ sidebar_position: 7
 Sur le service hébergé, vous pouvez demander de l'aide à l'équipe qui l'exploite. Votre demande l'autorise à consulter votre entreprise, en lecture seule, pendant la durée que vous choisissez.
 
 :::info
-La fonction n'existe que si l'exploitant du service la propose. Elle est réservée au propriétaire et aux administrateurs de l'entreprise. Sans elle, l'entrée `Assistance` n'apparaît pas dans le menu.
+La fonction n'existe que si l'exploitant du service la propose. Elle est réservée au propriétaire et aux administrateurs de l'entreprise. Sans elle, l'entrée `Support` n'apparaît pas dans le menu.
 :::
 
 ## Envoyer une demande
 
-1. Dans le menu latéral, ouvrez `Système`, puis `Assistance`.
+1. Dans le menu latéral, ouvrez `Système`, puis `Support`.
 2. Dans `Votre problème`, décrivez ce que vous essayez de faire et ce qui se passe. N'y mettez pas de mot de passe.
 3. Choisissez la `Durée de l'accès`. L'accès se referme de lui-même au terme de cette durée, comptée à partir de l'envoi.
 4. Cliquez sur `Envoyer la demande`.
@@ -30,11 +30,11 @@ Vous êtes prévenu par courriel dès que la demande est prise en charge. Tant q
 
 ## Mettre fin à l'accès
 
-L'accès se referme de lui-même à l'échéance. Pour le refermer plus tôt, ouvrez `Assistance` (ou cliquez sur `Gérer` dans le bandeau), puis sur `Mettre fin à l'accès`. Une session en cours est interrompue.
+L'accès se referme de lui-même à l'échéance. Pour le refermer plus tôt, ouvrez `Support` (ou cliquez sur `Gérer` dans le bandeau), puis sur `Mettre fin à l'accès`. Une session en cours est interrompue.
 
 ## Suivre vos demandes
 
-Quand la demande est close, vous recevez par courriel le compte rendu de l'intervention. Le tableau `Demandes précédentes` de la page `Assistance` garde chaque demande, avec son état (`En attente`, `Prise en charge`, `Close`, `Révoquée`, `Expirée`), la personne qui l'a prise et le compte rendu.
+Quand la demande est close, vous recevez par courriel le compte rendu de l'intervention. Le tableau `Demandes précédentes` de la page `Support` garde chaque demande, avec son état (`En attente`, `Prise en charge`, `Close`, `Révoquée`, `Expirée`), la personne qui l'a prise et le compte rendu.
 
 ## Voir aussi
 

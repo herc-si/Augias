@@ -1799,7 +1799,7 @@ einvoicing:
             verified: 'Votre identité est vérifiée : vos factures électroniques partent et arrivent.'
             pending: 'La plateforme n''a pas encore confirmé votre identité. Nous vérifions toutes les heures, et vous prévenons par e-mail dès que c''est fait.'
             needs_review: 'La plateforme examine votre dossier : une information ne correspond pas (nom, adresse, dirigeant). Nous vous prévenons par e-mail dès qu''elle a conclu.'
-            failed: 'La plateforme n''a pas pu vérifier votre identité. Reprenez la vérification depuis votre compte SUPER PDP, ou contactez l''assistance.'
+            failed: 'La plateforme n''a pas pu vérifier votre identité. Reprenez la vérification depuis votre compte SUPER PDP, ou contactez son support.'
             unknown: 'Nous n''avons pas pu joindre la plateforme. Réessayez dans quelques minutes.'
             unreachable: 'La plateforme n''a pas répondu. Réessayez dans quelques minutes.'
             check: 'Vérifier maintenant'
@@ -3979,7 +3979,7 @@ saas:
             quotes: 'Devis'
             recurring_invoices: 'Factures récurrentes'
             rest_api_access: 'API REST'
-            support_access: 'Assistance dans votre entreprise'
+            support_access: 'Accès du support à votre entreprise'
             team_seats: 'Utilisateurs'
             total_clients: 'Clients'
         free_plan_taken: 'Le plan gratuit est limité à une entreprise par compte, et vous en avez déjà une. Pour cette entreprise, choisissez un plan payant.'
@@ -4528,22 +4528,22 @@ support:
         accepted:
             body: "%operator% (%provider%) a pris en charge votre demande et peut consulter %company% en lecture seule jusqu'au %date%. Chaque page consultée est inscrite au journal des consultations. Vous pouvez mettre fin à cet accès à tout moment."
             heading: 'Votre demande est prise en charge'
-            subject: "%provider% a pris en charge votre demande d'assistance"
+            subject: "%provider% a pris en charge votre demande de support"
         message: 'Votre demande'
         note: "Compte rendu d'intervention"
         open: 'Voir la demande'
         requested:
             body: "%requester% demande de l'aide pour %company%. L'accès en lecture seule est ouvert jusqu'au %date% dès que la demande est prise en charge."
-            heading: "Nouvelle demande d'assistance"
-            subject: "Demande d'assistance — %company%"
+            heading: 'Nouvelle demande de support'
+            subject: 'Demande de support — %company%'
         resolved:
             body: "%operator% (%provider%) a clos votre demande. L'accès à %company% est refermé."
             heading: 'Demande close'
-            subject: "Votre demande d'assistance est close"
+            subject: 'Votre demande de support est close'
     ended:
         logout: 'Se déconnecter'
         text: "Vous n'êtes plus dans l'entreprise : la session a été quittée, révoquée par l'entreprise, ou sa durée est écoulée."
-        title: "Session d'assistance terminée"
+        title: 'Session de support terminée'
     flash:
         invalid_token: 'La demande a expiré, veuillez réessayer.'
         requested: 'Votre demande a été envoyée. Vous serez prévenu par courriel dès sa prise en charge.'
@@ -4563,9 +4563,9 @@ support:
     member_banner:
         accepted: "%operator% (%provider%) peut consulter l'entreprise en lecture seule"
         manage: Gérer
-        pending: "Une demande d'assistance à %provider% est ouverte"
+        pending: 'Une demande de support à %provider% est ouverte'
         until: "jusqu'au %date%"
-    menu: Assistance
+    menu: Support
     open:
         accepted: "%operator% (%provider%) a pris en charge votre demande et peut consulter l'entreprise en lecture seule jusqu'au %date%."
         pending: "Votre demande attend d'être prise en charge par %provider%. L'accès reste ouvert jusqu'au %date%."
@@ -4587,14 +4587,14 @@ support:
         settings: "Vos paramètres sont visibles, y compris les services que vous avez branchés, mais jamais vos identifiants auprès d'eux (envoi des courriels, moyens de paiement, facturation électronique, notifications)."
         time: "L'accès se referme de lui-même à l'échéance, et vous pouvez y mettre fin à tout moment."
         title: 'Ce que vous autorisez'
-    title: Assistance
+    title: Support
     visit:
         banner:
             leave: 'Quitter la session'
             text: 'lecture seule, jusqu''au %date%'
-            title: "Session d'assistance chez %company%"
-        credentials_hidden: "Les identifiants de l'entreprise auprès de ce service ne sont pas affichés pendant une session d'assistance."
-        denied: "Cette action n'est pas disponible pendant une session d'assistance : l'accès est en lecture seule."
+            title: 'Session de support chez %company%'
+        credentials_hidden: "Les identifiants de l'entreprise auprès de ce service ne sont pas affichés pendant une session de support."
+        denied: "Cette action n'est pas disponible pendant une session de support : l'accès est en lecture seule."
 status:
     accepted: Accepté
     active: Actif
