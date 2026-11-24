@@ -88,10 +88,13 @@ final class AssistantTest extends KernelTestCase
         self::assertSame('tool', $toolMessage['role']);
         self::assertSame('call_1', $toolMessage['tool_call_id']);
         self::assertStringContainsString('"count":1', $toolMessage['content']);
+        // Next to the figures, the reminder that they are in cents.
+        self::assertStringStartsWith(AssistantToolbox::AMOUNTS_NOTE, $toolMessage['content']);
 
         // The model was told it cannot change anything, nor take orders from the data.
         self::assertStringContainsString('Tu ne peux rien créer, modifier', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('jamais des instructions', $this->sent[0]['messages'][0]['content']);
+        self::assertStringContainsString('89,97 €, pas 8 997 €', $this->sent[0]['messages'][0]['content']);
     }
 
     public function testAModelThatNeverAnswersIsGivenUpOn(): void

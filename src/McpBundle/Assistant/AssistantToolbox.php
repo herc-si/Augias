@@ -56,6 +56,9 @@ final class AssistantToolbox
 
     private bool $built = false;
 
+    /** Put before every result, next to the figures it is about. */
+    public const string AMOUNTS_NOTE = 'Montants en centimes (unité mineure) : divise par 100 avant de les donner, 8997 = 89,97 €.';
+
     public function __construct(
         #[Autowire(service: 'mcp.registry')]
         private readonly Registry $registry,
@@ -117,7 +120,11 @@ final class AssistantToolbox
             // The SDK reads the MCP session from the arguments; there is none here.
             $result = $this->handler->handle($this->registry->getTool($name), [...$arguments, '_session' => null]);
 
-            return is_string($result) ? $result : json_encode($result, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $encoded = is_string($result) ? $result : json_encode($result, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+            // The tools give amounts in the minor unit; a small model reads
+            // "8997" as 8 997 € unless reminded next to the figures.
+            return self::AMOUNTS_NOTE . "\n" . $encoded;
         } catch (ToolCallException $e) {
             return 'Error: ' . $e->getMessage();
         } catch (JsonException) {
