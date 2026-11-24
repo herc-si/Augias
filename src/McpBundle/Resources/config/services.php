@@ -21,6 +21,12 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $containerConfigurator): void {
+    // The built-in assistant (Assistant\AssistantClient): off until these are set.
+    $parameters = $containerConfigurator->parameters();
+    $parameters->set('env(AUGIAS_ASSISTANT_BASE_URL)', '');
+    $parameters->set('env(AUGIAS_ASSISTANT_API_KEY)', '');
+    $parameters->set('env(AUGIAS_ASSISTANT_MODEL)', '');
+
     $services = $containerConfigurator->services();
     $services->defaults()->public();
 
