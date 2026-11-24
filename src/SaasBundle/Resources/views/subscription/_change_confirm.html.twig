@@ -65,7 +65,11 @@
                             <tbody>
                                 {% for key, current in currentKeys %}
                                     {% set new = newKeys[key]|default(null) %}
-                                    {% set label = current.description ?: key %}
+                                    {# What a customer reads comes from the translations, as on the plans grid. #}
+                                    {% set label = ('saas.plan.feature.' ~ key)|trans %}
+                                    {% if label == 'saas.plan.feature.' ~ key %}
+                                        {% set label = current.description ?: key %}
+                                    {% endif %}
                                     <tr>
                                         <td>{{ label }}</td>
                                         <td>{{ macros.format_value(current) }}</td>
@@ -105,6 +109,8 @@
         {{ isEnabled ? 'saas.plan.included'|trans : 'saas.plan.not_included'|trans }}
     {% elseif value is iterable %}
         {{ value|join(', ') }}
+    {% elseif value == 0 %}
+        {{ 'saas.plan.not_included'|trans }}
     {% elseif value == -1 %}
         {{ 'saas.plan.unlimited'|trans }}
     {% else %}
