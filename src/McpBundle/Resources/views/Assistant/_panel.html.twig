@@ -16,7 +16,13 @@
        data-controller="assistant-panel"
        data-assistant-panel-url-value="{{ path('_assistant_messages') }}"
        data-assistant-panel-token-value="{{ csrf_token('assistant') }}"
-       data-assistant-panel-error-value="{{ 'assistant.unavailable'|trans }}">
+       data-assistant-panel-error-value="{{ 'assistant.unavailable'|trans }}"
+       data-assistant-panel-confirm-label-value="{{ 'assistant.confirm'|trans }}"
+       data-assistant-panel-cancel-label-value="{{ 'assistant.cancel'|trans }}"
+       {% if assistant_voice_available() %}data-assistant-panel-transcribe-url-value="{{ path('_assistant_transcribe') }}"{% endif %}
+       data-assistant-panel-listening-label-value="{{ 'assistant.listening'|trans }}"
+       data-assistant-panel-transcribing-label-value="{{ 'assistant.transcribing'|trans }}"
+       data-assistant-panel-deactivate-confirm-value="{{ 'assistant.deactivate_confirm'|trans }}">
     <header class="assistant-panel-header">
         <h3 id="assistant-panel-title" class="assistant-panel-title">
             {{ ux_icon('tabler:sparkles', {width: 20, height: 20}) }}
@@ -32,6 +38,7 @@
     </header>
 
     <div class="assistant-panel-body" data-assistant-panel-target="scroller" aria-live="polite">
+        <div class="assistant-notice" data-assistant-panel-target="notice" hidden></div>
         <div class="assistant-panel-empty" data-assistant-panel-target="empty">
             <p class="text-secondary mb-2">{{ 'assistant.intro'|trans({'%company%': company_name()}) }}</p>
             <p class="text-secondary mb-2">{{ 'assistant.examples_title'|trans }}</p>
@@ -40,6 +47,7 @@
             {% endfor %}
         </div>
         <div data-assistant-panel-target="messages"></div>
+        <div class="assistant-action" data-assistant-panel-target="action" hidden></div>
         <div class="assistant-message assistant-message-assistant assistant-thinking" data-assistant-panel-target="thinking" hidden>
             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>{{ 'assistant.thinking'|trans }}
         </div>
@@ -52,10 +60,21 @@
                   data-assistant-panel-target="input"
                   data-action="keydown->assistant-panel#keydown input->assistant-panel#keepDraft"></textarea>
         <div class="d-flex justify-content-between align-items-center mt-2 gap-2">
-            <small class="text-secondary">{{ 'assistant.read_only_short'|trans }}</small>
-            <button type="submit" class="btn btn-primary" data-assistant-panel-target="submit">
-                {{ ux_icon('tabler:send', {width: 18, height: 18}) }} {{ 'assistant.ask'|trans }}
-            </button>
+            <div class="d-flex flex-column">
+                <small class="text-secondary" data-assistant-panel-target="status">{{ 'assistant.confirm_hint'|trans }}</small>
+                <small class="text-secondary">
+                    <span data-assistant-panel-target="usage"></span>
+                    <button type="button" class="btn btn-link btn-sm p-0 align-baseline" data-assistant-panel-target="deactivate" data-action="assistant-panel#deactivate" hidden>{{ 'assistant.deactivate'|trans }}</button>
+                </small>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary btn-icon assistant-mic" data-assistant-panel-target="mic" data-action="assistant-panel#voice" hidden aria-pressed="false" title="{{ 'assistant.speak'|trans }}" aria-label="{{ 'assistant.speak'|trans }}">
+                    {{ ux_icon('tabler:microphone', {width: 20, height: 20}) }}
+                </button>
+                <button type="submit" class="btn btn-primary" data-assistant-panel-target="submit">
+                    {{ ux_icon('tabler:send', {width: 18, height: 18}) }} {{ 'assistant.ask'|trans }}
+                </button>
+            </div>
         </div>
     </form>
 </aside>

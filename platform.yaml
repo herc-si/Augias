@@ -96,6 +96,12 @@ saas:
             type: integer
             default: 1
             description: 'Companies covered by one subscription, its own included (-1 = unlimited).'
+        # Questions to the built-in assistant per calendar month, for the
+        # company: none unless the plan says so, since each one is paid for.
+        assistant_questions_per_month:
+            type: integer
+            default: 0
+            description: 'Questions to the built-in assistant per calendar month (-1 = unlimited, 0 = no assistant).'
 
 ui:
     templates:

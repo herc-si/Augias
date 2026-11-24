@@ -26,6 +26,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('env(AUGIAS_ASSISTANT_BASE_URL)', '');
     $parameters->set('env(AUGIAS_ASSISTANT_API_KEY)', '');
     $parameters->set('env(AUGIAS_ASSISTANT_MODEL)', '');
+    // Its microphone (Assistant\AssistantTranscriber): off until these are set too.
+    $parameters->set('env(AUGIAS_ASSISTANT_TRANSCRIPTION_URL)', '');
+    $parameters->set('env(AUGIAS_ASSISTANT_TRANSCRIPTION_MODEL)', '');
 
     $services = $containerConfigurator->services();
     $services->defaults()->public();
