@@ -17,11 +17,13 @@ use Attribute;
 use Augias\McpBundle\Security\McpScope;
 
 /**
- * Declares the scope a tool method requires. Read on the method, used as
- * documentation and discoverable by callers; actual enforcement happens via
- * {@see \Augias\McpBundle\Mcp\McpScopeGuard}.
+ * Declares a scope a tool method requires, once per scope: a tool that
+ * writes in the books declares Finance and Write. Read on the method by the
+ * built-in assistant to tell what reads from what writes
+ * ({@see \Augias\McpBundle\Assistant\AssistantToolbox}); actual
+ * enforcement happens via {@see \Augias\McpBundle\Mcp\McpScopeGuard}.
  */
-#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_CLASS)]
+#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 final readonly class McpScopeRequired
 {
     public function __construct(

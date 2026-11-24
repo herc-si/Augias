@@ -14,7 +14,8 @@ declare(strict_types=1);
 namespace Augias\McpBundle\Assistant;
 
 /**
- * What the assistant answered, and which tools it ran to get there.
+ * What the assistant answered, which tools it ran to get there, and the
+ * action it proposes, if it wants to change something.
  */
 final readonly class AssistantAnswer
 {
@@ -25,6 +26,7 @@ final readonly class AssistantAnswer
         public string $text,
         public array $toolsUsed,
         public bool $gaveUp = false,
+        public ?AssistantProposal $proposal = null,
     ) {
     }
 }

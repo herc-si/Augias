@@ -63,8 +63,8 @@ final class RoutePermissionMap
         '_profile_notifications' => null,
         '_register' => null,
         '_register_challenge' => null,
-        '_assistant' => CompanyPermission::BillingRead, // Read-only tools only, see AssistantToolbox.
-        '_assistant_messages' => CompanyPermission::BillingRead, // The side panel, the same tools.
+        '_assistant_messages' => CompanyPermission::BillingRead, // Reads; a change also needs BillingWrite, checked by McpScopeGuard.
+        '_assistant_transcribe' => CompanyPermission::BillingRead,
         '_search' => CompanyPermission::BillingRead,
         '_search_suggestions' => CompanyPermission::BillingRead,
         '_select_company' => null,

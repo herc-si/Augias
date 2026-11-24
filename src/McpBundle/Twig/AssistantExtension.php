@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Augias\McpBundle\Twig;
 
 use Augias\McpBundle\Assistant\Assistant;
+use Augias\McpBundle\Assistant\AssistantTranscriber;
 use Twig\Attribute\AsTwigFunction;
 
 /**
@@ -24,6 +25,7 @@ final readonly class AssistantExtension
 {
     public function __construct(
         private Assistant $assistant,
+        private AssistantTranscriber $transcriber,
     ) {
     }
 
@@ -31,5 +33,14 @@ final readonly class AssistantExtension
     public function isAvailable(): bool
     {
         return $this->assistant->isAvailable();
+    }
+
+    /**
+     * Whether the panel offers its microphone.
+     */
+    #[AsTwigFunction('assistant_voice_available')]
+    public function isVoiceAvailable(): bool
+    {
+        return $this->assistant->isAvailable() && $this->transcriber->isConfigured();
     }
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\McpBundle\Tests\Assistant;
 
+use Augias\CatalogBundle\Entity\Product;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
@@ -21,6 +22,7 @@ use Augias\McpBundle\Assistant\Assistant;
 use Augias\McpBundle\Assistant\AssistantClient;
 use Augias\McpBundle\Assistant\AssistantToolbox;
 use Augias\McpBundle\Tests\Functional\SignsInMember;
+use Augias\UserBundle\Enum\CompanyRole;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
@@ -30,12 +32,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use function array_column;
 use function array_fill;
+use function array_filter;
 use function array_key_last;
+use function array_values;
 use function json_decode;
 
 /**
- * The built-in assistant answers from the MCP tools that only read, and
- * cannot write (Rémi, 23/11/2026).
+ * The built-in assistant answers from the MCP tools that read, and proposes
+ * the chosen few that write, which run only once confirmed (Rémi,
+ * 23/11/2026 and 24/11/2026).
  */
 #[CoversClass(Assistant::class)]
 #[CoversClass(AssistantToolbox::class)]
@@ -50,21 +55,85 @@ final class AssistantTest extends KernelTestCase
      */
     private array $sent = [];
 
-    public function testOnlyToolsThatReadAreOffered(): void
+    public function testReadToolsAndTheChosenWriteToolsAreOffered(): void
     {
-        $names = array_column(array_column($this->toolbox()->definitions(), 'function'), 'name');
+        $definitions = $this->toolbox()->definitions();
+        $names = array_column(array_column($definitions, 'function'), 'name');
 
         self::assertContains('list_invoices_by_status', $names);
-        self::assertNotContains('create_invoice', $names);
-        self::assertNotContains('send_invoice', $names);
-        self::assertNotContains('record_payment', $names);
+        self::assertContains('create_quote', $names);
+        self::assertContains('create_product', $names);
+        self::assertContains('record_payment', $names);
+        // Out of reach: deleting, credit notes, purchases, the books.
+        self::assertNotContains('delete_document', $names);
+        self::assertNotContains('delete_product', $names);
+        self::assertNotContains('create_credit_note', $names);
+        self::assertNotContains('create_bill', $names);
+        self::assertNotContains('add_ledger_entry', $names);
+
+        $quote = array_values(array_filter($definitions, static fn (array $d): bool => $d['function']['name'] === 'create_quote'))[0];
+        self::assertStringContainsString('the person confirms it', $quote['function']['description']);
     }
 
-    public function testAWriteToolAskedForIsNotRun(): void
+    public function testAWriteToolIsNotRunAsTheModelAsks(): void
     {
-        $result = $this->toolbox()->call('create_invoice', ['client_id' => 'x']);
+        self::assertStringContainsString('only run once the person has confirmed it', $this->toolbox()->call('create_invoice', ['client_id' => 'x']));
+        self::assertStringStartsWith('Error: no read-only tool', $this->toolbox()->call('delete_document', ['id' => 'x']));
+        self::assertStringStartsWith('Error:', $this->toolbox()->run('delete_document', ['id' => 'x']));
+    }
 
-        self::assertStringStartsWith('Error: no read-only tool', $result);
+    public function testOnlyClientsAndContactsAreCreatedAsResources(): void
+    {
+        self::assertNull($this->toolbox()->refusal('create_resource', ['resource' => 'client', 'data' => []]));
+        self::assertNotNull($this->toolbox()->refusal('create_resource', ['resource' => 'tax', 'data' => []]));
+    }
+
+    public function testAChangeTheModelAsksForIsProposedThenMadeOnceConfirmed(): void
+    {
+        $assistant = $this->assistant([
+            ['content' => 'Je propose de l\'ajouter.', 'tool_calls' => [
+                ['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"Conseil","sale_price":8000,"unit":"hour"}']],
+                ['id' => 'call_2', 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"Audit","sale_price":50000}']],
+            ]],
+            ['content' => '« Conseil » est au catalogue, à 80,00 € de l\'heure.'],
+        ]);
+
+        $answer = $assistant->ask('Ajoute Conseil à 80 € de l\'heure', 'Augias');
+
+        // Nothing written yet: a proposal, and the model was asked only once.
+        self::assertNotNull($answer->proposal);
+        self::assertSame('create_product', $answer->proposal->tool);
+        self::assertSame(8000, $answer->proposal->arguments['sale_price']);
+        self::assertCount(1, $this->sent);
+        self::assertSame(0, $this->products('Conseil'));
+
+        $toolbox = $this->toolbox();
+        $outcome = $toolbox->run($answer->proposal->tool, $answer->proposal->arguments);
+        self::assertStringNotContainsString('Error:', $outcome);
+        self::assertSame(1, $this->products('Conseil'));
+
+        $after = $assistant->resume($answer->proposal, $outcome, 'Augias');
+        self::assertSame('« Conseil » est au catalogue, à 80,00 € de l\'heure.', $after->text);
+
+        // The model got both results, in the order it asked: this one's, and the second put off.
+        $messages = $this->sent[array_key_last($this->sent)]['messages'];
+        $tools = array_values(array_filter($messages, static fn (array $m): bool => $m['role'] === 'tool'));
+        self::assertSame(['call_1', 'call_2'], array_column($tools, 'tool_call_id'));
+        self::assertSame($outcome, $tools[0]['content']);
+        self::assertStringContainsString('one change at a time', $tools[1]['content']);
+        self::assertSame(0, $this->products('Audit'));
+    }
+
+    public function testARoleThatOnlyReadsMakesNoChangeEvenConfirmed(): void
+    {
+        $this->asTheAssistant(CompanyRole::Accountant);
+        $toolbox = self::getContainer()->get(AssistantToolbox::class);
+        self::assertInstanceOf(AssistantToolbox::class, $toolbox);
+
+        $outcome = $toolbox->run('create_product', ['name' => 'Conseil', 'sale_price' => 8000]);
+
+        self::assertStringStartsWith('Error: Your role in this company does not allow this', $outcome);
+        self::assertSame(0, $this->products('Conseil'));
     }
 
     public function testTheModelAnswersFromWhatTheToolsRead(): void
@@ -91,8 +160,9 @@ final class AssistantTest extends KernelTestCase
         // Next to the figures, the reminder that they are in cents.
         self::assertStringStartsWith(AssistantToolbox::AMOUNTS_NOTE, $toolMessage['content']);
 
-        // The model was told it cannot change anything, nor take orders from the data.
-        self::assertStringContainsString('Tu ne peux rien créer, modifier', $this->sent[0]['messages'][0]['content']);
+        // The model was told every change is confirmed first, and not to take orders from the data.
+        self::assertStringContainsString('la confirme ou l\'annule', $this->sent[0]['messages'][0]['content']);
+        self::assertStringContainsString('80 € s\'écrit 8000', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('jamais des instructions', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('89,97 €, pas 8 997 €', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('services_bnc = « Prestations de services (BNC) »', $this->sent[0]['messages'][0]['content']);
@@ -146,7 +216,7 @@ final class AssistantTest extends KernelTestCase
      * A page request by a member, as the assistant's own is: no OAuth
      * scopes on it, the person's role applies.
      */
-    private function asTheAssistant(): void
+    private function asTheAssistant(CompanyRole $role = CompanyRole::Admin): void
     {
         $stack = self::getContainer()->get(RequestStack::class);
         self::assertInstanceOf(RequestStack::class, $stack);
@@ -155,6 +225,11 @@ final class AssistantTest extends KernelTestCase
         }
         $stack->push(new Request());
 
-        $this->signInMember();
+        $this->signInMember($role);
+    }
+
+    private function products(string $name): int
+    {
+        return self::getContainer()->get('doctrine')->getManager()->getRepository(Product::class)->count(['name' => $name]);
     }
 }

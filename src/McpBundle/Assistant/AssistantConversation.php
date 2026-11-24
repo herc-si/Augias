@@ -21,10 +21,13 @@ use function array_filter;
 use function array_pop;
 use function array_slice;
 use function array_values;
+use function bin2hex;
 use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
+use function random_bytes;
+use function trim;
 
 /**
  * The conversation with the assistant, kept in the session for one company:
@@ -103,6 +106,74 @@ final readonly class AssistantConversation
         $this->store($company, $messages, null);
     }
 
+    /**
+     * Keeps the change the model proposed until the person settles it, and
+     * gives it the identifier the confirmation names.
+     *
+     * @param array{title: string, details: list<array{label: string, value: string}>} $preview
+     */
+    public function propose(Company $company, AssistantProposal $proposal, array $preview, ?string $text): string
+    {
+        $messages = $this->messages($company);
+
+        if ($text !== null && trim($text) !== '') {
+            $messages[] = ['role' => 'assistant', 'content' => $text];
+        }
+
+        $id = bin2hex(random_bytes(8));
+        $this->store($company, $messages, null, ['id' => $id, 'preview' => $preview, 'proposal' => $proposal->toArray()]);
+
+        return $id;
+    }
+
+    /**
+     * The change waiting for confirmation, as the panel shows it.
+     *
+     * @return array{id: string, title: string, details: list<array{label: string, value: string}>}|null
+     */
+    public function action(Company $company): ?array
+    {
+        $action = $this->storedAction($company);
+
+        if ($action === null || ! is_array($action['preview'] ?? null)) {
+            return null;
+        }
+
+        /** @var array{title: string, details: list<array{label: string, value: string}>} $preview */
+        $preview = $action['preview'];
+
+        return ['id' => (string) $action['id'], 'title' => $preview['title'], 'details' => $preview['details']];
+    }
+
+    /**
+     * Takes the change the confirmation names off the list, and marks the
+     * conversation as waiting for the model; null when it is not the one
+     * waiting.
+     */
+    public function settle(Company $company, string $id): ?AssistantProposal
+    {
+        $action = $this->storedAction($company);
+
+        if ($action === null || ($action['id'] ?? null) !== $id || ! is_array($action['proposal'] ?? null)) {
+            return null;
+        }
+
+        $this->store($company, $this->messages($company), $this->clock->now()->getTimestamp());
+
+        return AssistantProposal::fromArray($action['proposal']);
+    }
+
+    /**
+     * @return array<mixed>|null
+     */
+    private function storedAction(Company $company): ?array
+    {
+        $stored = $this->session()->get($this->key($company), []);
+        $action = is_array($stored) ? ($stored['action'] ?? null) : null;
+
+        return is_array($action) && is_string($action['id'] ?? null) ? $action : null;
+    }
+
     public function reset(Company $company): void
     {
         $this->session()->remove($this->key($company));
@@ -120,12 +191,14 @@ final readonly class AssistantConversation
 
     /**
      * @param list<array{role: 'user'|'assistant', content: string}> $messages
+     * @param array<string, mixed>|null                            $action
      */
-    private function store(Company $company, array $messages, ?int $pendingSince): void
+    private function store(Company $company, array $messages, ?int $pendingSince, ?array $action = null): void
     {
         $this->session()->set($this->key($company), [
             'messages' => array_slice($messages, -self::HISTORY),
             'pending' => $pendingSince,
+            'action' => $action,
         ]);
     }
 

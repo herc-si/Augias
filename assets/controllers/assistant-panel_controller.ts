@@ -14,9 +14,16 @@ interface Message {
     content: string;
 }
 
+interface Action {
+    id: string;
+    title: string;
+    details: { label: string; value: string }[];
+}
+
 interface State {
     messages: Message[];
     pending: boolean;
+    action: Action | null;
     error: string | null;
 }
 
@@ -26,18 +33,27 @@ const OPEN_KEY = 'augias.assistant.open';
 const DRAFT_KEY = 'augias.assistant.draft';
 /** How often a question asked from another page is looked at again. */
 const POLL_MS = 2000;
+/** A recording is cut there: a question, not a dictation. */
+const MAX_RECORDING_MS = 60000;
 
 /**
  * The assistant's side panel, on every page: the conversation is the
- * server's (AssistantMessagesAction), the panel only shows it.
+ * server's (AssistantMessagesAction), the panel only shows it. A change the
+ * assistant proposes comes as a card to confirm or cancel; the microphone
+ * records a question and has it written out (AssistantTranscribeAction).
  */
 export default class extends Controller<HTMLElement> {
-    static targets = ['messages', 'empty', 'thinking', 'error', 'input', 'submit', 'scroller', 'reset'];
+    static targets = ['messages', 'empty', 'thinking', 'error', 'input', 'submit', 'scroller', 'reset', 'action', 'mic', 'status'];
 
     static values = {
         url: String,
         token: String,
         error: String,
+        confirmLabel: String,
+        cancelLabel: String,
+        transcribeUrl: String,
+        listeningLabel: String,
+        transcribingLabel: String,
     };
 
     declare readonly messagesTarget: HTMLElement;
@@ -48,16 +64,27 @@ export default class extends Controller<HTMLElement> {
     declare readonly submitTarget: HTMLButtonElement;
     declare readonly scrollerTarget: HTMLElement;
     declare readonly resetTarget: HTMLButtonElement;
+    declare readonly actionTarget: HTMLElement;
+    declare readonly micTarget: HTMLButtonElement;
+    declare readonly statusTarget: HTMLElement;
 
     declare readonly urlValue: string;
     declare readonly tokenValue: string;
     declare readonly errorValue: string;
+    declare readonly confirmLabelValue: string;
+    declare readonly cancelLabelValue: string;
+    declare readonly transcribeUrlValue: string;
+    declare readonly listeningLabelValue: string;
+    declare readonly transcribingLabelValue: string;
 
     private busy = false;
     private poll: number | null = null;
     private shown: Message[] = [];
     /** Bumped by each send: a read that left before it is out of date. */
     private generation = 0;
+    private recorder: MediaRecorder | null = null;
+    private recordingTimer: number | null = null;
+    private hint = '';
 
     private readonly onToggleClick = (event: Event): void => {
         const toggle = (event.target as Element | null)?.closest('[data-assistant-toggle]');
@@ -79,6 +106,8 @@ export default class extends Controller<HTMLElement> {
         document.addEventListener('keydown', this.onKeydown);
 
         this.inputTarget.value = sessionStorage.getItem(DRAFT_KEY) ?? '';
+        this.hint = this.statusTarget.textContent ?? '';
+        this.micTarget.hidden = !this.voiceAvailable();
 
         if (localStorage.getItem(OPEN_KEY) === '1') {
             this.open(false);
@@ -89,6 +118,7 @@ export default class extends Controller<HTMLElement> {
         document.removeEventListener('click', this.onToggleClick);
         document.removeEventListener('keydown', this.onKeydown);
         this.stopPolling();
+        this.recorder?.stop();
     }
 
     toggle(): void {
@@ -150,7 +180,7 @@ export default class extends Controller<HTMLElement> {
 
         // Shown at once; the server's answer replaces the whole list.
         ++this.generation;
-        this.render({ messages: [...this.shown, { role: 'user', content: question }], pending: true, error: null });
+        this.render({ messages: [...this.shown, { role: 'user', content: question }], pending: true, action: null, error: null });
 
         await this.send(new URLSearchParams({ question, _token: this.tokenValue }), question);
     }
@@ -162,6 +192,124 @@ export default class extends Controller<HTMLElement> {
 
         await this.send(new URLSearchParams({ reset: '1', _token: this.tokenValue }));
         this.inputTarget.focus();
+    }
+
+    async confirm(event: Event): Promise<void> {
+        await this.settle('confirm', (event.currentTarget as HTMLElement).dataset.actionId ?? '');
+    }
+
+    async cancel(event: Event): Promise<void> {
+        await this.settle('cancel', (event.currentTarget as HTMLElement).dataset.actionId ?? '');
+    }
+
+    async voice(): Promise<void> {
+        if (this.recorder !== null) {
+            this.recorder.stop();
+
+            return;
+        }
+
+        let stream: MediaStream;
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch {
+            this.render({ messages: this.shown, pending: false, action: null, error: this.errorValue });
+
+            return;
+        }
+
+        const type = ['audio/webm;codecs=opus', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/webm']
+            .find((candidate) => MediaRecorder.isTypeSupported(candidate));
+        const recorder = new MediaRecorder(stream, type ? { mimeType: type } : undefined);
+        const chunks: Blob[] = [];
+
+        recorder.addEventListener('dataavailable', (e) => chunks.push(e.data));
+        recorder.addEventListener('stop', () => {
+            stream.getTracks().forEach((track) => track.stop());
+            this.recorder = null;
+
+            if (this.recordingTimer !== null) {
+                window.clearTimeout(this.recordingTimer);
+                this.recordingTimer = null;
+            }
+
+            this.setListening(false);
+            void this.transcribe(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' }));
+        });
+
+        this.recorder = recorder;
+        recorder.start();
+        this.setListening(true);
+        this.recordingTimer = window.setTimeout(() => recorder.stop(), MAX_RECORDING_MS);
+    }
+
+    private async transcribe(audio: Blob): Promise<void> {
+        if (audio.size === 0) {
+            return;
+        }
+
+        this.setStatus(this.transcribingLabelValue);
+        this.setBusy(true);
+
+        const body = new FormData();
+        body.append('_token', this.tokenValue);
+        body.append('audio', audio, 'voice');
+
+        let text = '';
+
+        try {
+            const response = await fetch(this.transcribeUrlValue, { method: 'POST', credentials: 'same-origin', body });
+            const result = await response.json() as { text?: string; error?: string };
+
+            if (!response.ok || !result.text) {
+                this.render({ messages: this.shown, pending: false, action: null, error: result.error ?? this.errorValue });
+            } else {
+                text = result.text;
+            }
+        } catch {
+            this.render({ messages: this.shown, pending: false, action: null, error: this.errorValue });
+        }
+
+        this.setBusy(false);
+        this.setStatus(this.hint);
+
+        if (text !== '') {
+            // Sent as said; a change it leads to is still shown before it is made.
+            this.inputTarget.value = text;
+            this.element.querySelector('form')?.requestSubmit();
+        }
+    }
+
+    private voiceAvailable(): boolean {
+        return this.transcribeUrlValue !== ''
+            && typeof MediaRecorder !== 'undefined'
+            && navigator.mediaDevices?.getUserMedia !== undefined;
+    }
+
+    private setListening(listening: boolean): void {
+        this.micTarget.classList.toggle('is-listening', listening);
+        this.micTarget.setAttribute('aria-pressed', listening ? 'true' : 'false');
+        this.submitTarget.disabled = listening;
+        this.setStatus(listening ? this.listeningLabelValue : this.hint);
+    }
+
+    private setStatus(text: string): void {
+        this.statusTarget.textContent = text;
+    }
+
+    private async settle(kind: 'confirm' | 'cancel', id: string): Promise<void> {
+        if (this.busy || id === '') {
+            return;
+        }
+
+        this.actionTarget.querySelectorAll('button').forEach((button) => { button.disabled = true; });
+
+        if (kind === 'confirm') {
+            this.thinkingTarget.hidden = false;
+        }
+
+        await this.send(new URLSearchParams({ [kind]: id, _token: this.tokenValue }));
     }
 
     private async load(): Promise<void> {
@@ -198,7 +346,7 @@ export default class extends Controller<HTMLElement> {
                 this.inputTarget.value = question;
             }
         } catch {
-            this.render({ messages: this.shown, pending: false, error: this.errorValue });
+            this.render({ messages: this.shown, pending: false, action: null, error: this.errorValue });
 
             if (question !== undefined) {
                 this.inputTarget.value = question;
@@ -215,7 +363,8 @@ export default class extends Controller<HTMLElement> {
         this.thinkingTarget.hidden = !state.pending;
         this.errorTarget.hidden = state.error === null;
         this.errorTarget.textContent = state.error ?? '';
-        this.resetTarget.disabled = state.messages.length === 0;
+        this.resetTarget.disabled = state.messages.length === 0 && state.action === null;
+        this.renderAction(state.action);
 
         // A question asked from another page: its answer is looked for again.
         if (state.pending && !this.busy) {
@@ -225,6 +374,49 @@ export default class extends Controller<HTMLElement> {
         }
 
         this.scrollerTarget.scrollTop = this.scrollerTarget.scrollHeight;
+    }
+
+    private renderAction(action: Action | null): void {
+        this.actionTarget.hidden = action === null;
+        this.actionTarget.replaceChildren();
+
+        if (action === null) {
+            return;
+        }
+
+        const title = document.createElement('div');
+        title.className = 'assistant-action-title';
+        title.textContent = action.title;
+
+        const details = document.createElement('dl');
+        details.className = 'assistant-action-details';
+        for (const detail of action.details) {
+            const term = document.createElement('dt');
+            term.textContent = detail.label;
+            const value = document.createElement('dd');
+            value.textContent = detail.value;
+            details.append(term, value);
+        }
+
+        const buttons = document.createElement('div');
+        buttons.className = 'assistant-action-buttons';
+        buttons.append(
+            this.actionButton(this.cancelLabelValue, 'btn btn-ghost', 'cancel', action.id),
+            this.actionButton(this.confirmLabelValue, 'btn btn-primary', 'confirm', action.id),
+        );
+
+        this.actionTarget.append(title, details, buttons);
+    }
+
+    private actionButton(label: string, className: string, method: 'confirm' | 'cancel', id: string): HTMLButtonElement {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = className;
+        button.textContent = label;
+        button.dataset.action = `assistant-panel#${method}`;
+        button.dataset.actionId = id;
+
+        return button;
     }
 
     private bubble(message: Message): HTMLElement {

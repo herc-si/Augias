@@ -106,6 +106,7 @@ final readonly class AccountingWriteTools
      */
     #[McpTool(name: 'add_ledger_entry', description: 'Write an entry by hand in the revenue, purchase or expense book (amount incl. tax in the minor unit, date, label, counterparty, settlement method, optional tax and document reference). Needs mcp:finance and mcp:write.')]
     #[McpScopeRequired(McpScope::Finance)]
+    #[McpScopeRequired(McpScope::Write)]
     public function addLedgerEntry(
         string $book,
         string $entry_date,
@@ -213,6 +214,7 @@ final readonly class AccountingWriteTools
      */
     #[McpTool(name: 'delete_ledger_entry', description: 'Delete an entry written by hand, unless the books are locked over it. Needs mcp:finance and mcp:write.')]
     #[McpScopeRequired(McpScope::Finance)]
+    #[McpScopeRequired(McpScope::Write)]
     public function deleteLedgerEntry(string $entry_id): array
     {
         $this->requireBooksWrite();
@@ -247,6 +249,7 @@ final readonly class AccountingWriteTools
      */
     #[McpTool(name: 'close_accounting_period', description: 'Close (seal) a declaration period that has ended, so its declaration can be filed. Irreversible. Needs mcp:finance and mcp:write.')]
     #[McpScopeRequired(McpScope::Finance)]
+    #[McpScopeRequired(McpScope::Write)]
     public function closeAccountingPeriod(string $period_id): array
     {
         $this->requireBooksWrite();
@@ -274,6 +277,7 @@ final readonly class AccountingWriteTools
      */
     #[McpTool(name: 'create_accounting_period', description: 'Create the declaration period holding a date (e.g. a quarter with no receipts that still has to be declared). Needs mcp:finance and mcp:write.')]
     #[McpScopeRequired(McpScope::Finance)]
+    #[McpScopeRequired(McpScope::Write)]
     public function createAccountingPeriod(string $date, ?string $type = null): array
     {
         $this->requireBooksWrite();
@@ -305,6 +309,7 @@ final readonly class AccountingWriteTools
      */
     #[McpTool(name: 'mark_declaration_filed', description: 'Record that a declaration (kind social_contributions or vat) of a period was filed with the administration, with its reference. Needs mcp:finance and mcp:write.')]
     #[McpScopeRequired(McpScope::Finance)]
+    #[McpScopeRequired(McpScope::Write)]
     public function markDeclarationFiled(string $period_id, string $kind, ?string $reference = null, ?string $notes = null): array
     {
         $this->requireBooksWrite();
@@ -346,6 +351,7 @@ final readonly class AccountingWriteTools
      */
     #[McpTool(name: 'reconcile_bank_transaction', description: 'Reconcile a bank statement line: action "match" with kind (payment, invoice, bill_payment, bill) and target_id from the suggestions of list_bank_transactions, "ignore", or "reopen". Needs mcp:finance and mcp:write.')]
     #[McpScopeRequired(McpScope::Finance)]
+    #[McpScopeRequired(McpScope::Write)]
     public function reconcileBankTransaction(string $bank_transaction_id, string $action, ?string $kind = null, ?string $target_id = null): array
     {
         $this->scopeGuard->require(McpScope::Finance);
