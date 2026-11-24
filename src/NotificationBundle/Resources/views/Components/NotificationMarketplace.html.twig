@@ -96,55 +96,17 @@
 
                 {# Integration Cards Grid #}
                 <div class="integration-grid">
-                    {% if featuredIntegrations|length > 0 or regularIntegrations|length > 0 %}
-
-                        {# Featured Providers Section #}
-                        {% if featuredIntegrations|length > 0 %}
-                            <div class="integration-section">
-                                <div class="integration-section-header">
-                                    {{ ux_icon('tabler:star', {width: 16, height: 16}) }}
-                                    {{ 'notification.marketplace.featured_providers'|trans }}
-                                </div>
-                                <div class="integration-cards-grid">
-                            {% for integration in featuredIntegrations %}
-                                <div class="integration-card {{ integration.isConfigured ? 'is-configured' : '' }}">
-                                    <div class="integration-card-body">
-                                        <div class="integration-card-icon">
-                                            {{ ux_icon(integration.icon, {width: 32, height: 32}) }}
-                                        </div>
-                                        <div class="integration-card-content">
-                                            <h6 class="integration-card-title">{{ integration.displayName }}</h6>
-                                            {% if integration.isConfigured %}
-                                                <span class="badge bg-success-lt">
-                                                    {{ ux_icon('tabler:check', {width: 12, height: 12}) }}
-                                                    <span class="visually-hidden">{{ 'notification.marketplace.configured'|trans }}</span>
-                                                </span>
-                                            {% endif %}
-                                            <p class="integration-card-description">{{ integration.description }}</p>
-                                        </div>
-                                        <div class="integration-card-action">
-                                            <a href="{{ path('_notification_integration', {transport: integration.name, type: integration.type, activeTab: activeTab}) }}"
-                                               class="btn btn-sm btn-outline-primary w-100">
-                                                {{ ux_icon('tabler:plus', {width: 14, height: 14}) }}
-                                                {{ 'notification.marketplace.configure'|trans }}
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                                </div>
-                            </div>
-                        {% endif %}
+                    {% if tabFilteredIntegrations|length > 0 %}
 
                         {# All Providers Section #}
-                        {% if regularIntegrations|length > 0 %}
-                            <div class="integration-section {% if featuredIntegrations|length > 0 %}mt-5{% endif %}">
+                        {% if tabFilteredIntegrations|length > 0 %}
+                            <div class="integration-section">
                                 <div class="integration-section-header">
                                     {{ ux_icon('tabler:apps', {width: 16, height: 16}) }}
                                     {{ 'notification.marketplace.all_providers'|trans }}
                                 </div>
                                 <div class="integration-cards-grid">
-                            {% for integration in regularIntegrations %}
+                            {% for integration in tabFilteredIntegrations %}
                                 <div class="integration-card {{ integration.isConfigured ? 'is-configured' : '' }}">
                                     <div class="integration-card-body">
                                         <div class="integration-card-icon">

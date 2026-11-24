@@ -2998,7 +2998,6 @@ notification:
         edit: 'Edit %name%'
         empty_subtitle: 'Configure your first notification integration to start sending SMS or chat notifications.'
         empty_title: 'No integrations configured'
-        featured_providers: 'Featured Providers'
         heading: 'Notification Integrations'
         modal_title: 'Configure Notification Integration'
         no_results: 'No integrations found matching your search'
