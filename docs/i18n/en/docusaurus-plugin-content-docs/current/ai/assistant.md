@@ -63,7 +63,7 @@ Look at the amounts on the card above all: that is where a misunderstanding show
 
 ## Speaking to the assistant
 
-Tap the microphone button next to `Ask`, speak, then tap it again to finish. Your question is written out and sent automatically. A recording stops by itself after one minute.
+Tap the microphone button next to `Ask`, speak, then tap it again to finish. Your question is written out and sent automatically. A recording stops by itself after 30 seconds.
 
 The first time, your browser asks permission to use the microphone. Speech is transcribed by Infomaniak in Switzerland, like typed questions; HERC SI does not keep the recording. A change asked for by voice also goes through the confirmation card.
 

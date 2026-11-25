@@ -39,7 +39,7 @@ Le Client informe sans délai le Prestataire de tout accès non autorisé dont i
 
 ## 5. Plans, quotas et évolutions
 
-Le service est proposé par plans. Chaque plan ouvre un ensemble de fonctionnalités et de quotas, notamment : nombre de clients, factures par mois, sièges d'équipe, nombre de sociétés couvertes, devis, paiements en ligne, factures récurrentes, relances automatiques, multidevise, marque blanche, accès à l'API REST, accès MCP, questions à l'assistant intégré par mois, domaine personnalisé, champs et gabarits sur mesure.
+Le service est proposé par plans. Chaque plan ouvre un ensemble de fonctionnalités et de quotas, notamment : nombre de clients, factures par mois, sièges d'équipe, nombre de sociétés couvertes, devis, paiements en ligne, factures récurrentes, relances automatiques, multidevise, marque blanche, accès à l'API REST, accès MCP, questions à l'assistant intégré par mois, champs et gabarits sur mesure, ainsi que la facturation électronique.
 
 Les tarifs en vigueur sont les suivants (TVA non applicable, article 7) :
 

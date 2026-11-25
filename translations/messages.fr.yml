@@ -3964,8 +3964,10 @@ saas:
         choose: 'Choisir le plan'
         continue_free: 'Continuer avec le plan gratuit'
         current: 'Plan actuel'
+        einvoicing: 'Facturation électronique'
+        einvoicing_outside_trial: '(hors période d''essai)'
         feature:
-            assistant_questions_per_month: 'Questions à l''assistant par mois'
+            assistant_questions_per_month: 'Assistant IA (questions par mois)'
             automated_reminders: 'Relances automatiques'
             companies: 'Sociétés couvertes'
             custom_branding: 'Votre marque sur les documents'
