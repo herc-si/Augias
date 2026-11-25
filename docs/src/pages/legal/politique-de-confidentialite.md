@@ -5,7 +5,7 @@ description: Quelles données Augias traite, à quel titre, avec qui, et pendant
 
 # Politique de confidentialité
 
-Dernière mise à jour : 24 novembre 2026
+Dernière mise à jour : 25 novembre 2026
 
 :::warning À compléter avant publication
 Projet rédigé à partir du fonctionnement réel de l'application, à relire par un juriste. Les mentions **[À COMPLÉTER]** attendent une information ou une décision de HERC SI. Une politique qui décrirait des traitements différents de ceux réellement effectués serait sans valeur, et la section 4 dépend de choix d'exploitation encore ouverts.
@@ -66,9 +66,13 @@ Sous-traitants ultérieurs, au jour de cette mise à jour :
 |---|---|---|---|
 | Infomaniak Network SA | hébergement de l'application et de la base, envoi des courriers électroniques (SMTP) | l'ensemble des données ; pour le SMTP, les destinataires et le contenu des messages envoyés | Suisse |
 | Infomaniak Network SA (AI Services) | traitement par intelligence artificielle des questions posées à l'assistant intégré, et transcription des questions dictées, **uniquement si le propriétaire de l'entreprise a activé l'assistant** | la question, et les données de l'entreprise nécessaires pour y répondre (clients, documents, montants) ; l'enregistrement de la voix pour une question dictée. Selon Infomaniak, les requêtes ne sont ni conservées ni utilisées pour entraîner les modèles | Suisse |
-| Stripe Payments Europe, Limited | encaissement des abonnements, par carte ou prélèvement SEPA | nom, adresse électronique et adresse de facturation du Client, moyen de paiement ; HERC SI ne reçoit ni les numéros de carte ni les coordonnées bancaires | Irlande ; **[À VÉRIFIER : transferts hors de l'Union prévus par l'accord de traitement des données de Stripe, et qualité de Stripe (sous-traitant ou responsable de traitement distinct) pour les données de paiement]** |
-| **[À COMPLÉTER : dénomination et siège de l'exploitant de SUPER PDP]** | plateforme agréée de facturation électronique : transmission et réception des factures électroniques, e-reporting, lorsque vous connectez votre compte | les factures et avoirs transmis ou reçus, avec l'identité et les coordonnées des parties qui y figurent | **[À COMPLÉTER]** |
+| Stripe Payments Europe, Limited | encaissement des abonnements, par carte ou prélèvement SEPA | nom, adresse électronique et adresse de facturation du Client, moyen de paiement ; HERC SI ne reçoit ni les numéros de carte ni les coordonnées bancaires | Irlande, avec des transferts hors de l'Union décrits sous ce tableau |
+| SUPER G SAS (service SUPER PDP), RCS Paris 853 322 915, 6 rue de la Dhuis, 75020 Paris | plateforme agréée de facturation électronique : transmission et réception des factures électroniques, e-reporting, lorsque vous connectez votre compte | les factures et avoirs transmis ou reçus, avec l'identité et les coordonnées des parties qui y figurent | France (hébergé par SUPER G, à Paris) |
 | Annuaire des entreprises (API de l'État, `recherche-entreprises.api.gouv.fr`) | recherche d'une entreprise pour préremplir une fiche client | le nom ou le numéro SIREN que vous saisissez dans la recherche | France |
+
+**Stripe agit aussi pour son propre compte.** Pour l'encaissement, Stripe traite les données pour HERC SI, comme sous-traitant. Pour ses propres finalités, Stripe est **responsable de traitement distinct** : prévention et détection de la fraude, maîtrise des risques financiers et de sécurité, lutte contre le blanchiment et vérification d'identité, gestion des abonnements, amélioration de ses produits, y compris par l'entraînement de modèles d'intelligence artificielle. Ces traitements relèvent de la [politique de confidentialité de Stripe](https://stripe.com/fr/privacy), et non de la présente politique.
+
+**Transferts hors de l'Union.** Stripe transfère des données à Stripe, LLC, aux États-Unis, et peut en transférer à ses autres sociétés et à ses sous-traitants dans d'autres pays. Ces transferts reposent sur le cadre de protection des données UE–États-Unis (Data Privacy Framework), auquel Stripe, LLC est certifiée, et sur les clauses contractuelles types de la Commission européenne (décision d'exécution (UE) 2021/914), intégrées à l'[accord de traitement des données de Stripe](https://stripe.com/legal/dpa).
 
 Aucune donnée n'est vendue, louée ni cédée. La télémétrie que le logiciel libre peut émettre vers son éditeur amont **est désactivée sur le service hébergé**.
 
@@ -100,8 +104,6 @@ Les mesures effectivement en place :
 - **Journal des consultations par HERC SI** : toute lecture de vos données dans le cadre de l'exploitation ou du support est inscrite dans votre propre dossier, avec sa date, son auteur et son motif. Le relevé vous est communiqué sur demande, et il figure dans l'export de vos données.
 - **Chiffrement des échanges** entre votre navigateur et le service.
 - **Sauvegardes chiffrées et conservées hors du serveur** : chaque nuit, les données sont sauvegardées, chiffrées sur le serveur, puis copiées sur un équipement de stockage exploité par HERC SI, en France. La clé qui permet de les relire n'est conservée ni sur le serveur ni sur cet équipement. Avant chiffrement, chaque sauvegarde est restaurée à blanc pour vérifier qu'elle est exploitable.
-
-**[À COMPLÉTER : chiffrement au repos des disques du serveur — à confirmer auprès d'Infomaniak avant de l'affirmer ici. Ne rien écrire est préférable à une affirmation invérifiée.]**
 
 ## 7. Vos droits
 
