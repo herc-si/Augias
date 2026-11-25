@@ -2998,7 +2998,6 @@ notification:
         edit: 'Modifier %name%'
         empty_subtitle: 'Configurez votre première intégration de notification pour commencer à envoyer des notifications SMS ou chat.'
         empty_title: 'Aucune intégration configurée'
-        featured_providers: 'Fournisseurs à la une'
         heading: 'Intégrations de notification'
         modal_title: 'Configurer l''intégration de notification'
         no_results: 'Aucune intégration ne correspond à votre recherche'

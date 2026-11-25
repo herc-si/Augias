@@ -394,7 +394,7 @@ final class NotificationMarketplaceTest extends LiveComponentTest
         self::assertStringNotContainsString('Twilio', $rendered);
     }
 
-    public function testRegularIntegrationsSeparatedFromFeatured(): void
+    public function testEveryProviderIsListedTogetherWithNoneFeatured(): void
     {
         $component = $this->createLiveComponent(
             name: NotificationMarketplace::class,
@@ -406,11 +406,12 @@ final class NotificationMarketplaceTest extends LiveComponentTest
 
         $rendered = $component->render()->toString();
 
-        // Verify both featured and regular integrations are present
-        self::assertStringContainsString('Twilio', $rendered); // Featured
-        self::assertStringContainsString('Vonage', $rendered); // Featured
+        // One list, in alphabetical order: none is put forward (Rémi, 24/11/2026).
+        self::assertStringContainsString('Twilio', $rendered);
+        self::assertStringContainsString('Vonage', $rendered);
+        self::assertStringNotContainsString('Featured providers', $rendered);
+        self::assertSame(1, substr_count($rendered, 'class="integration-section"'));
 
-        // Some regular SMS providers should also be there
         $this->assertMatchesHtmlSnapshot($this->replaceChecksum($rendered));
     }
 

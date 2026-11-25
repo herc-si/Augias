@@ -35,7 +35,6 @@ use Symfony\UX\TwigComponent\Attribute\ExposeInTemplate;
 use Throwable;
 use function array_filter;
 use function array_values;
-use function in_array;
 use function str_contains;
 use function str_replace;
 use function strtolower;
@@ -84,7 +83,7 @@ final class NotificationMarketplace extends AbstractController
     }
 
     /**
-     * @return list<array{name: string, displayName: string, type: string, typeLabel: string, description: string, icon: string, isPopular: bool, isConfigured: bool}>
+     * @return list<array{name: string, displayName: string, type: string, typeLabel: string, description: string, icon: string, isConfigured: bool}>
      */
     #[ExposeInTemplate]
     public function availableIntegrations(): array
@@ -104,7 +103,6 @@ final class NotificationMarketplace extends AbstractController
                     'typeLabel' => $type === 'texter' ? 'SMS' : 'Chat',
                     'description' => $this->getIntegrationDescription($name, $type),
                     'icon' => $this->getIntegrationIcon($name),
-                    'isPopular' => $this->isPopularIntegration($name),
                     'isConfigured' => $this->isIntegrationConfigured($name),
                 ];
             } catch (NotFoundExceptionInterface | ContainerExceptionInterface) {
@@ -112,15 +110,8 @@ final class NotificationMarketplace extends AbstractController
             }
         }
 
-        // Sort: popular first, then alphabetical
-        usort(
-            $integrations,
-            static fn ($a, $b) =>
-            // Popular integrations first
-            ($b['isPopular'] <=> $a['isPopular']) ?:
-            // Then alphabetical
-            ($a['displayName'] <=> $b['displayName'])
-        );
+        // Alphabetical: none is put forward over the others.
+        usort($integrations, static fn ($a, $b) => $a['displayName'] <=> $b['displayName']);
 
         return $integrations;
     }
@@ -135,7 +126,7 @@ final class NotificationMarketplace extends AbstractController
     }
 
     /**
-     * @return list<array{name: string, displayName: string, type: string, typeLabel: string, description: string, icon: string, isPopular: bool, isConfigured: bool}>
+     * @return list<array{name: string, displayName: string, type: string, typeLabel: string, description: string, icon: string, isConfigured: bool}>
      */
     #[ExposeInTemplate]
     public function filteredIntegrations(): array
@@ -155,7 +146,7 @@ final class NotificationMarketplace extends AbstractController
     }
 
     /**
-     * @return list<array{name: string, displayName: string, type: string, typeLabel: string, description: string, icon: string, isPopular: bool, isConfigured: bool}>
+     * @return list<array{name: string, displayName: string, type: string, typeLabel: string, description: string, icon: string, isConfigured: bool}>
      */
     #[ExposeInTemplate]
     public function tabFilteredIntegrations(): array
@@ -169,24 +160,6 @@ final class NotificationMarketplace extends AbstractController
         };
 
         return array_values(array_filter($filtered, fn ($integration) => $integration['type'] === $targetType));
-    }
-
-    /**
-     * @return list<array{name: string, displayName: string, type: string, typeLabel: string, description: string, icon: string, isPopular: bool, isConfigured: bool}>
-     */
-    #[ExposeInTemplate]
-    public function featuredIntegrations(): array
-    {
-        return array_values(array_filter($this->tabFilteredIntegrations(), fn ($integration) => $integration['isPopular']));
-    }
-
-    /**
-     * @return list<array{name: string, displayName: string, type: string, typeLabel: string, description: string, icon: string, isPopular: bool, isConfigured: bool}>
-     */
-    #[ExposeInTemplate]
-    public function regularIntegrations(): array
-    {
-        return array_values(array_filter($this->tabFilteredIntegrations(), fn ($integration) => ! $integration['isPopular']));
     }
 
     public function getIntegrationIcon(string $name): string
@@ -286,18 +259,6 @@ final class NotificationMarketplace extends AbstractController
             '%type%' => $typeLabel,
             '%name%' => $this->humanizeIntegrationName($name),
         ]);
-    }
-
-    private function isPopularIntegration(string $name): bool
-    {
-        return in_array($name, [
-            'Twilio',
-            'Vonage',
-            'Slack',
-            'Discord',
-            'Telegram',
-            'MicrosoftTeams',
-        ], true);
     }
 
     private function isIntegrationConfigured(string $name): bool
