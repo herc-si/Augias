@@ -5,7 +5,7 @@ description: Conditions générales d'utilisation et de vente du service héberg
 
 # Conditions générales d'utilisation et de vente
 
-Dernière mise à jour : 24 novembre 2026
+Dernière mise à jour : 25 novembre 2026
 
 :::warning À compléter avant publication
 Ce document est un projet rédigé à partir du fonctionnement réel de l'application. Les mentions **[À COMPLÉTER]** attendent des informations ou des décisions de HERC SI, et l'ensemble doit être relu par un juriste avant d'engager HERC SI.
@@ -41,15 +41,22 @@ Le Client informe sans délai le Prestataire de tout accès non autorisé dont i
 
 Le service est proposé par plans. Chaque plan ouvre un ensemble de fonctionnalités et de quotas, notamment : nombre de clients, factures par mois, sièges d'équipe, nombre de sociétés couvertes, devis, paiements en ligne, factures récurrentes, relances automatiques, multidevise, marque blanche, accès à l'API REST, accès MCP, questions à l'assistant intégré par mois, domaine personnalisé, champs et gabarits sur mesure.
 
-Le détail et les tarifs de chaque plan figurent sur la page des tarifs, qui fait partie intégrante des présentes conditions.
+Les tarifs en vigueur sont les suivants (TVA non applicable, article 7) :
+
+| Plan | Au mois | À l'année |
+| --- | --- | --- |
+| Découverte | 3 € | 30 € |
+| Solo | 10 € | 100 € |
+| Entreprise | 20 € | 200 € |
+| Agence | 40 € | 400 € |
+
+Le détail des fonctionnalités et des quotas de chaque plan est présenté dans l'application, sur la page **Abonnement** (`app.augias.herc-si.fr/billing`), avant toute souscription ou tout changement de plan. Cette grille et ce détail, dans leur version en vigueur au jour de la souscription, constituent la page des tarifs et font partie intégrante des présentes conditions.
 
 Un abonnement porte sur une société. Lorsque son plan couvre plusieurs sociétés, les sociétés que crée ensuite le même propriétaire sont rattachées à cet abonnement, dans la limite fixée par le plan, la société abonnée comprise. Chacune garde ses propres données ; l'abonnement, sa facturation et sa résiliation se gèrent depuis la société abonnée, et les sociétés rattachées en suivent le sort. Si le plan cesse de les couvrir, les dernières rattachées doivent souscrire leur propre plan pour continuer.
 
-**[À COMPLÉTER : adresse de la page des tarifs, et tarifs eux-mêmes.]**
-
 Lorsqu'un quota est atteint, l'application le signale et propose le plan qui le lève. Le dépassement n'entraîne ni facturation supplémentaire ni suppression de données : l'action concernée est simplement refusée jusqu'au changement de plan.
 
-Le Prestataire peut faire évoluer les plans et leurs tarifs. Toute évolution défavorable au Client est notifiée au moins **[À COMPLÉTER : délai de prévenance, trente jours étant usuel]** avant sa prise d'effet, et ouvre au Client la faculté de résilier sans frais avant cette date.
+Le Prestataire peut faire évoluer les plans et leurs tarifs. Toute évolution défavorable au Client est notifiée par courriel au moins **trente jours** avant sa prise d'effet, et ouvre au Client la faculté de résilier sans frais avant cette date.
 
 ## 6. Période d'essai
 
@@ -99,7 +106,7 @@ Le Client peut à tout moment demander depuis l'application un **export complet 
 
 À la fin du contrat, quelle qu'en soit la cause, les données sont conservées pendant **quatre-vingt-dix jours** afin de permettre au Client d'en demander l'export, puis supprimées définitivement des systèmes de production, après remise de l'archive de fermeture décrite ci-dessous. Ce délai laisse le temps de récupérer une comptabilité, y compris lorsque la fin du contrat n'a pas été voulue par le Client. Le Prestataire ne conserve pas les données au-delà : il n'est soumis à aucune obligation légale de les garder pour le compte du Client. Les sauvegardes s'effacent selon leur propre cycle, décrit dans la [politique de confidentialité](./politique-de-confidentialite.md).
 
-**Support.** À la demande du Client, formulée depuis l'application par le propriétaire ou un administrateur de l'entreprise, le Prestataire peut consulter les données de l'entreprise pour l'aider. Cet accès est limité à la lecture, borné à la durée choisie par le Client, révocable à tout moment, et s'effectue sous l'identité de l'intervenant du Prestataire, jamais sous celle d'un utilisateur du Client. Il ne vaut pas mandat : le Prestataire ne modifie, n'envoie ni n'exporte aucune donnée, et le Client demeure seul responsable des suites qu'il donne aux constats de l'intervention, conformément à l'article 9. L'intervention se clôt par un compte rendu ; ses conditions sont détaillées dans la [politique de confidentialité](./politique-de-confidentialite.md). **[À COMPLÉTER : délai de prise en charge, si HERC SI souhaite en annoncer un ; à défaut, aucun délai n'est garanti.]**
+**Support.** À la demande du Client, formulée depuis l'application par le propriétaire ou un administrateur de l'entreprise, le Prestataire peut consulter les données de l'entreprise pour l'aider. Cet accès est limité à la lecture, borné à la durée choisie par le Client, révocable à tout moment, et s'effectue sous l'identité de l'intervenant du Prestataire, jamais sous celle d'un utilisateur du Client. Il ne vaut pas mandat : le Prestataire ne modifie, n'envoie ni n'exporte aucune donnée, et le Client demeure seul responsable des suites qu'il donne aux constats de l'intervention, conformément à l'article 9. L'intervention se clôt par un compte rendu ; ses conditions sont détaillées dans la [politique de confidentialité](./politique-de-confidentialite.md). Le Prestataire s'efforce de répondre aux demandes de support dans un délai de **deux jours ouvrés** ; ce délai est indicatif et n'est pas garanti.
 
 **Assistant intégré.** Le service comprend un assistant qui répond aux questions des utilisateurs à partir des données de leur entreprise et peut leur proposer des modifications : créer ou modifier des devis, des factures, des fiches clients ou des articles du catalogue, envoyer un document ou enregistrer un paiement. L'assistant est **désactivé par défaut**. Seul le propriétaire de l'entreprise peut l'activer, après avoir été informé dans l'application que les questions, et les données de l'entreprise nécessaires pour y répondre, sont transmises au service d'intelligence artificielle d'Infomaniak Network SA, en Suisse. **Cette activation vaut autorisation du recours à ce sous-traitant ultérieur pour l'entreprise concernée**, au sens de l'annexe de la [politique de confidentialité](./politique-de-confidentialite.md). Le propriétaire peut désactiver l'assistant à tout moment ; plus aucune donnée n'est alors transmise. Aucune modification n'est faite sans que l'utilisateur ait confirmé celle que l'assistant lui présente, et l'assistant n'agit que dans les limites des droits de cet utilisateur dans l'entreprise. Le nombre de questions par mois dépend du plan souscrit (article 5). Le Prestataire tient un journal de l'usage de l'assistant (auteur, date, outils appelés, modifications proposées, confirmées ou annulées), sans conserver les questions ni les réponses.
 
@@ -113,7 +120,7 @@ Il appartient au Client de conserver ses pièces comptables pendant les durées 
 
 Le Prestataire s'engage à mettre en œuvre les moyens raisonnables pour assurer la disponibilité du service, sans garantie d'un fonctionnement ininterrompu.
 
-**[À COMPLÉTER : engagement de disponibilité chiffré, si HERC SI souhaite en prendre un. En l'absence d'engagement chiffré, aucune pénalité de disponibilité n'est due.]**
+Le Prestataire ne prend pas d'engagement de disponibilité chiffré : aucune pénalité ni aucun avoir n'est dû au titre d'une indisponibilité. L'état du service et les incidents en cours sont communiqués au Client par courriel lorsqu'ils l'affectent durablement.
 
 Les interventions de maintenance programmée sont annoncées à l'avance lorsqu'elles sont susceptibles d'interrompre le service. Les interventions urgentes de sécurité peuvent intervenir sans préavis.
 
@@ -143,4 +150,4 @@ Toute modification des présentes conditions est notifiée au Client au moins tr
 
 Les présentes conditions sont soumises au droit français.
 
-À défaut de résolution amiable, **tout litige relève de la compétence exclusive du tribunal de commerce de [À COMPLÉTER : ville du siège de HERC SI]**, y compris en cas de pluralité de défendeurs ou d'appel en garantie.
+À défaut de résolution amiable, **tout litige relève de la compétence exclusive des juridictions dans le ressort desquelles se trouve le siège du Prestataire**, indiqué dans les [mentions légales](./mentions-legales.md), y compris en cas de pluralité de défendeurs ou d'appel en garantie, dans la mesure où la loi permet une telle clause entre les parties. À défaut, les règles de compétence de droit commun s'appliquent.

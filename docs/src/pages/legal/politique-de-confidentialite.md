@@ -5,7 +5,7 @@ description: Quelles données Augias traite, à quel titre, avec qui, et pendant
 
 # Politique de confidentialité
 
-Dernière mise à jour : 24 novembre 2026
+Dernière mise à jour : 25 novembre 2026
 
 :::warning À compléter avant publication
 Projet rédigé à partir du fonctionnement réel de l'application, à relire par un juriste. Les mentions **[À COMPLÉTER]** attendent une information ou une décision de HERC SI. Une politique qui décrirait des traitements différents de ceux réellement effectués serait sans valeur, et la section 4 dépend de choix d'exploitation encore ouverts.
@@ -100,8 +100,6 @@ Les mesures effectivement en place :
 - **Journal des consultations par HERC SI** : toute lecture de vos données dans le cadre de l'exploitation ou du support est inscrite dans votre propre dossier, avec sa date, son auteur et son motif. Le relevé vous est communiqué sur demande, et il figure dans l'export de vos données.
 - **Chiffrement des échanges** entre votre navigateur et le service.
 - **Sauvegardes chiffrées et conservées hors du serveur** : chaque nuit, les données sont sauvegardées, chiffrées sur le serveur, puis copiées sur un équipement de stockage exploité par HERC SI, en France. La clé qui permet de les relire n'est conservée ni sur le serveur ni sur cet équipement. Avant chiffrement, chaque sauvegarde est restaurée à blanc pour vérifier qu'elle est exploitable.
-
-**[À COMPLÉTER : chiffrement au repos des disques du serveur — à confirmer auprès d'Infomaniak avant de l'affirmer ici. Ne rien écrire est préférable à une affirmation invérifiée.]**
 
 ## 7. Vos droits
 
