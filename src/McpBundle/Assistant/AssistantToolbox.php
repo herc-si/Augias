@@ -26,6 +26,7 @@ use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Tool;
 use Mcp\Server\Builder;
 use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
 use ReflectionAttribute;
 use ReflectionMethod;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -37,6 +38,7 @@ use function array_map;
 use function in_array;
 use function is_array;
 use function is_string;
+use function json_decode;
 use function json_encode;
 
 /**
@@ -88,6 +90,7 @@ final class AssistantToolbox
         #[AutowireLocator('mcp.tool')]
         ContainerInterface $tools,
         private readonly RequestStack $requestStack,
+        private readonly LoggerInterface $logger,
     ) {
         $this->handler = new ReferenceHandler($tools);
     }
@@ -186,8 +189,14 @@ final class AssistantToolbox
         $request?->attributes->set(McpOAuthAuthenticator::ATTR_SCOPES, $scopes);
 
         try {
+            $tool = $this->registry->getTool($name);
             // The SDK reads the MCP session from the arguments; there is none here.
-            $result = $this->handler->handle($this->registry->getTool($name), [...$arguments, '_session' => null]);
+            $result = $this->handler->handle($tool, [...$this->decodedArguments($tool->tool->inputSchema, $arguments), '_session' => null]);
+
+            if ($result === [] || $result === null) {
+                return 'Nothing found. Try one distinctive word (a name, a number), or a list_* tool.';
+            }
+
             $encoded = is_string($result) ? $result : json_encode($result, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
             // The tools give amounts in the minor unit; a small model reads
@@ -197,11 +206,50 @@ final class AssistantToolbox
             return 'Error: ' . $e->getMessage();
         } catch (JsonException) {
             return 'Error: the result could not be encoded.';
-        } catch (Throwable) {
-            return 'Error: the tool failed.';
+        } catch (Throwable $e) {
+            // Never shown to the model, which only learns the arguments did not fit.
+            $this->logger->warning('An assistant tool failed.', ['tool' => $name, 'exception' => $e]);
+
+            return 'Error: the tool failed with these arguments. Check them against the tool\'s parameters: ids are the ULIDs that search and the list_* tools return, and an object is given as an object.';
         } finally {
             $request?->attributes->remove(McpOAuthAuthenticator::ATTR_SCOPES);
         }
+    }
+
+    /**
+     * The arguments as the tool takes them: a small model often sends an
+     * object or a list as JSON text (`"changes": "{\"subject\": …}"`), which
+     * the tool's type check would refuse.
+     *
+     * @param array<string, mixed> $schema
+     * @param array<string, mixed> $arguments
+     *
+     * @return array<string, mixed>
+     */
+    private function decodedArguments(array $schema, array $arguments): array
+    {
+        $properties = is_array($schema['properties'] ?? null) ? $schema['properties'] : [];
+
+        foreach ($arguments as $key => $value) {
+            $type = $properties[$key]['type'] ?? null;
+            $types = is_array($type) ? $type : [$type];
+
+            if (! is_string($value) || (! in_array('object', $types, true) && ! in_array('array', $types, true))) {
+                continue;
+            }
+
+            try {
+                $decoded = json_decode($value, true, flags: JSON_THROW_ON_ERROR);
+            } catch (JsonException) {
+                continue;
+            }
+
+            if (is_array($decoded)) {
+                $arguments[$key] = $decoded;
+            }
+        }
+
+        return $arguments;
     }
 
     /**

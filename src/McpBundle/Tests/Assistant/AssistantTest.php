@@ -22,6 +22,7 @@ use Augias\McpBundle\Assistant\Assistant;
 use Augias\McpBundle\Assistant\AssistantClient;
 use Augias\McpBundle\Assistant\AssistantToolbox;
 use Augias\McpBundle\Tests\Functional\SignsInMember;
+use Augias\QuoteBundle\Test\Factory\QuoteFactory;
 use Augias\UserBundle\Enum\CompanyRole;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -36,6 +37,7 @@ use function array_filter;
 use function array_key_last;
 use function array_values;
 use function json_decode;
+use function substr;
 
 /**
  * The built-in assistant answers from the MCP tools that read, and proposes
@@ -176,6 +178,61 @@ final class AssistantTest extends KernelTestCase
 
         self::assertTrue($answer->gaveUp);
         self::assertCount(Assistant::MAX_ROUNDS, $this->sent);
+    }
+
+    /**
+     * Mistral searched eight times on app-test without answering, and the
+     * person got « Je n'ai pas réussi » (Rémi, 26/11/2026): the last turn
+     * answers with what was found.
+     */
+    public function testTheLastTurnAnswersWithWhatWasFound(): void
+    {
+        $loop = ['tool_calls' => [['id' => 'c', 'type' => 'function', 'function' => ['name' => 'list_invoices_by_status', 'arguments' => '{"status":"paid"}']]]];
+        $replies = array_fill(0, Assistant::MAX_ROUNDS - 1, $loop);
+        $replies[] = ['content' => 'Aucune facture payée.'];
+
+        $answer = $this->assistant($replies)->ask('Mes factures payées ?', 'Augias');
+
+        self::assertFalse($answer->gaveUp);
+        self::assertSame('Aucune facture payée.', $answer->text);
+        self::assertSame('auto', $this->sent[0]['tool_choice']);
+        self::assertSame('none', $this->sent[Assistant::MAX_ROUNDS - 1]['tool_choice']);
+    }
+
+    /**
+     * « devis Bouvier » found nothing: the whole text was looked for in
+     * each field.
+     */
+    public function testASearchOfSeveralWordsFindsTheDocumentsOfTheClientNamed(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'name' => 'Baptiste BOUVIER']);
+        QuoteFactory::createOne(['company' => $this->company, 'client' => $client]);
+        ClientFactory::createOne(['company' => $this->company, 'name' => 'Martin']);
+
+        $found = json_decode(substr($this->toolbox()->call('search', ['query' => 'le devis de Bouvier']), \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+
+        self::assertSame(['Baptiste BOUVIER'], array_column($found['client'], 'label'));
+        self::assertCount(1, $found['quote']);
+        self::assertStringEndsWith('— Baptiste BOUVIER', $found['quote'][0]['label']);
+    }
+
+    public function testASearchThatFindsNothingSaysWhatToTryInstead(): void
+    {
+        self::assertStringStartsWith('Nothing found.', $this->toolbox()->call('search', ['query' => 'Zorglub']));
+    }
+
+    /**
+     * A small model sends an object as JSON text; the tool's type check
+     * refused it, and the model only learnt « the tool failed ».
+     */
+    public function testAnObjectSentAsJsonTextIsTaken(): void
+    {
+        ClientFactory::createOne(['company' => $this->company, 'name' => 'Fournisseur', 'isSupplier' => true]);
+        ClientFactory::createOne(['company' => $this->company, 'name' => 'Client']);
+
+        $result = $this->toolbox()->call('list_resource', ['resource' => 'client', 'filters' => '{"is_supplier": true}']);
+
+        self::assertStringContainsString('"total":1', $result);
     }
 
     /**

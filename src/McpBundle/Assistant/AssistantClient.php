@@ -53,12 +53,13 @@ final readonly class AssistantClient
      *
      * @param list<array<string, mixed>> $messages
      * @param list<array<string, mixed>> $tools
+     * @param bool                       $mustAnswer the tools stay known, but the model may not ask for one: it answers
      *
      * @return array<string, mixed>
      *
      * @throws AssistantUnavailable when the service cannot be reached or answers with an error
      */
-    public function complete(array $messages, array $tools): array
+    public function complete(array $messages, array $tools, bool $mustAnswer = false): array
     {
         try {
             $response = $this->httpClient->request('POST', rtrim($this->baseUrl, '/') . '/chat/completions', [
@@ -67,7 +68,7 @@ final readonly class AssistantClient
                     'model' => $this->model,
                     'messages' => $messages,
                     'tools' => $tools,
-                    'tool_choice' => 'auto',
+                    'tool_choice' => $mustAnswer ? 'none' : 'auto',
                     'temperature' => 0.2,
                 ],
                 'timeout' => 60,
