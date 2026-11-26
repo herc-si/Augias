@@ -1,33 +1,33 @@
-Your best clients pay you every month. Automate it.
+A client pays you every month? Augias takes care of it.
 ============================================================
 
-Create an invoice once and Augias sends it automatically on your schedule. Set up payment reminders and overdue invoices get followed up — without you lifting a finger.
+A recurring invoice is prepared once. Augias issues it on each due date and chases late payments.
 
 How it works
 ------------------------------------------------------------
 
-1. Create an invoice and mark it as recurring — set the frequency and start date.
+1. Create the invoice once, then set its frequency and start date.
 
-2. Augias sends it automatically on schedule. Your client receives it and pays it.
+2. Augias issues and sends it on each due date.
 
-3. Enable reminders and overdue invoices get followed up automatically — no chasing required.
+3. Turn on reminders: late payments are followed without you thinking of it.
 
-Stop doing this manually
+Stop doing it by hand
 ------------------------------------------------------------
 
-Without recurring billing
-* Manual invoicing every billing cycle
+Without recurring invoices
+* Making the same invoice every month
 * Tracking who owes what in a spreadsheet
 * Chasing late payments yourself
 
 With Augias
-* Automatic invoices sent on your schedule
-* Dashboard shows every outstanding amount
-* Reminders sent automatically on your behalf
+* Invoices go out on their own, on the schedule you chose
+* The dashboard shows what is left to collect
+* Reminders go out automatically in your name
 
-Set up recurring billing: http://localhost/dashboard
+Create a recurring invoice: http://localhost/dashboard
 
-P.S. even one recurring client makes this worth doing — you'll save hours every month.
+P.S. a single recurring client is enough to save time every month.
 
-See you inside,
+See you soon,
 — The Augias team
