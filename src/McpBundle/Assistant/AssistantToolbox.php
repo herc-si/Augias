@@ -22,6 +22,7 @@ use Augias\McpBundle\Mcp\Tool\ResourceWriteTools;
 use Augias\McpBundle\Security\McpOAuthAuthenticator;
 use Augias\McpBundle\Security\McpScope;
 use Augias\QuoteBundle\Mcp\QuoteWriteTools;
+use Doctrine\ORM\EntityManagerInterface;
 use JsonException;
 use Mcp\Capability\Registry;
 use Mcp\Capability\Registry\ReferenceHandler;
@@ -114,6 +115,7 @@ final class AssistantToolbox
         private readonly ResourceWriteTools $resources,
         private readonly QuoteWriteTools $quotes,
         private readonly InvoiceWriteTools $invoices,
+        private readonly EntityManagerInterface $entityManager,
     ) {
         $this->handler = new ReferenceHandler($tools);
     }
@@ -380,6 +382,11 @@ final class AssistantToolbox
     {
         $request = $this->requestStack->getMainRequest();
         $request?->attributes->set(McpOAuthAuthenticator::ATTR_SCOPES, $scopes);
+
+        if (! $this->entityManager->isOpen()) {
+            // An earlier tool of the request was refused by the database: nothing more can be saved or read safely.
+            return 'Error: an earlier change of this request failed, so nothing more can be done now. Tell the person what was made and ask them to ask again for the rest.';
+        }
 
         try {
             $tool = $this->registry->getTool($name);
