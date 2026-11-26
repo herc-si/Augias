@@ -3829,6 +3829,9 @@ saas:
         invoice_line:
             subscription: 'Abonnement Augias %plan% du %from% au %to%'
             plan_change: 'Changement d''offre vers Augias %plan%, au prorata du %from% au %to%'
+            subscription_with_trial: '{1}Abonnement Augias %plan% du %from% au %to%, dont 1 jour d''essai offert|]1,Inf]Abonnement Augias %plan% du %from% au %to%, dont %count% jours d''essai offerts'
+        checkout:
+            trial_left: "{0}Ce qu'il reste de votre essai s'ajoute à la fin de votre première période.|{1}Le jour d'essai qu'il vous reste s'ajoute à la fin de votre première période.|]1,Inf]Les %count% jours d'essai qu'il vous reste s'ajoutent à la fin de votre première période."
         credit_note_line:
             partial_refund: 'Remboursement partiel : %line%'
         credit_note_notes: 'Remboursé par carte (Stripe) le %date%.'
@@ -4043,9 +4046,9 @@ saas:
             message: 'Ajoutez votre carte maintenant pour continuer gratuitement %days% jours de plus, puis bénéficiez de %percent%% de réduction sur vos 3 premiers mois avec le code %code%.'
             title: '%days% jours de plus + %percent%% de réduction'
         extend:
-            cta: 'Prolonger mon essai'
-            message: "Ajoutez vos informations de paiement avant la fin de votre essai et nous le prolongerons de %days% jours. Aucun frais aujourd'hui, annulable à tout moment."
-            title: 'Obtenez %days% jours de plus, gratuitement'
+            cta: 'M''abonner'
+            message: "{1}Abonnez-vous avant la fin de votre essai : vous payez aujourd'hui, et le jour d'essai qu'il vous reste s'ajoute à votre première période. Résiliable à tout moment.|]1,Inf]Abonnez-vous avant la fin de votre essai : vous payez aujourd'hui, et les %days% jours d'essai qu'il vous reste s'ajoutent à votre première période. Résiliable à tout moment."
+            title: 'Gardez vos jours d''essai'
         past_due:
             cta: 'Changer de carte'
             message: 'Le dernier prélèvement de votre abonnement a été refusé. Stripe va réessayer dans les prochains jours ; vous gardez l''accès d''ici là. Mettez à jour votre moyen de paiement pour éviter l''interruption.'

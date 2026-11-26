@@ -48,18 +48,19 @@ final class TrialBannerResolverTest extends TestCase
         self::assertInstanceOf(TrialBanner::class, $banner);
         self::assertSame('info', $banner->type);
         self::assertSame('saas.trial_banner.extend.title', $banner->titleKey);
-        self::assertSame(['%days%' => 14], $banner->params);
+        // The days left, kept by subscribing now (Rémi, 26/11/2026).
+        self::assertSame(['%days%' => 5, '%count%' => 5], $banner->params);
         self::assertNull($banner->code);
     }
 
-    public function testExtensionDaysAreDerivedFromThePlanTrialDuration(): void
+    public function testTheBannerCountsTheDaysLeftNotThePlansTrial(): void
     {
-        // 5 days remaining (extend window); the plan grants a 7-day trial, so
-        // the copy must say 7 — proving the value comes from the Plan, not a constant.
+        // 5 days remaining on a plan with a 7-day trial: subscribing keeps
+        // those 5, it no longer adds the plan's 7.
         $banner = $this->resolve(SubscriptionStatus::TRIAL, '2024-01-06', trialDuration: 'P7D');
 
         self::assertInstanceOf(TrialBanner::class, $banner);
-        self::assertSame(['%days%' => 7], $banner->params);
+        self::assertSame(['%days%' => 5, '%count%' => 5], $banner->params);
     }
 
     public function testNoBannerWhenPlanHasNoTrialDuration(): void

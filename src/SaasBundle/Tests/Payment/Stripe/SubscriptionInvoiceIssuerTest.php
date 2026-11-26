@@ -26,6 +26,8 @@ use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Test\Factory\PaymentMethodFactory;
 use Augias\SaasBundle\Payment\Stripe\StripeApi;
+use Augias\SaasBundle\Payment\Stripe\StripeIntegration;
+use Augias\SaasBundle\Payment\Stripe\StripeTrialCarryOver;
 use Augias\SaasBundle\Payment\Stripe\SubscriptionInvoiceIssuer;
 use Augias\TaxBundle\Test\Factory\TaxIdentifierFactory;
 use Augias\Test\SaasKernel;
@@ -92,6 +94,24 @@ final class SubscriptionInvoiceIssuerTest extends KernelTestCase
         self::assertStringContainsString('Solo', (string) $invoice->getLines()->first()->getDescription());
         self::assertStringContainsString('01/09/2026', (string) $invoice->getLines()->first()->getDescription());
         self::assertEmailCount(1);
+    }
+
+    /**
+     * Subscribed during the trial: the invoice covers the period paid for
+     * and the days of trial that come after it (Rémi, 26/11/2026).
+     */
+    public function testTheFirstInvoiceCoversTheTrialDaysLeft(): void
+    {
+        $invoice = $this->issuer(1, [
+            'billing_reason' => 'subscription_create',
+            // Found by its Stripe id, 'sub_inv'.
+            'subscription_details' => ['metadata' => [StripeTrialCarryOver::SECONDS_LEFT_KEY => (string) (29 * 86400)]],
+        ])->issue('in_1');
+
+        self::assertInstanceOf(Invoice::class, $invoice);
+        $description = (string) $invoice->getLines()->first()->getDescription();
+        self::assertStringContainsString('to ' . StripeIntegration::fromTimestamp(1_790_856_000 + 29 * 86400)->format('d/m/Y'), $description);
+        self::assertStringContainsString('29 free trial days', $description);
     }
 
     public function testAPaymentDeliveredTwiceIsInvoicedOnce(): void

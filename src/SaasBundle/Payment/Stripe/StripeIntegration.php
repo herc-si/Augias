@@ -31,12 +31,14 @@ use SolidWorx\Platform\SaasBundle\Integration\Options;
 use SolidWorx\Platform\SaasBundle\Integration\PaymentIntegrationInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use function array_filter;
 use function array_values;
 use function date_default_timezone_get;
 use function is_array;
 use function is_int;
 use function is_string;
+use function round;
 use function sprintf;
 
 /**
@@ -56,8 +58,8 @@ final readonly class StripeIntegration implements PaymentIntegrationInterface
     /** On the Stripe customer: the company it pays for. */
     public const string COMPANY_METADATA_KEY = 'augias_company';
 
-    /** Stripe refuses a trial that ends sooner than this at checkout. */
-    private const int MINIMUM_TRIAL_SECONDS = 48 * 3600;
+    /** Less than this left of the trial is not carried over. */
+    private const int MINIMUM_CARRIED_SECONDS = 3600;
 
     public function __construct(
         private StripeApi $api,
@@ -67,7 +69,19 @@ final readonly class StripeIntegration implements PaymentIntegrationInterface
         private string $returnRoute,
         private ?SystemConfig $systemConfig = null,
         private ?LoggerInterface $logger = null,
+        private ?TranslatorInterface $translator = null,
     ) {
+    }
+
+    /**
+     * Said on the payment page, above the button: paid today, the trial is
+     * not lost.
+     */
+    private function trialLeftMessage(int $seconds): string
+    {
+        $days = (int) round($seconds / 86400);
+
+        return $this->translator?->trans('saas.billing.checkout.trial_left', ['%count%' => $days]) ?? '';
     }
 
     /**
@@ -250,11 +264,15 @@ final readonly class StripeIntegration implements PaymentIntegrationInterface
             $parameters['customer_email'] = $email;
         }
 
-        // What is left of the local trial carries over: the card is taken
-        // now, the first payment when the trial ends.
-        $trialEnd = $subscription->getEndDate()->getTimestamp();
-        if ($options?->getValue(Options::SKIP_TRIAL) === false && $trialEnd - $this->clock->now()->getTimestamp() >= self::MINIMUM_TRIAL_SECONDS) {
-            $parameters['subscription_data']['trial_end'] = $trialEnd;
+        // Paid now; what is left of the local trial comes after the first
+        // period, as the invoice says (StripeTrialCarryOver).
+        $left = $subscription->getEndDate()->getTimestamp() - $this->clock->now()->getTimestamp();
+        if ($options?->getValue(Options::SKIP_TRIAL) === false && $left >= self::MINIMUM_CARRIED_SECONDS) {
+            $parameters['subscription_data']['metadata'][StripeTrialCarryOver::SECONDS_LEFT_KEY] = (string) $left;
+            $message = $this->trialLeftMessage($left);
+            if ($message !== '') {
+                $parameters['custom_text'] = ['submit' => ['message' => $message]];
+            }
         }
 
         $session = $this->api->post('checkout/sessions', $parameters);

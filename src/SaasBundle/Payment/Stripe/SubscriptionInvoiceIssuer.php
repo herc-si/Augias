@@ -55,6 +55,7 @@ use function in_array;
 use function is_array;
 use function is_int;
 use function is_string;
+use function round;
 use function strcasecmp;
 use function strtoupper;
 
@@ -372,10 +373,24 @@ final readonly class SubscriptionInvoiceIssuer
 
         $key = ($remote['billing_reason'] ?? null) === 'subscription_update' ? 'saas.billing.invoice_line.plan_change' : 'saas.billing.invoice_line.subscription';
 
+        // Subscribed during the trial: the days left of it come after the
+        // period paid for, and the invoice says so (StripeTrialCarryOver).
+        $details = $remote['subscription_details'] ?? null;
+        $left = ($remote['billing_reason'] ?? null) === 'subscription_create' && is_array($details) && is_array($details['metadata'] ?? null)
+            ? StripeTrialCarryOver::secondsLeft($details['metadata'])
+            : 0;
+        $days = (int) round($left / 86400);
+
+        if ($days > 0 && is_int($end)) {
+            $end += $left;
+            $key = 'saas.billing.invoice_line.subscription_with_trial';
+        }
+
         return $this->translator->trans($key, [
             '%plan%' => $planName,
             '%from%' => is_int($start) ? StripeIntegration::fromTimestamp($start)->format('d/m/Y') : '',
             '%to%' => is_int($end) ? StripeIntegration::fromTimestamp($end)->format('d/m/Y') : '',
+            '%count%' => $days,
         ], 'messages', $locale);
     }
 
