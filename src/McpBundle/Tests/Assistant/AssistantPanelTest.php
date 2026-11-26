@@ -178,7 +178,9 @@ final class AssistantPanelTest extends WebTestCase
         self::assertResponseIsSuccessful();
         $state = $this->state($client);
         self::assertNull($state['action']);
-        self::assertSame('Change cancelled: nothing was modified.', $state['messages'][array_key_last($state['messages'])]['content']);
+        // Named, so that the model reading the history sees that request closed.
+        self::assertStringStartsWith('Cancelled: ', $state['messages'][array_key_last($state['messages'])]['content']);
+        self::assertStringContainsString('Conseil', $state['messages'][array_key_last($state['messages'])]['content']);
         self::assertSame(0, $this->products('Conseil'));
 
         // Settled once: confirming it afterwards makes nothing either.

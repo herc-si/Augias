@@ -38,7 +38,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function array_map;
 use function ignore_user_abort;
+use function implode;
+use function mb_strimwidth;
 use function mb_substr;
 use function str_starts_with;
 use function trim;
@@ -125,9 +128,11 @@ final class AssistantMessagesAction extends AbstractController
             return $this->state($company);
         }
 
-        if ($this->conversation->action($company) !== null) {
+        $pending = $this->conversation->action($company);
+
+        if ($pending !== null) {
             // Asking something else leaves the change unmade.
-            $this->conversation->answer($company, $this->translator->trans('assistant.abandoned'));
+            $this->conversation->answer($company, $this->translator->trans('assistant.abandoned', ['%action%' => $this->summary($pending)]));
         }
 
         $history = $this->conversation->messages($company);
@@ -161,14 +166,17 @@ final class AssistantMessagesAction extends AbstractController
 
         if (! $confirmed) {
             $this->journal->record(AssistantEventKind::Cancelled, $proposal->tool);
-            $this->conversation->answer($company, $this->translator->trans('assistant.cancelled'));
+            // Said with what it was: the model reads this in the history,
+            // and took a request cancelled as one still to do (Rémi,
+            // 26/11/2026: the next quote went to the name asked before).
+            $this->conversation->answer($company, $this->translator->trans('assistant.cancelled', ['%action%' => $this->summary($this->preview->describe($proposal->tool, $proposal->arguments))]));
 
             return $this->state($company);
         }
 
         if (! $company->isAssistantEnabled()) {
             // Turned off since it was proposed: nothing is made.
-            $this->conversation->answer($company, $this->translator->trans('assistant.abandoned'));
+            $this->conversation->answer($company, $this->translator->trans('assistant.abandoned', ['%action%' => $this->summary($this->preview->describe($proposal->tool, $proposal->arguments))]));
 
             return $this->state($company, null, Response::HTTP_FORBIDDEN);
         }
@@ -189,6 +197,21 @@ final class AssistantMessagesAction extends AbstractController
         }
 
         return $this->state($company);
+    }
+
+    /**
+     * The change in a few words: what it does and its first details, « Nouveau devis (Client : Dupont SARL) ».
+     *
+     * @param array{title: string, details: list<array{label: string, value: string}>} $preview
+     */
+    private function summary(array $preview): string
+    {
+        $details = array_map(
+            static fn (array $detail): string => $detail['label'] . ' : ' . mb_strimwidth($detail['value'], 0, 60, '…'),
+            \array_slice($preview['details'], 0, 2),
+        );
+
+        return $preview['title'] . ($details === [] ? '' : ' (' . implode(', ', $details) . ')');
     }
 
     private function record(Company $company, AssistantAnswer $answer): void

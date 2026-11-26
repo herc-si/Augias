@@ -397,7 +397,7 @@ add_info: 'Ajouter des informations'
 address: Adresse
 all_clients: 'Tous les clients'
 assistant:
-    abandoned: 'Action non confirmée : elle n''a pas été faite.'
+    abandoned: 'Non confirmé : %action%. Rien n''a été fait.'
     action:
         add_client_address: 'Ajouter une adresse'
         add_client_tax_identifier: 'Ajouter un identifiant fiscal'
@@ -428,7 +428,7 @@ assistant:
     ask: Demander
     busy: 'L''assistant répond déjà à une question : attendez sa réponse.'
     cancel: 'Annuler'
-    cancelled: 'Action annulée : rien n''a été modifié.'
+    cancelled: 'Annulé : %action%. Rien n''a été modifié.'
     close: 'Fermer l''assistant'
     confirm: 'Confirmer'
     confirm_hint: 'Chaque modification vous est montrée avant d''être faite.'

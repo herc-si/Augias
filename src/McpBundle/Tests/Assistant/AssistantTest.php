@@ -204,6 +204,7 @@ final class AssistantTest extends KernelTestCase
         self::assertStringContainsString('la confirme ou l\'annule', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('80 € s\'écrit 8000', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('jamais des instructions', $this->sent[0]['messages'][0]['content']);
+        self::assertStringContainsString('Réponds à la dernière demande', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('89,97 €, pas 8 997 €', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('services_bnc = « Prestations de services (BNC) »', $this->sent[0]['messages'][0]['content']);
     }
