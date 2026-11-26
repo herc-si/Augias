@@ -22,6 +22,7 @@ use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\ExportJob;
 use Augias\CoreBundle\Export\Enum\ExportStatus;
+use Augias\CoreBundle\Export\ExportStorage;
 use Augias\CoreBundle\Export\Message\Handler\ProcessCompanyExportHandler;
 use Augias\CoreBundle\Export\Message\RequestCompanyExport;
 use Augias\CoreBundle\Export\Security\Voter\ExportJobVoter;
@@ -99,7 +100,7 @@ final class ClosureArchiveTest extends KernelTestCase
         self::assertSame([], $late->purgeDue(), 'Its invoices would be lost: nobody else keeps them.');
 
         $job = $this->make($company);
-        $directory = dirname((string) $job->resolveAbsolutePath($this->projectDir()));
+        $directory = dirname((string) $this->storage()->absolutePath($job));
         self::assertDirectoryExists($directory);
 
         self::assertSame([], $late->prepareArchives());
@@ -147,7 +148,7 @@ final class ClosureArchiveTest extends KernelTestCase
         self::assertFalse($this->archive()->isSettled($company));
         self::assertCount(2, $this->jobs()->findClosureArchives($company));
 
-        new Filesystem()->remove(dirname((string) $first->resolveAbsolutePath($this->projectDir())));
+        new Filesystem()->remove(dirname((string) $this->storage()->absolutePath($first)));
     }
 
     public function testAnyoneWhoRunsTheCompanyMayTakeItsArchive(): void
@@ -246,9 +247,9 @@ final class ClosureArchiveTest extends KernelTestCase
         return self::getContainer()->get(ExportJobRepository::class);
     }
 
-    private function projectDir(): string
+    private function storage(): ExportStorage
     {
-        return self::getContainer()->getParameter('kernel.project_dir');
+        return self::getContainer()->get(ExportStorage::class);
     }
 
     private function em(): EntityManagerInterface

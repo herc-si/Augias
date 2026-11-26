@@ -61,7 +61,7 @@ final readonly class CompanyExporter
         private ManifestGenerator $manifestGenerator,
         private Filesystem $filesystem,
         private CompanySelector $companySelector,
-        private string $projectDir,
+        private ExportStorage $storage,
         /** @var iterable<ExportAttachmentProvider> */
         #[AutowireIterator(ExportAttachmentProvider::TAG)]
         private iterable $attachmentProviders = [],
@@ -111,8 +111,8 @@ final readonly class CompanyExporter
                 ),
             );
 
-            $relativePath = $this->archivePath($job);
-            $absolutePath = $this->projectDir . '/' . $relativePath;
+            $relativePath = $this->storage->relativePathFor($job);
+            $absolutePath = $this->storage->absolute($relativePath);
             $this->filesystem->mkdir(dirname($absolutePath), 0o755);
 
             $this->zipDirectory($stagingDir, $absolutePath);
@@ -207,15 +207,6 @@ final readonly class CompanyExporter
             ->getResult();
 
         return $result;
-    }
-
-    private function archivePath(ExportJob $job): string
-    {
-        return sprintf(
-            'var/exports/%s/%s.zip',
-            $job->getCompany()->getId()->toBase58(),
-            $job->getId()->toBase58(),
-        );
     }
 
     private function zipDirectory(string $sourceDir, string $zipPath): void

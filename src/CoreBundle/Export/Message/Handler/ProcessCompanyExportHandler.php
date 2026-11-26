@@ -20,6 +20,7 @@ use Augias\CoreBundle\Entity\ExportJob;
 use Augias\CoreBundle\Export\CompanyExporter;
 use Augias\CoreBundle\Export\Email\ExportReadyEmail;
 use Augias\CoreBundle\Export\Enum\ExportStatus;
+use Augias\CoreBundle\Export\ExportStorage;
 use Augias\CoreBundle\Export\Message\RequestCompanyExport;
 use Augias\CoreBundle\Repository\ExportJobRepository;
 use Augias\UserBundle\Entity\User;
@@ -68,7 +69,7 @@ final readonly class ProcessCompanyExportHandler
         private MailerInterface $mailer,
         private UrlGeneratorInterface $urlGenerator,
         private LoggerInterface $logger,
-        private string $projectDir,
+        private ExportStorage $storage,
         private TranslatorInterface $translator,
         private CompanyClosureNotifier $closureNotifier,
     ) {
@@ -102,7 +103,7 @@ final readonly class ProcessCompanyExportHandler
 
             $relativePath = $this->companyExporter->export($job);
 
-            $absolutePath = $this->projectDir . '/' . $relativePath;
+            $absolutePath = $this->storage->absolute($relativePath);
             // CompanyExporter::zipDirectory throws if the archive could not be written,
             // so reaching this point means the file exists. filesize() may still return
             // false if the file is unreadable for unrelated reasons — fall back to 0

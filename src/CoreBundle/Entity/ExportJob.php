@@ -49,7 +49,9 @@ class ExportJob
     private ExportStatus $status = ExportStatus::Pending;
 
     /**
-     * Relative path from the project root, e.g. `var/exports/{companyId58}/{jobId58}.zip`.
+     * Relative to the attachments, e.g. `exports/{companyId58}/{jobId58}.zip`; an
+     * archive made before 26/11/2026 kept `var/exports/…`, relative to the
+     * project (ExportStorage).
      */
     #[ORM\Column(name: 'archive_path', type: Types::STRING, length: 512, nullable: true)]
     private ?string $archivePath = null;
@@ -202,14 +204,5 @@ class ExportJob
         $this->status = ExportStatus::Failed;
         $this->failureReason = $reason;
         $this->completedAt = CarbonImmutable::now();
-    }
-
-    public function resolveAbsolutePath(string $projectDir): ?string
-    {
-        if ($this->archivePath === null) {
-            return null;
-        }
-
-        return rtrim($projectDir, '/') . '/' . ltrim($this->archivePath, '/');
     }
 }
