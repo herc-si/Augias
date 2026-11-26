@@ -1796,7 +1796,7 @@ einvoicing:
             choose: 'Choose a platform'
             trial_needs_card_title: 'Add a payment method to switch it on'
             trial_needs_card: 'During the free trial, electronic invoicing is switched on once a payment method is on file. Your trial runs until %date%: the first payment is only taken then, and you can cancel before at no cost.'
-            trial_needs_card_cta: 'Add a payment method'
+            trial_needs_card_cta: 'Choose my plan'
             trial_needs_card_flash: 'During the free trial, electronic invoicing is switched on once a payment method is on file: the first payment is only taken at the end of the trial.'
         verification:
             title: 'Verification'
@@ -3092,7 +3092,7 @@ onboarding:
         title: 'Your first client'
     identity:
         description: 'Type your SIREN, then "Look up": the business register fills in the rest. This appears on your invoices and is used for electronic invoicing.'
-        title: 'Who is your company?'
+        title: 'Your company'
     journey:
         position: 'Step %position% of %count%'
         title: 'Getting started'

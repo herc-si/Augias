@@ -18,6 +18,7 @@ use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Repository\CompanyRepository;
 use Augias\SaasBundle\Plan\FreePlanAllowance;
 use SolidWorx\Platform\SaasBundle\Entity\Subscription;
+use SolidWorx\Platform\SaasBundle\Enum\SubscriptionStatus;
 use SolidWorx\Platform\SaasBundle\Repository\PlanRepositoryInterface;
 use SolidWorx\Platform\SaasBundle\Subscription\SubscriptionProviderInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -62,9 +63,16 @@ final class ChangePlanAction extends AbstractController
         return $this->render('@AugiasSaas/subscription/change.html.twig', [
             'plans' => $plans,
             'subscription' => $subscription,
-            'currentPlanId' => $subscription->getPlan()->getPlanId(),
+            // On a trial nobody has paid for yet, the plan tried can be
+            // subscribed to like any other: it was not, so far (Rémi, 26/11/2026).
+            'currentPlanId' => self::isUnbilledTrial($subscription) ? null : $subscription->getPlan()->getPlanId(),
             'freePlanTaken' => $freePlanTaken,
         ]);
+    }
+
+    public static function isUnbilledTrial(Subscription $subscription): bool
+    {
+        return $subscription->getStatus() === SubscriptionStatus::TRIAL && ! $subscription->isExternallyBilled();
     }
 
     private function getSubscription(?Company $company): ?Subscription

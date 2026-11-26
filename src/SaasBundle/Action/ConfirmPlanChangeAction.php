@@ -74,6 +74,13 @@ final class ConfirmPlanChangeAction extends AbstractController
         }
 
         if ($plan->getPlanId() === $subscription->getPlan()->getPlanId()) {
+            // The plan tried, now paid for.
+            if (ChangePlanAction::isUnbilledTrial($subscription)) {
+                return $this->redirectToRoute('saas_subscription_checkout', [
+                    ChoosePlanAction::PENDING_PLAN_QUERY_PARAMETER => $plan->getPlanId(),
+                ]);
+            }
+
             return $this->redirectToRoute('billing_index');
         }
 

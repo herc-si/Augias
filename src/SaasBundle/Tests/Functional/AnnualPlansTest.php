@@ -117,6 +117,33 @@ final class AnnualPlansTest extends WebTestCase
         self::assertCount(1, $browser->crawler()->filter('.plan-card-current'));
     }
 
+    /**
+     * The plan tried was not paid for: it can be chosen like any other, on
+     * either period. Only the yearly one could be picked (Rémi, 26/11/2026).
+     */
+    public function testThePlanOfAnUnpaidTrialCanBeSubscribedTo(): void
+    {
+        $owner = $this->ownerOnPending();
+        $subscription = $this->em->getRepository(Subscription::class)->findOneBy(['subscriber' => $owner->getCompanies()->first()]);
+        self::assertInstanceOf(Subscription::class, $subscription);
+        $subscription->setStatus(SubscriptionStatus::TRIAL);
+        $this->em->flush();
+
+        $browser = $this->browser()
+            ->actingAs($owner)
+            ->interceptRedirects()
+            ->visit('/billing/subscription/change')
+            ->assertSuccessful();
+
+        self::assertCount(0, $browser->crawler()->filter('.plan-card-current'));
+        self::assertSame('price_solo_month', $this->choiceFor($browser, 'Solo'));
+
+        $browser
+            ->click('form:has(input[value=price_solo_month]) button[type=submit]')
+            // On to the checkout of that plan (by the SIREN step, none on file here).
+            ->assertRedirectedTo('/electronic-invoicing/setup?next=/billing/subscription/activate?plan=price_solo_month');
+    }
+
     private function choiceFor(\Zenstruck\Browser\KernelBrowser $browser, string $offer): string
     {
         $card = $browser->crawler()->filter('.plan-card')->reduce(static fn ($node): bool => $offer === trim($node->filter('h2')->text()));
