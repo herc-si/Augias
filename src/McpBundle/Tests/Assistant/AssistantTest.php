@@ -256,6 +256,30 @@ final class AssistantTest extends KernelTestCase
         self::assertSame(QuoteStatus::Cancelled, $stored?->getStatus());
     }
 
+    public function testAQuoteChangedInTheRequestIsLeftAsItIs(): void
+    {
+        $toto = QuoteFactory::createOne(['company' => $this->company, 'status' => QuoteStatus::Draft]);
+        $francis = QuoteFactory::createOne(['company' => $this->company, 'status' => QuoteStatus::Draft]);
+        $call = static fn (string $id, string $quote, string $transition): array => ['tool_calls' => [['id' => $id, 'type' => 'function', 'function' => ['name' => 'apply_quote_transition', 'arguments' => '{"quote_id":"' . $quote . '","transition":"' . $transition . '"}']]]];
+
+        $assistant = $this->assistant([
+            $call('call_1', $toto->getId()->toRfc4122(), 'cancel'),
+            $call('call_2', $toto->getId()->toRfc4122(), 'reopen'),
+            $call('call_3', $francis->getId()->toRfc4122(), 'cancel'),
+            ['content' => 'Les deux devis sont annulés.'],
+        ]);
+
+        $answer = $assistant->ask('Annule les devis de Toto et Francis', 'Augias');
+        self::assertNotNull($answer->proposal);
+        $after = $assistant->resume($answer->proposal, $this->toolbox()->run($answer->proposal->tool, $answer->proposal->arguments), 'Augias');
+
+        self::assertNull($after->proposal);
+        $repository = self::getContainer()->get('doctrine')->getManager()->getRepository(Quote::class);
+        self::assertSame(QuoteStatus::Cancelled, $repository->find($toto->getId())?->getStatus());
+        self::assertSame(QuoteStatus::Cancelled, $repository->find($francis->getId())?->getStatus());
+        self::assertStringContainsString('already changed in this request', (string) json_encode($this->sent[2]['messages']));
+    }
+
     public function testOnlyCancellingOrReopeningAQuoteIsProposed(): void
     {
         $quote = QuoteFactory::createOne(['company' => $this->company, 'status' => QuoteStatus::Pending]);

@@ -19,6 +19,7 @@ use JsonException;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
 use function array_filter;
+use function array_map;
 use function array_unique;
 use function array_values;
 use function implode;
@@ -177,6 +178,8 @@ final readonly class Assistant
                     $arguments = $this->toolbox->prepared($name, $arguments);
                     $refusal = $this->toolbox->refusal($name, $arguments);
 
+                    $refusal ??= $this->alreadyChanged($name, $arguments, [...$messages, ...array_map(static fn (array $result): array => ['role' => 'tool', 'tool_call_id' => $result['id'], 'content' => (string) $result['content']], $results)]);
+
                     if ($refusal !== null) {
                         $results[] = ['id' => $id, 'name' => $name, 'content' => 'Error: ' . $refusal];
                     } elseif ($approved && in_array($name, AssistantToolbox::CONFIRMED_EACH, true)) {
@@ -254,6 +257,47 @@ final readonly class Assistant
         }
 
         return array_values(array_unique([...AssistantToolbox::familiesFor($question), ...$called]));
+    }
+
+    /**
+     * Why a quote is not changed again, if it was already in this request:
+     * cancelled, then cancelled again, reopened and cancelled once more,
+     * twelve changes for two quotes (Rémi, 26/11/2026).
+     *
+     * @param array<string, mixed>       $arguments
+     * @param list<array<string, mixed>> $messages
+     */
+    private function alreadyChanged(string $name, array $arguments, array $messages): ?string
+    {
+        if ($name !== 'apply_quote_transition' || ! is_string($arguments['quote_id'] ?? null)) {
+            return null;
+        }
+
+        $calls = [];
+        $done = [];
+
+        foreach ($messages as $message) {
+            if (($message['role'] ?? null) === 'user') {
+                $calls = [];
+                $done = [];
+            }
+
+            foreach (is_array($message['tool_calls'] ?? null) ? $message['tool_calls'] : [] as $call) {
+                if (($call['function']['name'] ?? null) === $name) {
+                    $calls[(string) ($call['id'] ?? '')] = $this->arguments($call['function']['arguments'] ?? null);
+                }
+            }
+
+            $id = (string) ($message['tool_call_id'] ?? '');
+
+            if (($message['role'] ?? null) === 'tool' && isset($calls[$id]) && is_string($message['content'] ?? null) && ! str_starts_with($message['content'], 'Error:') && ! str_starts_with($message['content'], 'Not ')) {
+                $done[] = $calls[$id]['quote_id'] ?? null;
+            }
+        }
+
+        return in_array($arguments['quote_id'], $done, true)
+            ? 'this quote was already changed in this request: leave it as it is, and go on with the other ones, or sum up.'
+            : null;
     }
 
     private function shortened(string $content): string
