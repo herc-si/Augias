@@ -40,7 +40,9 @@ use Throwable;
 use function array_diff;
 use function array_diff_key;
 use function array_filter;
+use function array_intersect;
 use function array_intersect_key;
+use function array_keys;
 use function array_map;
 use function array_values;
 use function in_array;
@@ -48,6 +50,8 @@ use function is_array;
 use function is_string;
 use function json_decode;
 use function json_encode;
+use function mb_strtolower;
+use function str_contains;
 use function str_ends_with;
 
 /**
@@ -115,21 +119,125 @@ final class AssistantToolbox
     }
 
     /**
-     * The tools offered to the model, as an OpenAI-compatible `tools` list.
+     * The tools a request is given, by family: all 49 described cost some
+     * 7 500 tokens on every turn, and a million tokens went in an afternoon
+     * of tries (Rémi, 26/11/2026). The core is always there; a family comes
+     * with the words of the request, or when the model asks for it
+     * (MORE_TOOLS). A tool not in any family is in « finance ».
+     *
+     * @var array<string, list<string>>
+     */
+    public const array FAMILIES = [
+        'core' => ['search', 'get_resource', 'list_resource', 'get_company_info', 'get_document_links', 'list_workflow_transitions'],
+        'quotes' => ['list_quotes_by_status', 'create_quote', 'update_quote', 'clone_quote', 'convert_quote_to_invoice', 'create_deposit_invoice', 'send_quote', 'search_products', 'list_tax_rates'],
+        'invoices' => ['list_invoices_by_status', 'list_overdue_invoices', 'list_recurring_invoices', 'create_invoice', 'update_invoice', 'clone_invoice', 'create_deposit_invoice', 'send_invoice', 'send_invoice_reminder', 'record_payment', 'list_payment_methods', 'search_products', 'list_tax_rates'],
+        // What a document for a client not yet there needs: the rest of « clients » only when asked.
+        'new_client' => ['create_resource', 'add_contact'],
+        'clients' => ['create_resource', 'update_resource', 'add_contact', 'add_client_address', 'update_client_address', 'add_client_tax_identifier', 'list_client_tax_identifiers', 'get_client_summary', 'get_client_statement'],
+        'catalogue' => ['search_products', 'create_product', 'update_product', 'create_category', 'update_category', 'list_categories', 'list_tax_rates'],
+        'finance' => [],
+    ];
+
+    /** The words that bring a family, lower-cased, matched within the words of the request. */
+    private const array FAMILY_WORDS = [
+        'quotes' => ['devis', 'quote', 'estimat', 'proposition'],
+        'invoices' => ['factur', 'invoice', 'acompte', 'relanc', 'paiement', 'payé', 'payée', 'paye', 'réglé', 'encaiss', 'impayé', 'retard', 'overdue', 'payment', 'paid', 'reminder'],
+        'clients' => ['client', 'contact', 'adresse', 'siret', 'siren', 'e-mail', 'email', 'customer', 'address'],
+        'catalogue' => ['produit', 'catalogue', 'article', 'prestation', 'tarif', 'catégorie', 'product', 'catalog', 'category'],
+        'finance' => ['chiffre', 'compta', 'tva', 'déclar', 'urssaf', 'banque', 'bancaire', 'trésorerie', 'achat', 'fournisseur', 'revenu', 'livre', 'journal', 'reporting', 'reçue', 'turnover', 'revenue', 'bank', 'supplier', 'purchase', 'vat', 'accounting', 'ledger'],
+    ];
+
+    /** The tool the model asks for more families with. */
+    public const string MORE_TOOLS = 'more_tools';
+
+    /**
+     * The families the words of a request call for. None recognised: all of
+     * them, rather than an assistant that cannot do what it is asked.
+     *
+     * @return list<string>
+     */
+    public static function familiesFor(string $text): array
+    {
+        $text = mb_strtolower($text);
+        $families = [];
+
+        foreach (self::FAMILY_WORDS as $family => $words) {
+            foreach ($words as $word) {
+                if (str_contains($text, $word)) {
+                    $families[] = $family;
+
+                    break;
+                }
+            }
+        }
+
+        if ($families === []) {
+            return array_keys(self::FAMILIES);
+        }
+
+        // A document is for a client, who may not exist yet.
+        if (array_intersect($families, ['quotes', 'invoices']) !== [] && ! in_array('clients', $families, true)) {
+            $families[] = 'new_client';
+        }
+
+        return ['core', ...$families];
+    }
+
+    /**
+     * The family a tool is in, the first one listed.
+     */
+    public static function familyOf(string $name): string
+    {
+        foreach (self::FAMILIES as $family => $tools) {
+            if (in_array($name, $tools, true)) {
+                return $family;
+            }
+        }
+
+        return $name === self::MORE_TOOLS ? 'core' : 'finance';
+    }
+
+    /**
+     * The tools offered to the model, as an OpenAI-compatible `tools` list:
+     * those of the families given (all when none is), and the one to ask
+     * for the others.
+     *
+     * @param list<string>|null $families
      *
      * @return list<array{type: 'function', function: array{name: string, description: string, parameters: array<string, mixed>}}>
      */
-    public function definitions(): array
+    public function definitions(?array $families = null): array
     {
         $definitions = [];
 
         foreach ($this->offeredTools() as $tool) {
+            if ($families !== null && ! in_array(self::familyOf($tool->name), $families, true) && array_filter($families, static fn (string $family): bool => in_array($tool->name, self::FAMILIES[$family] ?? [], true)) === []) {
+                continue;
+            }
+
             $definitions[] = [
                 'type' => 'function',
                 'function' => [
                     'name' => $tool->name,
                     'description' => (string) $tool->description . ($this->isWrite($tool->name) ? ' (Writes: the person confirms it before it runs.)' : ''),
                     'parameters' => $tool->inputSchema,
+                ],
+            ];
+        }
+
+        $missing = array_values(array_diff(array_keys(self::FAMILIES), $families ?? array_keys(self::FAMILIES)));
+
+        if ($missing !== []) {
+            $definitions[] = [
+                'type' => 'function',
+                'function' => [
+                    'name' => self::MORE_TOOLS,
+                    'description' => 'Adds the tools of other families for this request: quotes, invoices (and payments, reminders), clients (and contacts, addresses; new_client only creates one), catalogue (products, categories), finance (turnover, books, VAT, bank, purchases, received invoices).',
+                    'parameters' => [
+                        'type' => 'object',
+                        'properties' => ['families' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => $missing]]],
+                        'required' => ['families'],
+                    ],
                 ],
             ];
         }

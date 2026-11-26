@@ -37,6 +37,7 @@ use function array_filter;
 use function array_key_last;
 use function array_values;
 use function json_decode;
+use function json_encode;
 use function substr;
 
 /**
@@ -266,6 +267,44 @@ final class AssistantTest extends KernelTestCase
         self::assertStringContainsString('quote_id', $toolbox->run('update_quote', ['changes' => ['subject' => 'x']]));
     }
 
+    /**
+     * A million tokens in an afternoon (Rémi, 26/11/2026): a request is
+     * given the tools of what it is about, not all of them every turn.
+     */
+    public function testARequestIsGivenTheToolsOfWhatItIsAbout(): void
+    {
+        $assistant = $this->assistant([
+            ['tool_calls' => [['id' => 'call_1', 'type' => 'function', 'function' => ['name' => AssistantToolbox::MORE_TOOLS, 'arguments' => '{"families":["catalogue"]}']]]],
+            ['content' => 'Voilà.'],
+        ]);
+
+        $assistant->ask('Fais un devis pour Philippe Tract', 'Augias');
+
+        $first = array_column(array_column($this->sent[0]['tools'], 'function'), 'name');
+        self::assertContains('create_quote', $first);
+        self::assertContains('create_resource', $first);
+        self::assertContains(AssistantToolbox::MORE_TOOLS, $first);
+        self::assertNotContains('create_product', $first);
+        self::assertNotContains('get_turnover', $first);
+        // Some 10 KB instead of 27 KB described on every turn.
+        self::assertLessThan(0.4 * \strlen((string) json_encode($this->toolbox()->definitions())), \strlen((string) json_encode($this->sent[0]['tools'])));
+
+        // Asked for, the family comes on the next turn.
+        self::assertContains('create_product', array_column(array_column($this->sent[1]['tools'], 'function'), 'name'));
+
+        // Words it does not know: every tool, rather than an assistant that cannot do what is asked.
+        self::assertSame(array_keys(AssistantToolbox::FAMILIES), AssistantToolbox::familiesFor('Bonjour'));
+    }
+
+    public function testAQuestionStopsOnceItHasUsedUpItsTokens(): void
+    {
+        $loop = ['tool_calls' => [['id' => 'c', 'type' => 'function', 'function' => ['name' => 'list_invoices_by_status', 'arguments' => '{"status":"paid"}']]]];
+        $assistant = $this->assistant([$loop, $loop, $loop], ['total_tokens' => (int) (Assistant::MAX_TOKENS / 2) + 1]);
+
+        // Two turns are within the budget; the second one's tool is not run past it.
+        self::assertTrue($assistant->ask('Mes factures payées ?', 'Augias')->gaveUp);
+    }
+
     public function testARoleThatOnlyReadsMakesNoChangeEvenConfirmed(): void
     {
         $this->asTheAssistant(CompanyRole::Accountant);
@@ -398,17 +437,18 @@ final class AssistantTest extends KernelTestCase
 
     /**
      * @param list<array<string, mixed>> $replies the model's messages, in order
+     * @param array<string, int>|null    $usage   what each turn is said to cost
      */
-    private function assistant(array $replies): Assistant
+    private function assistant(array $replies, ?array $usage = null): Assistant
     {
         $this->asTheAssistant();
 
         $responses = [];
         foreach ($replies as $reply) {
-            $responses[] = function (string $method, string $url, array $options) use ($reply): JsonMockResponse {
+            $responses[] = function (string $method, string $url, array $options) use ($reply, $usage): JsonMockResponse {
                 $this->sent[] = json_decode((string) $options['body'], true);
 
-                return new JsonMockResponse(['choices' => [['message' => ['role' => 'assistant'] + $reply]]]);
+                return new JsonMockResponse(['choices' => [['message' => ['role' => 'assistant'] + $reply]]] + ($usage === null ? [] : ['usage' => $usage]));
             };
         }
 

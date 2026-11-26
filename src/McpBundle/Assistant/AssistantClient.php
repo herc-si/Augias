@@ -86,6 +86,9 @@ final readonly class AssistantClient
             throw new AssistantUnavailable('The assistant service answered with HTTP ' . $status . '.');
         }
 
+        // What the turn cost, for the budget of a request (Assistant::MAX_TOKENS).
+        $message['_tokens'] = is_int($data['usage']['total_tokens'] ?? null) ? $data['usage']['total_tokens'] : null;
+
         return $message;
     }
 }
