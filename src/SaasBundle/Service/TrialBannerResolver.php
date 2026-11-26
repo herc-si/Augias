@@ -134,9 +134,7 @@ final readonly class TrialBannerResolver
             'tabler:calendar-plus',
             'saas.trial_banner.extend.title',
             'saas.trial_banner.extend.message',
-            // Paid today, the days left come after the first period
-            // (StripeTrialCarryOver): those are what the banner promises.
-            ['%days%' => $daysRemaining, '%count%' => $daysRemaining],
+            ['%days%' => $extensionDays],
             'saas.trial_banner.extend.cta',
         );
     }

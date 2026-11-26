@@ -1791,7 +1791,7 @@ einvoicing:
             choose: 'Choose a platform'
             trial_needs_card_title: 'Add a payment method to switch it on'
             trial_needs_card: 'During the free trial, electronic invoicing is switched on once a payment method is on file. Your trial runs until %date%: the first payment is only taken then, and you can cancel before at no cost.'
-            trial_needs_card_cta: 'Add a payment method'
+            trial_needs_card_cta: 'Choose my plan'
             trial_needs_card_flash: 'During the free trial, electronic invoicing is switched on once a payment method is on file: the first payment is only taken at the end of the trial.'
         verification:
             title: 'Verification'
@@ -3086,7 +3086,7 @@ onboarding:
         title: 'Your first client'
     identity:
         description: 'Type your SIREN, then "Look up": the business register fills in the rest. This appears on your invoices and is used for electronic invoicing.'
-        title: 'Who is your company?'
+        title: 'Your company'
     journey:
         position: 'Step %position% of %count%'
         title: 'Getting started'
@@ -3829,9 +3829,6 @@ saas:
         invoice_line:
             subscription: 'Augias %plan% subscription from %from% to %to%'
             plan_change: 'Change to Augias %plan%, prorated from %from% to %to%'
-            subscription_with_trial: '{1}Augias %plan% subscription from %from% to %to%, including 1 free trial day|]1,Inf]Augias %plan% subscription from %from% to %to%, including %count% free trial days'
-        checkout:
-            trial_left: "{0}What is left of your trial is added at the end of your first period.|{1}The trial day you have left is added at the end of your first period.|]1,Inf]The %count% trial days you have left are added at the end of your first period."
         credit_note_line:
             partial_refund: 'Partial refund: %line%'
         credit_note_notes: 'Refunded by card (Stripe) on %date%.'
@@ -4046,9 +4043,9 @@ saas:
             message: 'Add your card now to keep going %days% more days free, then take %percent%% off your first 3 months with code %code%.'
             title: '%days% more days + %percent%% off'
         extend:
-            cta: 'Subscribe'
-            message: "{1}Subscribe before your trial ends: you pay today, and the trial day you have left is added to your first period. Cancel anytime.|]1,Inf]Subscribe before your trial ends: you pay today, and the %days% trial days you have left are added to your first period. Cancel anytime."
-            title: 'Keep your trial days'
+            cta: 'Extend my trial'
+            message: "Add your payment details before your trial ends and we'll extend it by %days% days. No charge today, cancel anytime."
+            title: 'Get %days% more days, free'
         past_due:
             cta: 'Change card'
             message: 'The last payment for your subscription was declined. Stripe will try again over the next few days, and you keep access until then. Update your payment method to avoid an interruption.'

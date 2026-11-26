@@ -52,7 +52,7 @@ final class SetupJourneyTest extends WebTestCase
         $this->startWithCompany($browser)
             ->assertOn('/onboarding/identity')
             ->assertSee('Step 2 of 6')
-            ->assertSee('Who is your company?');
+            ->assertSee('Your company');
 
         $this->saveIdentity($browser)
             ->assertOn('/onboarding/documents')

@@ -98,17 +98,14 @@ final readonly class StripeSubscriptionSync
 
         switch ($status) {
             case 'trialing':
-                $trialEnd = self::date($remote['trial_end'] ?? null);
-                if (StripeTrialCarryOver::isCarriedTrial($remote) && $trialEnd instanceof DateTimeImmutable) {
-                    // The days given back after a paid period: paid for.
-                    $this->settlePaid($subscription, $remote, $trialEnd);
-                } else {
-                    $this->subscriptionManager->startTrial($subscription, $trialEnd);
-                }
+                $this->subscriptionManager->startTrial($subscription, self::date($remote['trial_end'] ?? null));
                 break;
             case 'active':
-                // Paid until the end of the period, and the trial's days to come after it.
-                $this->settlePaid($subscription, $remote, StripeTrialCarryOver::paidUntil($remote));
+                if (($remote['cancel_at_period_end'] ?? false) === true) {
+                    $this->subscriptionManager->cancelSubscription($subscription, StripeIntegration::periodEnd($remote));
+                } else {
+                    $this->subscriptionManager->renewSubscription($subscription, StripeIntegration::periodEnd($remote));
+                }
                 break;
             case 'past_due':
                 $this->subscriptionManager->markAsPastDue($subscription);
@@ -131,18 +128,6 @@ final readonly class StripeSubscriptionSync
         }
 
         return $subscription;
-    }
-
-    /**
-     * @param array<string, mixed> $remote
-     */
-    private function settlePaid(Subscription $subscription, array $remote, DateTimeImmutable $until): void
-    {
-        if (($remote['cancel_at_period_end'] ?? false) === true) {
-            $this->subscriptionManager->cancelSubscription($subscription, $until);
-        } else {
-            $this->subscriptionManager->renewSubscription($subscription, $until);
-        }
     }
 
     private function stillBilled(string $stripeSubscriptionId): bool

@@ -20,7 +20,6 @@ use Augias\CoreBundle\Tests\Telemetry\CollectingMessageBus;
 use Augias\SaasBundle\Payment\RemotePlanSync;
 use Augias\SaasBundle\Payment\Stripe\StripeApi;
 use Augias\SaasBundle\Payment\Stripe\StripeSubscriptionSync;
-use Augias\SaasBundle\Payment\Stripe\StripeTrialCarryOver;
 use DateTimeImmutable;
 use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -102,38 +101,6 @@ final class StripeSubscriptionSyncTest extends TestCase
         $this->sync($remote);
 
         self::assertSame($expected, $this->subscription->getStatus());
-    }
-
-    /**
-     * Subscribed during the trial: paid now, and the days left of the trial
-     * come after the period paid for (Rémi, 26/11/2026).
-     */
-    public function testTheTrialDaysLeftAreCountedInThePaidPeriod(): void
-    {
-        $this->sync(['status' => 'active', 'metadata' => ['subscription_id' => $this->subscription->getId()->toBase58(), StripeTrialCarryOver::SECONDS_LEFT_KEY => '86400']]);
-
-        self::assertSame(SubscriptionStatus::ACTIVE, $this->subscription->getStatus());
-        self::assertEquals(new DateTimeImmutable('@' . (self::PERIOD_END + 86400)), $this->subscription->getEndDate());
-    }
-
-    public function testTheTrialDaysGivenBackAreAPaidPeriodNotATrial(): void
-    {
-        $this->subscription->setPlan($this->solo)->setSubscriptionId('sub_1')->setStatus(SubscriptionStatus::ACTIVE);
-
-        $this->sync(['status' => 'trialing', 'trial_end' => self::PERIOD_END, 'metadata' => ['subscription_id' => $this->subscription->getId()->toBase58(), StripeTrialCarryOver::CARRIED_KEY => '1']]);
-
-        self::assertSame(SubscriptionStatus::ACTIVE, $this->subscription->getStatus());
-        self::assertEquals(new DateTimeImmutable('@' . self::PERIOD_END), $this->subscription->getEndDate());
-    }
-
-    public function testCancelledDuringTheTrialDaysGivenBackItEndsWithThem(): void
-    {
-        $this->subscription->setPlan($this->solo)->setSubscriptionId('sub_1')->setStatus(SubscriptionStatus::ACTIVE);
-
-        $this->sync(['status' => 'trialing', 'trial_end' => self::PERIOD_END, 'cancel_at_period_end' => true, 'metadata' => ['subscription_id' => $this->subscription->getId()->toBase58(), StripeTrialCarryOver::CARRIED_KEY => '1']]);
-
-        self::assertSame(SubscriptionStatus::CANCELLED, $this->subscription->getStatus());
-        self::assertEquals(new DateTimeImmutable('@' . self::PERIOD_END), $this->subscription->getEndDate());
     }
 
     public function testAFirstPaymentStillPendingChangesNothing(): void

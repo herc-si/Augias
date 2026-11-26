@@ -16,7 +16,6 @@ namespace Augias\SaasBundle\Tests\Payment\Stripe;
 use Augias\CoreBundle\Entity\Company;
 use Augias\SaasBundle\Payment\Stripe\StripeApi;
 use Augias\SaasBundle\Payment\Stripe\StripeIntegration;
-use Augias\SaasBundle\Payment\Stripe\StripeTrialCarryOver;
 use Augias\SettingsBundle\SystemConfig;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -31,7 +30,6 @@ use Symfony\Component\Clock\MockClock;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Symfony\Component\Translation\IdentityTranslator;
 use Symfony\Component\Uid\Ulid;
 use function array_shift;
 use function json_encode;
@@ -66,29 +64,24 @@ final class StripeIntegrationTest extends TestCase
         self::assertSame('https://app.test/saas_payment_success?session_id={CHECKOUT_SESSION_ID}', $body['success_url']);
     }
 
-    public function testSubscribingDuringTheTrialPaysNowAndKeepsTheDaysLeft(): void
+    public function testTheRemainingTrialCarriesOverToStripe(): void
     {
         $subscription = $this->subscription('price_solo', '+10 days');
 
         $this->integration([new JsonMockResponse(['url' => 'https://checkout.stripe.com/x'])])
             ->checkout($subscription, Options::new()->withSkipTrial(false));
 
-        $body = $this->requests[0]['body'];
-        // No trial: paid at once (Rémi, 26/11/2026).
-        self::assertArrayNotHasKey('trial_end', $body['subscription_data']);
-        self::assertSame((string) ($subscription->getEndDate()->getTimestamp() - new MockClock('2026-09-28 12:00:00')->now()->getTimestamp()), $body['subscription_data']['metadata'][StripeTrialCarryOver::SECONDS_LEFT_KEY]);
-        self::assertSame('saas.billing.checkout.trial_left', $body['custom_text']['submit']['message']);
+        self::assertSame((string) $subscription->getEndDate()->getTimestamp(), $this->requests[0]['body']['subscription_data']['trial_end']);
     }
 
-    public function testNoDaysAreCarriedOverWhenTheTrialIsSkipped(): void
+    public function testATrialEndingWithinTwoDaysIsNotCarriedOver(): void
     {
-        $subscription = $this->subscription('price_solo', '+10 days');
+        $subscription = $this->subscription('price_solo', '+36 hours');
 
         $this->integration([new JsonMockResponse(['url' => 'https://checkout.stripe.com/x'])])
-            ->checkout($subscription, Options::new()->withSkipTrial(true));
+            ->checkout($subscription, Options::new()->withSkipTrial(false));
 
-        self::assertArrayNotHasKey(StripeTrialCarryOver::SECONDS_LEFT_KEY, $this->requests[0]['body']['subscription_data']['metadata']);
-        self::assertArrayNotHasKey('custom_text', $this->requests[0]['body']);
+        self::assertArrayNotHasKey('trial_end', $this->requests[0]['body']['subscription_data']);
     }
 
     public function testACompanysFirstCheckoutOpensWithItsNameAndAddress(): void
@@ -268,7 +261,7 @@ final class StripeIntegrationTest extends TestCase
         $systemConfig = $this->createStub(SystemConfig::class);
         $systemConfig->method('get')->willReturn($address);
 
-        return new StripeIntegration(new StripeApi($client), $router, new MockClock('2026-09-28 12:00:00'), 'saas_payment_success', $systemConfig, translator: new IdentityTranslator());
+        return new StripeIntegration(new StripeApi($client), $router, new MockClock('2026-09-28 12:00:00'), 'saas_payment_success', $systemConfig);
     }
 
     private function company(string $name): Company

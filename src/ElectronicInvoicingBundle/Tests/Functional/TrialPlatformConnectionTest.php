@@ -60,7 +60,7 @@ final class TrialPlatformConnectionTest extends WebTestCase
         $browser->visit('/electronic-invoicing/setup')
             ->assertSuccessful()
             ->assertSeeElement('#trial-needs-card')
-            ->assertSee('Add a payment method')
+            ->assertSee('Choose my plan')
             ->assertSee('December 23, 2026')
             ->assertNotSee('Connect my SUPER PDP account');
 

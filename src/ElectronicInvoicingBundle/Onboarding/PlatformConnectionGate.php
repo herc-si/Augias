@@ -21,8 +21,8 @@ use DateTimeInterface;
  * check, then every invoice; and it registers the company in the national
  * directory with SUPER PDP as the platform its invoices are delivered to.
  * A trial nobody has committed to does neither (Rémi, 23/11/2026): the
- * connection waits for a card on file. Subscribing pays at once and keeps
- * the trial's days, given back after the first period (StripeTrialCarryOver).
+ * connection waits for a card on file. Subscribing keeps the trial's days —
+ * the first payment is still at its end.
  *
  * Nothing is held back outside the service, nor once a card is on file.
  *

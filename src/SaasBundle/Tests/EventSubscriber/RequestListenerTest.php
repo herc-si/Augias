@@ -452,10 +452,9 @@ final class RequestListenerTest extends KernelTestCase
 
         self::assertIsArray($captured);
         self::assertSame('info', $captured['type']);
-        // Paid today, the days left come after the first period (Rémi, 26/11/2026).
-        self::assertStringContainsString('you pay today, and the 5 trial days you have left', (string) $captured['message']);
-        self::assertStringContainsString('Keep your trial days', (string) $captured['title']);
-        self::assertStringContainsString('Subscribe', (string) $captured['cta_label']);
+        self::assertStringContainsString('extend it by 14 days', (string) $captured['message']);
+        self::assertStringContainsString('14 more days', (string) $captured['title']);
+        self::assertStringContainsString('Extend', (string) $captured['cta_label']);
         self::assertArrayHasKey('code', $captured);
         self::assertNull($captured['code']);
         self::assertStringContainsString('<div class="alert">Banner</div>', (string) $response->getContent());
