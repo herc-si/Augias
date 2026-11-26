@@ -46,6 +46,15 @@ final readonly class CreateBillFromReceiptListener
             return;
         }
 
+        // A credit note is not a purchase to pay: filed as one, it showed as
+        // money owed to the supplier (test instance, 26/11/2026: HERC SI's
+        // AV-3 became a pending bill of 9,99 €). Bills have no credit side
+        // yet, as a credit note imported by hand is refused (BillImporter):
+        // it stays among the documents received, marked as a credit note.
+        if ($receipt->isCreditNote()) {
+            return;
+        }
+
         try {
             $this->billManager->createFromReceipt($receipt);
         } catch (Throwable $e) {

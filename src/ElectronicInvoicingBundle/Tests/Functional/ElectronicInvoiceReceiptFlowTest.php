@@ -17,6 +17,8 @@ use Augias\BillBundle\Entity\Bill;
 use Augias\BillBundle\Enum\BillStatus;
 use Augias\BillBundle\Repository\BillRepository;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
+use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
+use Augias\ElectronicInvoicingBundle\Event\ElectronicInvoiceReceiptImportedEvent;
 use Augias\ElectronicInvoicingBundle\Manager\ElectronicInvoiceReceiptManager;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceReceiptRepository;
@@ -123,6 +125,28 @@ final class ElectronicInvoiceReceiptFlowTest extends KernelTestCase
         self::assertCount(1, $repository->findAll());
         self::assertTrue($repository->existsForExternalReference($this->company->getId(), 'test_provider', $first[0]->getExternalReference()));
         self::assertSame($first[0]->getExternalReference(), $repository->findLatestExternalReference($this->company->getId(), 'test_provider'));
+    }
+
+    /**
+     * A credit note received is not a purchase to pay, nor one waiting to be
+     * filed (test instance, 26/11/2026).
+     */
+    public function testAReceivedCreditNoteIsNeitherABillNorWaitingForOne(): void
+    {
+        $receipt = new ElectronicInvoiceReceipt()
+            ->setCompany($this->company)
+            ->setProvider('test_provider')
+            ->setExternalReference('cn-1')
+            ->setInvoiceNumber('AV-3')
+            ->setDocumentTypeCode(381);
+        $entityManager = self::getContainer()->get('doctrine.orm.entity_manager');
+        $entityManager->persist($receipt);
+        $entityManager->flush();
+
+        self::getContainer()->get('event_dispatcher')->dispatch(new ElectronicInvoiceReceiptImportedEvent($receipt));
+
+        self::assertNull(self::getContainer()->get(BillRepository::class)->findOneBy(['electronicInvoiceReceipt' => $receipt]));
+        self::assertSame(0, self::getContainer()->get(ElectronicInvoiceReceiptRepository::class)->countAwaitingBill());
     }
 
     /**

@@ -62,6 +62,11 @@ final readonly class ReceivedElectronicInvoiceData
          * its option for VAT on debits.
          */
         public bool $supplierVatOnDebits = false,
+        /**
+         * What the document is (BT-3, UNTDID 1001): 380 an invoice, 381 a
+         * credit note. Null when the provider does not say.
+         */
+        public ?int $documentTypeCode = null,
     ) {
     }
 }

@@ -25,6 +25,7 @@ use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Override;
 use Symfony\Component\Translation\TranslatableMessage;
+use function in_array;
 use function str_replace;
 use function ucwords;
 
@@ -50,6 +51,13 @@ final class IncomingElectronicInvoiceGrid extends Grid
                 ->label('einvoicing.grid.seller_name'),
             StringColumn::new('invoiceNumber')
                 ->label('einvoicing.grid.invoice_number'),
+            // A credit note never becomes a bill: said, so nobody waits for one.
+            StringColumn::new('documentTypeCode')
+                ->label('einvoicing.grid.document_type')
+                ->searchable(false)
+                ->formatValue(static fn (?int $value): TranslatableMessage => new TranslatableMessage(
+                    in_array($value, ElectronicInvoiceReceipt::CREDIT_NOTE_TYPE_CODES, true) ? 'einvoicing.document_type.credit_note' : 'einvoicing.document_type.invoice',
+                )),
             StringColumn::new('provider')
                 ->label('einvoicing.grid.provider')
                 ->formatValue(static fn (string $value): string => ucwords(str_replace('_', ' ', $value))),

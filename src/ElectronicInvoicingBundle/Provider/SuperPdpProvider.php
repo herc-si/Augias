@@ -44,6 +44,7 @@ use function array_values;
 use function in_array;
 use function is_array;
 use function is_int;
+use function is_numeric;
 use function is_string;
 use function str_contains;
 use function usort;
@@ -471,6 +472,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
             taxAmount: $this->toMinorUnits(is_array($totals['total_vat_amount'] ?? null) ? ($totals['total_vat_amount']['value'] ?? null) : null),
             supplyType: $this->supplyType($enInvoice),
             supplierVatOnDebits: in_array($enInvoice['vat_point_date_code'] ?? null, self::VAT_ON_INVOICE_DATE_CODES, true),
+            documentTypeCode: is_numeric($enInvoice['type_code'] ?? null) ? (int) $enInvoice['type_code'] : null,
         );
     }
 

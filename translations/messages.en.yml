@@ -527,6 +527,8 @@ assistant:
     voice_unreadable: 'The recording could not be read: try again.'
     yes: 'Yes'
 bill:
+    flash:
+        credit_note_not_a_bill: 'A credit note is not a purchase to pay: it stays among the documents received.'
     create:
         success: 'Bill created successfully'
     delete_success: 'Bill deleted successfully'
@@ -1746,6 +1748,9 @@ document_line:
     note_placeholder: 'Note or heading, such as “Phase 2 — Development”'
 edit_client: 'Edit Record'
 einvoicing:
+    document_type:
+        credit_note: 'Credit note'
+        invoice: 'Invoice'
     setup:
         title: 'Set up electronic invoicing'
         intro: 'Since 1 September 2026 every company must be able to receive electronic invoices, and you will have to issue them by 1 September 2027 at the latest. Three steps are enough: we guide you through them.'
@@ -1961,6 +1966,7 @@ einvoicing:
         title: 'Answer a received invoice'
         unavailable: 'No platform in use can carry the answer: check that the one the invoice came from is active and its account verified.'
     grid:
+        document_type: 'Type'
         amount: "Amount"
         invoice_number: "Invoice #"
         issue_date: "Issue Date"

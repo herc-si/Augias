@@ -29,6 +29,7 @@ use Money\Money;
 use Symfony\Bridge\Doctrine\IdGenerator\UlidGenerator;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
+use function in_array;
 
 /**
  * One electronic invoice received BY this company from a supplier, imported
@@ -50,6 +51,13 @@ use Symfony\Component\Uid\Ulid;
 class ElectronicInvoiceReceipt
 {
     public const string TABLE_NAME = 'einvoicing_receipt';
+
+    /**
+     * The credit note codes of UNTDID 1001 the French rules allow (BR-FR-04):
+     * credit note, self-billed, its correction, factored, self-billed factored,
+     * and prepayment credit note.
+     */
+    public const array CREDIT_NOTE_TYPE_CODES = [381, 261, 262, 396, 502, 503];
 
     use CompanyAware;
     use TimeStampable;
@@ -128,6 +136,13 @@ class ElectronicInvoiceReceipt
 
     #[ORM\Column(name: 'supplier_vat_on_debits', type: Types::BOOLEAN, options: ['default' => false])]
     private bool $supplierVatOnDebits = false;
+
+    /**
+     * What the document is (BT-3, UNTDID 1001): 380 an invoice, 381 a credit
+     * note. Null for a receipt imported before it was kept.
+     */
+    #[ORM\Column(name: 'document_type_code', type: Types::SMALLINT, nullable: true)]
+    private ?int $documentTypeCode = null;
 
     /**
      * Relative path from the project root to the downloaded document on local
@@ -292,6 +307,27 @@ class ElectronicInvoiceReceipt
         $this->supplierVatOnDebits = $supplierVatOnDebits;
 
         return $this;
+    }
+
+    public function getDocumentTypeCode(): ?int
+    {
+        return $this->documentTypeCode;
+    }
+
+    public function setDocumentTypeCode(?int $documentTypeCode): self
+    {
+        $this->documentTypeCode = $documentTypeCode;
+
+        return $this;
+    }
+
+    /**
+     * A credit note the supplier sent: money it owes back or takes off, not
+     * a purchase to pay.
+     */
+    public function isCreditNote(): bool
+    {
+        return in_array($this->documentTypeCode, self::CREDIT_NOTE_TYPE_CODES, true);
     }
 
     /**
