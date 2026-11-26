@@ -25,6 +25,8 @@
         {# ============================================ #}
         {# Section 1: Email Authentication             #}
         {# ============================================ #}
+        {# Not offered by the service (EmailCodeOutsideTheService); shown only to turn off one turned on before. #}
+        {% if this.emailCodeOffered or app.user.isEmailAuthEnabled %}
         <section class="form-page-section">
             <div class="section-header">
                 <div class="section-icon">
@@ -65,6 +67,7 @@
                 </div>
             </div>
         </section>
+        {% endif %}
 
         {# ============================================ #}
         {# Section 2: TOTP Authenticator App           #}

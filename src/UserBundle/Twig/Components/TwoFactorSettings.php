@@ -101,9 +101,23 @@ final class TwoFactorSettings extends AbstractController
         $this->totpSecret = $this->totpAuthenticator->generateSecret();
     }
 
+    /**
+     * Not where the service is offered: an email code is no second factor
+     * there (EmailCodeOutsideTheService). One turned on before can still be
+     * turned off.
+     */
+    public function isEmailCodeOffered(): bool
+    {
+        return ! $this->authenticatorAppPolicy->isRequired();
+    }
+
     #[LiveAction]
     public function enableEmailAuth(): void
     {
+        if (! $this->isEmailCodeOffered()) {
+            return;
+        }
+
         $user = $this->getUser();
         $user->enableEmailAuth(true);
 
