@@ -17,6 +17,7 @@ use const JSON_THROW_ON_ERROR;
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
 use Augias\McpBundle\Mcp\Attribute\McpScopeRequired;
+use Augias\McpBundle\Mcp\Tool\ResourceWriteTools;
 use Augias\McpBundle\Security\McpOAuthAuthenticator;
 use Augias\McpBundle\Security\McpScope;
 use JsonException;
@@ -91,6 +92,7 @@ final class AssistantToolbox
         ContainerInterface $tools,
         private readonly RequestStack $requestStack,
         private readonly LoggerInterface $logger,
+        private readonly ResourceWriteTools $resources,
     ) {
         $this->handler = new ReferenceHandler($tools);
     }
@@ -174,6 +176,13 @@ final class AssistantToolbox
     {
         if (in_array($name, ['create_resource', 'update_resource'], true) && ! in_array($arguments['resource'] ?? null, self::RESOURCES, true)) {
             return 'here the assistant only creates and changes clients and contacts.';
+        }
+
+        // Checked before the person is asked: they confirm only what will go through.
+        if ($name === 'create_resource' && is_string($arguments['resource'] ?? null)) {
+            $data = $this->decodedArguments(['properties' => ['data' => ['type' => 'object']]], ['data' => $arguments['data'] ?? []])['data'];
+
+            return $this->resources->creationProblem($arguments['resource'], is_array($data) ? $data : []);
         }
 
         return null;

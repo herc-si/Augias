@@ -86,7 +86,7 @@ final class AssistantTest extends KernelTestCase
 
     public function testOnlyClientsAndContactsAreCreatedAsResources(): void
     {
-        self::assertNull($this->toolbox()->refusal('create_resource', ['resource' => 'client', 'data' => []]));
+        self::assertNull($this->toolbox()->refusal('create_resource', ['resource' => 'client', 'data' => ['name' => 'Google France', 'currency_code' => 'EUR', 'is_company' => true, 'siret' => '44306184100047']]));
         self::assertNotNull($this->toolbox()->refusal('create_resource', ['resource' => 'tax', 'data' => []]));
     }
 
@@ -124,6 +124,44 @@ final class AssistantTest extends KernelTestCase
         self::assertSame($outcome, $tools[0]['content']);
         self::assertStringContainsString('one change at a time', $tools[1]['content']);
         self::assertSame(0, $this->products('Audit'));
+    }
+
+    /**
+     * Rémi confirmed a client three times on app-test (26/11/2026): the
+     * first two were refused once confirmed. A creation that would be
+     * refused goes back to the model, not to the person.
+     */
+    public function testACreationThatWouldBeRefusedIsNotShownToConfirm(): void
+    {
+        $invalid = '{"resource":"client","data":{"name":"Burger Queen","currency_code":"EUR","is_company":true}}';
+        $valid = '{"resource":"client","data":{"name":"Burger Queen","currency_code":"EUR","is_company":true,"siret":"44306184100047"}}';
+
+        $answer = $this->assistant([
+            ['tool_calls' => [['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'create_resource', 'arguments' => $invalid]]]],
+            ['tool_calls' => [['id' => 'call_2', 'type' => 'function', 'function' => ['name' => 'create_resource', 'arguments' => $valid]]]],
+        ])->ask('Crée le client Burger Queen', 'Augias');
+
+        // The model learnt why, and only its second try reached the person.
+        $refused = $this->sent[1]['messages'][array_key_last($this->sent[1]['messages'])];
+        self::assertSame('call_1', $refused['tool_call_id']);
+        self::assertStringStartsWith('Error: Validation failed', $refused['content']);
+        self::assertNotNull($answer->proposal);
+        self::assertSame('call_2', $answer->proposal->callId);
+        self::assertSame(0, self::getContainer()->get('doctrine')->getManager()->getRepository(\Augias\ClientBundle\Entity\Client::class)->count(['name' => 'Burger Queen']));
+    }
+
+    public function testACheckedContactIsNotSavedWithItsClient(): void
+    {
+        $toolbox = $this->toolbox();
+        $client = $toolbox->run('create_resource', ['resource' => 'client', 'data' => ['name' => 'Google France', 'currency_code' => 'EUR', 'is_company' => true, 'siret' => '44306184100047']]);
+        $client = json_decode(substr($client, \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+        self::assertIsArray($client, 'The client could not be created.');
+
+        self::assertNull($toolbox->refusal('create_resource', ['resource' => 'contact', 'data' => ['client_id' => $client['id'], 'first_name' => 'Jean', 'email' => 'jean@example.com']]));
+
+        $manager = self::getContainer()->get('doctrine')->getManager();
+        $manager->flush();
+        self::assertSame(0, $manager->getRepository(\Augias\ClientBundle\Entity\Contact::class)->count(['email' => 'jean@example.com']));
     }
 
     public function testARoleThatOnlyReadsMakesNoChangeEvenConfirmed(): void
