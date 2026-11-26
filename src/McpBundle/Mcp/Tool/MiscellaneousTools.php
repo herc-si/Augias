@@ -95,9 +95,9 @@ final readonly class MiscellaneousTools
      * @param string $query Text to look for (case-insensitive)
      * @param int    $limit Max hits per kind (1..25)
      *
-     * @return array<string, list<array{id: string|null, label: string}>>
+     * @return array<string, list<array{id: string|null, label: string, partial?: true}>>
      */
-    #[McpTool(name: 'search', description: 'Search across clients, contacts, invoices, quotes, credit notes, purchases and catalogue by name, number, subject or e-mail; returns ids to pass to get_resource.')]
+    #[McpTool(name: 'search', description: 'Search across clients, contacts, invoices, quotes, credit notes, purchases and catalogue by name, number, subject or e-mail; returns ids to pass to get_resource. A hit marked "partial" matches only some of the words: it is not the record named.')]
     #[McpScopeRequired(McpScope::Read)]
     public function search(string $query, int $limit = 5): array
     {
@@ -147,8 +147,15 @@ final readonly class MiscellaneousTools
             // Most words matched first, then the most recent (ULIDs sort by time).
             uksort($scores, static fn (string $a, string $b): int => [$scores[$b]['score'], $b] <=> [$scores[$a]['score'], $a]);
 
-            foreach (\array_slice($scores, 0, $limit, true) as $key => $hit) {
-                $results[$kind][] = ['id' => $key, 'label' => $this->label($hit['entity'], $definition['label'])];
+            // What matches every word is what was named: when there is
+            // one, a record that shares a single word (« Burger King » for
+            // « Burger Queen ») is left out; when there is none, the near
+            // ones are given, marked as such, never as the one asked for.
+            $complete = array_filter($scores, static fn (array $hit): bool => $hit['score'] === \count($words));
+            $partial = $complete === [];
+
+            foreach (\array_slice($partial ? $scores : $complete, 0, $limit, true) as $key => $hit) {
+                $results[$kind][] = ['id' => $key, 'label' => $this->label($hit['entity'], $definition['label'])] + ($partial ? ['partial' => true] : []);
             }
         }
 

@@ -254,6 +254,26 @@ final class AssistantTest extends KernelTestCase
         self::assertStringEndsWith('— Baptiste BOUVIER', $found['quote'][0]['label']);
     }
 
+    /**
+     * Rémi asked for a quote for a new name and was offered one for the
+     * client of his first try (26/11/2026): sharing a word made it a hit.
+     */
+    public function testARecordSharingOneWordIsNotTakenForTheOneNamed(): void
+    {
+        ClientFactory::createOne(['company' => $this->company, 'name' => 'Burger Queen']);
+        $toolbox = $this->toolbox();
+
+        $named = json_decode(substr($toolbox->call('search', ['query' => 'Burger Queen']), \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+        self::assertSame([['id' => $named['client'][0]['id'], 'label' => 'Burger Queen']], $named['client']);
+
+        $other = json_decode(substr($toolbox->call('search', ['query' => 'devis pour Burger King']), \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+        self::assertTrue($other['client'][0]['partial']);
+
+        ClientFactory::createOne(['company' => $this->company, 'name' => 'Burger King']);
+        $both = json_decode(substr($toolbox->call('search', ['query' => 'Burger King']), \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+        self::assertSame(['Burger King'], array_column($both['client'], 'label'));
+    }
+
     public function testASearchThatFindsNothingSaysWhatToTryInstead(): void
     {
         self::assertStringStartsWith('Nothing found.', $this->toolbox()->call('search', ['query' => 'Zorglub']));
