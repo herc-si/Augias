@@ -150,6 +150,30 @@ final class AssistantTest extends KernelTestCase
         self::assertSame(0, self::getContainer()->get('doctrine')->getManager()->getRepository(\Augias\ClientBundle\Entity\Client::class)->count(['name' => 'Burger Queen']));
     }
 
+    /**
+     * The same, for a quote: three times confirmed and refused on app-test
+     * (26/11/2026), the model changing the client between tries.
+     */
+    public function testAQuoteThatWouldBeRefusedIsNotShownToConfirm(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'name' => 'Philippe Tract', 'isCompany' => false]);
+        $clientId = $client->getId()->toRfc4122();
+        $toolbox = $this->toolbox();
+
+        self::assertStringContainsString('requires a "price"', (string) $toolbox->refusal('create_quote', ['client_id' => $clientId, 'lines' => [['description' => 'Audit', 'qty' => 1]]]));
+        self::assertStringContainsString('requires a "price"', (string) $toolbox->refusal('create_invoice', ['client_id' => $clientId, 'lines' => '[{"description": "Audit", "qty": 1}]']));
+        self::assertStringContainsString('not found', (string) $toolbox->refusal('create_quote', ['client_id' => '01a21859-6b1c-460b-4949-c0019c343150', 'lines' => [['description' => 'Audit', 'price' => 8000, 'qty' => 1]]]));
+
+        self::assertNull($toolbox->refusal('create_quote', ['client_id' => $clientId, 'lines' => [['description' => 'Audit', 'price' => 8000, 'qty' => 1]]]));
+        self::assertNull($toolbox->refusal('create_invoice', ['client_id' => $clientId, 'lines' => [['description' => 'Audit', 'price' => 8000, 'qty' => 1]]]));
+
+        // Checked, not made.
+        $manager = self::getContainer()->get('doctrine')->getManager();
+        $manager->flush();
+        self::assertSame(0, $manager->getRepository(\Augias\QuoteBundle\Entity\Quote::class)->count([]));
+        self::assertSame(0, $manager->getRepository(\Augias\InvoiceBundle\Entity\Invoice::class)->count([]));
+    }
+
     public function testACheckedContactIsNotSavedWithItsClient(): void
     {
         $toolbox = $this->toolbox();

@@ -187,6 +187,11 @@ final class AssistantMessagesAction extends AbstractController
         $outcome = $this->toolbox->run($proposal->tool, $proposal->arguments);
         $failed = str_starts_with($outcome, 'Error:');
         $this->logger->info('Assistant made a confirmed change.', ['tool' => $proposal->tool, 'failed' => $failed]);
+
+        if ($failed) {
+            // Why it was refused once confirmed: what to check before proposing next time.
+            $this->logger->warning('A change the person confirmed was refused.', ['tool' => $proposal->tool, 'reason' => mb_substr($outcome, 0, 500)]);
+        }
         $this->journal->record(AssistantEventKind::Confirmed, $proposal->tool, $failed);
 
         try {

@@ -118,6 +118,70 @@ final readonly class InvoiceWriteTools
         array $invoice_taxes = [],
     ): array {
         $this->scopeGuard->require(McpScope::Write);
+
+        $invoice = $this->newInvoice($client_id, $lines, $invoice_date, $due, $discount_type, $discount_value, $terms, $notes, $subject, $contact_ids, $invoice_taxes, true);
+
+        // A number given explicitly is kept; otherwise the draft takes one
+        // when it is finalised.
+        $invoice->setInvoiceId($invoice_id ?? '');
+
+        $invoice = $this->invoiceManager->create($invoice);
+
+        return $this->normalizer->normalize($invoice);
+    }
+
+    /**
+     * Why creating this invoice would fail, if it would, without creating
+     * it: the assistant asks before showing the person a change to confirm.
+     *
+     * @param array<string, mixed> $arguments the tool's arguments, by name
+     */
+    public function creationProblem(array $arguments): ?string
+    {
+        try {
+            $this->newInvoice(
+                (string) ($arguments['client_id'] ?? ''),
+                \is_array($arguments['lines'] ?? null) ? $arguments['lines'] : [],
+                isset($arguments['invoice_date']) ? (string) $arguments['invoice_date'] : null,
+                isset($arguments['due']) ? (string) $arguments['due'] : null,
+                isset($arguments['discount_type']) ? (string) $arguments['discount_type'] : null,
+                isset($arguments['discount_value']) && is_numeric($arguments['discount_value']) ? $arguments['discount_value'] + 0 : null,
+                null,
+                null,
+                null,
+                \is_array($arguments['contact_ids'] ?? null) ? $arguments['contact_ids'] : [],
+                \is_array($arguments['invoice_taxes'] ?? null) ? $arguments['invoice_taxes'] : [],
+                false,
+            );
+        } catch (ToolCallException $e) {
+            return $e->getMessage();
+        }
+
+        return null;
+    }
+
+    /**
+     * The invoice the arguments describe, not saved and without a number.
+     *
+     * @param list<array<string, mixed>> $lines
+     * @param list<mixed>                $contact_ids
+     * @param list<array<string, mixed>> $invoice_taxes
+     * @param bool                       $linkContacts false for a check: a contact keeps the invoices it is on, and would save this one
+     */
+    private function newInvoice(
+        string $client_id,
+        array $lines,
+        ?string $invoice_date,
+        ?string $due,
+        ?string $discount_type,
+        int | float | null $discount_value,
+        ?string $terms,
+        ?string $notes,
+        ?string $subject,
+        array $contact_ids,
+        array $invoice_taxes,
+        bool $linkContacts,
+    ): Invoice {
         $this->planLimits->assertCanCreateInvoice();
 
         $client = $this->clientRepository->find(UlidParser::parse($client_id, 'client_id'));
@@ -163,20 +227,16 @@ final readonly class InvoiceWriteTools
                 throw new ToolCallException(sprintf('Contact %s does not belong to this client.', $contactId));
             }
 
-            $invoice->addUser($contact);
+            if ($linkContacts) {
+                $invoice->addUser($contact);
+            }
         }
-
-        // A number given explicitly is kept; otherwise the draft takes one
-        // when it is finalised.
-        $invoice->setInvoiceId($invoice_id ?? '');
 
         $this->invoiceTaxBuilder->attach($invoice, $invoice_taxes);
 
         $this->totalCalculator->calculateTotals($invoice);
 
-        $invoice = $this->invoiceManager->create($invoice);
-
-        return $this->normalizer->normalize($invoice);
+        return $invoice;
     }
 
     private function parseDate(?string $value, DateTimeImmutable $default): DateTimeImmutable

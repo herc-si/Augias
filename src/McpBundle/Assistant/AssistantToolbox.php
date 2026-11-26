@@ -16,10 +16,12 @@ namespace Augias\McpBundle\Assistant;
 use const JSON_THROW_ON_ERROR;
 use const JSON_UNESCAPED_SLASHES;
 use const JSON_UNESCAPED_UNICODE;
+use Augias\InvoiceBundle\Mcp\InvoiceWriteTools;
 use Augias\McpBundle\Mcp\Attribute\McpScopeRequired;
 use Augias\McpBundle\Mcp\Tool\ResourceWriteTools;
 use Augias\McpBundle\Security\McpOAuthAuthenticator;
 use Augias\McpBundle\Security\McpScope;
+use Augias\QuoteBundle\Mcp\QuoteWriteTools;
 use JsonException;
 use Mcp\Capability\Registry;
 use Mcp\Capability\Registry\ReferenceHandler;
@@ -93,6 +95,8 @@ final class AssistantToolbox
         private readonly RequestStack $requestStack,
         private readonly LoggerInterface $logger,
         private readonly ResourceWriteTools $resources,
+        private readonly QuoteWriteTools $quotes,
+        private readonly InvoiceWriteTools $invoices,
     ) {
         $this->handler = new ReferenceHandler($tools);
     }
@@ -183,6 +187,12 @@ final class AssistantToolbox
             $data = $this->decodedArguments(['properties' => ['data' => ['type' => 'object']]], ['data' => $arguments['data'] ?? []])['data'];
 
             return $this->resources->creationProblem($arguments['resource'], is_array($data) ? $data : []);
+        }
+
+        if ($name === 'create_quote' || $name === 'create_invoice') {
+            $decoded = $this->decodedArguments(['properties' => ['lines' => ['type' => 'array'], 'contact_ids' => ['type' => 'array'], 'invoice_taxes' => ['type' => 'array']]], $arguments);
+
+            return $name === 'create_quote' ? $this->quotes->creationProblem($decoded) : $this->invoices->creationProblem($decoded);
         }
 
         return null;
