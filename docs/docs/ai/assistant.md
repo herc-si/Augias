@@ -23,7 +23,7 @@ L'assistant est désactivé au départ. Seul le **propriétaire** de l'entrepris
 Les autres membres voient le message « L'assistant n'est pas activé pour cette entreprise » tant que le propriétaire ne l'a pas fait. Le propriétaire peut le désactiver à tout moment avec le lien `Désactiver l'assistant`, sous le champ de saisie. Cela vaut pour toute l'entreprise et efface la conversation en cours.
 
 :::info
-Vos questions, et les données de l'entreprise nécessaires pour y répondre (clients, documents, montants), sont traitées par le service d'IA d'Infomaniak, en Suisse. Infomaniak ne les conserve pas et ne s'en sert pas pour entraîner ses modèles. Voir la [politique de confidentialité](/legal/politique-de-confidentialite).
+Vos questions, et les données de l'entreprise nécessaires pour y répondre (clients, documents, montants), sont traitées par le service d'IA de Scaleway, à Paris. Scaleway ne s'en sert pas pour entraîner les modèles, et les éditeurs des modèles n'y ont pas accès. Voir la [politique de confidentialité](/legal/politique-de-confidentialite).
 :::
 
 ## Poser une question
@@ -65,7 +65,7 @@ Regardez surtout les montants sur la carte : c'est là qu'une erreur de compréh
 
 Touchez le bouton micro à côté de `Demander`, parlez, puis touchez-le à nouveau pour terminer. Votre question est transcrite et envoyée automatiquement. Un enregistrement s'arrête de lui-même au bout de 30 secondes.
 
-La première fois, le navigateur vous demande l'autorisation d'utiliser le micro. La voix est transcrite par Infomaniak, en Suisse, comme les questions écrites ; HERC SI ne conserve pas l'enregistrement. Une modification demandée à la voix passe, elle aussi, par la carte de confirmation.
+La première fois, le navigateur vous demande l'autorisation d'utiliser le micro. La voix est transcrite par Scaleway, à Paris, comme les questions écrites ; HERC SI ne conserve pas l'enregistrement. Une modification demandée à la voix passe, elle aussi, par la carte de confirmation.
 
 ## Questions par mois
 
@@ -77,11 +77,11 @@ L'assistant n'apparaît que si l'administrateur l'a configuré : rien ne part ve
 
 | Variable | Rôle |
 |---|---|
-| `AUGIAS_ASSISTANT_BASE_URL` | L'adresse d'une API compatible OpenAI, sans `/chat/completions` : Infomaniak, Mistral, ou un modèle local servi par Ollama. |
+| `AUGIAS_ASSISTANT_BASE_URL` | L'adresse d'une API compatible OpenAI, sans `/chat/completions` : Scaleway, Infomaniak, Mistral, ou un modèle local servi par Ollama. |
 | `AUGIAS_ASSISTANT_API_KEY` | La clé de cette API. |
 | `AUGIAS_ASSISTANT_MODEL` | Le nom du modèle. Il doit savoir appeler des outils. |
 | `AUGIAS_ASSISTANT_TRANSCRIPTION_URL` | Facultatif : l'adresse complète d'un service de transcription compatible OpenAI (`…/audio/transcriptions`). Sans elle, pas de micro. |
-| `AUGIAS_ASSISTANT_TRANSCRIPTION_MODEL` | Le modèle de transcription, par exemple `whisper`. |
+| `AUGIAS_ASSISTANT_TRANSCRIPTION_MODEL` | Le modèle de transcription, par exemple `whisper-large-v3`. |
 
 Le micro ne fonctionne qu'en HTTPS : les navigateurs ne l'autorisent pas ailleurs.
 

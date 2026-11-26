@@ -21,8 +21,10 @@ use function rtrim;
 
 /**
  * The model behind the assistant, reached through an OpenAI-compatible chat
- * completions API: Infomaniak's AI Services by choice (Rémi, 23/11/2026),
- * Mistral or any other such service by configuration alone.
+ * completions API: gpt-oss-120b on Scaleway's Generative APIs, in Paris,
+ * by choice (Rémi, 26/11/2026, after a bench of seven models: Mistral
+ * Small 4 at Infomaniak before), or any other such service by
+ * configuration alone.
  *
  * AUGIAS_ASSISTANT_BASE_URL is the API's base, up to and without
  * `/chat/completions`; AUGIAS_ASSISTANT_API_KEY its key (from the vault);

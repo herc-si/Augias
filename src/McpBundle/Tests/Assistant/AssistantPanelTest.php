@@ -264,7 +264,7 @@ final class AssistantPanelTest extends WebTestCase
         $client->request('GET', '/assistant/messages');
         $notice = $this->state($client)['notice'];
         self::assertNotNull($notice);
-        self::assertStringContainsString('Infomaniak', $notice['text']);
+        self::assertStringContainsString('Scaleway', $notice['text']);
         self::assertSame('activate', $notice['button']['action'] ?? null);
 
         $client->request('POST', '/assistant/messages', ['activate' => '1', '_token' => $token]);
