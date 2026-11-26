@@ -502,7 +502,7 @@ assistant:
     notice:
         not_in_plan: 'Your plan does not include the assistant. It comes with the Solo plan and above.'
         off_member: 'The assistant is not turned on for this company. Only its owner can turn it on.'
-        off_owner: 'The assistant is off. By turning it on, you agree that your questions, and the company data needed to answer them (clients, documents, amounts), are sent to Infomaniak''s AI service in Switzerland. Infomaniak does not keep them nor use them to train its models. Every change is shown to you before it is made. You can turn it off at any time.'
+        off_owner: 'The assistant is off. By turning it on, you agree that your questions, and the company data needed to answer them (clients, documents, amounts), are sent to Scaleway''s AI service in Paris. Scaleway does not use them to train the models, and the model makers have no access to them. Every change is shown to you before it is made. You can turn it off at any time.'
         quota_reached: 'This month''s %limit% questions are used. The assistant is back on %date%.'
     open: 'Open the assistant'
     owner_only: 'Only the company''s owner can turn the assistant on or off.'

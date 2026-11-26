@@ -5,7 +5,7 @@ description: Quelles données Augias traite, à quel titre, avec qui, et pendant
 
 # Politique de confidentialité
 
-Dernière mise à jour : 25 novembre 2026
+Dernière mise à jour : 26 novembre 2026
 
 :::warning À compléter avant publication
 Projet rédigé à partir du fonctionnement réel de l'application, à relire par un juriste. Les mentions **[À COMPLÉTER]** attendent une information ou une décision de HERC SI. Une politique qui décrirait des traitements différents de ceux réellement effectués serait sans valeur, et la section 4 dépend de choix d'exploitation encore ouverts.
@@ -65,7 +65,7 @@ Sous-traitants ultérieurs, au jour de cette mise à jour :
 | Sous-traitant | Rôle | Données concernées | Localisation |
 |---|---|---|---|
 | Infomaniak Network SA | hébergement de l'application et de la base, envoi des courriers électroniques (SMTP) | l'ensemble des données ; pour le SMTP, les destinataires et le contenu des messages envoyés | Suisse |
-| Infomaniak Network SA (AI Services) | traitement par intelligence artificielle des questions posées à l'assistant intégré, et transcription des questions dictées, **uniquement si le propriétaire de l'entreprise a activé l'assistant** | la question, et les données de l'entreprise nécessaires pour y répondre (clients, documents, montants) ; l'enregistrement de la voix pour une question dictée. Selon Infomaniak, les requêtes ne sont ni conservées ni utilisées pour entraîner les modèles | Suisse |
+| Scaleway SAS (Generative APIs), RCS Paris 433 115 904, 8 rue de la Ville-l'Évêque, 75008 Paris | traitement par intelligence artificielle des questions posées à l'assistant intégré, et transcription des questions dictées, **uniquement si le propriétaire de l'entreprise a activé l'assistant** | la question, et les données de l'entreprise nécessaires pour y répondre (clients, documents, montants) ; l'enregistrement de la voix pour une question dictée. Selon Scaleway, ces données ne sont pas utilisées pour entraîner les modèles et les éditeurs des modèles n'y ont pas accès | France (centre de données à Paris) |
 | Stripe Payments Europe, Limited | encaissement des abonnements, par carte ou prélèvement SEPA | nom, adresse électronique et adresse de facturation du Client, moyen de paiement ; HERC SI ne reçoit ni les numéros de carte ni les coordonnées bancaires | Irlande, avec des transferts hors de l'Union décrits sous ce tableau |
 | SUPER G SAS (service SUPER PDP), RCS Paris 853 322 915, 6 rue de la Dhuis, 75020 Paris | plateforme agréée de facturation électronique : transmission et réception des factures électroniques, e-reporting, lorsque vous connectez votre compte | les factures et avoirs transmis ou reçus, avec l'identité et les coordonnées des parties qui y figurent | France (hébergé par SUPER G, à Paris) |
 | Annuaire des entreprises (API de l'État, `recherche-entreprises.api.gouv.fr`) | recherche d'une entreprise pour préremplir une fiche client | le nom ou le numéro SIREN que vous saisissez dans la recherche | France |
@@ -155,7 +155,7 @@ Cette annexe vaut accord de sous-traitance entre le Client, responsable de trait
 
 **Sécurité.** HERC SI met en œuvre les mesures décrites à l'article 6.
 
-**Sous-traitance ultérieure.** Le Client autorise les sous-traitants énumérés à l'article 4. Tout ajout est notifié avant sa mise en œuvre et le Client peut s'y opposer, la résiliation étant alors ouverte sans frais. Un sous-traitant qui ne sert qu'une fonction que le Client active lui-même, comme le service d'intelligence artificielle d'Infomaniak pour l'assistant intégré, n'est mis en œuvre pour une entreprise qu'après cette activation par son propriétaire, qui vaut autorisation écrite ; il cesse de l'être dès la désactivation. HERC SI impose à ses sous-traitants des obligations de protection des données équivalentes à celles de la présente annexe et demeure responsable envers le Client de leur exécution.
+**Sous-traitance ultérieure.** Le Client autorise les sous-traitants énumérés à l'article 4. Tout ajout est notifié avant sa mise en œuvre et le Client peut s'y opposer, la résiliation étant alors ouverte sans frais. Un sous-traitant qui ne sert qu'une fonction que le Client active lui-même, comme le service d'intelligence artificielle de Scaleway pour l'assistant intégré, n'est mis en œuvre pour une entreprise qu'après cette activation par son propriétaire, qui vaut autorisation écrite ; il cesse de l'être dès la désactivation. HERC SI impose à ses sous-traitants des obligations de protection des données équivalentes à celles de la présente annexe et demeure responsable envers le Client de leur exécution.
 
 **Assistance.** HERC SI assiste le Client, dans la mesure du possible, pour répondre aux demandes d'exercice de droits, pour la notification des violations de données et, le cas échéant, pour les analyses d'impact.
 

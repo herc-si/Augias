@@ -502,7 +502,7 @@ assistant:
     notice:
         not_in_plan: 'Votre offre ne comprend pas l''assistant. Il est inclus à partir de l''offre Solo.'
         off_member: 'L''assistant n''est pas activé pour cette entreprise. Seul son propriétaire peut l''activer.'
-        off_owner: 'L''assistant est désactivé. En l''activant, vous acceptez que vos questions, et les données de l''entreprise nécessaires pour y répondre (clients, documents, montants), soient envoyées au service d''IA d''Infomaniak, en Suisse. Infomaniak ne les conserve pas et ne s''en sert pas pour entraîner ses modèles. Chaque modification vous est montrée avant d''être faite. Vous pourrez le désactiver à tout moment.'
+        off_owner: 'L''assistant est désactivé. En l''activant, vous acceptez que vos questions, et les données de l''entreprise nécessaires pour y répondre (clients, documents, montants), soient envoyées au service d''IA de Scaleway, à Paris. Scaleway ne s''en sert pas pour entraîner les modèles, et les éditeurs des modèles n''y ont pas accès. Chaque modification vous est montrée avant d''être faite. Vous pourrez le désactiver à tout moment.'
         quota_reached: 'Les %limit% questions de ce mois-ci sont utilisées. L''assistant reprend le %date%.'
     open: 'Ouvrir l''assistant'
     owner_only: 'Seul le propriétaire de l''entreprise peut activer ou désactiver l''assistant.'

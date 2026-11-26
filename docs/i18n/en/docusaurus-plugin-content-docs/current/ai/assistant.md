@@ -23,7 +23,7 @@ The assistant starts off. Only the company's **owner** can turn it on: the first
 Other members see "The assistant is not turned on for this company" until the owner has done so. The owner can turn it off at any time with the `Turn the assistant off` link under the input. This applies to the whole company and clears the current conversation.
 
 :::info
-Your questions, and the company data needed to answer them (clients, documents, amounts), are processed by Infomaniak's AI service in Switzerland. Infomaniak does not keep them nor use them to train its models. See the [privacy policy](/legal/politique-de-confidentialite) (in French).
+Your questions, and the company data needed to answer them (clients, documents, amounts), are processed by Scaleway's AI service in Paris. Scaleway does not use them to train the models, and the model makers have no access to them. See the [privacy policy](/legal/politique-de-confidentialite) (in French).
 :::
 
 ## Asking a question
@@ -65,7 +65,7 @@ Look at the amounts on the card above all: that is where a misunderstanding show
 
 Tap the microphone button next to `Ask`, speak, then tap it again to finish. Your question is written out and sent automatically. A recording stops by itself after 30 seconds.
 
-The first time, your browser asks permission to use the microphone. Speech is transcribed by Infomaniak in Switzerland, like typed questions; HERC SI does not keep the recording. A change asked for by voice also goes through the confirmation card.
+The first time, your browser asks permission to use the microphone. Speech is transcribed by Scaleway in Paris, like typed questions; HERC SI does not keep the recording. A change asked for by voice also goes through the confirmation card.
 
 ## Questions per month
 
@@ -77,11 +77,11 @@ The assistant only appears once the administrator has configured it: nothing goe
 
 | Variable | Purpose |
 |---|---|
-| `AUGIAS_ASSISTANT_BASE_URL` | The address of an OpenAI-compatible API, without `/chat/completions`: Infomaniak, Mistral, or a local model served by Ollama. |
+| `AUGIAS_ASSISTANT_BASE_URL` | The address of an OpenAI-compatible API, without `/chat/completions`: Scaleway, Infomaniak, Mistral, or a local model served by Ollama. |
 | `AUGIAS_ASSISTANT_API_KEY` | That API's key. |
 | `AUGIAS_ASSISTANT_MODEL` | The model's name. It must be able to call tools. |
 | `AUGIAS_ASSISTANT_TRANSCRIPTION_URL` | Optional: the full address of an OpenAI-compatible transcription service (`…/audio/transcriptions`). Without it, there is no microphone. |
-| `AUGIAS_ASSISTANT_TRANSCRIPTION_MODEL` | The transcription model, for example `whisper`. |
+| `AUGIAS_ASSISTANT_TRANSCRIPTION_MODEL` | The transcription model, for example `whisper-large-v3`. |
 
 The microphone only works over HTTPS: browsers do not allow it elsewhere.
 

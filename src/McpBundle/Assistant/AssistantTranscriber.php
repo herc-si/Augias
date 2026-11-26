@@ -27,18 +27,18 @@ use function trim;
 
 /**
  * What the person said into the assistant's microphone, as text, through an
- * OpenAI-compatible `audio/transcriptions` endpoint: Whisper at Infomaniak
- * by choice (Rémi, 24/11/2026), so the voice stays in Switzerland like the
- * questions.
+ * OpenAI-compatible `audio/transcriptions` endpoint: Whisper at Scaleway
+ * by choice (Rémi, 26/11/2026), so the voice goes where the questions go,
+ * in Paris.
  *
  * AUGIAS_ASSISTANT_TRANSCRIPTION_URL is the endpoint itself, e.g.
- * `https://api.infomaniak.com/1/ai/<product>/openai/audio/transcriptions`;
- * AUGIAS_ASSISTANT_TRANSCRIPTION_MODEL the model (`whisper` there). The key
+ * `https://api.scaleway.ai/v1/audio/transcriptions`;
+ * AUGIAS_ASSISTANT_TRANSCRIPTION_MODEL the model (`whisper-large-v3` there). The key
  * is the assistant's. Without them, there is no microphone.
  *
- * Infomaniak answers with a batch to fetch (`batch_id`, then
- * `…/results/<batch_id>` until it is no longer pending); a service that
- * answers with the text at once (`text`) is taken as it is.
+ * Scaleway answers with the text at once (`text`), taken as it is.
+ * Infomaniak, used before, answers with a batch to fetch (`batch_id`, then
+ * `…/results/<batch_id>` until it is no longer pending): still followed.
  *
  * @see \Augias\McpBundle\Tests\Assistant\AssistantTranscriberTest
  */
