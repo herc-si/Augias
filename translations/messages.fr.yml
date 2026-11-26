@@ -402,6 +402,7 @@ assistant:
         add_client_address: 'Ajouter une adresse'
         add_client_tax_identifier: 'Ajouter un identifiant fiscal'
         add_contact: 'Ajouter un contact'
+        apply_quote_transition: 'Changer l''état d''un devis'
         clone_invoice: 'Dupliquer une facture'
         clone_quote: 'Dupliquer un devis'
         convert_quote_to_invoice: 'Transformer le devis en facture'
@@ -488,6 +489,7 @@ assistant:
         subject: 'Objet'
         tax_id: 'Taxe'
         terms: 'Conditions'
+        transition: 'Action'
         type: 'Type'
         unit: 'Unité'
         usages: 'Usages'
@@ -524,6 +526,9 @@ assistant:
         resource:
             client: 'Client'
             contact: 'Contact'
+        transition:
+            cancel: 'Annuler le devis'
+            reopen: 'Rouvrir le devis (brouillon)'
     voice_unavailable: 'La transcription ne répond pas pour le moment : tapez votre question.'
     voice_unreadable: 'L''enregistrement n''a pas pu être lu : réessayez.'
     yes: 'Oui'

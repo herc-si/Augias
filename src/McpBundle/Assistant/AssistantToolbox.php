@@ -79,7 +79,7 @@ final class AssistantToolbox
      * credit notes, purchases, taxes and the books stay out of reach.
      */
     public const array WRITE_TOOLS = [
-        'create_quote', 'update_quote', 'clone_quote', 'convert_quote_to_invoice', 'create_deposit_invoice',
+        'create_quote', 'update_quote', 'clone_quote', 'convert_quote_to_invoice', 'create_deposit_invoice', 'apply_quote_transition',
         'create_invoice', 'update_invoice', 'clone_invoice',
         'create_product', 'update_product', 'create_category', 'update_category',
         'create_resource', 'update_resource', 'add_contact', 'add_client_address', 'update_client_address', 'add_client_tax_identifier',
@@ -92,6 +92,9 @@ final class AssistantToolbox
      * the person has already confirmed.
      */
     public const array CONFIRMED_EACH = ['send_quote', 'send_invoice', 'send_invoice_reminder', 'record_payment'];
+
+    /** The quote transitions offered here. */
+    private const array QUOTE_TRANSITIONS = ['cancel', 'reopen'];
 
     /** What create_resource and update_resource may touch here. */
     private const array RESOURCES = ['client', 'contact'];
@@ -131,7 +134,7 @@ final class AssistantToolbox
      */
     public const array FAMILIES = [
         'core' => ['search', 'get_resource', 'list_resource', 'get_company_info', 'get_document_links', 'list_workflow_transitions'],
-        'quotes' => ['list_quotes_by_status', 'create_quote', 'update_quote', 'clone_quote', 'convert_quote_to_invoice', 'create_deposit_invoice', 'send_quote', 'search_products', 'list_tax_rates'],
+        'quotes' => ['list_quotes_by_status', 'create_quote', 'update_quote', 'apply_quote_transition', 'clone_quote', 'convert_quote_to_invoice', 'create_deposit_invoice', 'send_quote', 'search_products', 'list_tax_rates'],
         'invoices' => ['list_invoices_by_status', 'list_overdue_invoices', 'list_recurring_invoices', 'create_invoice', 'update_invoice', 'clone_invoice', 'create_deposit_invoice', 'send_invoice', 'send_invoice_reminder', 'record_payment', 'list_payment_methods', 'search_products', 'list_tax_rates'],
         // What a document for a client not yet there needs: the rest of « clients » only when asked.
         'new_client' => ['create_resource', 'add_contact'],
@@ -363,6 +366,13 @@ final class AssistantToolbox
             $data = $this->decodedArguments(['properties' => ['data' => ['type' => 'object']]], ['data' => $arguments['data'] ?? []])['data'];
 
             return $this->resources->creationProblem($arguments['resource'], self::clientDefaults($arguments['resource'], is_array($data) ? $data : []));
+        }
+
+        // Only what can be undone: a cancelled quote is reopened as a draft
+        // (Rémi, 26/11/2026: « annule les devis de Jean Toto »). Sending
+        // goes through send_quote, the client's answer stays the person's.
+        if ($name === 'apply_quote_transition' && ! in_array($arguments['transition'] ?? null, self::QUOTE_TRANSITIONS, true)) {
+            return 'here the assistant only cancels a quote ("cancel") or reopens a cancelled one ("reopen").';
         }
 
         if ($name === 'create_quote' || $name === 'create_invoice') {

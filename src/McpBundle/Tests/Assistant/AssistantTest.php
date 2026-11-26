@@ -22,6 +22,8 @@ use Augias\McpBundle\Assistant\Assistant;
 use Augias\McpBundle\Assistant\AssistantClient;
 use Augias\McpBundle\Assistant\AssistantToolbox;
 use Augias\McpBundle\Tests\Functional\SignsInMember;
+use Augias\QuoteBundle\Entity\Quote;
+use Augias\QuoteBundle\Enum\QuoteStatus;
 use Augias\QuoteBundle\Test\Factory\QuoteFactory;
 use Augias\UserBundle\Enum\CompanyRole;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -232,6 +234,34 @@ final class AssistantTest extends KernelTestCase
         self::assertNull($after->proposal);
         self::assertSame('Conseil et Audit sont ajoutés. Voulez-vous que j’envoie la facture ?', $after->text);
         self::assertStringContainsString('Not proposed', (string) json_encode(end($this->sent)['messages'] ?? []));
+    }
+
+    public function testAQuoteIsCancelledOnceConfirmed(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'name' => 'Jean Toto', 'isCompany' => false]);
+        $quote = QuoteFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => QuoteStatus::Draft]);
+        $id = $quote->getId()->toRfc4122();
+
+        $answer = $this->assistant([
+            ['tool_calls' => [['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'apply_quote_transition', 'arguments' => '{"quote_id":"' . $id . '","transition":"cancel"}']]]],
+        ])->ask('Annule le devis de Jean Toto', 'Augias');
+
+        self::assertNotNull($answer->proposal);
+        self::assertSame('apply_quote_transition', $answer->proposal->tool);
+
+        $outcome = $this->toolbox()->run($answer->proposal->tool, $answer->proposal->arguments);
+        self::assertStringNotContainsString('Error:', $outcome);
+
+        $stored = self::getContainer()->get('doctrine')->getManager()->getRepository(Quote::class)->find($quote->getId());
+        self::assertSame(QuoteStatus::Cancelled, $stored?->getStatus());
+    }
+
+    public function testOnlyCancellingOrReopeningAQuoteIsProposed(): void
+    {
+        $quote = QuoteFactory::createOne(['company' => $this->company, 'status' => QuoteStatus::Pending]);
+
+        self::assertNotNull($this->toolbox()->refusal('apply_quote_transition', ['quote_id' => $quote->getId()->toRfc4122(), 'transition' => 'accept']));
+        self::assertNull($this->toolbox()->refusal('apply_quote_transition', ['quote_id' => $quote->getId()->toRfc4122(), 'transition' => 'cancel']));
     }
 
     public function testASendingIsProposedOnceThePersonSaysYes(): void

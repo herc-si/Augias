@@ -402,6 +402,7 @@ assistant:
         add_client_address: 'Add an address'
         add_client_tax_identifier: 'Add a tax identifier'
         add_contact: 'Add a contact'
+        apply_quote_transition: 'Change the status of a quote'
         clone_invoice: 'Duplicate an invoice'
         clone_quote: 'Duplicate a quote'
         convert_quote_to_invoice: 'Turn the quote into an invoice'
@@ -488,6 +489,7 @@ assistant:
         subject: 'Subject'
         tax_id: 'Tax'
         terms: 'Terms'
+        transition: 'Action'
         type: 'Type'
         unit: 'Unit'
         usages: 'Uses'
@@ -524,6 +526,9 @@ assistant:
         resource:
             client: 'Client'
             contact: 'Contact'
+        transition:
+            cancel: 'Cancel the quote'
+            reopen: 'Reopen the quote (draft)'
     voice_unavailable: 'Transcription is not answering right now: type your question.'
     voice_unreadable: 'The recording could not be read: try again.'
     yes: 'Yes'
