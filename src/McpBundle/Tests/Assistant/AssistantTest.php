@@ -217,6 +217,7 @@ final class AssistantTest extends KernelTestCase
             ['tool_calls' => [['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"Conseil","sale_price":8000}']]]],
             ['tool_calls' => [['id' => 'call_2', 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"Audit","sale_price":50000}']]]],
             ['tool_calls' => [['id' => 'call_3', 'type' => 'function', 'function' => ['name' => 'send_invoice', 'arguments' => '{"invoice_id":"01a21859-6b1c-460b-4949-c0019c343150"}']]]],
+            ['content' => 'Conseil et Audit sont ajoutés. Voulez-vous que j’envoie la facture ?'],
         ]);
 
         $answer = $assistant->ask('Ajoute Conseil et Audit, puis envoie la facture', 'Augias');
@@ -225,11 +226,27 @@ final class AssistantTest extends KernelTestCase
         $toolbox = $this->toolbox();
         $after = $assistant->resume($answer->proposal, $toolbox->run($answer->proposal->tool, $answer->proposal->arguments), 'Augias');
 
-        // Audit made on the same confirmation; the sending asked for on its own.
+        // Audit made on the same confirmation; the sending asked for in words, not shown to confirm.
         self::assertSame(1, $this->products('Conseil'));
         self::assertSame(1, $this->products('Audit'));
-        self::assertNotNull($after->proposal);
-        self::assertSame('send_invoice', $after->proposal->tool);
+        self::assertNull($after->proposal);
+        self::assertSame('Conseil et Audit sont ajoutés. Voulez-vous que j’envoie la facture ?', $after->text);
+        self::assertStringContainsString('Not proposed', (string) json_encode(end($this->sent)['messages'] ?? []));
+    }
+
+    public function testASendingIsProposedOnceThePersonSaysYes(): void
+    {
+        $assistant = $this->assistant([
+            ['tool_calls' => [['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'send_invoice', 'arguments' => '{"invoice_id":"01a21859-6b1c-460b-4949-c0019c343150"}']]]],
+        ]);
+
+        $answer = $assistant->ask('oui', 'Augias', [
+            ['role' => 'user', 'content' => 'Ajoute Conseil'],
+            ['role' => 'assistant', 'content' => 'Conseil est ajouté. Voulez-vous que j’envoie la facture ?'],
+        ]);
+
+        self::assertNotNull($answer->proposal);
+        self::assertSame('send_invoice', $answer->proposal->tool);
     }
 
     public function testAModelGoingRoundInCirclesIsAskedAgain(): void

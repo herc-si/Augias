@@ -38,6 +38,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Throwable;
 use function array_map;
 use function ignore_user_abort;
 use function implode;
@@ -150,6 +151,8 @@ final class AssistantMessagesAction extends AbstractController
             $this->conversation->withdraw($company);
 
             return $this->state($company, $this->translator->trans('assistant.unavailable'), Response::HTTP_SERVICE_UNAVAILABLE);
+        } catch (Throwable $e) {
+            $this->failed($company, $e);
         }
 
         return $this->state($company);
@@ -184,7 +187,13 @@ final class AssistantMessagesAction extends AbstractController
         $this->conversation->release();
         ignore_user_abort(true);
 
-        $outcome = $this->toolbox->run($proposal->tool, $proposal->arguments);
+        try {
+            $outcome = $this->toolbox->run($proposal->tool, $proposal->arguments);
+        } catch (Throwable $e) {
+            $this->failed($company, $e);
+
+            return $this->state($company);
+        }
         $failed = str_starts_with($outcome, 'Error:');
         $this->logger->info('Assistant made a confirmed change.', ['tool' => $proposal->tool, 'failed' => $failed]);
 
@@ -199,6 +208,8 @@ final class AssistantMessagesAction extends AbstractController
         } catch (AssistantUnavailable) {
             // Made or refused all the same: said plainly, without the model.
             $this->conversation->answer($company, $this->translator->trans($failed ? 'assistant.action_failed' : 'assistant.action_done'));
+        } catch (Throwable $e) {
+            $this->failed($company, $e);
         }
 
         return $this->state($company);
@@ -217,6 +228,17 @@ final class AssistantMessagesAction extends AbstractController
         );
 
         return $preview['title'] . ($details === [] ? '' : ' (' . implode(', ', $details) . ')');
+    }
+
+    /**
+     * Whatever went wrong, the question gets an answer: without one it
+     * stayed pending and the page waited for good (Rémi, 26/11/2026: a
+     * contact refused by the database, after the quote was made).
+     */
+    private function failed(Company $company, Throwable $e): void
+    {
+        $this->logger->error('The assistant stopped on an error.', ['exception' => $e]);
+        $this->conversation->answer($company, $this->translator->trans('assistant.failed'));
     }
 
     private function record(Company $company, AssistantAnswer $answer): void
