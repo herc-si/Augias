@@ -187,184 +187,184 @@ notification:
         link: ici
 onboarding:
     add_first_client:
-        cta: 'Ajoutez votre premier client'
+        cta: 'Ajouter mon premier client'
         eyebrow: 'Étape 1 · Votre premier client'
-        heading: "Pas de client, pas de facture. Réglons ça."
-        lede: 'Votre liste de clients est le point de départ de tout. Ajoutez un client et vous pourrez immédiatement créer des devis, des factures et suivre chaque paiement qu''il vous doit — le tout au même endroit.'
+        heading: 'Pas de client, pas de facture. Commençons par là.'
+        lede: 'Tout part de votre liste de clients. Ajoutez-en un et vous pourrez lui faire un devis ou une facture dans la foulée, et suivre ce qu''il vous doit.'
         mock:
             client1:
-                name: 'Northbeam Design Studio'
-                sub: 'hello@northbeam.co · 3 factures'
+                name: 'Atelier Durand'
+                sub: 'contact@atelier-durand.fr · 3 factures'
             client2:
-                name: 'Maple & Knox LLC'
-                sub: 'billing@mapleknox.com · 1 facture'
+                name: 'Boulangerie Martin'
+                sub: 'compta@boulangerie-martin.fr · 1 facture'
             empty:
                 name: 'Votre prochain client apparaîtra ici'
-                sub: 'nom, e-mail et adresse de facturation'
+                sub: 'nom, e-mail et SIREN'
             header: 'Vos clients'
             url: augias.herc-si.fr/clients
         needs:
-            1: 'Nom du client ou de la société'
-            2: 'Une adresse e-mail pour les factures'
-            3: 'Devise de facturation'
-        needs_heading: "Ce dont vous aurez besoin"
-        needs_intro: 'Trois champs pour démarrer. Vous pourrez compléter le reste plus tard.'
-        subject: 'Ajoutez votre premier client — 60 secondes pour démarrer'
+            1: 'Le nom du client ou de sa société'
+            2: 'Une adresse e-mail pour lui envoyer ses factures'
+            3: 'Son SIREN si c''est une entreprise : l''adresse se remplit depuis l''annuaire'
+        needs_heading: 'Ce qu''il vous faut'
+        needs_intro: 'Trois informations suffisent. Le reste peut attendre.'
+        subject: 'Ajoutez votre premier client'
     customize_logo:
-        after_brand: 'Votre Studio'
+        after_brand: 'Votre entreprise'
         after_label: Après
         before_label: Avant
-        cta: 'Personnalisez vos factures'
-        eyebrow: 'Étape 5 · Faites-le vôtre'
-        heading: 'Votre logo. Votre marque. Vos factures.'
-        lede: 'Les clients jugent le professionnalisme avant même de lire une seule ligne. Une facture personnalisée — votre logo, votre nom — montre que vous dirigez une véritable entreprise.'
-        ps: 'avec le plan payant, vous pouvez désactiver la mention Augias dans les Paramètres — vos clients ne verront plus que votre nom.'
+        cta: 'Personnaliser mes documents'
+        eyebrow: 'Étape 5 · À votre image'
+        heading: 'Votre logo, vos couleurs, vos factures.'
+        lede: 'Vos clients voient votre facture avant de la lire. Avec votre logo et votre couleur, elle porte votre nom, pas celui d''un logiciel.'
+        ps: 'le logo et la couleur s''appliquent aussi à vos devis et à vos avoirs.'
         step:
             1:
-                desc: 'PNG, SVG ou JPG. Apparaît sur chaque facture et devis que vous envoyez.'
-                title: 'Importez votre logo'
+                desc: 'PNG, SVG ou JPG. Il apparaît sur chaque devis, facture et avoir.'
+                title: 'Ajoutez votre logo'
             2:
-                desc: 'Personnalisez le nom que voient vos clients lorsque vos factures arrivent dans leur boîte de réception.'
-                title: 'Définissez le nom d''expéditeur'
-        steps_heading: 'Deux choses à personnaliser'
-        subject: 'Apposez votre marque sur vos factures'
+                desc: 'Le nom que vos clients voient quand vos factures arrivent dans leur boîte mail.'
+                title: 'Choisissez le nom d''expéditeur'
+        steps_heading: 'Deux réglages'
+        subject: 'Mettez votre logo sur vos factures'
     footer:
-        reason: "Vous recevez cet e-mail car vous vous êtes inscrit(e) sur Augias."
-        tagline: 'La facturation pour freelances et petites entreprises.'
+        reason: 'Vous recevez cet e-mail parce que vous avez ouvert un compte Augias.'
+        tagline: 'La facturation et la facture électronique pour les indépendants et les petites entreprises.'
     recurring_billing:
         after:
-            1: 'Factures automatiques envoyées selon votre calendrier'
-            2: 'Le tableau de bord affiche chaque montant impayé'
-            3: 'Rappels envoyés automatiquement en votre nom'
+            1: 'Les factures partent seules, au rythme choisi'
+            2: 'Le tableau de bord montre ce qui reste à encaisser'
+            3: 'Les relances partent automatiquement en votre nom'
         after_heading: 'Avec Augias'
         before:
-            1: 'Facturation manuelle à chaque cycle de facturation'
-            2: 'Suivi de qui vous doit quoi dans un tableur'
-            3: 'Relance des paiements en retard vous-même'
-        before_heading: 'Sans facturation récurrente'
-        compare_heading: 'Arrêtez de faire ça manuellement'
-        cta: 'Configurez la facturation récurrente'
-        eyebrow: 'Étape 4 · Facturation récurrente'
-        heading: 'Vos meilleurs clients vous paient chaque mois. Automatisez-le.'
+            1: 'Refaire la même facture chaque mois'
+            2: 'Suivre qui vous doit quoi dans un tableur'
+            3: 'Relancer soi-même les retards'
+        before_heading: 'Sans facture récurrente'
+        compare_heading: 'Arrêtez de le faire à la main'
+        cta: 'Créer une facture récurrente'
+        eyebrow: 'Étape 4 · Factures récurrentes'
+        heading: 'Un client vous paie tous les mois ? Augias s''en charge.'
         how:
-            1: 'Créez une facture et marquez-la comme récurrente — définissez la fréquence et la date de début.'
-            2: 'Augias l''envoie automatiquement selon le calendrier prévu. Votre client la reçoit et la paie.'
-            3: 'Activez les rappels et les factures en retard sont suivies automatiquement — aucune relance nécessaire.'
+            1: 'Créez la facture une fois, puis indiquez sa fréquence et sa date de début.'
+            2: 'Augias l''émet et l''envoie à chaque échéance.'
+            3: 'Activez les relances : les retards sont suivis sans que vous y pensiez.'
         how_heading: 'Comment ça marche'
-        lede: 'Créez une facture une seule fois et Augias l''envoie automatiquement selon votre calendrier. Configurez des rappels de paiement et les factures en retard sont relancées — sans que vous ayez à lever le petit doigt.'
-        ps: "même un seul client récurrent rend cela intéressant — vous gagnerez des heures chaque mois."
-        subject: 'Configurez une fois, soyez payé chaque mois'
+        lede: 'Une facture récurrente se prépare une seule fois. Augias l''émet à chaque échéance et relance les retards.'
+        ps: 'un seul client récurrent suffit pour gagner du temps chaque mois.'
+        subject: 'Une facture préparée une fois, envoyée chaque mois'
     send_first_invoice:
-        cta: 'Créez votre première facture'
+        cta: 'Créer ma première facture'
         eyebrow: 'Étape 2 · Votre première facture'
-        heading: 'Il est temps d''envoyer votre première facture.'
-        included_body: "Lignes de facturation, taxes, remises, échéanciers récurrents et dates d'échéance — tout est inclus. Ajoutez un moyen de paiement à l'étape suivante et votre client bénéficiera aussi d'un bouton « Payer maintenant »."
-        included_heading: 'Inclus sur chaque facture, rien à configurer en plus'
-        lede: 'Envoyer une facture professionnelle prend moins de cinq minutes. Choisissez votre client, ajoutez des lignes, définissez une date d''échéance — Augias se charge de la mise en forme, de l''envoi et du suivi.'
+        heading: 'Place à votre première facture.'
+        lede: 'Choisissez le client, ajoutez les lignes et l''échéance : Augias met en page, numérote, envoie et suit le paiement. Comptez cinq minutes.'
+        included_body: 'Lignes, TVA, remises, unités, échéance et mentions obligatoires sont prévues. Une fois abonné, vos factures aux entreprises partent aussi en facture électronique, comme l''exige la réforme.'
+        included_heading: 'Déjà prévu sur chaque facture'
         mock:
             billed_to: 'Facturé à'
-            client_email: hello@northbeam.co
-            client_name: 'Northbeam Design Studio'
+            client_email: contact@atelier-durand.fr
+            client_name: 'Atelier Durand'
             col_amount: Montant
             col_desc: Description
             col_qty: Qté
-            col_rate: Tarif
+            col_rate: 'Prix unitaire'
             due: Échéance
-            due_date: '8 mai 2026'
-            due_terms: '14 jours net'
-            item1: 'Identité de marque · découverte'
-            item2: 'Conception de logo et révisions'
+            due_date: '8 janvier 2027'
+            due_terms: '30 jours'
+            item1: 'Site vitrine · cadrage'
+            item2: 'Développement et mise en ligne'
             label: Facture
             status_sent: Envoyée
-            total_due: 'Total dû'
-        ps: "astuce : connectez un moyen de paiement avant l'envoi et votre client verra un bouton « Payer maintenant ». Les factures en ligne sont payées bien plus vite."
-        subject: 'Votre première facture est à portée de clic'
+            total_due: 'Total à payer'
+        ps: 'ajoutez un moyen de paiement en ligne avant l''envoi : votre client pourra régler la facture en un clic.'
+        subject: 'Votre première facture en cinq minutes'
     signature:
         greeting: 'À bientôt,'
         team: '— L''équipe Augias'
     trial_about_to_end:
-        body_intro: 'S''abonner prend environ 30 secondes. Votre espace de travail reprend exactement là où il s''est arrêté — rien n''est archivé, rien n''est masqué.'
+        body_intro: 'S''abonner prend une minute, et vous reprenez exactement où vous en étiez.'
         cta:
-            upgrade: 'S''abonner et continuer'
+            upgrade: 'M''abonner'
         days_label: 'Jours restants'
-        eyebrow: 'Attention · Fin de la période d''essai'
-        fine_print: 'Des questions sur la facturation ou ce qui vous attend ? Répondez à cet e-mail — nous les lisons tous.'
-        heading: 'Votre période d''essai se termine demain.|Votre période d''essai se termine dans %days% jours.'
+        eyebrow: 'Fin de votre essai'
+        fine_print: 'Résiliable à tout moment, depuis vos réglages.'
+        heading: 'Votre essai se termine demain.|Votre essai se termine dans %days% jours.'
         if_not:
-            1: "Votre compte se verrouille : vous ne pourrez plus facturer, seulement exporter vos données."
-            2: "Les factures en attente ne seront pas envoyées. La facturation récurrente sera suspendue."
-            3: 'Vos clients pourront toujours payer les factures existantes via leurs liens de paiement directs.'
-            4: 'Réactivez à tout moment — tout est restauré immédiatement dès l''abonnement.'
-        if_not_heading: 'Ce qui se passe à la fin de votre période d''essai'
-        lede: "À la fin de votre période d'essai, votre compte se verrouille. Vos données restent en sécurité — clients, factures, historique des paiements — mais vous ne pourrez plus rien consulter ni envoyer tant que vous ne vous serez pas abonné(e)."
-        ps: 'utilisez le code <b>%coupon_code%</b> lors du paiement pour bénéficier de %percent%% de réduction sur vos trois premiers mois. L''offre expire en même temps que votre période d''essai.'
-        subject: 'Votre période d''essai se termine demain|Votre période d''essai se termine dans %days% jours'
+            1: 'Augias se met en pause : vous ne pouvez plus facturer, seulement exporter vos données.'
+            2: 'Vos données sont conservées 90 jours après la fin de l''essai, puis supprimées.'
+            3: 'La facturation électronique reste coupée tant que vous n''êtes pas abonné.'
+            4: 'Abonnez-vous quand vous voulez pendant ces 90 jours : tout revient tel quel.'
+        if_not_heading: 'Sans abonnement, à la fin de l''essai'
+        lede: 'À la fin de votre essai, Augias se met en pause jusqu''à votre abonnement. Rien n''est perdu tout de suite : vos clients, vos factures et vos paiements restent là.'
+        ps: 'utilisez le code <b>%coupon_code%</b> au paiement : %percent%% de réduction sur vos trois premiers mois. Il expire avec votre essai.'
+        subject: 'Votre essai Augias se termine demain|Votre essai Augias se termine dans %days% jours'
         trial_ends: 'Fin de l''essai le <b style="color: #475569;">%date%</b>'
         usage:
             clients: 'Clients ajoutés'
             collected: Encaissé
-            invoices: 'Factures envoyées'
-        usage_heading: 'Votre activité jusqu''à présent'
+            invoices: 'Factures émises'
+        usage_heading: 'Ce que vous avez fait jusqu''ici'
     turn_invoices_into_payments:
         callout:
-            sub: 'Quand payer est facile, les clients paient. Facilitez-leur la tâche.'
-            title: 'Les factures avec une option de paiement en ligne sont payées bien plus rapidement que les factures uniquement par virement bancaire'
-        cta: 'Connectez un moyen de paiement'
-        eyebrow: 'Étape 3 · Paiements en ligne'
-        heading: "Les factures ne se paient pas toutes seules."
+            sub: 'Plus c''est simple de payer, plus vite on est payé.'
+            title: 'Une facture qui se règle en ligne se paie plus vite qu''une facture à régler par virement'
+        cta: 'Ajouter un moyen de paiement'
+        eyebrow: 'Étape 3 · Paiement en ligne'
+        heading: 'Laissez vos clients payer en un clic.'
         how:
-            1: 'Allez dans Paramètres → Moyens de paiement et connectez Stripe ou PayPal (30 secondes).'
-            2: "Chaque facture que vous envoyez inclut automatiquement un bouton « Payer maintenant »."
-            3: 'Votre client paie. Vous êtes notifié(e) immédiatement. Le statut de la facture passe à <b style="color: #2e963a;">Payée</b>.'
+            1: 'Dans Paiements → Moyens de paiement, branchez votre compte de paiement (Stripe, PayPal…).'
+            2: 'Chaque facture envoyée porte alors un bouton « Payer ».'
+            3: 'Votre client paie, vous êtes prévenu, et la facture passe à <b style="color: #2e963a;">Payée</b>.'
         how_heading: 'Comment ça marche'
-        lede: "Connectez Stripe ou PayPal une seule fois et chaque facture que vous envoyez obtient un bouton « Payer maintenant ». Votre client paie depuis n'importe quel appareil en quelques secondes — vous êtes notifié(e) dès que le paiement est effectué."
+        lede: 'Branchez une fois votre propre compte de paiement : vos factures se règlent en ligne, et vous êtes prévenu dès que l''argent arrive.'
         method:
             bank: Banque
             cards: Cartes
-            eu_bank: 'Banque UE'
+            eu_bank: 'Prélèvement SEPA'
             wallet: Portefeuille
-        ps: 'Augias n''ajoute aucun frais en plus de votre prestataire de paiement. Vous ne payez que ce que Stripe ou PayPal facture.'
-        subject: 'Permettez à vos clients de payer en un clic'
+        ps: 'Augias ne prend rien sur vos encaissements : seuls les frais de votre prestataire de paiement s''appliquent.'
+        subject: 'Faites-vous payer en ligne'
     upgrade_offer:
-        coupon_desc: '%percent%% de réduction sur vos trois premiers mois. Saisissez ce code lors du paiement.'
+        coupon_desc: '%percent%% de réduction sur vos trois premiers mois. Saisissez ce code au paiement.'
         coupon_heading: 'Votre code de réduction'
-        cta: 'S''abonner maintenant'
-        eyebrow: 'Dernière chance'
+        cta: 'M''abonner'
+        eyebrow: 'Avant la fin de votre essai'
         feature:
-            1: 'Clients et factures illimités'
-            2: 'Facturation récurrente selon tout calendrier'
-            3: 'Rappels de paiement automatiques'
-            4: 'Paiements en ligne via votre propre compte Stripe ou PayPal'
-            5: 'Plusieurs membres d''équipe sur un même compte'
-            6: 'Sauvegardes, mises à jour, et suppression de la mention Augias sur vos factures'
-        fine_print: 'Annulable à tout moment. Aucuns frais surprises. Vos données sont restaurées immédiatement dès l''abonnement.'
-        heading: 'Une dernière chose avant la fin de votre période d''essai.'
-        lede: "À la fin de votre période d'essai, votre compte se verrouille. Avant que cela n'arrive — voici une offre pour faciliter votre décision de vous abonner."
+            1: 'Facture électronique incluse, à l''envoi comme à la réception'
+            2: 'Devis, factures, avoirs et factures récurrentes'
+            3: 'Relances automatiques des factures en retard'
+            4: 'Paiement en ligne par vos clients, sur votre propre compte'
+        fine_print: 'Résiliable à tout moment. Vos données vous attendent.'
+        heading: 'Continuez avec Augias après votre essai.'
+        lede: 'Votre essai touche à sa fin. En vous abonnant maintenant, vous continuez à facturer sans interruption.'
         per: '/ mois'
-        ps: 'votre compte se verrouille à la fin de la période d''essai. Abonnez-vous avant cela pour continuer à envoyer vos factures sans interruption.'
-        subject: 'Votre offre spéciale expire avec votre période d''essai'
+        per_year: '/ an'
+        ps: 'sans abonnement, Augias se met en pause à la fin de l''essai ; vos données sont conservées 90 jours.'
+        subject: 'Continuez avec Augias après votre essai'
     welcome:
-        closing: 'Commencez par la première étape : ajoutez un client. Tout le reste en découle.'
-        cta: 'Ouvrir votre tableau de bord'
-        eyebrow: 'Votre période d''essai vient de commencer'
+        closing: 'Commencez par votre entreprise : avec le SIREN, l''annuaire remplit le reste.'
+        cta: 'Ouvrir Augias'
+        eyebrow: 'Votre essai a commencé'
         feature:
+            company:
+                desc: 'Votre SIREN suffit : nom, adresse et numéro de TVA viennent de l''annuaire des entreprises.'
+                title: 'Complétez votre entreprise'
             clients:
-                desc: 'La base. Nom, e-mail, devise — ça prend soixante secondes.'
-                title: 'Ajoutez votre premier client'
-            dashboard:
-                desc: 'Configurez la facturation récurrente et les rappels automatiques. Soyez payé chaque mois sans lever le petit doigt.'
-                title: 'Automatisez les tâches récurrentes'
+                desc: 'Un nom, un e-mail, et le SIREN si c''est une entreprise.'
+                title: 'Ajoutez un client'
             invoices:
-                desc: 'Lignes de facturation, taxes, remises et une date d''échéance — tout est inclus.'
-                title: 'Envoyez une facture professionnelle'
-            payments:
-                desc: "Stripe ou PayPal — vos clients paient en deux clics, vous êtes notifié(e) instantanément."
-                title: 'Connectez les paiements en ligne'
-        heading: 'Ravis de vous avoir, %name%.'
-        intro: "Voici ce que nous allons voir ensemble :"
-        lede: "Votre période d'essai est active. Au fil des prochains e-mails, nous vous guiderons pas à pas pour obtenir le paiement de votre première facture, dès maintenant."
-        ps: 'des questions ? Répondez à cet e-mail — une vraie personne vous répondra.'
-        subject: "Bienvenue sur Augias — passons au paiement"
+                desc: 'Devis et factures conformes, numérotés, envoyés et suivis.'
+                title: 'Envoyez une facture'
+            einvoicing:
+                desc: 'Envoyez et recevez vos factures électroniques par SUPER PDP, plateforme agréée, dès votre abonnement.'
+                title: 'Passez à la facture électronique'
+        heading: 'Bienvenue sur Augias.'
+        heading_named: 'Bienvenue sur Augias, %name%.'
+        intro: 'Les premiers pas :'
+        lede: 'Votre essai gratuit court jusqu''au %date%. Dans les prochains e-mails, nous vous guidons pas à pas jusqu''à votre première facture.'
+        ps: 'le guide d''utilisation répond à la plupart des questions : https://augias.herc-si.fr/docs/'
+        subject: 'Bienvenue sur Augias'
 payment:
     capture:
         subject: 'Un paiement a été effectué'

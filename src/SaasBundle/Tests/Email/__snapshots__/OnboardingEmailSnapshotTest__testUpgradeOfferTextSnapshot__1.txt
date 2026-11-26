@@ -1,25 +1,23 @@
-One last thing before your trial closes.
+Keep going with Augias after your trial.
 ============================================================
 
-When your trial ends, your account locks. Before that happens — here's an offer to make subscribing an easy decision.
+Your trial is nearly over. Subscribe now and keep invoicing without a break.
 
-Augias Pro — $12.00 / month
+Augias Pro — €12.00 / month
 
-* Unlimited clients and invoices
-* Recurring billing on any schedule
-* Automatic payment reminders
-* Online payments via your own Stripe or PayPal account
-* Multiple team members on one account
-* Backups, updates, and Augias branding removed from your invoices
+* Electronic invoicing included, sending and receiving
+* Quotes, invoices, credit notes and recurring invoices
+* Automatic reminders for late invoices
+* Online payment by your clients, on your own account
 
 Your discount code: SOLID30
 30% off your first three months. Enter this code at checkout.
 
-Subscribe now: http://localhost/billing/subscription/activate
+Subscribe: http://localhost/billing/subscription/activate
 
-Cancel anytime. No surprise fees. Your data restores immediately on subscription.
+Cancel anytime. Your data is waiting for you.
 
-P.S. your account locks when the trial ends. Subscribe before that happens to keep sending without interruption.
+P.S. without a subscription, Augias is paused when the trial ends; your data is kept for 90 days.
 
-See you inside,
+See you soon,
 — The Augias team

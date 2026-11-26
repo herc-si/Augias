@@ -187,184 +187,184 @@ notification:
         link: here
 onboarding:
     add_first_client:
-        cta: 'Add your first client'
+        cta: 'Add my first client'
         eyebrow: 'Step 1 · Your first client'
-        heading: "No client, no invoice. Let's fix that."
-        lede: 'Your client list is where everything starts. Add one client and you can immediately create quotes, invoices, and track every payment they owe — all in one place.'
+        heading: 'No client, no invoice. Let''s start there.'
+        lede: 'Everything starts from your client list. Add one and you can send them a quote or an invoice straight away, and follow what they owe you.'
         mock:
             client1:
-                name: 'Northbeam Design Studio'
-                sub: 'hello@northbeam.co · 3 invoices'
+                name: 'Atelier Durand'
+                sub: 'contact@atelier-durand.fr · 3 invoices'
             client2:
-                name: 'Maple & Knox LLC'
-                sub: 'billing@mapleknox.com · 1 invoice'
+                name: 'Boulangerie Martin'
+                sub: 'compta@boulangerie-martin.fr · 1 invoice'
             empty:
-                name: 'Your next client appears here'
-                sub: 'name, email, and billing address'
+                name: 'Your next client will show up here'
+                sub: 'name, email and SIREN'
             header: 'Your clients'
             url: augias.herc-si.fr/clients
         needs:
-            1: 'Client name or company name'
-            2: 'An email address for invoices'
-            3: 'Billing currency'
-        needs_heading: "What you'll need"
-        needs_intro: 'Three fields to get started. You can fill in the rest later.'
-        subject: 'Add your first client — 60 seconds to get started'
+            1: 'The client''s or their company''s name'
+            2: 'An email address to send them their invoices'
+            3: 'Their SIREN if they are a company: the address is filled in from the register'
+        needs_heading: 'What you need'
+        needs_intro: 'Three things are enough. The rest can wait.'
+        subject: 'Add your first client'
     customize_logo:
-        after_brand: 'Your Studio'
+        after_brand: 'Your company'
         after_label: After
         before_label: Before
-        cta: 'Brand your invoices'
+        cta: 'Customise my documents'
         eyebrow: 'Step 5 · Make it yours'
-        heading: 'Your logo. Your brand. Your invoices.'
-        lede: 'Clients judge professionalism before they read a single line item. A branded invoice — your logo, your name — signals that you run a real business.'
-        ps: 'on the paid plan, you can disable Augias branding in Settings — your clients will see only your name.'
+        heading: 'Your logo, your colours, your invoices.'
+        lede: 'Your clients see your invoice before they read it. With your logo and colour, it carries your name, not a software''s.'
+        ps: 'the logo and colour also apply to your quotes and credit notes.'
         step:
             1:
-                desc: 'PNG, SVG, or JPG. Appears on every invoice and quote you send.'
-                title: 'Upload your logo'
+                desc: 'PNG, SVG or JPG. It shows on every quote, invoice and credit note.'
+                title: 'Add your logo'
             2:
-                desc: 'Customize the name clients see when your invoices land in their inbox.'
-                title: 'Set your sender name'
-        steps_heading: 'Two things to customize'
-        subject: 'Put your brand on your invoices'
+                desc: 'The name your clients see when your invoices reach their inbox.'
+                title: 'Choose the sender name'
+        steps_heading: 'Two settings'
+        subject: 'Put your logo on your invoices'
     footer:
-        reason: "You're receiving this because you signed up for Augias."
-        tagline: 'Invoicing for freelancers and small businesses.'
+        reason: 'You are receiving this email because you opened an Augias account.'
+        tagline: 'Invoicing and electronic invoicing for freelancers and small businesses.'
     recurring_billing:
         after:
-            1: 'Automatic invoices sent on your schedule'
-            2: 'Dashboard shows every outstanding amount'
-            3: 'Reminders sent automatically on your behalf'
+            1: 'Invoices go out on their own, on the schedule you chose'
+            2: 'The dashboard shows what is left to collect'
+            3: 'Reminders go out automatically in your name'
         after_heading: 'With Augias'
         before:
-            1: 'Manual invoicing every billing cycle'
+            1: 'Making the same invoice every month'
             2: 'Tracking who owes what in a spreadsheet'
             3: 'Chasing late payments yourself'
-        before_heading: 'Without recurring billing'
-        compare_heading: 'Stop doing this manually'
-        cta: 'Set up recurring billing'
-        eyebrow: 'Step 4 · Recurring billing'
-        heading: 'Your best clients pay you every month. Automate it.'
+        before_heading: 'Without recurring invoices'
+        compare_heading: 'Stop doing it by hand'
+        cta: 'Create a recurring invoice'
+        eyebrow: 'Step 4 · Recurring invoices'
+        heading: 'A client pays you every month? Augias takes care of it.'
         how:
-            1: 'Create an invoice and mark it as recurring — set the frequency and start date.'
-            2: 'Augias sends it automatically on schedule. Your client receives it and pays it.'
-            3: 'Enable reminders and overdue invoices get followed up automatically — no chasing required.'
+            1: 'Create the invoice once, then set its frequency and start date.'
+            2: 'Augias issues and sends it on each due date.'
+            3: 'Turn on reminders: late payments are followed without you thinking of it.'
         how_heading: 'How it works'
-        lede: 'Create an invoice once and Augias sends it automatically on your schedule. Set up payment reminders and overdue invoices get followed up — without you lifting a finger.'
-        ps: "even one recurring client makes this worth doing — you'll save hours every month."
-        subject: 'Set up once, get paid every month'
+        lede: 'A recurring invoice is prepared once. Augias issues it on each due date and chases late payments.'
+        ps: 'a single recurring client is enough to save time every month.'
+        subject: 'Prepared once, sent every month'
     send_first_invoice:
-        cta: 'Create your first invoice'
+        cta: 'Create my first invoice'
         eyebrow: 'Step 2 · Your first invoice'
-        heading: 'Time to send your first invoice.'
-        included_body: "Line items, taxes, discounts, recurring schedules, and due dates — built in. Add a payment method in the next step and your client gets a 'Pay now' button too."
-        included_heading: 'Included on every invoice, nothing extra to configure'
-        lede: 'Sending a professional invoice takes under five minutes. Pick your client, add line items, set a due date — Augias handles the formatting, delivery, and tracking.'
+        heading: 'Time for your first invoice.'
+        lede: 'Pick the client, add the lines and the due date: Augias lays it out, numbers it, sends it and follows the payment. Allow five minutes.'
+        included_body: 'Lines, VAT, discounts, units, due date and the required legal notes are all there. Once subscribed, your invoices to businesses also go out as electronic invoices, as the reform requires.'
+        included_heading: 'Already on every invoice'
         mock:
             billed_to: 'Billed to'
-            client_email: hello@northbeam.co
-            client_name: 'Northbeam Design Studio'
+            client_email: contact@atelier-durand.fr
+            client_name: 'Atelier Durand'
             col_amount: Amount
             col_desc: Description
             col_qty: Qty
-            col_rate: Rate
+            col_rate: 'Unit price'
             due: Due
-            due_date: 'May 8, 2026'
-            due_terms: 'Net 14 days'
-            item1: 'Brand identity · discovery'
-            item2: 'Logo design & revisions'
+            due_date: '8 January 2027'
+            due_terms: '30 days'
+            item1: 'Showcase website · scoping'
+            item2: 'Development and launch'
             label: Invoice
             status_sent: Sent
             total_due: 'Total due'
-        ps: "tip: connect a payment method before sending and your client will see a 'Pay now' button. Online invoices get paid much faster."
-        subject: 'Your first invoice is one click away'
+        ps: 'add an online payment method before sending: your client can settle the invoice in one click.'
+        subject: 'Your first invoice in five minutes'
     signature:
-        greeting: 'See you inside,'
+        greeting: 'See you soon,'
         team: '— The Augias team'
     trial_about_to_end:
-        body_intro: 'Subscribing takes about 30 seconds. Your workspace picks up exactly where it left off — nothing is archived, nothing is hidden.'
+        body_intro: 'Subscribing takes a minute, and you pick up exactly where you left off.'
         cta:
-            upgrade: 'Subscribe and keep going'
-        days_label: 'Days remaining'
-        eyebrow: 'Heads up · Trial ending'
-        fine_print: 'Questions about billing or what to expect? Reply to this email — we read every one.'
+            upgrade: 'Subscribe'
+        days_label: 'Days left'
+        eyebrow: 'End of your trial'
+        fine_print: 'Cancel anytime, from your settings.'
         heading: 'Your trial ends tomorrow.|Your trial ends in %days% days.'
         if_not:
-            1: "Your account locks — you can no longer invoice, only export your data."
-            2: "Pending invoices won't be delivered. Recurring billing pauses."
-            3: 'Clients can still pay existing invoices via their direct payment links.'
-            4: 'Reactivate any time — everything restores immediately on subscription.'
-        if_not_heading: 'What happens when your trial ends'
-        lede: "When your trial ends, your account locks. Your data stays safe — clients, invoices, payment history — but you won't be able to access or send anything until you subscribe."
-        ps: 'use code <b>%coupon_code%</b> at checkout for %percent%% off your first three months. Offer expires when your trial does.'
-        subject: 'Your trial ends tomorrow|Your trial ends in %days% days'
-        trial_ends: 'Trial ends <b style="color: #475569;">%date%</b>'
+            1: 'Augias is paused: you can no longer invoice, only export your data.'
+            2: 'Your data is kept for 90 days after the trial ends, then deleted.'
+            3: 'Electronic invoicing stays off until you subscribe.'
+            4: 'Subscribe whenever you like during those 90 days: everything comes back as it was.'
+        if_not_heading: 'Without a subscription, when the trial ends'
+        lede: 'When your trial ends, Augias is paused until you subscribe. Nothing is lost straight away: your clients, invoices and payments stay there.'
+        ps: 'use the code <b>%coupon_code%</b> at checkout: %percent%% off your first three months. It expires with your trial.'
+        subject: 'Your Augias trial ends tomorrow|Your Augias trial ends in %days% days'
+        trial_ends: 'Trial ends on <b style="color: #475569;">%date%</b>'
         usage:
             clients: 'Clients added'
             collected: Collected
-            invoices: 'Invoices sent'
-        usage_heading: 'Your workspace so far'
+            invoices: 'Invoices issued'
+        usage_heading: 'What you have done so far'
     turn_invoices_into_payments:
         callout:
-            sub: 'When paying is easy, clients pay. Make it easy.'
-            title: 'Invoices with an online payment option get paid significantly faster than bank-transfer-only invoices'
-        cta: 'Connect a payment method'
-        eyebrow: 'Step 3 · Online payments'
-        heading: "Invoices don't pay themselves."
+            sub: 'The easier it is to pay, the sooner you are paid.'
+            title: 'An invoice paid online is settled faster than one paid by bank transfer'
+        cta: 'Add a payment method'
+        eyebrow: 'Step 3 · Online payment'
+        heading: 'Let your clients pay in one click.'
         how:
-            1: 'Go to Settings → Payment methods and connect Stripe or PayPal (30 seconds).'
-            2: "Every invoice you send automatically includes a 'Pay now' button."
-            3: 'Your client pays. You''re notified immediately. Invoice status flips to <b style="color: #2e963a;">Paid</b>.'
+            1: 'In Payments → Payment methods, connect your payment account (Stripe, PayPal…).'
+            2: 'Every invoice you send then carries a "Pay" button.'
+            3: 'Your client pays, you are told, and the invoice turns <b style="color: #2e963a;">Paid</b>.'
         how_heading: 'How it works'
-        lede: "Connect Stripe or PayPal once and every invoice you send gets a 'Pay now' button. Your client pays from any device in seconds — you're notified the moment it goes through."
+        lede: 'Connect your own payment account once: your invoices are paid online, and you are told as soon as the money arrives.'
         method:
             bank: Bank
             cards: Cards
-            eu_bank: 'EU bank'
+            eu_bank: 'SEPA direct debit'
             wallet: Wallet
-        ps: 'Augias adds zero fees on top of your payment provider. You pay only what Stripe or PayPal charge.'
-        subject: 'Let your clients pay with one click'
+        ps: 'Augias takes nothing on what you collect: only your payment provider''s fees apply.'
+        subject: 'Get paid online'
     upgrade_offer:
         coupon_desc: '%percent%% off your first three months. Enter this code at checkout.'
         coupon_heading: 'Your discount code'
-        cta: 'Subscribe now'
-        eyebrow: 'Last chance'
+        cta: 'Subscribe'
+        eyebrow: 'Before your trial ends'
         feature:
-            1: 'Unlimited clients and invoices'
-            2: 'Recurring billing on any schedule'
-            3: 'Automatic payment reminders'
-            4: 'Online payments via your own Stripe or PayPal account'
-            5: 'Multiple team members on one account'
-            6: 'Backups, updates, and Augias branding removed from your invoices'
-        fine_print: 'Cancel anytime. No surprise fees. Your data restores immediately on subscription.'
-        heading: 'One last thing before your trial closes.'
-        lede: "When your trial ends, your account locks. Before that happens — here's an offer to make subscribing an easy decision."
+            1: 'Electronic invoicing included, sending and receiving'
+            2: 'Quotes, invoices, credit notes and recurring invoices'
+            3: 'Automatic reminders for late invoices'
+            4: 'Online payment by your clients, on your own account'
+        fine_print: 'Cancel anytime. Your data is waiting for you.'
+        heading: 'Keep going with Augias after your trial.'
+        lede: 'Your trial is nearly over. Subscribe now and keep invoicing without a break.'
         per: '/ month'
-        ps: 'your account locks when the trial ends. Subscribe before that happens to keep sending without interruption.'
-        subject: 'Your special offer expires with your trial'
+        per_year: '/ year'
+        ps: 'without a subscription, Augias is paused when the trial ends; your data is kept for 90 days.'
+        subject: 'Keep going with Augias after your trial'
     welcome:
-        closing: 'Start with the first step: add a client. Everything else builds from there.'
-        cta: 'Open your dashboard'
-        eyebrow: 'Your trial just started'
+        closing: 'Start with your company: with the SIREN, the register fills in the rest.'
+        cta: 'Open Augias'
+        eyebrow: 'Your trial has started'
         feature:
+            company:
+                desc: 'Your SIREN is enough: name, address and VAT number come from the company register.'
+                title: 'Complete your company'
             clients:
-                desc: 'The foundation. Name, email, currency — takes sixty seconds.'
-                title: 'Add your first client'
-            dashboard:
-                desc: 'Set up recurring billing and automatic reminders. Get paid every month without lifting a finger.'
-                title: 'Automate recurring work'
+                desc: 'A name, an email, and the SIREN if it is a company.'
+                title: 'Add a client'
             invoices:
-                desc: 'Line items, taxes, discounts, and a due date — all built in.'
-                title: 'Send a professional invoice'
-            payments:
-                desc: "Stripe or PayPal — clients pay in two clicks, you're notified instantly."
-                title: 'Connect online payments'
-        heading: 'Good to have you, %name%.'
-        intro: "Here's what we'll cover together:"
-        lede: "Your trial is live. Over the next few emails we'll walk you through getting your first invoice paid — step by step, starting now."
-        ps: 'questions? Hit reply — a real person answers.'
-        subject: "Welcome to Augias — let's get you paid"
+                desc: 'Compliant quotes and invoices, numbered, sent and followed.'
+                title: 'Send an invoice'
+            einvoicing:
+                desc: 'Send and receive your electronic invoices through SUPER PDP, an approved platform, once you subscribe.'
+                title: 'Move to electronic invoicing'
+        heading: 'Welcome to Augias.'
+        heading_named: 'Welcome to Augias, %name%.'
+        intro: 'First steps:'
+        lede: 'Your free trial runs until %date%. In the next emails, we guide you step by step to your first invoice.'
+        ps: 'the user guide answers most questions: https://augias.herc-si.fr/docs/en/'
+        subject: 'Welcome to Augias'
 payment:
     capture:
         subject: 'A Payment has been made'

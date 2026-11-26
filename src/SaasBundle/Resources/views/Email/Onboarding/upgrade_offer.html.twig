@@ -21,16 +21,14 @@
             <td style="padding: 0;">
                 <div class="onb-plan-name">{{ plan.name|default('Augias') }}</div>
                 <div>
-                    <span class="onb-price">${{ (plan.price / 100)|number_format(2) }}</span>
-                    <span class="onb-price-per">{{ 'onboarding.upgrade_offer.per'|trans({}, 'email') }}</span>
+                    <span class="onb-price">{{ plan.price|formatCurrency(plan_currency()) }}</span>
+                    <span class="onb-price-per">{{ (plan_is_annual(plan) ? 'onboarding.upgrade_offer.per_year' : 'onboarding.upgrade_offer.per')|trans({}, 'email') }}</span>
                 </div>
                 <ul class="onb-pricing-list">
                     <li><span class="onb-check-dot">&#10003;</span>{{ 'onboarding.upgrade_offer.feature.1'|trans({}, 'email') }}</li>
                     <li><span class="onb-check-dot">&#10003;</span>{{ 'onboarding.upgrade_offer.feature.2'|trans({}, 'email') }}</li>
                     <li><span class="onb-check-dot">&#10003;</span>{{ 'onboarding.upgrade_offer.feature.3'|trans({}, 'email') }}</li>
                     <li><span class="onb-check-dot">&#10003;</span>{{ 'onboarding.upgrade_offer.feature.4'|trans({}, 'email') }}</li>
-                    <li><span class="onb-check-dot">&#10003;</span>{{ 'onboarding.upgrade_offer.feature.5'|trans({}, 'email') }}</li>
-                    <li><span class="onb-check-dot">&#10003;</span>{{ 'onboarding.upgrade_offer.feature.6'|trans({}, 'email') }}</li>
                 </ul>
             </td>
         </tr>

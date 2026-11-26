@@ -1,26 +1,26 @@
 Your trial ends in 3 days.
 ============================================================
 
-When your trial ends, your account locks. Your data stays safe — clients, invoices, payment history — but you won't be able to access or send anything until you subscribe.
+When your trial ends, Augias is paused until you subscribe. Nothing is lost straight away: your clients, invoices and payments stay there.
 
-Days remaining: 3
-Trial ends April 22, 2026 at 12:00 AM
+Days left: 3
+Trial ends on April 22, 2026 at 12:00 AM
 
-Subscribing takes about 30 seconds. Your workspace picks up exactly where it left off — nothing is archived, nothing is hidden.
+Subscribing takes a minute, and you pick up exactly where you left off.
 
-What happens when your trial ends
+Without a subscription, when the trial ends
 ------------------------------------------------------------
 
-* Your account locks — you can no longer invoice, only export your data.
-* Pending invoices won't be delivered. Recurring billing pauses.
-* Clients can still pay existing invoices via their direct payment links.
-* Reactivate any time — everything restores immediately on subscription.
+* Augias is paused: you can no longer invoice, only export your data.
+* Your data is kept for 90 days after the trial ends, then deleted.
+* Electronic invoicing stays off until you subscribe.
+* Subscribe whenever you like during those 90 days: everything comes back as it was.
 
-Subscribe and keep going: http://localhost/billing/subscription/activate
+Subscribe: http://localhost/billing/subscription/activate
 
-Questions about billing or what to expect? Reply to this email — we read every one.
+Cancel anytime, from your settings.
 
-P.S. use code SOLID30 at checkout for 30% off your first three months. Offer expires when your trial does.
+P.S. use the code SOLID30 at checkout: 30% off your first three months. It expires with your trial.
 
-See you inside,
+See you soon,
 — The Augias team

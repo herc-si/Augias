@@ -1,17 +1,17 @@
-No client, no invoice. Let's fix that.
+No client, no invoice. Let's start there.
 ============================================================
 
-Your client list is where everything starts. Add one client and you can immediately create quotes, invoices, and track every payment they owe — all in one place.
+Everything starts from your client list. Add one and you can send them a quote or an invoice straight away, and follow what they owe you.
 
-What you'll need
+What you need
 ------------------------------------------------------------
-Three fields to get started. You can fill in the rest later.
+Three things are enough. The rest can wait.
 
-* Client name or company name
-* An email address for invoices
-* Billing currency
+* The client's or their company's name
+* An email address to send them their invoices
+* Their SIREN if they are a company: the address is filled in from the register
 
-Add your first client: http://localhost/clients/add
+Add my first client: http://localhost/clients/add
 
-See you inside,
+See you soon,
 — The Augias team

@@ -1,20 +1,20 @@
-Good to have you, Alex.
+Welcome to Augias, Alex.
 ============================================================
 
-Your trial is live. Over the next few emails we'll walk you through getting your first invoice paid — step by step, starting now.
+Your free trial runs until April 22, 2026. In the next emails, we guide you step by step to your first invoice.
 
-Here's what we'll cover together:
+First steps:
 
-* Add your first client — The foundation. Name, email, currency — takes sixty seconds.
-* Send a professional invoice — Line items, taxes, discounts, and a due date — all built in.
-* Connect online payments — Stripe or PayPal — clients pay in two clicks, you're notified instantly.
-* Automate recurring work — Set up recurring billing and automatic reminders. Get paid every month without lifting a finger.
+* Complete your company — Your SIREN is enough: name, address and VAT number come from the company register.
+* Add a client — A name, an email, and the SIREN if it is a company.
+* Send an invoice — Compliant quotes and invoices, numbered, sent and followed.
+* Move to electronic invoicing — Send and receive your electronic invoices through SUPER PDP, an approved platform, once you subscribe.
 
-Start with the first step: add a client. Everything else builds from there.
+Start with your company: with the SIREN, the register fills in the rest.
 
-Open your dashboard: http://localhost/dashboard
+Open Augias: http://localhost/dashboard
 
-P.S. questions? Hit reply — a real person answers.
+P.S. the user guide answers most questions: https://augias.herc-si.fr/docs/en/
 
-See you inside,
+See you soon,
 — The Augias team

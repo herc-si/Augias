@@ -1,14 +1,14 @@
-{{ 'onboarding.welcome.heading'|trans({'%name%': user.firstName|default(user.email)}, 'email') }}
+{{ user.firstName ? 'onboarding.welcome.heading_named'|trans({'%name%': user.firstName}, 'email') : 'onboarding.welcome.heading'|trans({}, 'email') }}
 {{ '='|repeat(60) }}
 
-{{ 'onboarding.welcome.lede'|trans({}, 'email') }}
+{{ 'onboarding.welcome.lede'|trans({'%date%': trial_end|format_date('long')}, 'email') }}
 
 {{ 'onboarding.welcome.intro'|trans({}, 'email') }}
 
+* {{ 'onboarding.welcome.feature.company.title'|trans({}, 'email') }} — {{ 'onboarding.welcome.feature.company.desc'|trans({}, 'email') }}
 * {{ 'onboarding.welcome.feature.clients.title'|trans({}, 'email') }} — {{ 'onboarding.welcome.feature.clients.desc'|trans({}, 'email') }}
 * {{ 'onboarding.welcome.feature.invoices.title'|trans({}, 'email') }} — {{ 'onboarding.welcome.feature.invoices.desc'|trans({}, 'email') }}
-* {{ 'onboarding.welcome.feature.payments.title'|trans({}, 'email') }} — {{ 'onboarding.welcome.feature.payments.desc'|trans({}, 'email') }}
-* {{ 'onboarding.welcome.feature.dashboard.title'|trans({}, 'email') }} — {{ 'onboarding.welcome.feature.dashboard.desc'|trans({}, 'email') }}
+* {{ 'onboarding.welcome.feature.einvoicing.title'|trans({}, 'email') }} — {{ 'onboarding.welcome.feature.einvoicing.desc'|trans({}, 'email') }}
 
 {{ 'onboarding.welcome.closing'|trans({}, 'email') }}
 

@@ -1,15 +1,15 @@
-Time to send your first invoice.
+Time for your first invoice.
 ============================================================
 
-Sending a professional invoice takes under five minutes. Pick your client, add line items, set a due date — Augias handles the formatting, delivery, and tracking.
+Pick the client, add the lines and the due date: Augias lays it out, numbers it, sends it and follows the payment. Allow five minutes.
 
-Included on every invoice, nothing extra to configure
+Already on every invoice
 ------------------------------------------------------------
-Line items, taxes, discounts, recurring schedules, and due dates — built in. Add a payment method in the next step and your client gets a 'Pay now' button too.
+Lines, VAT, discounts, units, due date and the required legal notes are all there. Once subscribed, your invoices to businesses also go out as electronic invoices, as the reform requires.
 
-Create your first invoice: http://localhost/invoices/create
+Create my first invoice: http://localhost/invoices/create
 
-P.S. tip: connect a payment method before sending and your client will see a 'Pay now' button. Online invoices get paid much faster.
+P.S. add an online payment method before sending: your client can settle the invoice in one click.
 
-See you inside,
+See you soon,
 — The Augias team

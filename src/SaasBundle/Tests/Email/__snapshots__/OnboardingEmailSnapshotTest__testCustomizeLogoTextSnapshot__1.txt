@@ -1,20 +1,20 @@
-Your logo. Your brand. Your invoices.
+Your logo, your colours, your invoices.
 ============================================================
 
-Clients judge professionalism before they read a single line item. A branded invoice — your logo, your name — signals that you run a real business.
+Your clients see your invoice before they read it. With your logo and colour, it carries your name, not a software's.
 
-Two things to customize
+Two settings
 ------------------------------------------------------------
 
-1. Upload your logo
-   PNG, SVG, or JPG. Appears on every invoice and quote you send.
+1. Add your logo
+   PNG, SVG or JPG. It shows on every quote, invoice and credit note.
 
-2. Set your sender name
-   Customize the name clients see when your invoices land in their inbox.
+2. Choose the sender name
+   The name your clients see when your invoices reach their inbox.
 
-Brand your invoices: http://localhost/settings
+Customise my documents: http://localhost/settings
 
-P.S. on the paid plan, you can disable Augias branding in Settings — your clients will see only your name.
+P.S. the logo and colour also apply to your quotes and credit notes.
 
-See you inside,
+See you soon,
 — The Augias team

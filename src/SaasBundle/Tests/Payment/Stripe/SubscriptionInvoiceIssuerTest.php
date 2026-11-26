@@ -40,6 +40,8 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use function array_fill;
+use function array_map;
+use function array_values;
 use function strrpos;
 use function strtok;
 use function substr;
@@ -120,6 +122,24 @@ final class SubscriptionInvoiceIssuerTest extends KernelTestCase
         self::assertNotNull($second);
         self::assertNotSame($first->getId()?->toString(), $second->getId()?->toString());
         self::assertSame($first->getClient()?->getId()?->toString(), $second->getClient()?->getId()?->toString());
+    }
+
+    /**
+     * The client keeps every address the subscriber paid from; the invoice
+     * goes to the one that paid it (test instance, 26/11/2026: FACT-17 went
+     * to three test accounts sharing a SIREN).
+     */
+    public function testTheInvoiceGoesOnlyToTheAddressThatPaid(): void
+    {
+        $issuer = $this->issuer(2);
+        self::assertNotNull($issuer->issue('in_1'));
+
+        $this->stripeOverrides = ['customer_email' => 'compta@boulangerie.fr'];
+        $second = $issuer->issue('in_2');
+
+        self::assertNotNull($second);
+        self::assertCount(2, $second->getClient()?->getContacts() ?? []);
+        self::assertSame(['compta@boulangerie.fr'], array_map(static fn ($contact): ?string => $contact->getEmail(), array_values($second->getUsers()->toArray())));
     }
 
     public function testACardPaymentIsRecordedAsSuchEvenWithoutAMethodSetUp(): void
