@@ -194,6 +194,14 @@ final class AssistantTest extends KernelTestCase
         self::assertTrue($this->toolbox()->prepared('create_resource', ['resource' => 'client', 'data' => ['name' => 'Google France', 'siret' => '44306184100047']])['data']['is_company']);
     }
 
+    public function testANullGivenForAFieldThatTakesNoneIsLeftOut(): void
+    {
+        $this->toolbox();
+        // In the VAT exemption, as HERC SI: a private client needs no books.
+        self::getContainer()->get(\Augias\SettingsBundle\SystemConfig::class)->set(\Augias\AccountingBundle\AccountingSettings::VAT_EXEMPT, '1');
+        self::assertNull($this->toolbox()->refusal('create_resource', ['resource' => 'client', 'data' => ['name' => 'Paul Martin', 'currency_code' => 'EUR', 'website' => null]]));
+    }
+
     public function testACheckedContactIsNotSavedWithItsClient(): void
     {
         $toolbox = $this->toolbox();

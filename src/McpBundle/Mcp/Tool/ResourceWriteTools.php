@@ -30,6 +30,7 @@ use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
 use ReflectionClass;
 use ReflectionNamedType;
+use Symfony\Component\PropertyAccess\Exception\InvalidTypeException;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Uid\Ulid;
@@ -356,6 +357,18 @@ final readonly class ResourceWriteTools
                     $field,
                     $exception->getMessage(),
                 ), $exception->getCode(), $exception);
+            } catch (InvalidTypeException $exception) {
+                // « "website": null » from the model means none: left out
+                // rather than a crash (bench of 26/11/2026).
+                if ($value === null) {
+                    continue;
+                }
+
+                throw new ToolCallException(sprintf(
+                    'Field "%s" does not take %s: leave it out, or give a value of the right type.',
+                    $field,
+                    get_debug_type($value),
+                ), 0, $exception);
             }
         }
     }
