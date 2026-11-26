@@ -288,7 +288,7 @@ onboarding:
             upgrade: 'M''abonner'
         days_label: 'Jours restants'
         eyebrow: 'Fin de votre essai'
-        fine_print: 'Une question sur l''abonnement ? Répondez à cet e-mail.'
+        fine_print: 'Résiliable à tout moment, depuis vos réglages.'
         heading: 'Votre essai se termine demain.|Votre essai se termine dans %days% jours.'
         if_not:
             1: 'Augias se met en pause : vous ne pouvez plus facturer, seulement exporter vos données.'
@@ -363,7 +363,7 @@ onboarding:
         heading_named: 'Bienvenue sur Augias, %name%.'
         intro: 'Les premiers pas :'
         lede: 'Votre essai gratuit court jusqu''au %date%. Dans les prochains e-mails, nous vous guidons pas à pas jusqu''à votre première facture.'
-        ps: 'une question ? Répondez à cet e-mail : une vraie personne vous lira.'
+        ps: 'le guide d''utilisation répond à la plupart des questions : https://augias.herc-si.fr/docs/'
         subject: 'Bienvenue sur Augias'
 payment:
     capture:

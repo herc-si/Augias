@@ -288,7 +288,7 @@ onboarding:
             upgrade: 'Subscribe'
         days_label: 'Days left'
         eyebrow: 'End of your trial'
-        fine_print: 'A question about the subscription? Reply to this email.'
+        fine_print: 'Cancel anytime, from your settings.'
         heading: 'Your trial ends tomorrow.|Your trial ends in %days% days.'
         if_not:
             1: 'Augias is paused: you can no longer invoice, only export your data.'
@@ -363,7 +363,7 @@ onboarding:
         heading_named: 'Welcome to Augias, %name%.'
         intro: 'First steps:'
         lede: 'Your free trial runs until %date%. In the next emails, we guide you step by step to your first invoice.'
-        ps: 'a question? Reply to this email: a real person will read it.'
+        ps: 'the user guide answers most questions: https://augias.herc-si.fr/docs/en/'
         subject: 'Welcome to Augias'
 payment:
     capture:

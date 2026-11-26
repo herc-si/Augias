@@ -18,7 +18,7 @@ Without a subscription, when the trial ends
 
 Subscribe: http://localhost/billing/subscription/activate
 
-A question about the subscription? Reply to this email.
+Cancel anytime, from your settings.
 
 P.S. use the code SOLID30 at checkout: 30% off your first three months. It expires with your trial.
 

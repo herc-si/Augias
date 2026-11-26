@@ -14,7 +14,7 @@ Start with your company: with the SIREN, the register fills in the rest.
 
 Open Augias: http://localhost/dashboard
 
-P.S. a question? Reply to this email: a real person will read it.
+P.S. the user guide answers most questions: https://augias.herc-si.fr/docs/en/
 
 See you soon,
 — The Augias team
