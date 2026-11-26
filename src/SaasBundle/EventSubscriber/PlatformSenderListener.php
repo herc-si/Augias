@@ -51,6 +51,14 @@ use function strtolower;
  */
 final readonly class PlatformSenderListener implements EventSubscriberInterface
 {
+    /**
+     * Set on a message the service sends in its own name while a company is
+     * selected — the onboarding emails, which read the company's activity:
+     * sent as the company, the subscriber got "<their company> via Augias",
+     * replying to themselves (Rémi, 26/11/2026). Removed before sending.
+     */
+    public const string PLATFORM_HEADER = 'X-Augias-Platform';
+
     public function __construct(
         private SystemConfig $config,
         private CompanySelectorInterface $companySelector,
@@ -69,7 +77,10 @@ final readonly class PlatformSenderListener implements EventSubscriberInterface
             return;
         }
 
-        $inCompany = null !== $this->companySelector->getCompany();
+        $fromPlatform = $message->getHeaders()->has(self::PLATFORM_HEADER);
+        $message->getHeaders()->remove(self::PLATFORM_HEADER);
+
+        $inCompany = ! $fromPlatform && null !== $this->companySelector->getCompany();
 
         if ($inCompany && null !== $this->config->get(MailerConfigFactory::CONFIG_KEY)) {
             return;

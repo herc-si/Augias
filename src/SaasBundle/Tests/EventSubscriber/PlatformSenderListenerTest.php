@@ -104,6 +104,22 @@ final class PlatformSenderListenerTest extends TestCase
         self::assertSame(self::PLATFORM, $envelope->getSender()->getAddress());
     }
 
+    /**
+     * An onboarding email is the service writing to the subscriber, though
+     * it reads their company: not "<their company> via Augias", replying to
+     * themselves (Rémi, 26/11/2026).
+     */
+    public function testAMessageOfTheServiceItselfIgnoresTheCompanySelected(): void
+    {
+        $message = new Email()->from(new Address('contact@acme.fr', 'Acme SARL'))->to('jo@acme.fr');
+        $message->getHeaders()->addTextHeader(PlatformSenderListener::PLATFORM_HEADER, '1');
+        $this->send($message, 'smtp://acme');
+
+        self::assertEquals([new Address(self::PLATFORM, self::PLATFORM_NAME)], $message->getFrom());
+        self::assertSame([], $message->getReplyTo());
+        self::assertFalse($message->getHeaders()->has(PlatformSenderListener::PLATFORM_HEADER));
+    }
+
     public function testOutsideACompanyNoCompanysSendingServiceIsHonoured(): void
     {
         $message = new Email()->from('contact@acme.fr')->to('someone@example.org');

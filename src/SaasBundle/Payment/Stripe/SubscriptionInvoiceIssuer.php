@@ -51,6 +51,8 @@ use Symfony\Component\Uid\Ulid;
 use Symfony\Component\Workflow\WorkflowInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use function array_filter;
+use function array_values;
 use function in_array;
 use function is_array;
 use function is_int;
@@ -182,7 +184,7 @@ final readonly class SubscriptionInvoiceIssuer
                 ->setDescription($this->description($remote, $subscription))
                 ->setQty(1)
                 ->setPrice($amount));
-            foreach ($client->getContacts() as $contact) {
+            foreach ($this->recipients($client, $remote) as $contact) {
                 $invoice->addUser($contact);
             }
             $invoice->setInvoiceId($this->billingIdGenerator->generate($invoice, ['field' => 'invoiceId']));
@@ -335,6 +337,29 @@ final readonly class SubscriptionInvoiceIssuer
         }
 
         return false;
+    }
+
+    /**
+     * Who the invoice goes to: the address that paid. The client keeps every
+     * address it ever paid from — a subscriber who changed theirs, or two of
+     * them under one SIREN — and each would otherwise get every invoice
+     * (test instance, 26/11/2026: FACT-17 went to three test accounts).
+     * Every contact only when Stripe gives no address.
+     *
+     * @param array<string, mixed> $remote
+     *
+     * @return list<Contact>
+     */
+    private function recipients(Client $client, array $remote): array
+    {
+        $email = is_string($remote['customer_email'] ?? null) ? $remote['customer_email'] : null;
+        $contacts = array_values($client->getContacts()->toArray());
+
+        if ($email === null) {
+            return $contacts;
+        }
+
+        return array_values(array_filter($contacts, static fn (Contact $contact): bool => strcasecmp((string) $contact->getEmail(), $email) === 0)) ?: $contacts;
     }
 
     private function findClient(?string $siren, ?string $email): ?Client

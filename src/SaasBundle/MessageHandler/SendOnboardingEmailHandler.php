@@ -15,11 +15,11 @@ namespace Augias\SaasBundle\MessageHandler;
 
 use Augias\CoreBundle\Company\CompanySelector;
 use Augias\CoreBundle\Entity\Company;
+use Augias\SaasBundle\EventSubscriber\PlatformSenderListener;
 use Augias\SaasBundle\Message\SendOnboardingEmailMessage;
 use Augias\SaasBundle\Onboarding\OnboardingContext;
 use Augias\SaasBundle\Onboarding\OnboardingEmailStepInterface;
 use Augias\SaasBundle\Onboarding\OnboardingStepRegistry;
-use Augias\SettingsBundle\SystemConfig;
 use Augias\UserBundle\Entity\User;
 use DateTimeImmutable;
 use Doctrine\Persistence\ManagerRegistry;
@@ -39,7 +39,6 @@ final readonly class SendOnboardingEmailHandler
         private OnboardingStepRegistry $stepRegistry,
         private CompanySelector $companySelector,
         private MailerInterface $mailer,
-        private SystemConfig $systemConfig,
         private LoggerInterface $logger,
     ) {
     }
@@ -125,12 +124,8 @@ final readonly class SendOnboardingEmailHandler
 
             $email->to(Address::create((string) $user->getEmail()));
 
-            $fromAddress = $this->systemConfig->get('email/from_address');
-            $fromName = $this->systemConfig->get('email/from_name');
-
-            if ($fromAddress !== null && $fromAddress !== '') {
-                $email->from(new Address($fromAddress, $fromName ?? ''));
-            }
+            // From the service, not from the company being onboarded.
+            $email->getHeaders()->addTextHeader(PlatformSenderListener::PLATFORM_HEADER, '1');
 
             try {
                 $this->mailer->send($email);
