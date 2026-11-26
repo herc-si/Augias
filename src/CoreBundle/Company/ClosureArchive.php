@@ -16,6 +16,7 @@ namespace Augias\CoreBundle\Company;
 use Augias\CoreBundle\Entity\Company;
 use Augias\CoreBundle\Entity\ExportJob;
 use Augias\CoreBundle\Export\Enum\ExportStatus;
+use Augias\CoreBundle\Export\ExportStorage;
 use Augias\CoreBundle\Export\Message\RequestCompanyExport;
 use Augias\CoreBundle\Repository\ExportJobRepository;
 use Augias\UserBundle\Entity\Membership;
@@ -23,7 +24,6 @@ use Augias\UserBundle\Enum\CompanyPermission;
 use DateTimeImmutable;
 use Psr\Clock\ClockInterface;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Uid\Ulid;
@@ -52,8 +52,7 @@ final readonly class ClosureArchive
         private ClockInterface $clock,
         private LoggerInterface $logger,
         private Filesystem $filesystem,
-        #[Autowire(param: 'kernel.project_dir')]
-        private string $projectDir,
+        private ExportStorage $storage,
     ) {
     }
 
@@ -88,7 +87,7 @@ final readonly class ClosureArchive
     public function ready(Company $company): ?ExportJob
     {
         foreach ($this->jobs->findClosureArchives($company, $company->getClosureScheduledAt()) as $job) {
-            $path = $job->resolveAbsolutePath($this->projectDir);
+            $path = $this->storage->absolutePath($job);
 
             if (ExportStatus::Completed === $job->getStatus() && null !== $path && is_file($path)) {
                 return $job;
@@ -133,7 +132,7 @@ final readonly class ClosureArchive
      */
     public function removeFiles(Ulid $companyId): void
     {
-        $this->filesystem->remove($this->projectDir . '/var/exports/' . $companyId->toBase58());
+        $this->filesystem->remove($this->storage->companyDirectories($companyId));
     }
 
     private function isUnderway(Company $company): bool

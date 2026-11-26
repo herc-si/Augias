@@ -15,6 +15,7 @@ namespace Augias\CoreBundle\Export\Action;
 
 use Augias\CoreBundle\Entity\ExportJob;
 use Augias\CoreBundle\Export\Enum\ExportStatus;
+use Augias\CoreBundle\Export\ExportStorage;
 use Augias\CoreBundle\Export\Security\Voter\ExportJobVoter;
 use Augias\CoreBundle\Repository\ExportJobRepository;
 use DateTimeImmutable;
@@ -36,7 +37,7 @@ final readonly class DownloadExport
         private ExportJobRepository $exportJobRepository,
         private AuthorizationCheckerInterface $authorizationChecker,
         private UrlGeneratorInterface $urlGenerator,
-        private string $projectDir,
+        private ExportStorage $storage,
     ) {
     }
 
@@ -57,17 +58,15 @@ final readonly class DownloadExport
             return new RedirectResponse($this->urlGenerator->generate('_export_list'));
         }
 
-        $absolutePath = $job->resolveAbsolutePath($this->projectDir);
+        $absolutePath = $this->storage->absolutePath($job);
         if ($absolutePath === null || ! is_file($absolutePath)) {
             throw new NotFoundHttpException('Export archive is missing on disk.');
         }
 
-        // Defense in depth: reject any archive_path that resolves outside the project's
-        // var/exports directory. archive_path is always written by CompanyExporter from
-        // ULIDs, but we never want a malformed value to enable arbitrary file reads.
-        $exportRoot = realpath($this->projectDir . '/var/exports');
-        $resolved = realpath($absolutePath);
-        if ($exportRoot === false || $resolved === false || ! str_starts_with($resolved, $exportRoot . DIRECTORY_SEPARATOR)) {
+        // Defense in depth: reject any archive_path that resolves outside the
+        // export directories. archive_path is always written by CompanyExporter
+        // from ULIDs, but a malformed value must never read another file.
+        if (! $this->storage->contains($absolutePath)) {
             throw new NotFoundHttpException();
         }
 

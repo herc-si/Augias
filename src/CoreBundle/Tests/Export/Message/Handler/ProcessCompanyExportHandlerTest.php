@@ -22,6 +22,7 @@ use Augias\CoreBundle\Export\CompanyExporter;
 use Augias\CoreBundle\Export\Discovery\EntityDiscovery;
 use Augias\CoreBundle\Export\Enum\ExportFormat;
 use Augias\CoreBundle\Export\Enum\ExportStatus;
+use Augias\CoreBundle\Export\ExportStorage;
 use Augias\CoreBundle\Export\Message\Handler\ProcessCompanyExportHandler;
 use Augias\CoreBundle\Export\Message\RequestCompanyExport;
 use Augias\CoreBundle\Repository\ExportJobRepository;
@@ -66,7 +67,7 @@ final class ProcessCompanyExportHandlerTest extends KernelTestCase
         self::assertSame(ExportStatus::Completed, $reloaded->getStatus());
         self::assertNotNull($reloaded->getArchivePath());
 
-        $absolutePath = $reloaded->resolveAbsolutePath(self::getContainer()->getParameter('kernel.project_dir'));
+        $absolutePath = self::getContainer()->get(ExportStorage::class)->absolutePath($reloaded);
         self::assertNotNull($absolutePath);
         self::assertFileExists($absolutePath);
 
@@ -109,7 +110,7 @@ final class ProcessCompanyExportHandlerTest extends KernelTestCase
         $reloaded = $repository->find($job->getId());
         self::assertInstanceOf(ExportJob::class, $reloaded);
         self::assertSame(ExportStatus::Completed, $reloaded->getStatus(), (string) $reloaded->getFailureReason());
-        $path = $reloaded->resolveAbsolutePath(self::getContainer()->getParameter('kernel.project_dir'));
+        $path = self::getContainer()->get(ExportStorage::class)->absolutePath($reloaded);
         self::assertNotNull($path);
 
         $zip = new ZipArchive();
