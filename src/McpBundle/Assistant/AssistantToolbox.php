@@ -37,6 +37,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Throwable;
 use function array_diff;
+use function array_filter;
 use function array_map;
 use function in_array;
 use function is_array;
@@ -172,6 +173,43 @@ final class AssistantToolbox
     }
 
     /**
+     * The arguments of a change the model asks for, as it will be shown and
+     * made: a client named and nothing more is a private individual, not a
+     * business (which needs its SIRET) — the model asked three questions
+     * about a client before proposing it (Rémi, 26/11/2026).
+     *
+     * @param array<string, mixed> $arguments
+     *
+     * @return array<string, mixed>
+     */
+    public function prepared(string $name, array $arguments): array
+    {
+        if ($name !== 'create_resource' || ! is_string($arguments['resource'] ?? null)) {
+            return $arguments;
+        }
+
+        $data = $this->decodedArguments(['properties' => ['data' => ['type' => 'object']]], ['data' => $arguments['data'] ?? []])['data'];
+
+        return ['data' => self::clientDefaults($arguments['resource'], is_array($data) ? $data : [])] + $arguments;
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
+     */
+    private static function clientDefaults(string $resource, array $data): array
+    {
+        if ($resource !== 'client' || \array_key_exists('is_company', $data)) {
+            return $data;
+        }
+
+        $identified = array_filter([$data['siret'] ?? null, $data['siren'] ?? null, $data['vat_number'] ?? null], static fn (mixed $value): bool => is_string($value) && $value !== '');
+
+        return ['is_company' => $identified !== []] + $data;
+    }
+
+    /**
      * Why a write the model proposed is refused before it is even shown, if it is.
      *
      * @param array<string, mixed> $arguments
@@ -186,7 +224,7 @@ final class AssistantToolbox
         if ($name === 'create_resource' && is_string($arguments['resource'] ?? null)) {
             $data = $this->decodedArguments(['properties' => ['data' => ['type' => 'object']]], ['data' => $arguments['data'] ?? []])['data'];
 
-            return $this->resources->creationProblem($arguments['resource'], is_array($data) ? $data : []);
+            return $this->resources->creationProblem($arguments['resource'], self::clientDefaults($arguments['resource'], is_array($data) ? $data : []));
         }
 
         if ($name === 'create_quote' || $name === 'create_invoice') {

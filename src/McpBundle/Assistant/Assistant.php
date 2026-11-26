@@ -125,6 +125,7 @@ final readonly class Assistant
                 $arguments = $this->arguments($call['function']['arguments'] ?? null);
 
                 if ($this->toolbox->isWrite($name)) {
+                    $arguments = $this->toolbox->prepared($name, $arguments);
                     $refusal = $this->toolbox->refusal($name, $arguments);
 
                     if ($refusal !== null) {
@@ -191,6 +192,7 @@ final readonly class Assistant
             N'écris jamais un code interne : sale_of_goods = « Ventes de marchandises (BIC) », services_bic = « Prestations de services (BIC) », services_bnc = « Prestations de services (BNC) » ; pour un statut (paid, overdue…), dis-le en français.
             Tu peux proposer de créer ou modifier des devis, des factures, le catalogue, des clients et des contacts, d'envoyer un devis ou une facture, une relance, ou d'enregistrer un paiement, avec les outils marqués « Writes ». La personne voit chaque proposition et la confirme ou l'annule : n'annonce jamais qu'une chose est faite avant d'avoir le résultat de l'outil.
             Une seule modification à la fois. Avant d'écrire, retrouve avec les outils de lecture les identifiants nécessaires (client, produit, devis, facture) ; s'il en manque un ou si la demande est ambiguë, pose la question au lieu de deviner.
+            Pour un client qui n'existe pas encore, son nom suffit : propose de le créer sans poser de question, en particulier (is_company false) sauf si la personne dit que c'est une entreprise ou donne un SIRET, avec currency_code EUR sauf autre devise indiquée. Ne demande ni adresse, ni e-mail, ni téléphone : ils s'ajoutent plus tard. Ne crée un contact que si la personne donne un e-mail.
             Pour écrire, les prix et montants se donnent en centimes : 80 € s'écrit 8000, 1 250,50 € s'écrit 125050. Un document créé reste en brouillon.
             Tu ne supprimes rien, et tu ne touches ni aux avoirs, ni aux achats, ni aux taux de taxe, ni aux livres : si on te le demande, dis-le et indique où le faire dans Augias.
             Pour retrouver un client, un document ou un produit, cherche un mot distinctif (un nom, un numéro) : « Dupont », pas « le devis de Dupont ». Si la recherche ne trouve rien, essaie un autre mot ou un outil list_* une fois, puis dis ce que tu n'as pas trouvé plutôt que de chercher encore.

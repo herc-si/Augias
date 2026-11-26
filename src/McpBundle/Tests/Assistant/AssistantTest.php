@@ -174,6 +174,23 @@ final class AssistantTest extends KernelTestCase
         self::assertSame(0, $manager->getRepository(\Augias\InvoiceBundle\Entity\Invoice::class)->count([]));
     }
 
+    /**
+     * A client the model names and nothing more is a private individual: as
+     * a business it needed a SIRET, and the model asked three questions
+     * before proposing it (Rémi, 26/11/2026).
+     */
+    public function testAClientGivenOnlyItsNameIsProposedAsAPrivateIndividual(): void
+    {
+        $this->assistant([['content' => 'Je propose de créer Philippe Tract.']])->ask('Fais un devis pour Philippe Tract', 'Augias');
+        self::assertStringContainsString('son nom suffit', $this->sent[0]['messages'][0]['content']);
+
+        $prepared = $this->toolbox()->prepared('create_resource', ['resource' => 'client', 'data' => '{"name":"Philippe Tract","currency_code":"EUR"}']);
+        self::assertSame(['is_company' => false, 'name' => 'Philippe Tract', 'currency_code' => 'EUR'], $prepared['data']);
+
+        // Given a SIRET, it is a business.
+        self::assertTrue($this->toolbox()->prepared('create_resource', ['resource' => 'client', 'data' => ['name' => 'Google France', 'siret' => '44306184100047']])['data']['is_company']);
+    }
+
     public function testACheckedContactIsNotSavedWithItsClient(): void
     {
         $toolbox = $this->toolbox();
