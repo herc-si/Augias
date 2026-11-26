@@ -229,7 +229,8 @@ final readonly class ElectronicInvoiceReceiptManager implements ElectronicInvoic
             ->setStatusCode($data->statusCode)
             ->setTaxAmount($data->taxAmount)
             ->setSupplyType($data->supplyType)
-            ->setSupplierVatOnDebits($data->supplierVatOnDebits);
+            ->setSupplierVatOnDebits($data->supplierVatOnDebits)
+            ->setDocumentTypeCode($data->documentTypeCode);
 
         return $receipt;
     }

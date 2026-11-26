@@ -527,6 +527,8 @@ assistant:
     voice_unreadable: 'L''enregistrement n''a pas pu être lu : réessayez.'
     yes: 'Oui'
 bill:
+    flash:
+        credit_note_not_a_bill: 'Un avoir n''est pas un achat à payer : il reste dans les documents reçus.'
     create:
         success: 'Facture créée avec succès'
     delete_success: 'Facture supprimée avec succès'
@@ -1746,6 +1748,9 @@ document_line:
     note_placeholder: 'Note ou intertitre, par exemple « Phase 2 — Développement »'
 edit_client: 'Modifier la fiche'
 einvoicing:
+    document_type:
+        credit_note: 'Avoir'
+        invoice: 'Facture'
     setup:
         title: 'Activer la facturation électronique'
         intro: 'Depuis le 1er septembre 2026, toute entreprise doit pouvoir recevoir des factures électroniques, et vous devrez en émettre au plus tard le 1er septembre 2027. Trois étapes suffisent : nous vous guidons.'
@@ -1961,6 +1966,7 @@ einvoicing:
         title: 'Répondre à une facture reçue'
         unavailable: "Aucune plateforme en service ne peut porter la réponse : vérifiez que celle d'où vient la facture est active et que son compte est vérifié."
     grid:
+        document_type: 'Type'
         amount: "Montant"
         invoice_number: "N° de facture"
         issue_date: "Date d'émission"

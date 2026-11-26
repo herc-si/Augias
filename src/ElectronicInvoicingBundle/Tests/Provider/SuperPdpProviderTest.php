@@ -461,6 +461,7 @@ final class SuperPdpProviderTest extends KernelTestCase
         $results = self::getContainer()->get(SuperPdpProvider::class)->fetchIncoming(['client_id' => 'id', 'client_secret' => 'secret'], null);
 
         self::assertSame('10000', (string) $results[0]->taxAmount);
+        self::assertSame(380, $results[0]->documentTypeCode);
         self::assertSame(SupplyType::Services, $results[0]->supplyType);
         self::assertTrue($results[0]->supplierVatOnDebits);
 
@@ -508,6 +509,7 @@ final class SuperPdpProviderTest extends KernelTestCase
         $enInvoice = [
             'number' => 'TRI-' . $id,
             'issue_date' => '2026-09-25',
+            'type_code' => 380,
             'currency_code' => 'EUR',
             'process_control' => ['business_process_type' => $framework, 'specification_identifier' => 'urn:cen.eu:en16931:2017'],
             'seller' => ['name' => 'Tricatel'],

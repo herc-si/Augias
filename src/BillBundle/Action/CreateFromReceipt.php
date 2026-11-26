@@ -18,6 +18,8 @@ use Augias\BillBundle\Manager\BillManager;
 use Augias\BillBundle\Repository\BillRepository;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\FlashBagAwareSessionInterface;
 use Symfony\Component\Routing\RouterInterface;
 
 /**
@@ -34,9 +36,19 @@ final readonly class CreateFromReceipt
     ) {
     }
 
-    public function __invoke(ElectronicInvoiceReceipt $receipt): RedirectResponse
+    public function __invoke(ElectronicInvoiceReceipt $receipt, Request $request): RedirectResponse
     {
         $bill = $this->billRepository->findOneBy(['electronicInvoiceReceipt' => $receipt]);
+
+        // A credit note is not a purchase to pay (CreateBillFromReceiptListener).
+        if (! $bill instanceof Bill && $receipt->isCreditNote()) {
+            $session = $request->hasSession() ? $request->getSession() : null;
+            if ($session instanceof FlashBagAwareSessionInterface) {
+                $session->getFlashBag()->add('warning', 'bill.flash.credit_note_not_a_bill');
+            }
+
+            return new RedirectResponse($this->router->generate('_einvoicing_incoming'));
+        }
 
         if (! $bill instanceof Bill) {
             $bill = $this->billManager->createFromReceipt($receipt);

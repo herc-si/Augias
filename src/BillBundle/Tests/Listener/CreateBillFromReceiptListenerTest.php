@@ -57,6 +57,26 @@ final class CreateBillFromReceiptListenerTest extends TestCase
     }
 
     /**
+     * A credit note is not a purchase to pay (test instance, 26/11/2026:
+     * HERC SI's AV-3 became a pending bill of 9,99 €).
+     */
+    public function testACreditNoteIsNotFiledAsABill(): void
+    {
+        $receipt = new ElectronicInvoiceReceipt()->setDocumentTypeCode(381);
+
+        $billRepository = M::mock(BillRepository::class);
+        $billRepository->shouldReceive('findOneBy')->andReturnNull();
+
+        $entityManager = M::mock(EntityManagerInterface::class);
+        $entityManager->shouldNotReceive('persist');
+        $billManager = new BillManager($entityManager, new SupplierResolver($entityManager, M::mock(ClientRepository::class)), M::mock(SystemConfig::class, ['isVatExempt' => false]));
+
+        new CreateBillFromReceiptListener($billRepository, $billManager, M::mock(LoggerInterface::class))(
+            new ElectronicInvoiceReceiptImportedEvent($receipt)
+        );
+    }
+
+    /**
      * The poll imports a whole batch, so a receipt that cannot be turned into a
      * bill has to be logged and stepped over rather than thrown — otherwise one
      * malformed invoice would abort every later one in the same run.

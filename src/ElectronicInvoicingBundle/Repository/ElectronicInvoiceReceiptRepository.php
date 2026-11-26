@@ -15,6 +15,7 @@ namespace Augias\ElectronicInvoicingBundle\Repository;
 
 use Augias\BillBundle\Entity\Bill;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceReceipt;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 use SolidWorx\Platform\PlatformBundle\Repository\EntityRepository;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -46,9 +47,9 @@ final class ElectronicInvoiceReceiptRepository extends EntityRepository
             ->where('b.electronicInvoiceReceipt = r')
             ->getDQL();
 
-        return (int) $this->createQueryBuilder('r')
+        return (int) $this->awaitingBill($this->createQueryBuilder('r')
             ->select('COUNT(r.id)')
-            ->where(sprintf('NOT EXISTS (%s)', $subQuery))
+            ->where(sprintf('NOT EXISTS (%s)', $subQuery)))
             ->getQuery()
             ->getSingleScalarResult();
     }
@@ -72,8 +73,8 @@ final class ElectronicInvoiceReceiptRepository extends EntityRepository
             ->where('b.electronicInvoiceReceipt = r')
             ->getDQL();
 
-        return $this->createQueryBuilder('r')
-            ->where(sprintf('NOT EXISTS (%s)', $subQuery))
+        return $this->awaitingBill($this->createQueryBuilder('r')
+            ->where(sprintf('NOT EXISTS (%s)', $subQuery)))
             ->orderBy('r.created', 'DESC')
             // A poll imports a batch in one go, so `created` ties routinely and
             // the order would otherwise be whatever the database felt like. A
@@ -83,6 +84,17 @@ final class ElectronicInvoiceReceiptRepository extends EntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Credit notes never become a bill (CreateBillFromReceiptListener): they
+     * do not wait for one.
+     */
+    private function awaitingBill(QueryBuilder $queryBuilder): QueryBuilder
+    {
+        return $queryBuilder
+            ->andWhere('r.documentTypeCode IS NULL OR r.documentTypeCode NOT IN (:creditNotes)')
+            ->setParameter('creditNotes', ElectronicInvoiceReceipt::CREDIT_NOTE_TYPE_CODES);
     }
 
     /**
