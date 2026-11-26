@@ -44,6 +44,12 @@ final readonly class Assistant
     /** Model turns allowed for one question before it is given up. */
     public const int MAX_ROUNDS = 8;
 
+    /**
+     * Changes made on the strength of one confirmation, before the next one
+     * is asked for again: a model going round in circles stops there.
+     */
+    public const int MAX_APPROVED_CHANGES = 6;
+
     public function __construct(
         private AssistantClient $client,
         private AssistantToolbox $toolbox,
@@ -82,20 +88,24 @@ final readonly class Assistant
             $messages[] = ['role' => 'tool', 'tool_call_id' => $result['id'], 'name' => $result['name'], 'content' => $result['content'] ?? $outcome];
         }
 
-        return $this->converse($companyName, $messages);
+        // Only a confirmed change is resumed: the rest of the request is
+        // made without asking again (a retry included), sending and
+        // payments apart.
+        return $this->converse($companyName, $messages, approved: true);
     }
 
     /**
      * Asks the model and runs the tools it asks for, until it answers or
      * asks for one that writes: that one is handed back as a proposal,
-     * not run.
+     * not run — unless the person has confirmed the request already.
      *
      * @param list<array<string, mixed>> $messages the conversation, the system prompt left out
      *
      * @throws AssistantUnavailable
      */
-    private function converse(string $companyName, array $messages): AssistantAnswer
+    private function converse(string $companyName, array $messages, bool $approved = false): AssistantAnswer
     {
+        $madeOnApproval = 0;
         $system = ['role' => 'system', 'content' => $this->systemPrompt($companyName)];
         $tools = $this->toolbox->definitions();
         $used = [];
@@ -130,6 +140,13 @@ final readonly class Assistant
 
                     if ($refusal !== null) {
                         $results[] = ['id' => $id, 'name' => $name, 'content' => 'Error: ' . $refusal];
+                    } elseif ($approved && $proposal === null && $madeOnApproval < self::MAX_APPROVED_CHANGES && $this->toolbox->runsOnceApproved($name)) {
+                        ++$madeOnApproval;
+                        $used[] = $name;
+                        $content = $this->toolbox->run($name, $arguments);
+                        $this->logger->info('Assistant made a change of a confirmed request.', ['tool' => $name]);
+                        $this->journal->record(AssistantEventKind::Confirmed, mb_substr($name, 0, 64), str_starts_with($content, 'Error:'));
+                        $results[] = ['id' => $id, 'name' => $name, 'content' => $content];
                     } elseif ($proposal === null) {
                         // Shown to the person; its result comes once they have settled it.
                         $proposal = [$id, $name, $arguments];
@@ -191,7 +208,7 @@ final readonly class Assistant
             Les outils donnent tous les montants en centimes (unité mineure de la devise) : divise-les par 100 avant de les écrire. Exemple : "total": "8997" en EUR, c'est 89,97 €, pas 8 997 €.
             N'écris jamais un code interne : sale_of_goods = « Ventes de marchandises (BIC) », services_bic = « Prestations de services (BIC) », services_bnc = « Prestations de services (BNC) » ; pour un statut (paid, overdue…), dis-le en français.
             Tu peux proposer de créer ou modifier des devis, des factures, le catalogue, des clients et des contacts, d'envoyer un devis ou une facture, une relance, ou d'enregistrer un paiement, avec les outils marqués « Writes ». La personne voit chaque proposition et la confirme ou l'annule : n'annonce jamais qu'une chose est faite avant d'avoir le résultat de l'outil.
-            Une seule modification à la fois. Avant d'écrire, retrouve avec les outils de lecture les identifiants nécessaires (client, produit, devis, facture) ; s'il en manque un ou si la demande est ambiguë, pose la question au lieu de deviner.
+            Une seule modification à la fois. Une fois que la personne a confirmé, fais la suite de sa demande sans lui reposer la question (l'envoi d'un document et l'enregistrement d'un paiement restent confirmés à part), puis récapitule en une phrase ce qui a été fait. Avant d'écrire, retrouve avec les outils de lecture les identifiants nécessaires (client, produit, devis, facture) ; s'il en manque un ou si la demande est ambiguë, pose la question au lieu de deviner.
             Pour un client qui n'existe pas encore, son nom suffit : propose de le créer sans poser de question, en particulier (is_company false) sauf si la personne dit que c'est une entreprise ou donne un SIRET, avec currency_code EUR sauf autre devise indiquée. Ne demande ni adresse, ni e-mail, ni téléphone : ils s'ajoutent plus tard. Ne crée un contact que si la personne donne un e-mail.
             Pour écrire, les prix et montants se donnent en centimes : 80 € s'écrit 8000, 1 250,50 € s'écrit 125050. Un document créé reste en brouillon.
             Tu ne supprimes rien, et tu ne touches ni aux avoirs, ni aux achats, ni aux taux de taxe, ni aux livres : si on te le demande, dis-le et indique où le faire dans Augias.

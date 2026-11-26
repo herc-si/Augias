@@ -25,6 +25,7 @@ use Augias\QuoteBundle\Mcp\QuoteWriteTools;
 use JsonException;
 use Mcp\Capability\Registry;
 use Mcp\Capability\Registry\ReferenceHandler;
+use Mcp\Exception\RegistryException;
 use Mcp\Exception\ToolCallException;
 use Mcp\Schema\Tool;
 use Mcp\Server\Builder;
@@ -37,13 +38,17 @@ use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Throwable;
 use function array_diff;
+use function array_diff_key;
 use function array_filter;
+use function array_intersect_key;
 use function array_map;
+use function array_values;
 use function in_array;
 use function is_array;
 use function is_string;
 use function json_decode;
 use function json_encode;
+use function str_ends_with;
 
 /**
  * The MCP tools the built-in assistant may call: those that read, run as the
@@ -75,6 +80,13 @@ final class AssistantToolbox
         'create_resource', 'update_resource', 'add_contact', 'add_client_address', 'update_client_address', 'add_client_tax_identifier',
         'send_quote', 'send_invoice', 'send_invoice_reminder', 'record_payment',
     ];
+
+    /**
+     * The writes that go out of Augias — an e-mail to a client, a payment
+     * recorded — and are confirmed each on their own, even within a request
+     * the person has already confirmed.
+     */
+    public const array CONFIRMED_EACH = ['send_quote', 'send_invoice', 'send_invoice_reminder', 'record_payment'];
 
     /** What create_resource and update_resource may touch here. */
     private const array RESOURCES = ['client', 'contact'];
@@ -134,6 +146,16 @@ final class AssistantToolbox
     }
 
     /**
+     * Whether, once the person has confirmed a request, this write runs
+     * without being asked again: one confirmation for the request (Rémi,
+     * 26/11/2026: thirty to make a quote), sending and payments apart.
+     */
+    public function runsOnceApproved(string $name): bool
+    {
+        return $this->isWrite($name) && ! in_array($name, self::CONFIRMED_EACH, true);
+    }
+
+    /**
      * Runs one tool that only reads, as the model asked, and gives back what
      * to show it: the result, or why it could not run. Never throws.
      *
@@ -184,6 +206,12 @@ final class AssistantToolbox
      */
     public function prepared(string $name, array $arguments): array
     {
+        try {
+            $arguments = $this->normalised($this->registry->getTool($name)->tool->inputSchema, $arguments);
+        } catch (Throwable) {
+            // An unknown tool: the call says so.
+        }
+
         if ($name !== 'create_resource' || ! is_string($arguments['resource'] ?? null)) {
             return $arguments;
         }
@@ -248,7 +276,7 @@ final class AssistantToolbox
         try {
             $tool = $this->registry->getTool($name);
             // The SDK reads the MCP session from the arguments; there is none here.
-            $result = $this->handler->handle($tool, [...$this->decodedArguments($tool->tool->inputSchema, $arguments), '_session' => null]);
+            $result = $this->handler->handle($tool, [...$this->normalised($tool->tool->inputSchema, $arguments), '_session' => null]);
 
             if ($result === [] || $result === null) {
                 return 'Nothing found. Try one distinctive word (a name, a number), or a list_* tool.';
@@ -263,6 +291,9 @@ final class AssistantToolbox
             return 'Error: ' . $e->getMessage();
         } catch (JsonException) {
             return 'Error: the result could not be encoded.';
+        } catch (RegistryException $e) {
+            // The arguments against the tool's parameters: « Missing required argument `changes` ».
+            return 'Error: ' . $e->getMessage();
         } catch (Throwable $e) {
             // Never shown to the model, which only learns the arguments did not fit.
             $this->logger->warning('An assistant tool failed.', ['tool' => $name, 'exception' => $e]);
@@ -271,6 +302,50 @@ final class AssistantToolbox
         } finally {
             $request?->attributes->remove(McpOAuthAuthenticator::ATTR_SCOPES);
         }
+    }
+
+    /**
+     * The arguments put the way the tool takes them, where there is only one
+     * way to read them: the fields of an update given beside the object
+     * that should hold them (`{"quote_id": …, "lines": […]}` for
+     * `{"quote_id": …, "changes": {"lines": […]}}`), `id` for the one id
+     * the tool asks for, objects sent as JSON text. Mistral did all three,
+     * and was refused a dozen times in a row (26/11/2026).
+     *
+     * @param array<string, mixed> $schema
+     * @param array<string, mixed> $arguments
+     *
+     * @return array<string, mixed>
+     */
+    private function normalised(array $schema, array $arguments): array
+    {
+        $properties = is_array($schema['properties'] ?? null) ? $schema['properties'] : [];
+        $required = is_array($schema['required'] ?? null) ? $schema['required'] : [];
+
+        // « id » for the one *_id the tool requires.
+        $ids = array_values(array_filter($required, static fn (mixed $name): bool => is_string($name) && str_ends_with($name, '_id')));
+
+        if (\count($ids) === 1 && ! isset($properties['id']) && \array_key_exists('id', $arguments) && ! \array_key_exists($ids[0], $arguments)) {
+            $arguments[$ids[0]] = $arguments['id'];
+            unset($arguments['id']);
+        }
+
+        $arguments = $this->decodedArguments($schema, $arguments);
+
+        // Loose fields into the one object that holds the changes.
+        foreach (['changes', 'data'] as $holder) {
+            if (! isset($properties[$holder]) || ($properties[$holder]['type'] ?? null) !== 'object' || isset($arguments[$holder])) {
+                continue;
+            }
+
+            $loose = array_diff_key($arguments, $properties);
+
+            if ($loose !== []) {
+                $arguments = [...array_intersect_key($arguments, $properties), $holder => $loose];
+            }
+        }
+
+        return $arguments;
     }
 
     /**

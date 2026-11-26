@@ -431,7 +431,7 @@ assistant:
     cancelled: 'Annulé : %action%. Rien n''a été modifié.'
     close: 'Fermer l''assistant'
     confirm: 'Confirmer'
-    confirm_hint: 'Chaque modification vous est montrée avant d''être faite.'
+    confirm_hint: 'Une confirmation vaut pour toute la demande ; un envoi ou un paiement se confirme à part.'
     deactivate: 'Désactiver l''assistant'
     deactivate_confirm: 'Désactiver l''assistant pour toute l''entreprise ? La conversation en cours sera effacée.'
     draft_invoice: 'Facture brouillon'

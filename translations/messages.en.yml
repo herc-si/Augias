@@ -431,7 +431,7 @@ assistant:
     cancelled: 'Cancelled: %action%. Nothing was changed.'
     close: 'Close the assistant'
     confirm: 'Confirm'
-    confirm_hint: 'Every change is shown to you before it is made.'
+    confirm_hint: 'One confirmation covers the whole request; sending or a payment is confirmed on its own.'
     deactivate: 'Turn the assistant off'
     deactivate_confirm: 'Turn the assistant off for the whole company? The current conversation will be cleared.'
     draft_invoice: 'Draft invoice'

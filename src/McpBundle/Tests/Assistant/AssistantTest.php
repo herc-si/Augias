@@ -205,6 +205,67 @@ final class AssistantTest extends KernelTestCase
         self::assertSame(0, $manager->getRepository(\Augias\ClientBundle\Entity\Contact::class)->count(['email' => 'jean@example.com']));
     }
 
+    /**
+     * Thirty confirmations to make a quote (Rémi, 26/11/2026): once the
+     * person confirms, the rest of the request is made without asking
+     * again — sending apart, confirmed on its own.
+     */
+    public function testOneConfirmationCoversTheRestOfTheRequest(): void
+    {
+        $assistant = $this->assistant([
+            ['tool_calls' => [['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"Conseil","sale_price":8000}']]]],
+            ['tool_calls' => [['id' => 'call_2', 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"Audit","sale_price":50000}']]]],
+            ['tool_calls' => [['id' => 'call_3', 'type' => 'function', 'function' => ['name' => 'send_invoice', 'arguments' => '{"invoice_id":"01a21859-6b1c-460b-4949-c0019c343150"}']]]],
+        ]);
+
+        $answer = $assistant->ask('Ajoute Conseil et Audit, puis envoie la facture', 'Augias');
+        self::assertNotNull($answer->proposal);
+
+        $toolbox = $this->toolbox();
+        $after = $assistant->resume($answer->proposal, $toolbox->run($answer->proposal->tool, $answer->proposal->arguments), 'Augias');
+
+        // Audit made on the same confirmation; the sending asked for on its own.
+        self::assertSame(1, $this->products('Conseil'));
+        self::assertSame(1, $this->products('Audit'));
+        self::assertNotNull($after->proposal);
+        self::assertSame('send_invoice', $after->proposal->tool);
+    }
+
+    public function testAModelGoingRoundInCirclesIsAskedAgain(): void
+    {
+        $replies = [['tool_calls' => [['id' => 'call_0', 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"P0","sale_price":100}']]]]];
+        for ($i = 1; $i <= Assistant::MAX_APPROVED_CHANGES + 1; ++$i) {
+            $replies[] = ['tool_calls' => [['id' => 'call_' . $i, 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"P' . $i . '","sale_price":100}']]]];
+        }
+
+        $assistant = $this->assistant($replies);
+        $answer = $assistant->ask('?', 'Augias');
+        self::assertNotNull($answer->proposal);
+
+        $after = $assistant->resume($answer->proposal, $this->toolbox()->run($answer->proposal->tool, $answer->proposal->arguments), 'Augias');
+
+        self::assertSame(1, $this->products('P' . Assistant::MAX_APPROVED_CHANGES));
+        self::assertSame(0, $this->products('P' . (Assistant::MAX_APPROVED_CHANGES + 1)));
+        self::assertNotNull($after->proposal);
+    }
+
+    /**
+     * Mistral gave the fields of an update beside « changes », and « id »
+     * for « quote_id »: refused a dozen times with « the tool failed ».
+     */
+    public function testAnUpdateGivenLooselyIsPutTheWayTheToolTakesIt(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'name' => 'Philippe Tract', 'isCompany' => false]);
+        $toolbox = $this->toolbox();
+        $quote = json_decode(substr($toolbox->run('create_quote', ['client_id' => $client->getId()->toRfc4122(), 'lines' => [['description' => 'Audit', 'price' => 8000, 'qty' => 1]]]), \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+
+        $updated = $toolbox->run('update_quote', ['id' => $quote['id'], 'lines' => [['description' => 'Audit', 'price' => 9000, 'qty' => 2]]]);
+        self::assertStringContainsString('"total":"18000"', $updated);
+
+        // What cannot be read one way is said plainly.
+        self::assertStringContainsString('quote_id', $toolbox->run('update_quote', ['changes' => ['subject' => 'x']]));
+    }
+
     public function testARoleThatOnlyReadsMakesNoChangeEvenConfirmed(): void
     {
         $this->asTheAssistant(CompanyRole::Accountant);
