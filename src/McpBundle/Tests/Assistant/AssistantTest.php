@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Augias\McpBundle\Tests\Assistant;
 
 use Augias\CatalogBundle\Entity\Product;
+use Augias\ClientBundle\Registry\CompanyRegistry;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\ClientBundle\Tests\Registry\CompanyRegistryTest;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
@@ -28,7 +30,9 @@ use Augias\QuoteBundle\Test\Factory\QuoteFactory;
 use Augias\UserBundle\Enum\CompanyRole;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
+use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,6 +44,7 @@ use function array_key_last;
 use function array_values;
 use function json_decode;
 use function json_encode;
+use function strpos;
 use function substr;
 
 /**
@@ -362,6 +367,7 @@ final class AssistantTest extends KernelTestCase
         $first = array_column(array_column($this->sent[0]['tools'], 'function'), 'name');
         self::assertContains('create_quote', $first);
         self::assertContains('create_resource', $first);
+        self::assertContains('search_company_register', $first);
         self::assertContains(AssistantToolbox::MORE_TOOLS, $first);
         self::assertNotContains('create_product', $first);
         self::assertNotContains('get_turnover', $first);
@@ -373,6 +379,26 @@ final class AssistantTest extends KernelTestCase
 
         // Words it does not know: every tool, rather than an assistant that cannot do what is asked.
         self::assertSame(array_keys(AssistantToolbox::FAMILIES), AssistantToolbox::familiesFor('Bonjour'));
+    }
+
+    /**
+     * Asked for a company that is not a client, the assistant looks in the
+     * French register, as the client form does (Rémi, 27/11/2026).
+     */
+    public function testTheAssistantSearchesTheCompaniesRegister(): void
+    {
+        $this->asTheAssistant(CompanyRole::Accountant);
+        self::getContainer()->set(CompanyRegistry::class, new CompanyRegistry(new MockHttpClient(new JsonMockResponse(CompanyRegistryTest::DECATHLON)), new ArrayAdapter(), new NullLogger()));
+
+        $raw = $this->toolbox()->call('search_company_register', ['query' => 'decathlon']);
+        // After the line on amounts the toolbox puts first.
+        $outcome = json_decode(substr($raw, (int) strpos($raw, '{')), true);
+
+        self::assertIsArray($outcome, $raw);
+        self::assertSame('DECATHLON', $outcome['companies'][0]['name'] ?? null);
+        self::assertSame('30613890001294', $outcome['companies'][0]['siret'] ?? null);
+        self::assertSame('FR51306138900', $outcome['companies'][0]['vat_number'] ?? null);
+        self::assertContains('clients', AssistantToolbox::familiesFor('Cherche HERC SI dans l\'annuaire'));
     }
 
     public function testAQuestionStopsOnceItHasUsedUpItsTokens(): void

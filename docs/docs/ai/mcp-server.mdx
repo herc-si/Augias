@@ -163,6 +163,7 @@ Le serveur expose le même jeu d'outils à tous les agents. Les outils qui deman
 | `list_workflow_transitions` | Liste les transitions de statut possibles sur une fiche. |
 | `get_company_info` | Renvoie l'identifiant, le nom et la devise par défaut de l'entreprise active. |
 | `get_client_summary` | Total facturé, impayé, total payé et nombres de documents pour un client. |
+| `search_company_register` | Cherche une entreprise dans l'annuaire officiel (base Sirene de l'Insee) par nom, SIREN ou SIRET : nom, identifiants, numéro de TVA et adresse du siège, pour créer le client. Un entrepreneur individuel qui a demandé à ne pas être diffusé ne se trouve que par son SIREN, sans nom ni rue. |
 | `search_products` | Cherche dans le catalogue de produits et services, par nom, référence ou description. |
 | `list_einvoice_submissions` | Liste les factures et avoirs envoyés sur la plateforme de facturation électronique, avec la réponse de la plateforme ; `failed_only` garde ceux qui n'ont pas été pris. |
 | `list_received_invoices` | Liste les factures reçues des fournisseurs sur la plateforme de facturation électronique, avec la réponse donnée et l'achat qu'elles sont devenues. |

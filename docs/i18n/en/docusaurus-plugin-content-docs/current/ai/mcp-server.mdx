@@ -164,6 +164,7 @@ The server exposes a single, consistent toolset across every agent. Tools requir
 | `list_workflow_transitions`    | List workflow transitions currently enabled on a record.                                      |
 | `get_company_info`             | Return id, name, and default currency for the active company.                                 |
 | `get_client_summary`           | Totals invoiced, outstanding balance, total paid, and counts for a client.                    |
+| `search_company_register`      | Search the official French companies register (INSEE Sirene) by name, SIREN or SIRET: name, identifiers, VAT number and head office address, to create the client with. An individual entrepreneur who asked not to be listed is found by SIREN only, without name or street. |
 | `search_products`              | Search the catalogue of products and services by name, reference or description.              |
 | `list_einvoice_submissions`    | List invoices and credit notes sent on the electronic invoicing platform, with the platform's answer; `failed_only` keeps those not taken. |
 | `list_received_invoices`       | List invoices received from suppliers on the electronic invoicing platform, with the answer given and the purchase each became. |

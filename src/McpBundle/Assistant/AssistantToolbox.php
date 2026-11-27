@@ -137,8 +137,8 @@ final class AssistantToolbox
         'quotes' => ['list_quotes_by_status', 'create_quote', 'update_quote', 'apply_quote_transition', 'clone_quote', 'convert_quote_to_invoice', 'create_deposit_invoice', 'send_quote', 'search_products', 'list_tax_rates'],
         'invoices' => ['list_invoices_by_status', 'list_overdue_invoices', 'list_recurring_invoices', 'create_invoice', 'update_invoice', 'clone_invoice', 'create_deposit_invoice', 'send_invoice', 'send_invoice_reminder', 'record_payment', 'list_payment_methods', 'search_products', 'list_tax_rates'],
         // What a document for a client not yet there needs: the rest of « clients » only when asked.
-        'new_client' => ['create_resource', 'add_contact'],
-        'clients' => ['create_resource', 'update_resource', 'add_contact', 'add_client_address', 'update_client_address', 'add_client_tax_identifier', 'list_client_tax_identifiers', 'get_client_summary', 'get_client_statement'],
+        'new_client' => ['create_resource', 'add_contact', 'search_company_register'],
+        'clients' => ['search_company_register', 'create_resource', 'update_resource', 'add_contact', 'add_client_address', 'update_client_address', 'add_client_tax_identifier', 'list_client_tax_identifiers', 'get_client_summary', 'get_client_statement'],
         'catalogue' => ['search_products', 'create_product', 'update_product', 'create_category', 'update_category', 'list_categories', 'list_tax_rates'],
         'finance' => [],
     ];
@@ -147,7 +147,7 @@ final class AssistantToolbox
     private const array FAMILY_WORDS = [
         'quotes' => ['devis', 'quote', 'estimat', 'proposition'],
         'invoices' => ['factur', 'invoice', 'acompte', 'relanc', 'paiement', 'payé', 'payée', 'paye', 'réglé', 'encaiss', 'impayé', 'retard', 'overdue', 'payment', 'paid', 'reminder'],
-        'clients' => ['client', 'contact', 'adresse', 'siret', 'siren', 'e-mail', 'email', 'customer', 'address'],
+        'clients' => ['client', 'contact', 'adresse', 'siret', 'siren', 'e-mail', 'email', 'customer', 'address', 'annuaire', 'registre', 'sirene', 'register'],
         'catalogue' => ['produit', 'catalogue', 'article', 'prestation', 'tarif', 'catégorie', 'product', 'catalog', 'category'],
         'finance' => ['chiffre', 'compta', 'tva', 'déclar', 'urssaf', 'banque', 'bancaire', 'trésorerie', 'achat', 'fournisseur', 'revenu', 'livre', 'journal', 'reporting', 'reçue', 'turnover', 'revenue', 'bank', 'supplier', 'purchase', 'vat', 'accounting', 'ledger'],
     ];
@@ -237,7 +237,7 @@ final class AssistantToolbox
                 'type' => 'function',
                 'function' => [
                     'name' => self::MORE_TOOLS,
-                    'description' => 'Adds the tools of other families for this request: quotes, invoices (and payments, reminders), clients (and contacts, addresses; new_client only creates one), catalogue (products, categories), finance (turnover, books, VAT, bank, purchases, received invoices).',
+                    'description' => 'Adds the tools of other families for this request: quotes, invoices (and payments, reminders), clients (and contacts, addresses, the French companies register; new_client only creates one), catalogue (products, categories), finance (turnover, books, VAT, bank, purchases, received invoices).',
                     'parameters' => [
                         'type' => 'object',
                         'properties' => ['families' => ['type' => 'array', 'items' => ['type' => 'string', 'enum' => $missing]]],
