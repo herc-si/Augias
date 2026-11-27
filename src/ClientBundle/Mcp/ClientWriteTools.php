@@ -28,6 +28,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Mcp\Capability\Attribute\McpTool;
 use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final readonly class ClientWriteTools
 {
@@ -37,11 +38,15 @@ final readonly class ClientWriteTools
         private EntityManagerInterface $entityManager,
         private EntityNormalizer $normalizer,
         private McpScopeGuard $scopeGuard,
+        private ValidatorInterface $validator,
     ) {
     }
 
     /**
-     * Add a new contact to an existing client.
+     * Add a new contact to an existing client. Without a first name, an
+     * individual's contact takes the client's own name: « Jean Toto » with
+     * only an e-mail was saved with no first name, which the database
+     * refuses, and the request stopped there (Rémi, 26/11/2026).
      *
      * @param string      $client_id  Client ULID
      * @param string|null $first_name Contact first name
@@ -50,7 +55,7 @@ final readonly class ClientWriteTools
      *
      * @return array<string, mixed>
      */
-    #[McpTool(name: 'add_contact', description: 'Add a new contact (email + optional name) to an existing client.')]
+    #[McpTool(name: 'add_contact', description: 'Add a new contact to an existing client: email, and first_name unless the client is an individual (their own name is taken then).')]
     #[McpScopeRequired(McpScope::Write)]
     public function addContact(string $client_id, string $email, ?string $first_name = null, ?string $last_name = null): array
     {
@@ -66,12 +71,39 @@ final readonly class ClientWriteTools
             throw new ToolCallException(sprintf('Client %s not found.', $client_id));
         }
 
+        $first_name = trim((string) $first_name);
+        $last_name = trim((string) $last_name);
+
+        if ($first_name === '' && ! $client->isCompany()) {
+            [$first_name, $last_name] = array_pad(explode(' ', trim((string) $client->getName()), 2), 2, '');
+        }
+
+        if ($first_name === '') {
+            throw new ToolCallException('first_name is required for a company\'s contact: ask the person for it.');
+        }
+
         $contact = new Contact();
         $contact->setEmail($email);
         $contact->setFirstName($first_name);
-        $contact->setLastName($last_name);
+        $contact->setLastName($last_name === '' ? null : $last_name);
         $contact->setClient($client);
         $contact->setCompany($client->getCompany());
+
+        // Checked before saving: a refusal from the database closes the
+        // entity manager, and nothing else of the request can be saved.
+        // The contact's own fields only: the client's are not this tool's to judge.
+        $messages = [];
+
+        foreach (['firstName', 'lastName', 'email'] as $property) {
+            foreach ($this->validator->validateProperty($contact, $property) as $error) {
+                $messages[] = sprintf('%s: %s', $error->getPropertyPath(), $error->getMessage());
+            }
+        }
+
+        if ($messages !== []) {
+
+            throw new ToolCallException(sprintf('Validation failed: %s', implode('; ', $messages)));
+        }
 
         $client->addContact($contact);
 

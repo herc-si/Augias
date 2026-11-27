@@ -112,6 +112,80 @@ final readonly class QuoteWriteTools
         array $invoice_taxes = [],
     ): array {
         $this->scopeGuard->require(McpScope::Write);
+
+        $quote = $this->newQuote($client_id, $lines, $due, $discount_type, $discount_value, $terms, $notes, $subject, $contact_ids, $invoice_taxes, true);
+
+        $quote->setQuoteId(
+            $quote_id !== null && $quote_id !== ''
+                ? $quote_id
+                : $this->billingIdGenerator->generate($quote, ['field' => 'quoteId']),
+        );
+
+        // Seed the status so the NOT NULL column is satisfied before the workflow
+        // apply() moves it to the actual initial "new" state.
+        $quote->setStatus(QuoteStatus::New);
+        $this->entityManager->persist($quote);
+        $this->entityManager->flush();
+
+        if ($this->quoteWorkflow->can($quote, QuoteGraph::TRANSITION_NEW)) {
+            $this->quoteWorkflow->apply($quote, QuoteGraph::TRANSITION_NEW);
+            $this->entityManager->flush();
+        }
+
+        return $this->normalizer->normalize($quote);
+    }
+
+    /**
+     * Why creating this quote would fail, if it would, without creating it:
+     * the assistant asks before showing the person a change to confirm
+     * (Rémi, 26/11/2026: a quote confirmed three times, refused each time).
+     *
+     * @param array<string, mixed> $arguments the tool's arguments, by name
+     */
+    public function creationProblem(array $arguments): ?string
+    {
+        try {
+            $this->newQuote(
+                (string) ($arguments['client_id'] ?? ''),
+                \is_array($arguments['lines'] ?? null) ? $arguments['lines'] : [],
+                isset($arguments['due']) ? (string) $arguments['due'] : null,
+                isset($arguments['discount_type']) ? (string) $arguments['discount_type'] : null,
+                isset($arguments['discount_value']) && is_numeric($arguments['discount_value']) ? $arguments['discount_value'] + 0 : null,
+                null,
+                null,
+                null,
+                \is_array($arguments['contact_ids'] ?? null) ? $arguments['contact_ids'] : [],
+                \is_array($arguments['invoice_taxes'] ?? null) ? $arguments['invoice_taxes'] : [],
+                false,
+            );
+        } catch (ToolCallException $e) {
+            return $e->getMessage();
+        }
+
+        return null;
+    }
+
+    /**
+     * The quote the arguments describe, not saved and without a number.
+     *
+     * @param list<array<string, mixed>> $lines
+     * @param list<mixed>                $contact_ids
+     * @param list<array<string, mixed>> $invoice_taxes
+     * @param bool                       $linkContacts false for a check: a contact keeps the quotes it is on, and would save this one
+     */
+    private function newQuote(
+        string $client_id,
+        array $lines,
+        ?string $due,
+        ?string $discount_type,
+        int | float | null $discount_value,
+        ?string $terms,
+        ?string $notes,
+        ?string $subject,
+        array $contact_ids,
+        array $invoice_taxes,
+        bool $linkContacts,
+    ): Quote {
         $this->planLimits->assertFeature(Feature::Quotes, 'Quotes');
 
         $client = $this->clientRepository->find(UlidParser::parse($client_id, 'client_id'));
@@ -160,31 +234,16 @@ final readonly class QuoteWriteTools
                 throw new ToolCallException(sprintf('Contact %s does not belong to this client.', $contactId));
             }
 
-            $quote->addUser($contact);
+            if ($linkContacts) {
+                $quote->addUser($contact);
+            }
         }
-
-        $quote->setQuoteId(
-            $quote_id !== null && $quote_id !== ''
-                ? $quote_id
-                : $this->billingIdGenerator->generate($quote, ['field' => 'quoteId']),
-        );
 
         $this->invoiceTaxBuilder->attach($quote, $invoice_taxes);
 
         $this->totalCalculator->calculateTotals($quote);
 
-        // Seed the status so the NOT NULL column is satisfied before the workflow
-        // apply() moves it to the actual initial "new" state.
-        $quote->setStatus(QuoteStatus::New);
-        $this->entityManager->persist($quote);
-        $this->entityManager->flush();
-
-        if ($this->quoteWorkflow->can($quote, QuoteGraph::TRANSITION_NEW)) {
-            $this->quoteWorkflow->apply($quote, QuoteGraph::TRANSITION_NEW);
-            $this->entityManager->flush();
-        }
-
-        return $this->normalizer->normalize($quote);
+        return $quote;
     }
 
     /**

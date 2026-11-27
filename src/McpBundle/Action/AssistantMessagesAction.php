@@ -38,7 +38,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Throwable;
+use function array_map;
 use function ignore_user_abort;
+use function implode;
+use function mb_strimwidth;
 use function mb_substr;
 use function str_starts_with;
 use function trim;
@@ -125,9 +129,11 @@ final class AssistantMessagesAction extends AbstractController
             return $this->state($company);
         }
 
-        if ($this->conversation->action($company) !== null) {
+        $pending = $this->conversation->action($company);
+
+        if ($pending !== null) {
             // Asking something else leaves the change unmade.
-            $this->conversation->answer($company, $this->translator->trans('assistant.abandoned'));
+            $this->conversation->answer($company, $this->translator->trans('assistant.abandoned', ['%action%' => $this->summary($pending)]));
         }
 
         $history = $this->conversation->messages($company);
@@ -145,6 +151,8 @@ final class AssistantMessagesAction extends AbstractController
             $this->conversation->withdraw($company);
 
             return $this->state($company, $this->translator->trans('assistant.unavailable'), Response::HTTP_SERVICE_UNAVAILABLE);
+        } catch (Throwable $e) {
+            $this->failed($company, $e);
         }
 
         return $this->state($company);
@@ -161,14 +169,17 @@ final class AssistantMessagesAction extends AbstractController
 
         if (! $confirmed) {
             $this->journal->record(AssistantEventKind::Cancelled, $proposal->tool);
-            $this->conversation->answer($company, $this->translator->trans('assistant.cancelled'));
+            // Said with what it was: the model reads this in the history,
+            // and took a request cancelled as one still to do (Rémi,
+            // 26/11/2026: the next quote went to the name asked before).
+            $this->conversation->answer($company, $this->translator->trans('assistant.cancelled', ['%action%' => $this->summary($this->preview->describe($proposal->tool, $proposal->arguments))]));
 
             return $this->state($company);
         }
 
         if (! $company->isAssistantEnabled()) {
             // Turned off since it was proposed: nothing is made.
-            $this->conversation->answer($company, $this->translator->trans('assistant.abandoned'));
+            $this->conversation->answer($company, $this->translator->trans('assistant.abandoned', ['%action%' => $this->summary($this->preview->describe($proposal->tool, $proposal->arguments))]));
 
             return $this->state($company, null, Response::HTTP_FORBIDDEN);
         }
@@ -176,9 +187,20 @@ final class AssistantMessagesAction extends AbstractController
         $this->conversation->release();
         ignore_user_abort(true);
 
-        $outcome = $this->toolbox->run($proposal->tool, $proposal->arguments);
+        try {
+            $outcome = $this->toolbox->run($proposal->tool, $proposal->arguments);
+        } catch (Throwable $e) {
+            $this->failed($company, $e);
+
+            return $this->state($company);
+        }
         $failed = str_starts_with($outcome, 'Error:');
         $this->logger->info('Assistant made a confirmed change.', ['tool' => $proposal->tool, 'failed' => $failed]);
+
+        if ($failed) {
+            // Why it was refused once confirmed: what to check before proposing next time.
+            $this->logger->warning('A change the person confirmed was refused.', ['tool' => $proposal->tool, 'reason' => mb_substr($outcome, 0, 500)]);
+        }
         $this->journal->record(AssistantEventKind::Confirmed, $proposal->tool, $failed);
 
         try {
@@ -186,9 +208,37 @@ final class AssistantMessagesAction extends AbstractController
         } catch (AssistantUnavailable) {
             // Made or refused all the same: said plainly, without the model.
             $this->conversation->answer($company, $this->translator->trans($failed ? 'assistant.action_failed' : 'assistant.action_done'));
+        } catch (Throwable $e) {
+            $this->failed($company, $e);
         }
 
         return $this->state($company);
+    }
+
+    /**
+     * The change in a few words: what it does and its first details, « Nouveau devis (Client : Dupont SARL) ».
+     *
+     * @param array{title: string, details: list<array{label: string, value: string}>} $preview
+     */
+    private function summary(array $preview): string
+    {
+        $details = array_map(
+            static fn (array $detail): string => $detail['label'] . ' : ' . mb_strimwidth($detail['value'], 0, 60, '…'),
+            \array_slice($preview['details'], 0, 2),
+        );
+
+        return $preview['title'] . ($details === [] ? '' : ' (' . implode(', ', $details) . ')');
+    }
+
+    /**
+     * Whatever went wrong, the question gets an answer: without one it
+     * stayed pending and the page waited for good (Rémi, 26/11/2026: a
+     * contact refused by the database, after the quote was made).
+     */
+    private function failed(Company $company, Throwable $e): void
+    {
+        $this->logger->error('The assistant stopped on an error.', ['exception' => $e]);
+        $this->conversation->answer($company, $this->translator->trans('assistant.failed'));
     }
 
     private function record(Company $company, AssistantAnswer $answer): void

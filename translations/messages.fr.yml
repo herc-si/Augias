@@ -397,11 +397,12 @@ add_info: 'Ajouter des informations'
 address: Adresse
 all_clients: 'Tous les clients'
 assistant:
-    abandoned: 'Action non confirmée : elle n''a pas été faite.'
+    abandoned: 'Non confirmé : %action%. Rien n''a été fait.'
     action:
         add_client_address: 'Ajouter une adresse'
         add_client_tax_identifier: 'Ajouter un identifiant fiscal'
         add_contact: 'Ajouter un contact'
+        apply_quote_transition: 'Changer l''état d''un devis'
         clone_invoice: 'Dupliquer une facture'
         clone_quote: 'Dupliquer un devis'
         convert_quote_to_invoice: 'Transformer le devis en facture'
@@ -428,10 +429,11 @@ assistant:
     ask: Demander
     busy: 'L''assistant répond déjà à une question : attendez sa réponse.'
     cancel: 'Annuler'
-    cancelled: 'Action annulée : rien n''a été modifié.'
+    cancelled: 'Annulé : %action%. Rien n''a été modifié.'
     close: 'Fermer l''assistant'
+    failed: 'Quelque chose a échoué et la demande s''est arrêtée. Ce qui a déjà été fait reste fait : vérifiez dans Augias, puis redemandez le reste.'
     confirm: 'Confirmer'
-    confirm_hint: 'Chaque modification vous est montrée avant d''être faite.'
+    confirm_hint: 'Une confirmation vaut pour toute la demande ; pour un envoi ou un paiement, l''assistant vous pose la question ensuite.'
     deactivate: 'Désactiver l''assistant'
     deactivate_confirm: 'Désactiver l''assistant pour toute l''entreprise ? La conversation en cours sera effacée.'
     draft_invoice: 'Facture brouillon'
@@ -487,6 +489,7 @@ assistant:
         subject: 'Objet'
         tax_id: 'Taxe'
         terms: 'Conditions'
+        transition: 'Action'
         type: 'Type'
         unit: 'Unité'
         usages: 'Usages'
@@ -523,6 +526,9 @@ assistant:
         resource:
             client: 'Client'
             contact: 'Contact'
+        transition:
+            cancel: 'Annuler le devis'
+            reopen: 'Rouvrir le devis (brouillon)'
     voice_unavailable: 'La transcription ne répond pas pour le moment : tapez votre question.'
     voice_unreadable: 'L''enregistrement n''a pas pu être lu : réessayez.'
     yes: 'Oui'

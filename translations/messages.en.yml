@@ -397,11 +397,12 @@ add_info: 'Add Info'
 address: Address
 all_clients: 'All Clients'
 assistant:
-    abandoned: 'Change not confirmed: it was not made.'
+    abandoned: 'Not confirmed: %action%. Nothing was done.'
     action:
         add_client_address: 'Add an address'
         add_client_tax_identifier: 'Add a tax identifier'
         add_contact: 'Add a contact'
+        apply_quote_transition: 'Change the status of a quote'
         clone_invoice: 'Duplicate an invoice'
         clone_quote: 'Duplicate a quote'
         convert_quote_to_invoice: 'Turn the quote into an invoice'
@@ -428,10 +429,11 @@ assistant:
     ask: Ask
     busy: 'The assistant is already answering a question: wait for its answer.'
     cancel: 'Cancel'
-    cancelled: 'Change cancelled: nothing was modified.'
+    cancelled: 'Cancelled: %action%. Nothing was changed.'
     close: 'Close the assistant'
+    failed: 'Something went wrong and the request stopped. What was already made stays made: check in Augias, then ask again for the rest.'
     confirm: 'Confirm'
-    confirm_hint: 'Every change is shown to you before it is made.'
+    confirm_hint: 'One confirmation covers the whole request; for sending or a payment, the assistant asks you afterwards.'
     deactivate: 'Turn the assistant off'
     deactivate_confirm: 'Turn the assistant off for the whole company? The current conversation will be cleared.'
     draft_invoice: 'Draft invoice'
@@ -487,6 +489,7 @@ assistant:
         subject: 'Subject'
         tax_id: 'Tax'
         terms: 'Terms'
+        transition: 'Action'
         type: 'Type'
         unit: 'Unit'
         usages: 'Uses'
@@ -523,6 +526,9 @@ assistant:
         resource:
             client: 'Client'
             contact: 'Contact'
+        transition:
+            cancel: 'Cancel the quote'
+            reopen: 'Reopen the quote (draft)'
     voice_unavailable: 'Transcription is not answering right now: type your question.'
     voice_unreadable: 'The recording could not be read: try again.'
     yes: 'Yes'

@@ -39,7 +39,9 @@ final readonly class AssistantJournal
     {
         $company = $this->currentCompany->get();
 
-        if ($company === null) {
+        // A tool the database refused closes the entity manager: the
+        // request still gets its answer, without this line of the journal.
+        if ($company === null || ! $this->entityManager->isOpen()) {
             return;
         }
 

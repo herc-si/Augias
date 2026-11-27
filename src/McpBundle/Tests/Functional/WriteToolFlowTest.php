@@ -177,6 +177,36 @@ final class WriteToolFlowTest extends KernelTestCase
         self::assertSame($client->getId()->toRfc4122(), $contact->getClient()?->getId()?->toRfc4122());
     }
 
+    public function testAddContactTakesAnIndividualsOwnName(): void
+    {
+        $this->setActiveScopes([McpScope::Write->value]);
+
+        $client = ClientFactory::createOne(['company' => $this->company, 'name' => 'Jean Toto', 'isCompany' => false]);
+
+        $tool = self::getContainer()->get(ClientWriteTools::class);
+        self::assertInstanceOf(ClientWriteTools::class, $tool);
+
+        $result = $tool->addContact($client->getId()->toRfc4122(), 'jean.toto@example.com');
+
+        self::assertSame('Jean', $result['first_name']);
+        self::assertSame('Toto', $result['last_name']);
+    }
+
+    public function testAddContactAsksACompanysContactForAFirstName(): void
+    {
+        $this->setActiveScopes([McpScope::Write->value]);
+
+        $client = ClientFactory::createOne(['company' => $this->company, 'isCompany' => true]);
+
+        $tool = self::getContainer()->get(ClientWriteTools::class);
+        self::assertInstanceOf(ClientWriteTools::class, $tool);
+
+        $this->expectException(ToolCallException::class);
+        $this->expectExceptionMessageIsOrContains('first_name is required');
+
+        $tool->addContact($client->getId()->toRfc4122(), 'someone@example.com');
+    }
+
     public function testAddContactRejectsInvalidEmail(): void
     {
         $this->setActiveScopes([McpScope::Write->value]);

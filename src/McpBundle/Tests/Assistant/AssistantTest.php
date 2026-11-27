@@ -22,6 +22,9 @@ use Augias\McpBundle\Assistant\Assistant;
 use Augias\McpBundle\Assistant\AssistantClient;
 use Augias\McpBundle\Assistant\AssistantToolbox;
 use Augias\McpBundle\Tests\Functional\SignsInMember;
+use Augias\QuoteBundle\Entity\Quote;
+use Augias\QuoteBundle\Enum\QuoteStatus;
+use Augias\QuoteBundle\Test\Factory\QuoteFactory;
 use Augias\UserBundle\Enum\CompanyRole;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
@@ -36,6 +39,8 @@ use function array_filter;
 use function array_key_last;
 use function array_values;
 use function json_decode;
+use function json_encode;
+use function substr;
 
 /**
  * The built-in assistant answers from the MCP tools that read, and proposes
@@ -84,7 +89,7 @@ final class AssistantTest extends KernelTestCase
 
     public function testOnlyClientsAndContactsAreCreatedAsResources(): void
     {
-        self::assertNull($this->toolbox()->refusal('create_resource', ['resource' => 'client', 'data' => []]));
+        self::assertNull($this->toolbox()->refusal('create_resource', ['resource' => 'client', 'data' => ['name' => 'Google France', 'currency_code' => 'EUR', 'is_company' => true, 'siret' => '44306184100047']]));
         self::assertNotNull($this->toolbox()->refusal('create_resource', ['resource' => 'tax', 'data' => []]));
     }
 
@@ -122,6 +127,261 @@ final class AssistantTest extends KernelTestCase
         self::assertSame($outcome, $tools[0]['content']);
         self::assertStringContainsString('one change at a time', $tools[1]['content']);
         self::assertSame(0, $this->products('Audit'));
+    }
+
+    /**
+     * Rémi confirmed a client three times on app-test (26/11/2026): the
+     * first two were refused once confirmed. A creation that would be
+     * refused goes back to the model, not to the person.
+     */
+    public function testACreationThatWouldBeRefusedIsNotShownToConfirm(): void
+    {
+        $invalid = '{"resource":"client","data":{"name":"Burger Queen","currency_code":"EUR","is_company":true}}';
+        $valid = '{"resource":"client","data":{"name":"Burger Queen","currency_code":"EUR","is_company":true,"siret":"44306184100047"}}';
+
+        $answer = $this->assistant([
+            ['tool_calls' => [['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'create_resource', 'arguments' => $invalid]]]],
+            ['tool_calls' => [['id' => 'call_2', 'type' => 'function', 'function' => ['name' => 'create_resource', 'arguments' => $valid]]]],
+        ])->ask('Crée le client Burger Queen', 'Augias');
+
+        // The model learnt why, and only its second try reached the person.
+        $refused = $this->sent[1]['messages'][array_key_last($this->sent[1]['messages'])];
+        self::assertSame('call_1', $refused['tool_call_id']);
+        self::assertStringStartsWith('Error: Validation failed', $refused['content']);
+        self::assertNotNull($answer->proposal);
+        self::assertSame('call_2', $answer->proposal->callId);
+        self::assertSame(0, self::getContainer()->get('doctrine')->getManager()->getRepository(\Augias\ClientBundle\Entity\Client::class)->count(['name' => 'Burger Queen']));
+    }
+
+    /**
+     * The same, for a quote: three times confirmed and refused on app-test
+     * (26/11/2026), the model changing the client between tries.
+     */
+    public function testAQuoteThatWouldBeRefusedIsNotShownToConfirm(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'name' => 'Philippe Tract', 'isCompany' => false]);
+        $clientId = $client->getId()->toRfc4122();
+        $toolbox = $this->toolbox();
+
+        self::assertStringContainsString('requires a "price"', (string) $toolbox->refusal('create_quote', ['client_id' => $clientId, 'lines' => [['description' => 'Audit', 'qty' => 1]]]));
+        self::assertStringContainsString('requires a "price"', (string) $toolbox->refusal('create_invoice', ['client_id' => $clientId, 'lines' => '[{"description": "Audit", "qty": 1}]']));
+        self::assertStringContainsString('not found', (string) $toolbox->refusal('create_quote', ['client_id' => '01a21859-6b1c-460b-4949-c0019c343150', 'lines' => [['description' => 'Audit', 'price' => 8000, 'qty' => 1]]]));
+
+        self::assertNull($toolbox->refusal('create_quote', ['client_id' => $clientId, 'lines' => [['description' => 'Audit', 'price' => 8000, 'qty' => 1]]]));
+        self::assertNull($toolbox->refusal('create_invoice', ['client_id' => $clientId, 'lines' => [['description' => 'Audit', 'price' => 8000, 'qty' => 1]]]));
+
+        // Checked, not made.
+        $manager = self::getContainer()->get('doctrine')->getManager();
+        $manager->flush();
+        self::assertSame(0, $manager->getRepository(\Augias\QuoteBundle\Entity\Quote::class)->count([]));
+        self::assertSame(0, $manager->getRepository(\Augias\InvoiceBundle\Entity\Invoice::class)->count([]));
+    }
+
+    /**
+     * A client the model names and nothing more is a private individual: as
+     * a business it needed a SIRET, and the model asked three questions
+     * before proposing it (Rémi, 26/11/2026).
+     */
+    public function testAClientGivenOnlyItsNameIsProposedAsAPrivateIndividual(): void
+    {
+        $this->assistant([['content' => 'Je propose de créer Philippe Tract.']])->ask('Fais un devis pour Philippe Tract', 'Augias');
+        self::assertStringContainsString('son nom suffit', $this->sent[0]['messages'][0]['content']);
+
+        $prepared = $this->toolbox()->prepared('create_resource', ['resource' => 'client', 'data' => '{"name":"Philippe Tract","currency_code":"EUR"}']);
+        self::assertSame(['is_company' => false, 'name' => 'Philippe Tract', 'currency_code' => 'EUR'], $prepared['data']);
+
+        // Given a SIRET, it is a business.
+        self::assertTrue($this->toolbox()->prepared('create_resource', ['resource' => 'client', 'data' => ['name' => 'Google France', 'siret' => '44306184100047']])['data']['is_company']);
+    }
+
+    public function testANullGivenForAFieldThatTakesNoneIsLeftOut(): void
+    {
+        $this->toolbox();
+        // In the VAT exemption, as HERC SI: a private client needs no books.
+        self::getContainer()->get(\Augias\SettingsBundle\SystemConfig::class)->set(\Augias\AccountingBundle\AccountingSettings::VAT_EXEMPT, '1');
+        self::assertNull($this->toolbox()->refusal('create_resource', ['resource' => 'client', 'data' => ['name' => 'Paul Martin', 'currency_code' => 'EUR', 'website' => null]]));
+    }
+
+    public function testACheckedContactIsNotSavedWithItsClient(): void
+    {
+        $toolbox = $this->toolbox();
+        $client = $toolbox->run('create_resource', ['resource' => 'client', 'data' => ['name' => 'Google France', 'currency_code' => 'EUR', 'is_company' => true, 'siret' => '44306184100047']]);
+        $client = json_decode(substr($client, \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+        self::assertIsArray($client, 'The client could not be created.');
+
+        self::assertNull($toolbox->refusal('create_resource', ['resource' => 'contact', 'data' => ['client_id' => $client['id'], 'first_name' => 'Jean', 'email' => 'jean@example.com']]));
+
+        $manager = self::getContainer()->get('doctrine')->getManager();
+        $manager->flush();
+        self::assertSame(0, $manager->getRepository(\Augias\ClientBundle\Entity\Contact::class)->count(['email' => 'jean@example.com']));
+    }
+
+    /**
+     * Thirty confirmations to make a quote (Rémi, 26/11/2026): once the
+     * person confirms, the rest of the request is made without asking
+     * again — sending apart, confirmed on its own.
+     */
+    public function testOneConfirmationCoversTheRestOfTheRequest(): void
+    {
+        $assistant = $this->assistant([
+            ['tool_calls' => [['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"Conseil","sale_price":8000}']]]],
+            ['tool_calls' => [['id' => 'call_2', 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"Audit","sale_price":50000}']]]],
+            ['tool_calls' => [['id' => 'call_3', 'type' => 'function', 'function' => ['name' => 'send_invoice', 'arguments' => '{"invoice_id":"01a21859-6b1c-460b-4949-c0019c343150"}']]]],
+            ['content' => 'Conseil et Audit sont ajoutés. Voulez-vous que j’envoie la facture ?'],
+        ]);
+
+        $answer = $assistant->ask('Ajoute Conseil et Audit, puis envoie la facture', 'Augias');
+        self::assertNotNull($answer->proposal);
+
+        $toolbox = $this->toolbox();
+        $after = $assistant->resume($answer->proposal, $toolbox->run($answer->proposal->tool, $answer->proposal->arguments), 'Augias');
+
+        // Audit made on the same confirmation; the sending asked for in words, not shown to confirm.
+        self::assertSame(1, $this->products('Conseil'));
+        self::assertSame(1, $this->products('Audit'));
+        self::assertNull($after->proposal);
+        self::assertSame('Conseil et Audit sont ajoutés. Voulez-vous que j’envoie la facture ?', $after->text);
+        self::assertStringContainsString('Not proposed', (string) json_encode(end($this->sent)['messages'] ?? []));
+    }
+
+    public function testAQuoteIsCancelledOnceConfirmed(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'name' => 'Jean Toto', 'isCompany' => false]);
+        $quote = QuoteFactory::createOne(['company' => $this->company, 'client' => $client, 'status' => QuoteStatus::Draft]);
+        $id = $quote->getId()->toRfc4122();
+
+        $answer = $this->assistant([
+            ['tool_calls' => [['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'apply_quote_transition', 'arguments' => '{"quote_id":"' . $id . '","transition":"cancel"}']]]],
+        ])->ask('Annule le devis de Jean Toto', 'Augias');
+
+        self::assertNotNull($answer->proposal);
+        self::assertSame('apply_quote_transition', $answer->proposal->tool);
+
+        $outcome = $this->toolbox()->run($answer->proposal->tool, $answer->proposal->arguments);
+        self::assertStringNotContainsString('Error:', $outcome);
+
+        $stored = self::getContainer()->get('doctrine')->getManager()->getRepository(Quote::class)->find($quote->getId());
+        self::assertSame(QuoteStatus::Cancelled, $stored?->getStatus());
+    }
+
+    public function testAQuoteChangedInTheRequestIsLeftAsItIs(): void
+    {
+        $toto = QuoteFactory::createOne(['company' => $this->company, 'status' => QuoteStatus::Draft]);
+        $francis = QuoteFactory::createOne(['company' => $this->company, 'status' => QuoteStatus::Draft]);
+        $call = static fn (string $id, string $quote, string $transition): array => ['tool_calls' => [['id' => $id, 'type' => 'function', 'function' => ['name' => 'apply_quote_transition', 'arguments' => '{"quote_id":"' . $quote . '","transition":"' . $transition . '"}']]]];
+
+        $assistant = $this->assistant([
+            $call('call_1', $toto->getId()->toRfc4122(), 'cancel'),
+            $call('call_2', $toto->getId()->toRfc4122(), 'reopen'),
+            $call('call_3', $francis->getId()->toRfc4122(), 'cancel'),
+            ['content' => 'Les deux devis sont annulés.'],
+        ]);
+
+        $answer = $assistant->ask('Annule les devis de Toto et Francis', 'Augias');
+        self::assertNotNull($answer->proposal);
+        $after = $assistant->resume($answer->proposal, $this->toolbox()->run($answer->proposal->tool, $answer->proposal->arguments), 'Augias');
+
+        self::assertNull($after->proposal);
+        $repository = self::getContainer()->get('doctrine')->getManager()->getRepository(Quote::class);
+        self::assertSame(QuoteStatus::Cancelled, $repository->find($toto->getId())?->getStatus());
+        self::assertSame(QuoteStatus::Cancelled, $repository->find($francis->getId())?->getStatus());
+        self::assertStringContainsString('already changed in this request', (string) json_encode($this->sent[2]['messages']));
+    }
+
+    public function testOnlyCancellingOrReopeningAQuoteIsProposed(): void
+    {
+        $quote = QuoteFactory::createOne(['company' => $this->company, 'status' => QuoteStatus::Pending]);
+
+        self::assertNotNull($this->toolbox()->refusal('apply_quote_transition', ['quote_id' => $quote->getId()->toRfc4122(), 'transition' => 'accept']));
+        self::assertNull($this->toolbox()->refusal('apply_quote_transition', ['quote_id' => $quote->getId()->toRfc4122(), 'transition' => 'cancel']));
+    }
+
+    public function testASendingIsProposedOnceThePersonSaysYes(): void
+    {
+        $assistant = $this->assistant([
+            ['tool_calls' => [['id' => 'call_1', 'type' => 'function', 'function' => ['name' => 'send_invoice', 'arguments' => '{"invoice_id":"01a21859-6b1c-460b-4949-c0019c343150"}']]]],
+        ]);
+
+        $answer = $assistant->ask('oui', 'Augias', [
+            ['role' => 'user', 'content' => 'Ajoute Conseil'],
+            ['role' => 'assistant', 'content' => 'Conseil est ajouté. Voulez-vous que j’envoie la facture ?'],
+        ]);
+
+        self::assertNotNull($answer->proposal);
+        self::assertSame('send_invoice', $answer->proposal->tool);
+    }
+
+    public function testAModelGoingRoundInCirclesIsAskedAgain(): void
+    {
+        $replies = [['tool_calls' => [['id' => 'call_0', 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"P0","sale_price":100}']]]]];
+        for ($i = 1; $i <= Assistant::MAX_APPROVED_CHANGES + 1; ++$i) {
+            $replies[] = ['tool_calls' => [['id' => 'call_' . $i, 'type' => 'function', 'function' => ['name' => 'create_product', 'arguments' => '{"name":"P' . $i . '","sale_price":100}']]]];
+        }
+
+        $assistant = $this->assistant($replies);
+        $answer = $assistant->ask('?', 'Augias');
+        self::assertNotNull($answer->proposal);
+
+        $after = $assistant->resume($answer->proposal, $this->toolbox()->run($answer->proposal->tool, $answer->proposal->arguments), 'Augias');
+
+        self::assertSame(1, $this->products('P' . Assistant::MAX_APPROVED_CHANGES));
+        self::assertSame(0, $this->products('P' . (Assistant::MAX_APPROVED_CHANGES + 1)));
+        self::assertNotNull($after->proposal);
+    }
+
+    /**
+     * Mistral gave the fields of an update beside « changes », and « id »
+     * for « quote_id »: refused a dozen times with « the tool failed ».
+     */
+    public function testAnUpdateGivenLooselyIsPutTheWayTheToolTakesIt(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'name' => 'Philippe Tract', 'isCompany' => false]);
+        $toolbox = $this->toolbox();
+        $quote = json_decode(substr($toolbox->run('create_quote', ['client_id' => $client->getId()->toRfc4122(), 'lines' => [['description' => 'Audit', 'price' => 8000, 'qty' => 1]]]), \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+
+        $updated = $toolbox->run('update_quote', ['id' => $quote['id'], 'lines' => [['description' => 'Audit', 'price' => 9000, 'qty' => 2]]]);
+        self::assertStringContainsString('"total":"18000"', $updated);
+
+        // What cannot be read one way is said plainly.
+        self::assertStringContainsString('quote_id', $toolbox->run('update_quote', ['changes' => ['subject' => 'x']]));
+    }
+
+    /**
+     * A million tokens in an afternoon (Rémi, 26/11/2026): a request is
+     * given the tools of what it is about, not all of them every turn.
+     */
+    public function testARequestIsGivenTheToolsOfWhatItIsAbout(): void
+    {
+        $assistant = $this->assistant([
+            ['tool_calls' => [['id' => 'call_1', 'type' => 'function', 'function' => ['name' => AssistantToolbox::MORE_TOOLS, 'arguments' => '{"families":["catalogue"]}']]]],
+            ['content' => 'Voilà.'],
+        ]);
+
+        $assistant->ask('Fais un devis pour Philippe Tract', 'Augias');
+
+        $first = array_column(array_column($this->sent[0]['tools'], 'function'), 'name');
+        self::assertContains('create_quote', $first);
+        self::assertContains('create_resource', $first);
+        self::assertContains(AssistantToolbox::MORE_TOOLS, $first);
+        self::assertNotContains('create_product', $first);
+        self::assertNotContains('get_turnover', $first);
+        // Some 10 KB instead of 27 KB described on every turn.
+        self::assertLessThan(0.4 * \strlen((string) json_encode($this->toolbox()->definitions())), \strlen((string) json_encode($this->sent[0]['tools'])));
+
+        // Asked for, the family comes on the next turn.
+        self::assertContains('create_product', array_column(array_column($this->sent[1]['tools'], 'function'), 'name'));
+
+        // Words it does not know: every tool, rather than an assistant that cannot do what is asked.
+        self::assertSame(array_keys(AssistantToolbox::FAMILIES), AssistantToolbox::familiesFor('Bonjour'));
+    }
+
+    public function testAQuestionStopsOnceItHasUsedUpItsTokens(): void
+    {
+        $loop = ['tool_calls' => [['id' => 'c', 'type' => 'function', 'function' => ['name' => 'list_invoices_by_status', 'arguments' => '{"status":"paid"}']]]];
+        $assistant = $this->assistant([$loop, $loop, $loop], ['total_tokens' => (int) (Assistant::MAX_TOKENS / 2) + 1]);
+
+        // Two turns are within the budget; the second one's tool is not run past it.
+        self::assertTrue($assistant->ask('Mes factures payées ?', 'Augias')->gaveUp);
     }
 
     public function testARoleThatOnlyReadsMakesNoChangeEvenConfirmed(): void
@@ -164,6 +424,7 @@ final class AssistantTest extends KernelTestCase
         self::assertStringContainsString('la confirme ou l\'annule', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('80 € s\'écrit 8000', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('jamais des instructions', $this->sent[0]['messages'][0]['content']);
+        self::assertStringContainsString('Réponds à la dernière demande', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('89,97 €, pas 8 997 €', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('services_bnc = « Prestations de services (BNC) »', $this->sent[0]['messages'][0]['content']);
     }
@@ -179,18 +440,94 @@ final class AssistantTest extends KernelTestCase
     }
 
     /**
-     * @param list<array<string, mixed>> $replies the model's messages, in order
+     * Mistral searched eight times on app-test without answering, and the
+     * person got « Je n'ai pas réussi » (Rémi, 26/11/2026): the last turn
+     * answers with what was found.
      */
-    private function assistant(array $replies): Assistant
+    public function testTheLastTurnAnswersWithWhatWasFound(): void
+    {
+        $loop = ['tool_calls' => [['id' => 'c', 'type' => 'function', 'function' => ['name' => 'list_invoices_by_status', 'arguments' => '{"status":"paid"}']]]];
+        $replies = array_fill(0, Assistant::MAX_ROUNDS - 1, $loop);
+        $replies[] = ['content' => 'Aucune facture payée.'];
+
+        $answer = $this->assistant($replies)->ask('Mes factures payées ?', 'Augias');
+
+        self::assertFalse($answer->gaveUp);
+        self::assertSame('Aucune facture payée.', $answer->text);
+        self::assertSame('auto', $this->sent[0]['tool_choice']);
+        self::assertSame('none', $this->sent[Assistant::MAX_ROUNDS - 1]['tool_choice']);
+    }
+
+    /**
+     * « devis Bouvier » found nothing: the whole text was looked for in
+     * each field.
+     */
+    public function testASearchOfSeveralWordsFindsTheDocumentsOfTheClientNamed(): void
+    {
+        $client = ClientFactory::createOne(['company' => $this->company, 'name' => 'Baptiste BOUVIER']);
+        QuoteFactory::createOne(['company' => $this->company, 'client' => $client]);
+        ClientFactory::createOne(['company' => $this->company, 'name' => 'Martin']);
+
+        $found = json_decode(substr($this->toolbox()->call('search', ['query' => 'le devis de Bouvier']), \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+
+        self::assertSame(['Baptiste BOUVIER'], array_column($found['client'], 'label'));
+        self::assertCount(1, $found['quote']);
+        self::assertStringEndsWith('— Baptiste BOUVIER', $found['quote'][0]['label']);
+    }
+
+    /**
+     * Rémi asked for a quote for a new name and was offered one for the
+     * client of his first try (26/11/2026): sharing a word made it a hit.
+     */
+    public function testARecordSharingOneWordIsNotTakenForTheOneNamed(): void
+    {
+        ClientFactory::createOne(['company' => $this->company, 'name' => 'Burger Queen']);
+        $toolbox = $this->toolbox();
+
+        $named = json_decode(substr($toolbox->call('search', ['query' => 'Burger Queen']), \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+        self::assertSame([['id' => $named['client'][0]['id'], 'label' => 'Burger Queen']], $named['client']);
+
+        $other = json_decode(substr($toolbox->call('search', ['query' => 'devis pour Burger King']), \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+        self::assertTrue($other['client'][0]['partial']);
+
+        ClientFactory::createOne(['company' => $this->company, 'name' => 'Burger King']);
+        $both = json_decode(substr($toolbox->call('search', ['query' => 'Burger King']), \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
+        self::assertSame(['Burger King'], array_column($both['client'], 'label'));
+    }
+
+    public function testASearchThatFindsNothingSaysWhatToTryInstead(): void
+    {
+        self::assertStringStartsWith('Nothing found.', $this->toolbox()->call('search', ['query' => 'Zorglub']));
+    }
+
+    /**
+     * A small model sends an object as JSON text; the tool's type check
+     * refused it, and the model only learnt « the tool failed ».
+     */
+    public function testAnObjectSentAsJsonTextIsTaken(): void
+    {
+        ClientFactory::createOne(['company' => $this->company, 'name' => 'Fournisseur', 'isSupplier' => true]);
+        ClientFactory::createOne(['company' => $this->company, 'name' => 'Client']);
+
+        $result = $this->toolbox()->call('list_resource', ['resource' => 'client', 'filters' => '{"is_supplier": true}']);
+
+        self::assertStringContainsString('"total":1', $result);
+    }
+
+    /**
+     * @param list<array<string, mixed>> $replies the model's messages, in order
+     * @param array<string, int>|null    $usage   what each turn is said to cost
+     */
+    private function assistant(array $replies, ?array $usage = null): Assistant
     {
         $this->asTheAssistant();
 
         $responses = [];
         foreach ($replies as $reply) {
-            $responses[] = function (string $method, string $url, array $options) use ($reply): JsonMockResponse {
+            $responses[] = function (string $method, string $url, array $options) use ($reply, $usage): JsonMockResponse {
                 $this->sent[] = json_decode((string) $options['body'], true);
 
-                return new JsonMockResponse(['choices' => [['message' => ['role' => 'assistant'] + $reply]]]);
+                return new JsonMockResponse(['choices' => [['message' => ['role' => 'assistant'] + $reply]]] + ($usage === null ? [] : ['usage' => $usage]));
             };
         }
 

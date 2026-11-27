@@ -49,17 +49,30 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 final readonly class MiscellaneousTools
 {
     /**
-     * @var array<string, array{class: class-string, fields: list<string>, label: string}>
+     * What each kind is searched on. A document is also found by the name
+     * of its client (or supplier): « devis Dupont » is a quote for Dupont.
+     *
+     * @var array<string, array{class: class-string, fields: list<string>, label: string, join?: string}>
      */
     private const array SEARCHABLE = [
         'client' => ['class' => Client::class, 'fields' => ['e.name', 'e.website'], 'label' => 'name'],
         'contact' => ['class' => Contact::class, 'fields' => ['e.firstName', 'e.lastName', 'e.email'], 'label' => 'email'],
-        'invoice' => ['class' => Invoice::class, 'fields' => ['e.invoiceId', 'e.subject'], 'label' => 'invoiceId'],
-        'quote' => ['class' => Quote::class, 'fields' => ['e.quoteId', 'e.subject'], 'label' => 'quoteId'],
-        'credit_note' => ['class' => CreditNote::class, 'fields' => ['e.creditNoteId', 'e.subject'], 'label' => 'creditNoteId'],
-        'bill' => ['class' => Bill::class, 'fields' => ['e.billNumber', 'e.notes'], 'label' => 'billNumber'],
+        'invoice' => ['class' => Invoice::class, 'fields' => ['e.invoiceId', 'e.subject', 'c.name'], 'label' => 'invoiceId', 'join' => 'e.client'],
+        'quote' => ['class' => Quote::class, 'fields' => ['e.quoteId', 'e.subject', 'c.name'], 'label' => 'quoteId', 'join' => 'e.client'],
+        'credit_note' => ['class' => CreditNote::class, 'fields' => ['e.creditNoteId', 'e.subject', 'c.name'], 'label' => 'creditNoteId', 'join' => 'e.client'],
+        'bill' => ['class' => Bill::class, 'fields' => ['e.billNumber', 'e.notes', 'c.name'], 'label' => 'billNumber', 'join' => 'e.supplier'],
         'product' => ['class' => Product::class, 'fields' => ['e.name', 'e.reference', 'e.description'], 'label' => 'name'],
     ];
+
+    /** Words of a search that say what is looked for rather than which one. */
+    private const array KIND_WORDS = [
+        'client', 'clients', 'contact', 'contacts', 'facture', 'factures', 'invoice', 'invoices', 'devis', 'quote', 'quotes',
+        'avoir', 'avoirs', 'credit', 'note', 'achat', 'achats', 'bill', 'bills', 'produit', 'produits', 'product', 'products',
+        'article', 'articles', 'catalogue', 'le', 'la', 'les', 'de', 'du', 'des', 'pour', 'the', 'for', 'of',
+    ];
+
+    /** The most words of one search looked for. */
+    private const int MAX_WORDS = 6;
 
     public function __construct(
         private EntityManagerInterface $entityManager,
@@ -82,9 +95,9 @@ final readonly class MiscellaneousTools
      * @param string $query Text to look for (case-insensitive)
      * @param int    $limit Max hits per kind (1..25)
      *
-     * @return array<string, list<array{id: string|null, label: string}>>
+     * @return array<string, list<array{id: string|null, label: string, partial?: true}>>
      */
-    #[McpTool(name: 'search', description: 'Search across clients, contacts, invoices, quotes, credit notes, purchases and catalogue by name, number, subject or e-mail; returns ids to pass to get_resource.')]
+    #[McpTool(name: 'search', description: 'Search across clients, contacts, invoices, quotes, credit notes, purchases and catalogue by name, number, subject or e-mail; returns ids to pass to get_resource. A hit marked "partial" matches only some of the words: it is not the record named.')]
     #[McpScopeRequired(McpScope::Read)]
     public function search(string $query, int $limit = 5): array
     {
@@ -96,28 +109,53 @@ final readonly class MiscellaneousTools
             throw new ToolCallException('query cannot be empty.');
         }
 
-        $pattern = '%' . strtr(mb_strtolower($text), ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
         $limit = max(1, min($limit, 25));
+        $words = $this->words($text);
         $results = [];
 
         foreach (self::SEARCHABLE as $kind => $definition) {
-            $qb = $this->entityManager->createQueryBuilder()->select('e')->from($definition['class'], 'e');
-            $qb->where($qb->expr()->orX(...array_map(
-                static fn (string $field): string => sprintf("LOWER(%s) LIKE :pattern ESCAPE '!'", $field),
-                $definition['fields'],
-            )))
-                ->setParameter('pattern', $pattern)
-                ->orderBy('e.id', 'DESC')
-                ->setMaxResults($limit);
+            // How many of the words each record matches: a record that
+            // matches them all comes first, one that matches any is kept.
+            $scores = [];
 
-            $hits = [];
+            foreach ($words as $word) {
+                $pattern = '%' . strtr($word, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
+                $qb = $this->entityManager->createQueryBuilder()->select('e')->from($definition['class'], 'e');
 
-            foreach ($qb->getQuery()->getResult() as $entity) {
-                $hits[] = ['id' => $entity->getId()?->toRfc4122(), 'label' => $this->label($entity, $definition['label'])];
+                if (isset($definition['join'])) {
+                    $qb->leftJoin($definition['join'], 'c');
+                }
+
+                $qb->where($qb->expr()->orX(...array_map(
+                    static fn (string $field): string => sprintf("LOWER(%s) LIKE :pattern ESCAPE '!'", $field),
+                    $definition['fields'],
+                )))
+                    ->setParameter('pattern', $pattern)
+                    ->orderBy('e.id', 'DESC')
+                    ->setMaxResults(100);
+
+                foreach ($qb->getQuery()->getResult() as $entity) {
+                    $key = (string) $entity->getId()?->toRfc4122();
+                    $scores[$key] = ['entity' => $entity, 'score' => ($scores[$key]['score'] ?? 0) + 1];
+                }
             }
 
-            if ($hits !== []) {
-                $results[$kind] = $hits;
+            if ($scores === []) {
+                continue;
+            }
+
+            // Most words matched first, then the most recent (ULIDs sort by time).
+            uksort($scores, static fn (string $a, string $b): int => [$scores[$b]['score'], $b] <=> [$scores[$a]['score'], $a]);
+
+            // What matches every word is what was named: when there is
+            // one, a record that shares a single word (« Burger King » for
+            // « Burger Queen ») is left out; when there is none, the near
+            // ones are given, marked as such, never as the one asked for.
+            $complete = array_filter($scores, static fn (array $hit): bool => $hit['score'] === \count($words));
+            $partial = $complete === [];
+
+            foreach (\array_slice($partial ? $scores : $complete, 0, $limit, true) as $key => $hit) {
+                $results[$kind][] = ['id' => $key, 'label' => $this->label($hit['entity'], $definition['label'])] + ($partial ? ['partial' => true] : []);
             }
         }
 
@@ -296,6 +334,25 @@ final readonly class MiscellaneousTools
         }
 
         return $result;
+    }
+
+    /**
+     * The words a search looks for, lower-cased: each on its own, so that
+     * « devis Dupont » finds Dupont's quotes, and without the words that only
+     * name a kind (« devis », « facture ») unless there is nothing else.
+     *
+     * @return list<string>
+     */
+    private function words(string $text): array
+    {
+        $all = preg_split('/[\s,;]+/u', mb_strtolower($text), -1, \PREG_SPLIT_NO_EMPTY) ?: [];
+        $words = array_values(array_unique(array_filter($all, static fn (string $word): bool => mb_strlen($word) >= 2 && ! \in_array($word, self::KIND_WORDS, true))));
+
+        if ($words === []) {
+            return [mb_strtolower($text)];
+        }
+
+        return \array_slice($words, 0, self::MAX_WORDS);
     }
 
     private function label(object $entity, string $property): string

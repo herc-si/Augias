@@ -55,12 +55,13 @@ final readonly class AssistantClient
      *
      * @param list<array<string, mixed>> $messages
      * @param list<array<string, mixed>> $tools
+     * @param bool                       $mustAnswer the tools stay known, but the model may not ask for one: it answers
      *
      * @return array<string, mixed>
      *
      * @throws AssistantUnavailable when the service cannot be reached or answers with an error
      */
-    public function complete(array $messages, array $tools): array
+    public function complete(array $messages, array $tools, bool $mustAnswer = false): array
     {
         try {
             $response = $this->httpClient->request('POST', rtrim($this->baseUrl, '/') . '/chat/completions', [
@@ -69,7 +70,7 @@ final readonly class AssistantClient
                     'model' => $this->model,
                     'messages' => $messages,
                     'tools' => $tools,
-                    'tool_choice' => 'auto',
+                    'tool_choice' => $mustAnswer ? 'none' : 'auto',
                     'temperature' => 0.2,
                 ],
                 'timeout' => 60,
@@ -86,6 +87,9 @@ final readonly class AssistantClient
         if ($status >= 300 || ! is_array($message)) {
             throw new AssistantUnavailable('The assistant service answered with HTTP ' . $status . '.');
         }
+
+        // What the turn cost, for the budget of a request (Assistant::MAX_TOKENS).
+        $message['_tokens'] = is_int($data['usage']['total_tokens'] ?? null) ? $data['usage']['total_tokens'] : null;
 
         return $message;
     }

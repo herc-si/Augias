@@ -70,6 +70,7 @@ final readonly class ActionPreview
         'type' => 'catalog.type.',
         'discount_type' => 'assistant.value.discount_type.',
         'resource' => 'assistant.value.resource.',
+        'transition' => 'assistant.value.transition.',
     ];
 
     /** Arguments in the minor unit. */

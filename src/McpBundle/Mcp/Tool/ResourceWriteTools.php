@@ -30,6 +30,7 @@ use Mcp\Capability\Attribute\Schema;
 use Mcp\Exception\ToolCallException;
 use ReflectionClass;
 use ReflectionNamedType;
+use Symfony\Component\PropertyAccess\Exception\InvalidTypeException;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Uid\Ulid;
@@ -117,23 +118,42 @@ final readonly class ResourceWriteTools
         $company = $this->requireActiveCompany();
 
         $entity = $this->hydrateNew($class, $data, $company);
-
-        $errors = $this->validator->validate($entity);
-
-        if (\count($errors) > 0) {
-            $messages = [];
-
-            foreach ($errors as $error) {
-                $messages[] = sprintf('%s: %s', $error->getPropertyPath(), $error->getMessage());
-            }
-
-            throw new ToolCallException(sprintf('Validation failed: %s', implode('; ', $messages)));
-        }
+        $this->assertValid($entity);
 
         $this->entityManager->persist($entity);
         $this->entityManager->flush();
 
         return $this->normalizer->normalize($entity);
+    }
+
+    /**
+     * Why creating this record would fail, if it would, without creating
+     * it: the assistant asks before showing the person a change to confirm,
+     * so that they do not confirm one that is then refused (Rémi,
+     * 26/11/2026: a client confirmed three times).
+     *
+     * @param array<string, mixed> $data
+     */
+    public function creationProblem(string $resource, array $data): ?string
+    {
+        try {
+            $entity = $this->hydrateNew($this->resolveCreatable($resource), $data, $this->requireActiveCompany());
+        } catch (ToolCallException $e) {
+            return $e->getMessage();
+        }
+
+        try {
+            $this->assertValid($entity);
+        } catch (ToolCallException $e) {
+            return $e->getMessage();
+        } finally {
+            // A contact is added to its client, which would save it on the next flush.
+            if ($entity instanceof Contact) {
+                $entity->getClient()?->removeContact($entity);
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -217,8 +237,22 @@ final readonly class ResourceWriteTools
         ];
     }
 
+    private function assertValid(object $entity): void
+    {
+        $errors = $this->validator->validate($entity);
+
+        if (\count($errors) > 0) {
+            $messages = [];
+
+            foreach ($errors as $error) {
+                $messages[] = sprintf('%s: %s', $error->getPropertyPath(), $error->getMessage());
+            }
+
+            throw new ToolCallException(sprintf('Validation failed: %s', implode('; ', $messages)));
+        }
+    }
+
     /**
-     * @param class-string         $class
      * @param array<string, mixed> $data
      */
     private function hydrateNew(string $class, array $data, Company $company): object
@@ -323,6 +357,18 @@ final readonly class ResourceWriteTools
                     $field,
                     $exception->getMessage(),
                 ), $exception->getCode(), $exception);
+            } catch (InvalidTypeException $exception) {
+                // « "website": null » from the model means none: left out
+                // rather than a crash (bench of 26/11/2026).
+                if ($value === null) {
+                    continue;
+                }
+
+                throw new ToolCallException(sprintf(
+                    'Field "%s" does not take %s: leave it out, or give a value of the right type.',
+                    $field,
+                    get_debug_type($value),
+                ), 0, $exception);
             }
         }
     }
