@@ -375,6 +375,15 @@ final class AssistantToolbox
             return 'here the assistant only cancels a quote ("cancel") or reopens a cancelled one ("reopen").';
         }
 
+        // Someone to send it to, before the person confirms the sending.
+        if ($name === 'send_quote' && is_string($arguments['quote_id'] ?? null)) {
+            return $this->quotes->sendingProblem($arguments['quote_id']);
+        }
+
+        if (in_array($name, ['send_invoice', 'send_invoice_reminder'], true) && is_string($arguments['invoice_id'] ?? null)) {
+            return $this->invoices->sendingProblem($arguments['invoice_id']);
+        }
+
         if ($name === 'create_quote' || $name === 'create_invoice') {
             $decoded = $this->decodedArguments(['properties' => ['lines' => ['type' => 'array'], 'contact_ids' => ['type' => 'array'], 'invoice_taxes' => ['type' => 'array']]], $arguments);
 
