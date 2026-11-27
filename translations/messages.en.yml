@@ -1000,10 +1000,13 @@ client:
             title: 'No quotes yet'
     registry:
         closed: 'Closed'
-        help: 'Name, SIREN or SIRET: the name, identifiers and head office address are filled in from the official French company register.'
+        establishment: 'establishment in %city%'
+        help: 'Name (followed if need be by the town or postcode), SIREN or SIRET: the name, identifiers and head office address are filled in from the official French company register.'
         label: 'Search the company register'
-        none: 'No company found. Try the SIREN, or fill in the form by hand.'
+        none: 'No company found. An individual entrepreneur may have asked not to be listed by name in the register: try their SIREN, or fill in the form by hand.'
         placeholder: 'Company name or SIREN'
+        secondary: 'Secondary establishment'
+        unlisted: 'Individual entrepreneur (name not public)'
     restore:
         success: 'Client Successfully Restored'
     save: Save
@@ -1773,6 +1776,7 @@ einvoicing:
             siren_help: 'The 9 digits of your company number.'
             look_up: 'Look up'
             found: 'Found in the register: %name%. Check the details below.'
+            found_unlisted: 'Found in the register, with partial listing: the name, street and postcode are not public there. Fill them in below.'
             not_found: 'This SIREN is not in the register. Fill in the details by hand.'
             siret: 'SIRET'
             siret_help: 'The SIRET of the establishment that invoices, usually your head office.'

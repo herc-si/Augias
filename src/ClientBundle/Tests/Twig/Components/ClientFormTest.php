@@ -69,6 +69,46 @@ final class ClientFormTest extends LiveComponentTest
         self::assertSame('FR', $address['country']);
     }
 
+    /**
+     * Searched by the SIRET of an establishment, the client is that
+     * establishment: its SIRET and address, not the head office's.
+     */
+    public function testAnEstablishmentPickedByItsSiretKeepsItsSiretAndAddress(): void
+    {
+        $answer = CompanyRegistryTest::DECATHLON;
+        $answer['results'][0]['matching_etablissements'] = [[
+            'siret' => '30613890003908',
+            'adresse' => '2 RUE FERRER 42000 SAINT-ETIENNE',
+            'code_postal' => '42000',
+            'libelle_commune' => 'SAINT-ETIENNE',
+            'etat_administratif' => 'A',
+        ]];
+        self::getContainer()->set(CompanyRegistry::class, new CompanyRegistry(
+            new MockHttpClient(static fn (): JsonMockResponse => new JsonMockResponse($answer)),
+            new ArrayAdapter(),
+            new NullLogger(),
+        ));
+
+        $component = $this
+            ->createLiveComponent(name: ClientForm::class, client: $this->client)
+            ->actingAs($this->getUser());
+
+        $component->set('registryQuery', '30613890003908');
+        $html = $component->render()->toString();
+        self::assertStringContainsString('SIRET 30613890003908', $html);
+        self::assertStringContainsString('data-live-siret-param="30613890003908"', $html);
+
+        $component->call('fillFromRegistry', ['siren' => '306138900', 'siret' => '30613890003908']);
+
+        $values = $component->component()->formValues;
+        self::assertSame('DECATHLON', $values['name']);
+        self::assertSame('30613890003908', $values['siret']);
+        $address = reset($values['addresses']);
+        self::assertSame('2 RUE FERRER', $address['street1']);
+        self::assertSame('42000', $address['zip']);
+        self::assertSame('SAINT-ETIENNE', $address['city']);
+    }
+
     public function testRenderWithExistingData(): void
     {
         $user = $this->getUser();

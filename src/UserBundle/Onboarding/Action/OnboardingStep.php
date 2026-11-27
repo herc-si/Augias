@@ -133,7 +133,8 @@ final class OnboardingStep extends AbstractController
 
             if ($lookUp->isClicked()) {
                 $filled = $this->einvoicing->lookUp($typed);
-                $lookedUp = $filled->registryName !== null;
+                // Found even when the name is not public (« diffusion partielle »).
+                $lookedUp = $filled->siren !== null && $this->einvoicing->registryHas($filled->siren);
                 // A new form over the filled data, without the errors of
                 // what was not typed yet.
                 $form = $this->identityForm($filled);

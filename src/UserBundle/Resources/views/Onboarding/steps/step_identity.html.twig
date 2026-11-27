@@ -12,7 +12,9 @@
     <h2 class="h2 text-center mb-2">{{ 'onboarding.identity.title'|trans }}</h2>
     <p class="text-muted text-center lead mb-4">{{ 'onboarding.identity.description'|trans }}</p>
 
-    {% if lookedUp is same as(true) %}
+    {% if lookedUp is same as(true) and form.vars.value.registryName is null %}
+        <twig:Ui:Alert type="info" icon="tabler:building">{{ 'einvoicing.setup.identity.found_unlisted'|trans }}</twig:Ui:Alert>
+    {% elseif lookedUp is same as(true) %}
         <twig:Ui:Alert type="success" icon="tabler:building">{{ 'einvoicing.setup.identity.found'|trans({'%name%': form.vars.value.registryName}) }}</twig:Ui:Alert>
     {% elseif lookedUp is same as(false) %}
         <twig:Ui:Alert type="warning" icon="tabler:alert-triangle">{{ 'einvoicing.setup.identity.not_found'|trans }}</twig:Ui:Alert>

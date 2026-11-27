@@ -19,8 +19,15 @@ namespace Augias\ClientBundle\Registry;
  */
 final readonly class RegistryCompany
 {
+    /**
+     * @param string|null $name null for an individual entrepreneur who asked
+     *                          not to be listed: the register does not give it
+     * @param string|null $establishmentCity the town of the establishment the
+     *                                       search found, when not the head office's
+     * @param bool        $headOffice        false for an establishment asked for by its SIRET
+     */
     public function __construct(
-        public string $name,
+        public ?string $name,
         public string $siren,
         public ?string $siret,
         public ?string $street1,
@@ -28,6 +35,8 @@ final readonly class RegistryCompany
         public ?string $zip,
         public ?string $city,
         public bool $active,
+        public ?string $establishmentCity = null,
+        public bool $headOffice = true,
     ) {
     }
 
