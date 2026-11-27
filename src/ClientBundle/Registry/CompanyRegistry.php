@@ -29,6 +29,8 @@ use function implode;
 use function is_array;
 use function is_string;
 use function mb_strlen;
+use function mb_strrpos;
+use function mb_substr;
 use function min;
 use function preg_match;
 use function preg_replace;
@@ -93,17 +95,41 @@ final readonly class CompanyRegistry
             return [];
         }
 
-        // A SIRET is looked up by the SIREN it starts with.
+        // A SIREN or SIRET, spaces or not. A SIRET is that establishment, not
+        // the head office: its own SIRET and address (Rémi, 27/11/2026: the
+        // SIRET typed was replaced by the head office's, unseen, and that is
+        // where an electronic invoice may be routed).
         $digits = (string) preg_replace('/\D/', '', $query);
+        $siret = null;
         if (preg_match('/^\d{9}(\d{5})?$/', $digits) === 1 && preg_match('/^[\d\s]+$/', $query) === 1) {
-            $query = substr($digits, 0, 9);
+            $query = $digits;
+            $siret = mb_strlen($digits) === 14 ? $digits : null;
         }
 
-        return $this->cache->get('company_registry_' . hash('xxh128', $query), function (ItemInterface $item) use ($query): array {
+        return $this->cache->get('company_registry_' . hash('xxh128', $query), function (ItemInterface $item) use ($query, $siret): array {
             $item->expiresAfter(3600);
+
+            if ($siret !== null) {
+                return $this->ask(['q' => $siret], siret: $siret);
+            }
 
             return $this->askWithPlace($query) ?: $this->ask(['q' => $query]);
         });
+    }
+
+    /**
+     * The establishment with this SIRET, as a company to fill in: its SIRET
+     * and address; null when the register does not have it.
+     */
+    public function findEstablishment(string $siret): ?RegistryCompany
+    {
+        foreach ($this->search($siret) as $company) {
+            if ($company->siret === $siret) {
+                return $company;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -183,10 +209,11 @@ final readonly class CompanyRegistry
      * @param array<string, string> $query
      * @param bool                  $placed whether a place narrowed it: the
      *                                      establishment found is then in it
+     * @param string|null           $siret  the establishment asked for
      *
      * @return list<RegistryCompany>
      */
-    private function ask(array $query, bool $placed = false): array
+    private function ask(array $query, bool $placed = false, ?string $siret = null): array
     {
         try {
             $response = $this->httpClient->request('GET', self::URL, [
@@ -203,10 +230,10 @@ final readonly class CompanyRegistry
 
         $results = is_array($data['results'] ?? null) ? $data['results'] : [];
 
-        return array_values(array_filter(array_map(fn (mixed $result): ?RegistryCompany => $this->company($result, $placed), $results)));
+        return array_values(array_filter(array_map(fn (mixed $result): ?RegistryCompany => $this->company($result, $placed, $siret), $results)));
     }
 
-    private function company(mixed $result, bool $placed): ?RegistryCompany
+    private function company(mixed $result, bool $placed, ?string $siret): ?RegistryCompany
     {
         if (! is_array($result) || ! is_string($result['siren'] ?? null)) {
             return null;
@@ -214,6 +241,10 @@ final readonly class CompanyRegistry
 
         $seat = is_array($result['siege'] ?? null) ? $result['siege'] : [];
         $name = self::text($result['nom_raison_sociale'] ?? null) ?? self::text($result['nom_complet'] ?? null);
+
+        if ($siret !== null && self::text($seat['siret'] ?? null) !== $siret) {
+            return $this->establishment($result, $name, $siret);
+        }
 
         $street = implode(' ', array_filter([
             self::text($seat['numero_voie'] ?? null),
@@ -239,6 +270,43 @@ final readonly class CompanyRegistry
             active: ($result['etat_administratif'] ?? 'A') === 'A',
             establishmentCity: $placed && $foundIn !== $city ? $foundIn : null,
         );
+    }
+
+    /**
+     * The establishment $siret of a company, not its head office. The
+     * service gives its address on one line (« 2 RUE FERRER 42000
+     * SAINT-ETIENNE »): the street is what comes before the postcode.
+     *
+     * @param array<mixed> $result
+     */
+    private function establishment(array $result, ?string $name, string $siret): ?RegistryCompany
+    {
+        $establishments = is_array($result['matching_etablissements'] ?? null) ? $result['matching_etablissements'] : [];
+
+        foreach ($establishments as $establishment) {
+            if (! is_array($establishment) || ($establishment['siret'] ?? null) !== $siret) {
+                continue;
+            }
+
+            $zip = self::text($establishment['code_postal'] ?? null);
+            $address = self::text($establishment['adresse'] ?? null) ?? '';
+            $at = $zip !== null ? mb_strrpos($address, ' ' . $zip) : false;
+
+            return new RegistryCompany(
+                name: $name,
+                siren: (string) $result['siren'],
+                siret: $siret,
+                street1: self::text($at !== false ? mb_substr($address, 0, $at) : null),
+                street2: null,
+                zip: $zip,
+                city: self::text($establishment['libelle_commune'] ?? null),
+                active: ($establishment['etat_administratif'] ?? 'A') === 'A',
+                headOffice: false,
+            );
+        }
+
+        // Not one of its establishments: nothing, rather than the head office.
+        return null;
     }
 
     private static function text(mixed $value): ?string

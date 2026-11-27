@@ -88,10 +88,11 @@
                             {% if registryResults is not empty %}
                                 <div class="list-group mt-2">
                                     {% for company in registryResults %}
-                                        <button type="button" class="list-group-item list-group-item-action text-start" data-action="live#action" data-live-action-param="fillFromRegistry" data-live-siren-param="{{ company.siren }}">
+                                        <button type="button" class="list-group-item list-group-item-action text-start" data-action="live#action" data-live-action-param="fillFromRegistry" data-live-siren-param="{{ company.siren }}"{% if not company.headOffice %} data-live-siret-param="{{ company.siret }}"{% endif %}>
                                             <span class="fw-semibold">{{ company.name ?? 'client.registry.unlisted'|trans }}</span>
                                             {% if not company.active %}<span class="badge bg-secondary-lt ms-1">{{ 'client.registry.closed'|trans }}</span>{% endif %}
-                                            <span class="d-block text-muted small">SIREN {{ company.siren }}{% if company.zip or company.city %} — {{ company.zip }} {{ company.city }}{% endif %}{% if company.establishmentCity %} · {{ 'client.registry.establishment'|trans({'%city%': company.establishmentCity}) }}{% endif %}</span>
+                                            {% if not company.headOffice %}<span class="badge bg-azure-lt ms-1">{{ 'client.registry.secondary'|trans }}</span>{% endif %}
+                                            <span class="d-block text-muted small">{% if not company.headOffice %}SIRET {{ company.siret }}{% else %}SIREN {{ company.siren }}{% endif %}{% if company.zip or company.city %} — {{ company.zip }} {{ company.city }}{% endif %}{% if company.establishmentCity %} · {{ 'client.registry.establishment'|trans({'%city%': company.establishmentCity}) }}{% endif %}</span>
                                         </button>
                                     {% endfor %}
                                 </div>

@@ -34,6 +34,8 @@ use function json_decode;
 use function json_encode;
 use function mb_strtoupper;
 use function preg_replace;
+use function str_starts_with;
+use function strlen;
 use function trim;
 
 /**
@@ -91,7 +93,14 @@ final readonly class ElectronicInvoicingOnboarding implements OnboardingProgress
     public function lookUp(CompanyIdentity $typed): CompanyIdentity
     {
         $siren = self::digits($typed->siren);
-        $found = $siren === null ? null : $this->registry->find($siren);
+        $siret = self::digits($typed->siret);
+
+        // The SIRET typed, when it is one of the SIREN's establishments: that
+        // one, the one that invoices, not the head office.
+        $found = $siren !== null && $siret !== null && strlen($siret) === 14 && str_starts_with($siret, $siren)
+            ? $this->registry->findEstablishment($siret)
+            : null;
+        $found ??= $siren === null ? null : $this->registry->find($siren);
 
         if (! $found instanceof RegistryCompany) {
             return $typed;

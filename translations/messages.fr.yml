@@ -998,6 +998,7 @@ client:
         label: 'Rechercher dans l''annuaire des entreprises'
         none: 'Aucune entreprise trouvée. Un entrepreneur individuel peut avoir demandé à ne pas figurer sous son nom dans l''annuaire : essayez son SIREN, ou remplissez la fiche à la main.'
         placeholder: 'Nom de l''entreprise ou SIREN'
+        secondary: 'Établissement secondaire'
         unlisted: 'Entrepreneur individuel (nom non public)'
     restore:
         success: 'Client restauré avec succès'

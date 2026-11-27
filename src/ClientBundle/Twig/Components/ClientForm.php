@@ -91,9 +91,10 @@ class ClientForm extends AbstractController
      * register gives them. What was typed in the other fields stays.
      */
     #[LiveAction]
-    public function fillFromRegistry(#[LiveArg] string $siren): void
+    public function fillFromRegistry(#[LiveArg] string $siren, #[LiveArg] string $siret = ''): void
     {
-        $company = $this->registry->find($siren);
+        // An establishment picked by its SIRET: that one, not the head office.
+        $company = $siret !== '' ? $this->registry->findEstablishment($siret) : $this->registry->find($siren);
         $this->registryQuery = '';
 
         if (! $company instanceof RegistryCompany) {

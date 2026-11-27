@@ -998,6 +998,7 @@ client:
         label: 'Search the company register'
         none: 'No company found. An individual entrepreneur may have asked not to be listed by name in the register: try their SIREN, or fill in the form by hand.'
         placeholder: 'Company name or SIREN'
+        secondary: 'Secondary establishment'
         unlisted: 'Individual entrepreneur (name not public)'
     restore:
         success: 'Client Successfully Restored'

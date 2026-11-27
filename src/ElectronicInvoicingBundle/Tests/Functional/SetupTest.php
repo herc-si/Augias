@@ -32,6 +32,7 @@ use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use function json_decode;
 use function ksort;
+use function str_contains;
 use function urlencode;
 
 #[CoversClass(Index::class)]
@@ -58,7 +59,22 @@ final class SetupTest extends WebTestCase
         $this->client->loginUser($user);
 
         self::getContainer()->set(CompanyRegistry::class, new CompanyRegistry(
-            new MockHttpClient(static fn (): JsonMockResponse => new JsonMockResponse(CompanyRegistryTest::DECATHLON)),
+            // An establishment asked for by its SIRET is answered with it.
+            new MockHttpClient(static function (string $method, string $url): JsonMockResponse {
+                $answer = CompanyRegistryTest::DECATHLON;
+
+                if (str_contains($url, '30613890003908')) {
+                    $answer['results'][0]['matching_etablissements'] = [[
+                        'siret' => '30613890003908',
+                        'adresse' => '2 RUE FERRER 42000 SAINT-ETIENNE',
+                        'code_postal' => '42000',
+                        'libelle_commune' => 'SAINT-ETIENNE',
+                        'etat_administratif' => 'A',
+                    ]];
+                }
+
+                return new JsonMockResponse($answer);
+            }),
             new ArrayAdapter(),
             new NullLogger(),
         ));
@@ -78,6 +94,22 @@ final class SetupTest extends WebTestCase
         self::assertSame('59650', $crawler->filter('#company_identity_zip')->attr('value'));
         self::assertSame('FR51306138900', $crawler->filter('#company_identity_vatNumber')->attr('value'));
         self::assertCount(0, $this->identifiers(), 'Looking up saves nothing.');
+    }
+
+    /**
+     * A SIRET typed that is one of the SIREN's establishments is kept, with
+     * that establishment's address: it is the one that invoices.
+     */
+    public function testLookingUpKeepsTheSiretTyped(): void
+    {
+        $crawler = $this->client->request('GET', self::URL);
+        $form = $crawler->selectButton('Look up')->form(['company_identity[siren]' => '306138900', 'company_identity[siret]' => '306 138 900 03908']);
+        $crawler = $this->client->submit($form);
+
+        self::assertResponseIsSuccessful();
+        self::assertSame('30613890003908', $crawler->filter('#company_identity_siret')->attr('value'));
+        self::assertSame('2 RUE FERRER', $crawler->filter('#company_identity_street1')->attr('value'));
+        self::assertSame('42000', $crawler->filter('#company_identity_zip')->attr('value'));
     }
 
     public function testSavingWritesTheCompanyWhereTheSettingsKeepItAndSwitchesElectronicInvoicingOn(): void

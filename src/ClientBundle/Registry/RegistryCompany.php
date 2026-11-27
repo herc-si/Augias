@@ -24,6 +24,7 @@ final readonly class RegistryCompany
      *                          not to be listed: the register does not give it
      * @param string|null $establishmentCity the town of the establishment the
      *                                       search found, when not the head office's
+     * @param bool        $headOffice        false for an establishment asked for by its SIRET
      */
     public function __construct(
         public ?string $name,
@@ -35,6 +36,7 @@ final readonly class RegistryCompany
         public ?string $city,
         public bool $active,
         public ?string $establishmentCity = null,
+        public bool $headOffice = true,
     ) {
     }
 

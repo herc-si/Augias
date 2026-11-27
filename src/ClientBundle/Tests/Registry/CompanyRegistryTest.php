@@ -183,15 +183,58 @@ final class CompanyRegistryTest extends TestCase
         self::assertSame('FR51306138900', new RegistryCompany('X', '306138900', null, null, null, null, null, true)->vatNumber());
     }
 
-    public function testASiretIsLookedUpByItsSiren(): void
+    public function testTheHeadOfficeSiretIsTheHeadOffice(): void
     {
         $registry = $this->registry([new JsonMockResponse(self::DECATHLON)], $requests);
 
-        self::assertNotNull($registry->find('306138900'));
-        $registry2 = $this->registry([new JsonMockResponse(self::DECATHLON)], $requests2);
-        $registry2->search('306 138 900 01294');
+        $company = $registry->findEstablishment('30613890001294');
 
-        self::assertStringContainsString('q=306138900', $requests2[0]);
+        self::assertNotNull($company);
+        self::assertTrue($company->headOffice);
+        self::assertSame('4 BOULEVARD DE MONS', $company->street1);
+        self::assertStringContainsString('q=30613890001294', $requests[0]);
+    }
+
+    /**
+     * The SIRET of an establishment that is not the head office: that one,
+     * its SIRET and address, spaces typed or not (Rémi, 27/11/2026: the
+     * head office's replaced it, unseen).
+     */
+    public function testASiretIsThatEstablishmentNotTheHeadOffice(): void
+    {
+        $answer = self::DECATHLON;
+        $answer['results'][0]['matching_etablissements'] = [[
+            'siret' => '30613890003908',
+            'adresse' => 'CENTRE COMMERCIAL STEEL 2 RUE FERRER 42000 SAINT-ETIENNE',
+            'code_postal' => '42000',
+            'libelle_commune' => 'SAINT-ETIENNE',
+            'etat_administratif' => 'A',
+            'est_siege' => false,
+        ]];
+        $registry = $this->registry([new JsonMockResponse($answer)], $requests);
+
+        $companies = $registry->search('306 138 900 03908');
+
+        self::assertCount(1, $companies);
+        $company = $companies[0];
+        self::assertFalse($company->headOffice);
+        self::assertSame('DECATHLON', $company->name);
+        self::assertSame('30613890003908', $company->siret);
+        self::assertSame('CENTRE COMMERCIAL STEEL 2 RUE FERRER', $company->street1);
+        self::assertSame('42000', $company->zip);
+        self::assertSame('SAINT-ETIENNE', $company->city);
+        self::assertStringContainsString('q=30613890003908', $requests[0]);
+    }
+
+    /**
+     * A SIRET the register does not have: nothing, rather than the head
+     * office of the SIREN it starts with.
+     */
+    public function testAnUnknownSiretFindsNothing(): void
+    {
+        $registry = $this->registry([new JsonMockResponse(self::DECATHLON)], $requests);
+
+        self::assertNull($registry->findEstablishment('30613890099999'));
     }
 
     public function testShortQueriesAndOutagesAnswerNothing(): void
