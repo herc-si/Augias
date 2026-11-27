@@ -77,14 +77,29 @@ final class CompanyRegistryTest extends TestCase
      */
     public function testATownTypedAfterTheNameNarrowsTheSearch(): void
     {
-        $registry = $this->registry([new JsonMockResponse(self::DECATHLON)], $requests);
+        $registry = $this->registry([self::nothing(), new JsonMockResponse(self::DECATHLON)], $requests);
 
         $companies = $registry->search('Decathlon st etienne');
 
         self::assertCount(1, $companies);
+        self::assertCount(2, $requests);
+        self::assertStringContainsString('q=Decathlon%20st%20etienne&', $requests[0]);
+        self::assertStringContainsString('q=Decathlon&', $requests[1]);
+        self::assertStringContainsString('code_postal=42000%2C42100', $requests[1]);
+    }
+
+    /**
+     * The town may be part of the name: the whole query is searched in the
+     * town first, not « commune de » among every town hall of its postcode.
+     */
+    public function testTheTownMayBePartOfTheName(): void
+    {
+        $registry = $this->registry([new JsonMockResponse(self::DECATHLON)], $requests);
+
+        self::assertCount(1, $registry->search('commune de vienne'));
         self::assertCount(1, $requests);
-        self::assertStringContainsString('q=Decathlon&', $requests[0]);
-        self::assertStringContainsString('code_postal=42000%2C42100', $requests[0]);
+        self::assertStringContainsString('q=commune%20de%20vienne&', $requests[0]);
+        self::assertStringContainsString('code_postal=38200', $requests[0]);
     }
 
     /**
@@ -92,24 +107,26 @@ final class CompanyRegistryTest extends TestCase
      */
     public function testNothingInTheTownSearchesTheWholeQuery(): void
     {
-        $registry = $this->registry([self::nothing(), new JsonMockResponse(self::DECATHLON)], $requests);
+        $registry = $this->registry([self::nothing(), self::nothing(), new JsonMockResponse(self::DECATHLON)], $requests);
 
         self::assertCount(1, $registry->search('decathlon vienne'));
-        self::assertStringContainsString('code_postal=38200', $requests[0]);
-        self::assertStringContainsString('q=decathlon%20vienne', $requests[1]);
+        self::assertStringContainsString('code_postal=38200', $requests[1]);
+        self::assertStringContainsString('q=decathlon%20vienne', $requests[2]);
+        self::assertStringNotContainsString('code_postal', $requests[2]);
     }
 
     public function testAPostcodeOrADepartementAfterTheNameIsAFilter(): void
     {
-        $registry = $this->registry([new JsonMockResponse(self::DECATHLON)], $requests);
+        $registry = $this->registry([self::nothing(), new JsonMockResponse(self::DECATHLON)], $requests);
         self::assertCount(1, $registry->search('decathlon 59650'));
-        self::assertStringContainsString('code_postal=59650', $requests[0]);
+        self::assertStringContainsString('q=decathlon&', $requests[1]);
+        self::assertStringContainsString('code_postal=59650', $requests[1]);
 
         // « grenoble 38 » is not a town, so it is not looked up: 38 is the département.
-        $registry = $this->registry([new JsonMockResponse(self::DECATHLON)], $requests);
+        $registry = $this->registry([self::nothing(), new JsonMockResponse(self::DECATHLON)], $requests);
         self::assertCount(1, $registry->search('decathlon grenoble 38'));
-        self::assertStringContainsString('q=decathlon%20grenoble', $requests[0]);
-        self::assertStringContainsString('departement=38', $requests[0]);
+        self::assertStringContainsString('q=decathlon%20grenoble&', $requests[1]);
+        self::assertStringContainsString('departement=38', $requests[1]);
     }
 
     /**

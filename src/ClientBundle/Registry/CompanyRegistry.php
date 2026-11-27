@@ -55,7 +55,8 @@ use function trim;
  *
  * A town, postcode or département typed after the name (« boulangerie
  * martin st etienne », « renault vienne ») is read first as a place, and
- * the name searched there; the whole query only when that finds nothing.
+ * the query searched there, then the name alone; the whole query
+ * everywhere only when that finds nothing.
  * The service looks for every word in the name or anywhere in an address:
  * an abbreviation or a town where the company has no establishment emptied
  * the list, and « vienne » found streets of that name all over France
@@ -170,7 +171,10 @@ final readonly class CompanyRegistry
                 continue;
             }
 
-            $found = $this->ask(['q' => $name] + $filter, true);
+            // The whole query there first: the town may be part of the name
+            // (« commune de bellegarde-poussieu » is not any town hall of
+            // 38270, as app-test answered on 27/11/2026); then the name alone.
+            $found = $this->ask(['q' => $query] + $filter, true) ?: $this->ask(['q' => $name] + $filter, true);
 
             if ($found !== []) {
                 return $found;
