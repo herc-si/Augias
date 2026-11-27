@@ -70,6 +70,42 @@ final class CompanyRegistryTest extends TestCase
     }
 
     /**
+     * An individual entrepreneur who asked not to be listed (HERC SI, as the
+     * service answered on 27/11/2026): found by SIREN only, and nothing of
+     * « [NON-DIFFUSIBLE] » reaches a form. The town is public.
+     */
+    public function testWhatTheRegisterWithholdsIsLeftOut(): void
+    {
+        $withheld = '[NON-DIFFUSIBLE]';
+        $registry = $this->registry([new JsonMockResponse(['results' => [[
+            'siren' => '514072248',
+            'nom_complet' => $withheld,
+            'nom_raison_sociale' => $withheld,
+            'statut_diffusion' => 'P',
+            'etat_administratif' => 'A',
+            'siege' => [
+                'siret' => '51407224800024',
+                'numero_voie' => $withheld,
+                'indice_repetition' => null,
+                'type_voie' => $withheld,
+                'libelle_voie' => $withheld,
+                'complement_adresse' => null,
+                'code_postal' => $withheld,
+                'libelle_commune' => 'BELLEGARDE-POUSSIEU',
+            ],
+        ]], 'total_results' => 1])], $requests);
+
+        $company = $registry->find('514072248');
+
+        self::assertNotNull($company);
+        self::assertNull($company->name);
+        self::assertNull($company->street1);
+        self::assertNull($company->zip);
+        self::assertSame('BELLEGARDE-POUSSIEU', $company->city);
+        self::assertSame('51407224800024', $company->siret);
+    }
+
+    /**
      * The register gives no VAT number; the SIREN decides it. FR40303265045
      * is the example the tax administration itself gives.
      */

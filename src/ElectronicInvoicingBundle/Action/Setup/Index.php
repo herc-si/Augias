@@ -72,7 +72,8 @@ final readonly class Index
                 $typed = $form->getData();
                 assert($typed instanceof CompanyIdentity);
                 $filled = $this->onboarding->lookUp($typed);
-                $lookedUp = $filled->registryName !== null;
+                // Found even when the name is not public (« diffusion partielle »).
+                $lookedUp = $filled->siren !== null && $this->onboarding->registryHas($filled->siren);
 
                 // A new form over the filled data: the submitted one would
                 // show what was typed, and its errors for what was not yet.

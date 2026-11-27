@@ -995,8 +995,9 @@ client:
         closed: 'Fermée'
         help: 'Nom, SIREN ou SIRET : le nom, les identifiants et l''adresse du siège se remplissent depuis l''annuaire officiel des entreprises (France).'
         label: 'Rechercher dans l''annuaire des entreprises'
-        none: 'Aucune entreprise trouvée. Essayez le SIREN, ou remplissez la fiche à la main.'
+        none: 'Aucune entreprise trouvée. Un entrepreneur individuel peut avoir demandé à ne pas figurer sous son nom dans l''annuaire : essayez son SIREN, ou remplissez la fiche à la main.'
         placeholder: 'Nom de l''entreprise ou SIREN'
+        unlisted: 'Entrepreneur individuel (nom non public)'
     restore:
         success: 'Client restauré avec succès'
     save: Enregistrer
@@ -1766,6 +1767,7 @@ einvoicing:
             siren_help: 'Les 9 chiffres de votre numéro d''entreprise.'
             look_up: 'Rechercher'
             found: 'Trouvée dans l''annuaire : %name%. Vérifiez les informations ci-dessous.'
+            found_unlisted: 'Trouvée dans l''annuaire, en diffusion partielle : le nom, la rue et le code postal n''y sont pas publics. Complétez-les ci-dessous.'
             not_found: 'Nous n''avons pas trouvé ce SIREN dans l''annuaire. Complétez les informations à la main.'
             siret: 'SIRET'
             siret_help: 'Le SIRET de l''établissement qui facture, en général votre siège.'

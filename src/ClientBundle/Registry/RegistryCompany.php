@@ -19,8 +19,12 @@ namespace Augias\ClientBundle\Registry;
  */
 final readonly class RegistryCompany
 {
+    /**
+     * @param string|null $name null for an individual entrepreneur who asked
+     *                          not to be listed: the register does not give it
+     */
     public function __construct(
-        public string $name,
+        public ?string $name,
         public string $siren,
         public ?string $siret,
         public ?string $street1,

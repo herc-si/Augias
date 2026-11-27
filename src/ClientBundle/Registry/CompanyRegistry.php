@@ -28,6 +28,7 @@ use function is_string;
 use function mb_strlen;
 use function preg_match;
 use function preg_replace;
+use function str_replace;
 use function trim;
 
 /**
@@ -39,7 +40,11 @@ use function trim;
  * rate and to carry on when it is down: a failure answers nothing, and the
  * form is filled in by hand as before. Answers are kept an hour.
  *
- * Individual entrepreneurs who asked not to be listed are not in it.
+ * Individual entrepreneurs who asked not to be listed (« diffusion
+ * partielle ») are not found by their name, only by their SIREN or SIRET,
+ * and then without name, street or postcode: the service writes
+ * « [NON-DIFFUSIBLE] » in their place, which is never copied into a form.
+ * The town is still given.
  *
  * @see \Augias\ClientBundle\Tests\Registry\CompanyRegistryTest
  */
@@ -48,6 +53,9 @@ final readonly class CompanyRegistry
     private const string URL = 'https://recherche-entreprises.api.gouv.fr/search';
 
     private const int RESULTS = 6;
+
+    /** What the service writes in place of what it may not give. */
+    private const array WITHHELD = ['[NON-DIFFUSIBLE]', '[ND]'];
 
     public function __construct(
         private HttpClientInterface $httpClient,
@@ -127,7 +135,7 @@ final readonly class CompanyRegistry
         }
 
         $seat = is_array($result['siege'] ?? null) ? $result['siege'] : [];
-        $name = self::text($result['nom_raison_sociale'] ?? null) ?? self::text($result['nom_complet'] ?? null) ?? $result['siren'];
+        $name = self::text($result['nom_raison_sociale'] ?? null) ?? self::text($result['nom_complet'] ?? null);
 
         $street = implode(' ', array_filter([
             self::text($seat['numero_voie'] ?? null),
@@ -150,6 +158,13 @@ final readonly class CompanyRegistry
 
     private static function text(mixed $value): ?string
     {
-        return is_string($value) && trim($value) !== '' ? trim($value) : null;
+        if (! is_string($value)) {
+            return null;
+        }
+
+        // « [NON-DIFFUSIBLE] », alone or one per part of a street.
+        $value = trim(str_replace(self::WITHHELD, '', $value));
+
+        return $value !== '' ? $value : null;
     }
 }

@@ -87,8 +87,8 @@ class ClientForm extends AbstractController
 
     /**
      * Fills in the client from the register: its name, SIREN, SIRET (the
-     * head office's), VAT number and head office address. What was typed in
-     * the other fields stays.
+     * head office's), VAT number and head office address, as far as the
+     * register gives them. What was typed in the other fields stays.
      */
     #[LiveAction]
     public function fillFromRegistry(#[LiveArg] string $siren): void
@@ -101,7 +101,10 @@ class ClientForm extends AbstractController
         }
 
         $this->formValues['isCompany'] = '1';
-        $this->formValues['name'] = $company->name;
+        // An entrepreneur not listed by name keeps the name typed.
+        if ($company->name !== null) {
+            $this->formValues['name'] = $company->name;
+        }
         $this->formValues['siren'] = $company->siren;
         $this->formValues['siret'] = $company->siret ?? '';
         $this->formValues['vatNumber'] = $company->vatNumber();
