@@ -40,8 +40,10 @@ use function substr;
  * One already there is never touched: whoever typed it knew better.
  *
  * Nothing found is not an error: the e-invoice falls back on the SIREN, as it
- * always has. The sandbox's companies are not in the French directory, so a
- * buyer there still needs its address typed.
+ * always has, and the platform still makes it available. But no answer and no
+ * status can reach that buyer, which the user is told. The sandbox's companies
+ * are not in the French directory, so a buyer there still needs its address
+ * typed.
  */
 final readonly class ElectronicAddressResolver
 {
@@ -55,17 +57,37 @@ final readonly class ElectronicAddressResolver
     ) {
     }
 
-    public function resolve(string $accessToken, Company $company, ?Client $buyer): void
+    /**
+     * @return bool|null whether the buyer has an address, as for {@see buyerReachable()}
+     */
+    public function resolve(string $accessToken, Company $company, ?Client $buyer): ?bool
     {
         $changed = $this->resolveOwn($accessToken, $company);
-
-        if ($buyer instanceof Client) {
-            $changed = $this->resolveBuyer($accessToken, $buyer) || $changed;
-        }
+        $reachable = $buyer instanceof Client ? $this->resolveBuyer($accessToken, $buyer, $changed) : null;
 
         if ($changed) {
             $this->entityManager->flush();
         }
+
+        return $reachable;
+    }
+
+    /**
+     * Whether answers and statuses can be delivered to $buyer: true when it
+     * has an address, typed or found now; false when the directory was asked
+     * and lists none for its SIREN; null when that cannot be known — no
+     * SIREN, or a directory that did not answer.
+     */
+    public function buyerReachable(string $accessToken, Client $buyer): ?bool
+    {
+        $changed = false;
+        $reachable = $this->resolveBuyer($accessToken, $buyer, $changed);
+
+        if ($changed) {
+            $this->entityManager->flush();
+        }
+
+        return $reachable;
     }
 
     /**
@@ -90,7 +112,7 @@ final readonly class ElectronicAddressResolver
         }
 
         $address = $this->choose(
-            $this->lookup(fn (): array => $this->client->getOwnAddresses($accessToken)),
+            $this->lookup(fn (): array => $this->client->getOwnAddresses($accessToken)) ?? [],
             $this->siren($identifiers),
             $this->find($identifiers, TaxIdentifierType::SIRET),
         );
@@ -106,31 +128,40 @@ final readonly class ElectronicAddressResolver
         return true;
     }
 
-    private function resolveBuyer(string $accessToken, Client $buyer): bool
+    private function resolveBuyer(string $accessToken, Client $buyer, bool &$changed): ?bool
     {
         $identifiers = $buyer->getTaxIdentifiers()->toArray();
 
         if (null !== $this->find($identifiers, TaxIdentifierType::ELECTRONIC_ADDRESS)) {
-            return false;
+            return true;
         }
 
         $siren = $this->siren($identifiers);
 
         if (null === $siren) {
+            return null;
+        }
+
+        $addresses = $this->lookup(fn (): array => $this->client->findAddresses($accessToken, $siren));
+
+        if (null === $addresses) {
+            return null;
+        }
+
+        if ([] === $addresses) {
             return false;
         }
 
-        $address = $this->choose(
-            $this->lookup(fn (): array => $this->client->findAddresses($accessToken, $siren)),
-            $siren,
-            $this->find($identifiers, TaxIdentifierType::SIRET),
-        );
+        $address = $this->choose($addresses, $siren, $this->find($identifiers, TaxIdentifierType::SIRET));
 
+        // Listed, but under several addresses none of which is clearly
+        // its own: reachable, only not by a guess.
         if (null === $address) {
-            return false;
+            return null;
         }
 
         $buyer->addTaxIdentifier(new TaxIdentifier()->setLabel(TaxIdentifierType::ELECTRONIC_ADDRESS)->setValue($address));
+        $changed = true;
 
         return true;
     }
@@ -185,9 +216,9 @@ final readonly class ElectronicAddressResolver
     /**
      * @param callable(): list<string> $lookup
      *
-     * @return list<string>
+     * @return list<string>|null null when the directory could not be asked
      */
-    private function lookup(callable $lookup): array
+    private function lookup(callable $lookup): ?array
     {
         try {
             return $lookup();
@@ -195,7 +226,7 @@ final readonly class ElectronicAddressResolver
             // A directory that cannot be asked leaves the address as it was.
             $this->logger->warning('Could not look up an e-invoicing address.', ['exception' => $e]);
 
-            return [];
+            return null;
         }
     }
 

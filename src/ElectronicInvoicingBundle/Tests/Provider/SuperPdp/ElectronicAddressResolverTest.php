@@ -79,19 +79,53 @@ final class ElectronicAddressResolverTest extends KernelTestCase
     {
         $buyer = $this->buyer('12345678900012');
 
-        $this->resolver()->resolve('a-token', $this->company, $buyer);
+        self::assertFalse($this->resolver()->resolve('a-token', $this->company, $buyer), 'Nobody to deliver a status to.');
 
         self::assertNull($this->address($buyer));
         self::assertNull($this->companyAddress());
+    }
+
+    public function testABuyerWithATypedAddressIsReachable(): void
+    {
+        $buyer = $this->buyer('12345678900012');
+        $buyer->addTaxIdentifier(new TaxIdentifier()->setLabel('Adresse électronique')->setValue('123456789_COMPTA'));
+
+        self::assertTrue($this->resolver()->buyerReachable('a-token', $buyer));
+    }
+
+    public function testABuyerFoundInTheDirectoryIsReachable(): void
+    {
+        $buyer = $this->buyer('98765432100015');
+
+        self::assertTrue($this->resolver(directory: ['0225:987654321'])->buyerReachable('a-token', $buyer));
+        self::assertSame('987654321', $this->address($buyer));
+    }
+
+    /**
+     * Without a SIREN, or with a directory that does not answer, nobody
+     * knows: the user is not told something that may be wrong.
+     */
+    public function testWithoutASirenNobodyKnows(): void
+    {
+        self::assertNull($this->resolver()->buyerReachable('a-token', ClientFactory::createOne(['company' => $this->company])));
+    }
+
+    public function testADirectoryThatDoesNotAnswerSaysNothing(): void
+    {
+        self::assertNull($this->resolver(down: true)->buyerReachable('a-token', $this->buyer('12345678900012')));
     }
 
     /**
      * @param list<string> $own
      * @param list<string> $directory
      */
-    private function resolver(array $own = [], array $directory = []): ElectronicAddressResolver
+    private function resolver(array $own = [], array $directory = [], bool $down = false): ElectronicAddressResolver
     {
-        $client = new SuperPdpClient(new MockHttpClient(static function (string $method, string $url) use ($own, $directory): MockResponse {
+        $client = new SuperPdpClient(new MockHttpClient(static function (string $method, string $url) use ($own, $directory, $down): MockResponse {
+            if ($down) {
+                return new MockResponse('', ['http_code' => 503]);
+            }
+
             $identifiers = str_contains($url, 'french_directory') ? $directory : $own;
 
             return new MockResponse((string) json_encode(['data' => array_map(static fn (string $id): array => ['identifier' => $id], $identifiers)]));

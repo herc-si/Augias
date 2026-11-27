@@ -78,6 +78,12 @@ Deleting the provider in Augias also withdraws its access on SUPER PDP.
 
 ## Troubleshooting
 
+### An invoice says the e-invoicing directory does not list the client
+
+When sending, Augias looks up the client's SIREN in the e-invoicing directory. If it is not listed, the invoice is sent all the same: issuing it electronically is still your obligation, and the platform makes it available. But no status can reach the client, and Augias does not send it the « paid » status when you record its payment. Augias keeps checking for a month, in case the client registers in the meantime.
+
+Check the SIREN on the client's record. If the client gives you its e-invoicing address (for example `0225:123456789`), add it to its record with the type `Adresse électronique`.
+
 ### SUPER PDP refuses the redirect URL
 
 The redirect URL set on the SUPER PDP application does not exactly match the one Augias sends. Check the scheme, host and path against the public URL of your installation.

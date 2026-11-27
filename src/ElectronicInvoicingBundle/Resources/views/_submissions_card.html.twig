@@ -27,6 +27,8 @@
                             {% endif %}
                             {% if not submission.success and submission.message is not empty %}
                                 <div class="text-danger small mt-1">{{ submission.message|trans }}</div>
+                            {% elseif submission.message is not empty %}
+                                <div class="text-warning small mt-1">{{ submission.message|trans }}</div>
                             {% endif %}
                         </div>
                         <div class="text-muted small text-nowrap">{{ submission.created|format_datetime('medium', 'short') }}</div>

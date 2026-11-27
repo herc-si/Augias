@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\ElectronicInvoicingBundle\Provider;
 
+use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Enum\SupplyType;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceSubmission;
 use Augias\ElectronicInvoicingBundle\Enum\AccountVerification;
@@ -57,7 +58,7 @@ use function usort;
  * @see \Augias\ElectronicInvoicingBundle\Tests\Provider\SuperPdpProviderTest
  */
 #[AsTaggedItem('super_pdp')]
-final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface, ElectronicInvoiceAccountCheckerInterface, ElectronicInvoiceResponderInterface, ElectronicReporterInterface, ElectronicDeclarationsInterface, ElectronicInvoiceVatSettingsInterface
+final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterface, ElectronicInvoiceReceiverInterface, ElectronicInvoiceAccountCheckerInterface, ElectronicInvoiceResponderInterface, ElectronicReporterInterface, ElectronicDeclarationsInterface, ElectronicInvoiceVatSettingsInterface, ElectronicBuyerDirectoryInterface
 {
     /**
      * BT-8 values meaning the supplier's VAT falls due on the invoice date —
@@ -96,6 +97,13 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
      * or refused once it comes.
      */
     public const string SUSPENDED_STATUS_CODE = 'fr:208';
+
+    /**
+     * Said of an invoice sent to a buyer the directory does not list
+     * (« L'adresse électronique (MDT-73) est invalide » when its payment was
+     * reported, 27/11/2026).
+     */
+    public const string BUYER_NOT_IN_DIRECTORY = 'einvoicing.provider.super_pdp.buyer_not_in_directory';
 
     /** fr:212 Payment received: the last thing that happens to an invoice. */
     public const string PAID_STATUS_CODE = 'fr:212';
@@ -306,7 +314,7 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
             // Where the invoice goes, and where answers come back to — found
             // in the directory when nobody typed it. Before building, since
             // the e-invoice carries both addresses.
-            $this->addressResolver->resolve($accessToken, $invoice->getCompany(), $invoice->getClient());
+            $reachable = $this->addressResolver->resolve($accessToken, $invoice->getCompany(), $invoice->getClient());
             $document = $this->documentBuilder->build($invoice);
             $response = $this->client->sendInvoice($accessToken, $document, (string) $invoice->getId());
         } catch (SuperPdpApiException $e) {
@@ -323,7 +331,27 @@ final readonly class SuperPdpProvider implements ElectronicInvoiceProviderInterf
 
         return ElectronicInvoiceSubmissionResult::success(
             is_int($externalReference) || is_string($externalReference) ? (string) $externalReference : null,
+            // Sent all the same: issuing it electronically is the seller's
+            // duty, and the platform makes it available. Only what follows
+            // — answers, « encaissée » — has nowhere to go.
+            false === $reachable ? self::BUYER_NOT_IN_DIRECTORY : null,
         );
+    }
+
+    /**
+     * @param array<string, mixed> $config
+     */
+    public function buyerReachable(array $config, Client $buyer): ?bool
+    {
+        if (! $this->tokens->hasCredentials($config)) {
+            return null;
+        }
+
+        try {
+            return $this->addressResolver->buyerReachable($this->tokens->accessToken($config), $buyer);
+        } catch (SuperPdpApiException) {
+            return null;
+        }
     }
 
     public function resolveProcessingStatus(ElectronicInvoiceSubmission $submission): ElectronicInvoiceProcessingStatus

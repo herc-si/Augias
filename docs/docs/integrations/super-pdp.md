@@ -78,6 +78,12 @@ Supprimer le fournisseur dans Augias retire aussi son accès sur SUPER PDP.
 
 ## Dépannage
 
+### Une facture indique que l'annuaire de la facturation électronique ne connaît pas le client
+
+À l'envoi, Augias cherche le SIREN du client dans l'annuaire de la facturation électronique. S'il n'y figure pas, la facture part quand même : l'émettre par voie électronique reste votre obligation, et la plateforme la met à disposition. Mais aucun statut ne peut parvenir au client, et Augias ne lui envoie pas le statut « encaissée » quand vous enregistrez son paiement. Augias réessaie pendant un mois, au cas où le client s'inscrive entre-temps.
+
+Vérifiez le SIREN sur la fiche du client. Si le client vous communique son adresse de facturation électronique (par exemple `0225:123456789`), ajoutez-la à sa fiche, avec le type `Adresse électronique`.
+
 ### SUPER PDP refuse l'adresse de redirection
 
 L'adresse de redirection de l'application SUPER PDP ne correspond pas exactement à celle qu'envoie Augias. Comparez le protocole, l'hôte et le chemin avec l'adresse publique de votre installation.

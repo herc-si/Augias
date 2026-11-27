@@ -2022,6 +2022,7 @@ einvoicing:
         super_pdp:
             bad_credentials: 'SUPER PDP refuses these credentials: check the client ID and secret, and that they belong to the intended environment (sandbox or production).'
             build_failed: 'Could not build or send the Factur-X document. Please check the invoice data and try again.'
+            buyer_not_in_directory: "The invoice was sent and the platform made it available, but the e-invoicing directory does not list this client: it will receive no status, and its payment cannot be reported to it as « paid ». If the client gives you its electronic address (for example 0225:123456789), add it to its record."
             client_id: 'Client ID'
             client_secret: 'Client secret'
             client_secret_help: 'Leave empty to keep the secret already saved. It is never shown again.'
