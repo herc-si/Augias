@@ -15,6 +15,7 @@ namespace Augias\ClientBundle\Tests\Registry;
 
 use Augias\ClientBundle\Registry\CompanyRegistry;
 use Augias\ClientBundle\Registry\RegistryCompany;
+use Augias\ClientBundle\Registry\Towns;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -25,6 +26,7 @@ use Symfony\Component\HttpClient\Response\MockResponse;
 
 #[CoversClass(CompanyRegistry::class)]
 #[CoversClass(RegistryCompany::class)]
+#[CoversClass(Towns::class)]
 final class CompanyRegistryTest extends TestCase
 {
     /**
@@ -70,56 +72,64 @@ final class CompanyRegistryTest extends TestCase
     }
 
     /**
-     * A town after the name that the whole search does not find (here
-     * abbreviated) is read as a town: the name is searched in its postcodes.
+     * A town after the name (here abbreviated) is read as a town first: the
+     * name is searched in its postcodes, not the town's name in every street.
      */
     public function testATownTypedAfterTheNameNarrowsTheSearch(): void
     {
-        $registry = $this->registry([
-            self::nothing(),
-            new JsonMockResponse([['nom' => 'Saint-Étienne', 'codesPostaux' => ['42000', '42100']]]),
-            new JsonMockResponse(self::DECATHLON),
-        ], $requests);
+        $registry = $this->registry([new JsonMockResponse(self::DECATHLON)], $requests);
 
         $companies = $registry->search('Decathlon st etienne');
 
         self::assertCount(1, $companies);
-        self::assertStringContainsString('geo.api.gouv.fr', $requests[1]);
-        self::assertStringContainsString('nom=saint%20etienne', $requests[1]);
-        self::assertStringContainsString('q=Decathlon', $requests[2]);
-        self::assertStringContainsString('code_postal=42000%2C42100', $requests[2]);
+        self::assertCount(1, $requests);
+        self::assertStringContainsString('q=Decathlon&', $requests[0]);
+        self::assertStringContainsString('code_postal=42000%2C42100', $requests[0]);
+    }
+
+    /**
+     * Nothing of that name in the town: the whole query, as typed.
+     */
+    public function testNothingInTheTownSearchesTheWholeQuery(): void
+    {
+        $registry = $this->registry([self::nothing(), new JsonMockResponse(self::DECATHLON)], $requests);
+
+        self::assertCount(1, $registry->search('decathlon vienne'));
+        self::assertStringContainsString('code_postal=38200', $requests[0]);
+        self::assertStringContainsString('q=decathlon%20vienne', $requests[1]);
     }
 
     public function testAPostcodeOrADepartementAfterTheNameIsAFilter(): void
     {
-        $registry = $this->registry([self::nothing(), new JsonMockResponse(self::DECATHLON)], $requests);
+        $registry = $this->registry([new JsonMockResponse(self::DECATHLON)], $requests);
         self::assertCount(1, $registry->search('decathlon 59650'));
-        self::assertStringContainsString('code_postal=59650', $requests[1]);
+        self::assertStringContainsString('code_postal=59650', $requests[0]);
 
         // « grenoble 38 » is not a town, so it is not looked up: 38 is the département.
-        $registry = $this->registry([self::nothing(), new JsonMockResponse(self::DECATHLON)], $requests);
+        $registry = $this->registry([new JsonMockResponse(self::DECATHLON)], $requests);
         self::assertCount(1, $registry->search('decathlon grenoble 38'));
-        self::assertStringContainsString('q=decathlon%20grenoble', $requests[1]);
-        self::assertStringContainsString('departement=38', $requests[1]);
+        self::assertStringContainsString('q=decathlon%20grenoble', $requests[0]);
+        self::assertStringContainsString('departement=38', $requests[0]);
     }
 
     /**
-     * A town that is not the one typed (the towns list answers fuzzily) is
-     * not a filter, and the search answers nothing rather than elsewhere.
+     * A word that is no town is not a filter: the query is searched as typed.
      */
-    public function testATownOnlyLookingLikeTheOneTypedIsNotUsed(): void
+    public function testAWordThatIsNoTownIsNotUsed(): void
     {
-        $registry = $this->registry([self::nothing(), new JsonMockResponse([['nom' => 'Cognat-Lyonne', 'codesPostaux' => ['03110']]])], $requests);
+        $registry = $this->registry([self::nothing()], $requests);
 
         self::assertSame([], $registry->search('martin lyonn'));
-        self::assertCount(2, $requests);
+        self::assertCount(1, $requests);
+        self::assertStringContainsString('q=martin%20lyonn', $requests[0]);
+        self::assertStringNotContainsString('code_postal', $requests[0]);
     }
 
     public function testTheEstablishmentFoundIsShownWhenNotTheHeadOffice(): void
     {
         $answer = self::DECATHLON;
         $answer['results'][0]['matching_etablissements'] = [['libelle_commune' => 'SAINT-ETIENNE']];
-        $registry = $this->registry([self::nothing(), new JsonMockResponse([['nom' => 'Saint-Étienne', 'codesPostaux' => ['42000']]]), new JsonMockResponse($answer)], $requests);
+        $registry = $this->registry([new JsonMockResponse($answer)], $requests);
         self::assertSame('SAINT-ETIENNE', $registry->search('decathlon saint-etienne')[0]->establishmentCity);
 
         // Without a place, the establishment matched may be anywhere: not shown.
@@ -213,6 +223,6 @@ final class CompanyRegistryTest extends TestCase
             return array_shift($responses) ?? new MockResponse('', ['http_code' => 500]);
         });
 
-        return new CompanyRegistry($client, new ArrayAdapter(), new NullLogger());
+        return new CompanyRegistry($client, new ArrayAdapter(), new NullLogger(), new Towns(__DIR__ . '/towns.json'));
     }
 }

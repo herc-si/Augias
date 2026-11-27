@@ -34,7 +34,6 @@ use function preg_match;
 use function preg_replace;
 use function str_replace;
 use function strtoupper;
-use function Symfony\Component\String\u;
 use function trim;
 
 /**
@@ -53,19 +52,19 @@ use function trim;
  * The town is still given.
  *
  * A town, postcode or département typed after the name (« boulangerie
- * martin st etienne ») is read as such when the whole search finds nothing:
- * the service looks for every word in the name or in an address, so a word
- * it does not have there, an abbreviation or a town where the company has
- * no establishment empties the list (Rémi, 27/11/2026).
+ * martin st etienne », « renault vienne ») is read first as a place, and
+ * the name searched there; the whole query only when that finds nothing.
+ * The service looks for every word in the name or anywhere in an address:
+ * an abbreviation or a town where the company has no establishment emptied
+ * the list, and « vienne » found streets of that name all over France
+ * (Rémi, 27/11/2026). A town is one of the State's towns by its exact name,
+ * from the list kept with the application (see Towns).
  *
  * @see \Augias\ClientBundle\Tests\Registry\CompanyRegistryTest
  */
 final readonly class CompanyRegistry
 {
     private const string URL = 'https://recherche-entreprises.api.gouv.fr/search';
-
-    /** The State's list of towns (geo.api.gouv.fr), to read a town typed after a name. */
-    private const string TOWNS_URL = 'https://geo.api.gouv.fr/communes';
 
     private const int RESULTS = 6;
 
@@ -76,6 +75,7 @@ final readonly class CompanyRegistry
         private HttpClientInterface $httpClient,
         private CacheInterface $cache,
         private LoggerInterface $logger,
+        private Towns $towns = new Towns(),
     ) {
     }
 
@@ -102,7 +102,7 @@ final readonly class CompanyRegistry
         return $this->cache->get('company_registry_' . hash('xxh128', $query), function (ItemInterface $item) use ($query): array {
             $item->expiresAfter(3600);
 
-            return $this->ask(['q' => $query]) ?: $this->askWithPlace($query);
+            return $this->askWithPlace($query) ?: $this->ask(['q' => $query]);
         });
     }
 
@@ -174,37 +174,9 @@ final readonly class CompanyRegistry
             return null;
         }
 
-        try {
-            $towns = $this->httpClient->request('GET', self::TOWNS_URL, [
-                'query' => ['nom' => self::townName($place), 'fields' => 'nom,codesPostaux', 'boost' => 'population', 'limit' => 5],
-                'timeout' => 4,
-                'headers' => ['Accept' => 'application/json'],
-            ])->toArray();
-        } catch (Throwable $e) {
-            $this->logger->warning('Towns list unavailable', ['exception' => $e->getMessage()]);
+        $postcodes = $this->towns->postcodes($place);
 
-            return null;
-        }
-
-        // The town of that very name, not one that only looks like it.
-        foreach ($towns as $town) {
-            if (is_array($town) && is_string($town['nom'] ?? null) && self::townName($town['nom']) === self::townName($place) && is_array($town['codesPostaux'] ?? null) && $town['codesPostaux'] !== []) {
-                return ['code_postal' => implode(',', array_filter($town['codesPostaux'], is_string(...)))];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * A town's name as compared: lower case, no accents, hyphens and
-     * apostrophes as spaces, « st » and « ste » written out.
-     */
-    private static function townName(string $name): string
-    {
-        $name = u($name)->ascii()->lower()->replaceMatches('/[\s\'’-]+/', ' ')->trim()->toString();
-
-        return (string) preg_replace(['/\bst\b/', '/\bste\b/'], ['saint', 'sainte'], $name);
+        return $postcodes !== null ? ['code_postal' => $postcodes] : null;
     }
 
     /**
