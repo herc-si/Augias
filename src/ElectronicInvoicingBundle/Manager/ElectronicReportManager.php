@@ -14,12 +14,14 @@ declare(strict_types=1);
 namespace Augias\ElectronicInvoicingBundle\Manager;
 
 use Augias\BillBundle\Entity\BillPayment;
+use Augias\ClientBundle\Entity\Client;
 use Augias\CoreBundle\Entity\Company;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicInvoiceProviderSetting;
 use Augias\ElectronicInvoicingBundle\Entity\ElectronicReport;
 use Augias\ElectronicInvoicingBundle\Enum\ElectronicInvoicingProblem;
 use Augias\ElectronicInvoicingBundle\Enum\ReceiptResponse;
 use Augias\ElectronicInvoicingBundle\Enum\ReportKind;
+use Augias\ElectronicInvoicingBundle\Provider\ElectronicBuyerDirectoryInterface;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicInvoiceProviderRegistry;
 use Augias\ElectronicInvoicingBundle\Provider\ElectronicReporterInterface;
 use Augias\ElectronicInvoicingBundle\Repository\ElectronicInvoiceProviderSettingRepository;
@@ -32,6 +34,7 @@ use Augias\InvoiceBundle\Enum\CreditNoteStatus;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\PaymentBundle\Entity\Payment;
 use Augias\PaymentBundle\Enum\PaymentStatus;
+use Augias\TaxBundle\Form\Type\TaxIdentifierType;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;
 use Doctrine\DBAL\Types\Types;
@@ -40,6 +43,7 @@ use RuntimeException;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 use Symfony\Component\Uid\Ulid;
 use function implode;
+use function trim;
 
 /**
  * Reports what a company sold to private individuals — and was paid for it,
@@ -132,7 +136,7 @@ final readonly class ElectronicReportManager
         foreach ($this->paymentsOnSentInvoices($company, $since, $setting->getProvider()) as [$payment, $invoiceReference]) {
             $data = $this->builder->paymentReceived($payment);
 
-            if (null === $data) {
+            if (null === $data || $this->buyerUnreachable($reporter, $setting, $payment)) {
                 continue;
             }
 
@@ -316,6 +320,42 @@ final readonly class ElectronicReportManager
                 yield [$payment, $reference];
             }
         }
+    }
+
+    /**
+     * A buyer the directory does not list cannot be told its invoice was paid
+     * — SUPER PDP answers « L'adresse électronique (MDT-73) est invalide » —
+     * and the invoice page already says so (27/11/2026). Not tried, so not
+     * an alert; asked again each hour for a month, in case it registers.
+     */
+    private function buyerUnreachable(ElectronicReporterInterface $reporter, ElectronicInvoiceProviderSetting $setting, Payment $payment): bool
+    {
+        $buyer = $payment->getInvoice()?->getClient();
+
+        if (! $reporter instanceof ElectronicBuyerDirectoryInterface || ! $buyer instanceof Client) {
+            return false;
+        }
+
+        // Past a month, the directory is no longer asked: an address found
+        // in the meantime, for another invoice, is still used.
+        $completed = $payment->getCompleted();
+
+        if ($completed instanceof DateTimeImmutable && $completed < new DateTimeImmutable('-1 month')) {
+            return ! $this->hasElectronicAddress($buyer);
+        }
+
+        return false === $reporter->buyerReachable($setting->getSettings(), $buyer);
+    }
+
+    private function hasElectronicAddress(Client $buyer): bool
+    {
+        foreach ($buyer->getTaxIdentifiers() as $identifier) {
+            if ($identifier->getLabel() === TaxIdentifierType::ELECTRONIC_ADDRESS && '' !== trim((string) $identifier->getValue())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

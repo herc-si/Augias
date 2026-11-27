@@ -2022,6 +2022,7 @@ einvoicing:
         super_pdp:
             bad_credentials: "SUPER PDP refuse ces identifiants : vérifiez l'identifiant client et la clé secrète, et qu'ils sont bien ceux de l'environnement voulu (bac à sable ou production)."
             build_failed: "Impossible de générer ou d'envoyer le document Factur-X. Veuillez vérifier les données de la facture et réessayer."
+            buyer_not_in_directory: "La facture est partie et la plateforme l’a mise à disposition, mais l’annuaire de la facturation électronique ne connaît pas ce client : il ne recevra aucun statut, et son paiement ne pourra pas lui être signalé comme « encaissée ». Si le client vous donne son « Adresse électronique » (par exemple 0225:123456789), ajoutez-la à sa fiche."
             client_id: 'Identifiant client (Client ID)'
             client_secret: 'Clé secrète (Client secret)'
             client_secret_help: "Laissez vide pour conserver la clé déjà enregistrée. Elle n'est jamais réaffichée."

@@ -66,6 +66,9 @@ final class ElectronicReportManagerTest extends KernelTestCase
 
     private bool $platformUp = true;
 
+    /** @var list<string> what the directory lists for the buyer's SIREN */
+    private array $directory = ['0225:123456789'];
+
     /** @var array<string, mixed>|null */
     private ?array $lastEvent = null;
 
@@ -82,6 +85,10 @@ final class ElectronicReportManagerTest extends KernelTestCase
 
             if (! $this->platformUp) {
                 return new MockResponse('', ['http_code' => 503]);
+            }
+
+            if (str_contains($url, '/french_directory/')) {
+                return new MockResponse((string) json_encode(['data' => array_map(static fn (string $id): array => ['identifier' => $id], $this->directory)]));
             }
 
             if (str_contains($url, '/invoice_events')) {
@@ -256,6 +263,28 @@ final class ElectronicReportManagerTest extends KernelTestCase
     }
 
     /**
+     * A buyer the directory does not list cannot be told: SUPER PDP answered
+     * « L'adresse électronique (MDT-73) est invalide », and the alert came
+     * by e-mail (Rémi, 27/11/2026). The invoice page says so instead.
+     */
+    public function testABuyerNotInTheDirectoryIsNotToldItsInvoiceWasPaid(): void
+    {
+        $this->directory = [];
+        $invoice = $this->invoice(private: false, date: 'today');
+        $this->sentElectronically($invoice);
+        $this->paid($invoice);
+
+        self::assertSame(['reported' => 0, 'failed' => 0], $this->manager()->reportPending($this->company));
+        self::assertNull($this->lastEvent);
+        self::assertEmailCount(0);
+
+        // Registered since: told at the next hour.
+        $this->directory = ['0225:123456789'];
+        self::assertSame(['reported' => 1, 'failed' => 0], $this->manager()->reportPending($this->company));
+        self::assertSame('fr:212', $this->lastStatusCode());
+    }
+
+    /**
      * Under the VAT franchise no VAT falls due, so nothing goes to the tax
      * administration; the invoice sent on the platform is still told it was
      * paid (fr:212), the whole amount at no rate, which closes its lifecycle
@@ -317,6 +346,27 @@ final class ElectronicReportManagerTest extends KernelTestCase
         self::assertSame(['reported' => 1, 'failed' => 0], $this->manager()->reportPending($this->company));
         self::assertSame(['reported' => 0, 'failed' => 0], $this->manager()->reportPending($this->company), 'Not twice.');
         self::assertSame(1, $this->transactionsPosted);
+    }
+
+    private function lastStatusCode(): mixed
+    {
+        return $this->lastEvent['status_code'] ?? null;
+    }
+
+    private function paid(Invoice $invoice): void
+    {
+        $payment = new Payment();
+        $payment->setCompany($this->company);
+        $payment->setTotalAmount(1200);
+        $payment->setCurrencyCode('EUR');
+        $payment->setStatus(PaymentStatus::Captured);
+        $payment->setCompleted(new DateTimeImmutable('today'));
+        $invoice->addPayment($payment);
+
+        $entityManager = self::getContainer()->get('doctrine')->getManager();
+        $entityManager->persist($payment);
+        $entityManager->flush();
+        $entityManager->refresh($invoice);
     }
 
     private function sentElectronically(Invoice $invoice): void

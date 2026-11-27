@@ -72,6 +72,8 @@ final class SuperPdpProviderTest extends KernelTestCase
 
         self::assertTrue($result->success);
         self::assertSame('4242', $result->externalReference);
+        // Sent all the same, and the user is told no status can reach it.
+        self::assertSame(SuperPdpProvider::BUYER_NOT_IN_DIRECTORY, $result->message);
     }
 
     public function testSendReturnsAFailureWhenCredentialsAreMissing(): void
