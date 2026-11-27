@@ -28,6 +28,7 @@ use Stringable;
 use Symfony\Component\Uid\Ulid;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Throwable;
+use function array_filter;
 use function array_is_list;
 use function array_map;
 use function implode;
@@ -145,6 +146,15 @@ final readonly class ActionPreview
 
         $rows = [];
         foreach ($fields as $key => $value) {
+            // A client's address, on one line: « 2 rue Ferrer, 42000 Saint-Étienne ».
+            if ($key === 'address' && is_array($value)) {
+                $place = implode(' ', array_filter([$value['zip'] ?? null, $value['city'] ?? null], is_string(...)));
+                $parts = array_filter([$value['street1'] ?? null, $value['street2'] ?? null, $place], static fn (mixed $part): bool => is_string($part) && $part !== '');
+                $rows[] = $this->label('address') . ' : ' . implode(', ', $parts);
+
+                continue;
+            }
+
             if ($value === null || is_array($value)) {
                 continue;
             }

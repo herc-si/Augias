@@ -222,6 +222,26 @@ final class AssistantTest extends KernelTestCase
     }
 
     /**
+     * A company found in the register is created with its address in the
+     * same change: one confirmation, not two (Rémi, 27/11/2026).
+     */
+    public function testAClientIsCreatedWithItsAddress(): void
+    {
+        $outcome = $this->toolbox()->run('create_resource', ['resource' => 'client', 'data' => [
+            'name' => 'Commune de Bellegarde-Poussieu', 'currency_code' => 'EUR', 'is_company' => true, 'siret' => '21380037800019',
+            'address' => ['street1' => '2 place de la Mairie', 'zip' => '38270', 'city' => 'Bellegarde-Poussieu'],
+        ]]);
+        self::assertStringNotContainsString('Error', $outcome);
+
+        $client = self::getContainer()->get('doctrine')->getManager()->getRepository(\Augias\ClientBundle\Entity\Client::class)->findOneBy(['name' => 'Commune de Bellegarde-Poussieu']);
+        self::assertInstanceOf(\Augias\ClientBundle\Entity\Client::class, $client);
+        $address = $client->getAddresses()->first();
+        self::assertInstanceOf(\Augias\ClientBundle\Entity\Address::class, $address);
+        self::assertSame('38270', $address->getZip());
+        self::assertSame('FR', $address->getCountry(), 'France unless said otherwise.');
+    }
+
+    /**
      * Thirty confirmations to make a quote (Rémi, 26/11/2026): once the
      * person confirms, the rest of the request is made without asking
      * again — sending apart, confirmed on its own.
