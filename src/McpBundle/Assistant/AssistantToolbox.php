@@ -100,7 +100,15 @@ final class AssistantToolbox
     private const array RESOURCES = ['client', 'contact'];
 
     /** Put before every result, next to the figures it is about. */
-    public const string AMOUNTS_NOTE = 'Montants en centimes (unité mineure) : divise par 100 avant de les donner, 8997 = 89,97 €.';
+    public const string AMOUNTS_NOTE = 'Montants déjà écrits en euros (ou dans leur devise) : recopie-les tels quels. Pour écrire, donne-les en centimes : 100,00 € = 10000.';
+
+    /**
+     * The fields that hold an amount in the minor unit, by the words of
+     * their name; ids, dates, counts and rates are not.
+     */
+    private const string AMOUNT_FIELD = '/(^|_)(total|amount|balance|price|outstanding|turnover|money|due|net|remaining|tax|debit|credit|ceiling|paid)(_|$)/';
+
+    private const string NOT_AMOUNT_FIELD = '/(_id|(?<!_to)_date|_on|_at|_number|_count|_rate|_percent|_percentage)$/';
 
     private readonly ReferenceHandler $handler;
 
@@ -319,6 +327,9 @@ final class AssistantToolbox
      */
     public function prepared(string $name, array $arguments): array
     {
+        // Amounts copied as the model read them, back in cents for the check and the card.
+        $arguments = self::minorAmounts($arguments);
+
         try {
             $arguments = $this->normalised($this->registry->getTool($name)->tool->inputSchema, $arguments);
         } catch (Throwable) {
@@ -394,6 +405,62 @@ final class AssistantToolbox
     }
 
     /**
+     * Every amount of a result written as the person reads it: "10000" in
+     * a document in EUR is « 100,00 € ». The currency is the nearest one
+     * given beside it or above it. Amounts come as strings of digits, in a
+     * field named for one (total, price…) or listed under one (by_activity
+     * → services_bnc); integers are counts and are left.
+     */
+    public static function readableAmounts(mixed $value, string $currency, ?string $key = null, bool $underAmount = false): mixed
+    {
+        if (is_array($value)) {
+            $currency = is_string($value['currency'] ?? null) && $value['currency'] !== '' ? $value['currency'] : $currency;
+            $amounts = $key !== null && (self::isAmountField($key) || str_starts_with($key, 'by_'));
+            $readable = [];
+
+            foreach ($value as $field => $item) {
+                $readable[$field] = is_string($field)
+                    ? self::readableAmounts($item, $currency, $field, $amounts)
+                    : self::readableAmounts($item, $currency, $key, $underAmount);
+            }
+
+            return $readable;
+        }
+
+        if ($key === null || ! is_string($value) || preg_match('/^-?\d+$/', $value) !== 1 || preg_match(self::NOT_AMOUNT_FIELD, $key) === 1 || ! ($underAmount || self::isAmountField($key))) {
+            return $value;
+        }
+
+        $negative = str_starts_with($value, '-');
+        $digits = str_pad(ltrim($value, '-'), 3, '0', STR_PAD_LEFT);
+        $units = number_format((int) substr($digits, 0, -2), 0, '', "\u{202f}");
+
+        return ($negative ? '-' : '') . $units . ',' . substr($digits, -2) . ' ' . ($currency === 'EUR' ? '€' : $currency);
+    }
+
+    /**
+     * The other way: an amount the model copied as it read it (« 100,00 € »)
+     * goes back to the tool in the minor unit, 10000.
+     */
+    public static function minorAmounts(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            return array_map(self::minorAmounts(...), $value);
+        }
+
+        if (! is_string($value) || preg_match('/^(-?)([\d\s\x{202f}\x{a0}.]+),(\d{2})\s*(€|[A-Z]{3})$/u', trim($value), $match) !== 1) {
+            return $value;
+        }
+
+        return (int) ($match[1] . preg_replace('/\D/', '', $match[2]) . $match[3]);
+    }
+
+    private static function isAmountField(string $key): bool
+    {
+        return preg_match(self::AMOUNT_FIELD, $key) === 1 && preg_match(self::NOT_AMOUNT_FIELD, $key) !== 1;
+    }
+
+    /**
      * @param array<string, mixed> $arguments
      * @param list<string>         $scopes
      */
@@ -410,16 +477,17 @@ final class AssistantToolbox
         try {
             $tool = $this->registry->getTool($name);
             // The SDK reads the MCP session from the arguments; there is none here.
-            $result = $this->handler->handle($tool, [...$this->normalised($tool->tool->inputSchema, $arguments), '_session' => null]);
+            $result = $this->handler->handle($tool, [...$this->normalised($tool->tool->inputSchema, self::minorAmounts($arguments)), '_session' => null]);
 
             if ($result === [] || $result === null) {
                 return 'Nothing found. Try one distinctive word (a name, a number), or a list_* tool.';
             }
 
-            $encoded = is_string($result) ? $result : json_encode($result, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            // The tools give amounts in the minor unit. Reminded to divide by
+            // 100, the model still read "8997" as 8 997 € (24/11/2026), then
+            // a 100 € invoice as 10 € (27/11/2026): it is given them written.
+            $encoded = is_string($result) ? $result : json_encode(self::readableAmounts($result, 'EUR'), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-            // The tools give amounts in the minor unit; a small model reads
-            // "8997" as 8 997 € unless reminded next to the figures.
             return self::AMOUNTS_NOTE . "\n" . $encoded;
         } catch (ToolCallException $e) {
             return 'Error: ' . $e->getMessage();
