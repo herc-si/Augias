@@ -123,10 +123,32 @@ final class SalesToolsTest extends KernelTestCase
 
         $draft = $this->invoices()->createInvoice($this->clientId(), [['description' => 'Mission', 'price' => 10000]]);
 
+        self::assertNotNull($this->invoices()->sendingProblem($draft['id']), 'Asked before the person confirms.');
+
         $this->expectException(ToolCallException::class);
-        $this->expectExceptionMessageIsOrContains('no contact');
+        $this->expectExceptionMessageIsOrContains('a contact with an e-mail address');
 
         $this->invoices()->sendInvoice($draft['id']);
+    }
+
+    /**
+     * A quote made without a contact goes to its client's: « envoie-lui le
+     * devis » was confirmed, failed, and asked again (Rémi, 27/11/2026).
+     */
+    public function testADocumentWithoutContactGoesToItsClientsContacts(): void
+    {
+        $this->activateScopes([McpScope::Write->value]);
+        [$clientId] = $this->clientWithContact();
+
+        $quote = $this->quotes()->createQuote($clientId, [['description' => 'Site web', 'price' => 100000]]);
+        self::assertNull($this->quotes()->sendingProblem($quote['id']));
+
+        $this->quotes()->sendQuote($quote['id']);
+        self::assertEmailCount(1);
+        self::assertEmailAddressContains(self::getMailerMessage(0), 'To', 'compta@example.com');
+
+        $invoice = $this->invoices()->createInvoice($clientId, [['description' => 'Mission', 'price' => 10000]]);
+        self::assertNull($this->invoices()->sendingProblem($invoice['id']));
     }
 
     public function testADepositIsDeductedFromTheFinalInvoice(): void

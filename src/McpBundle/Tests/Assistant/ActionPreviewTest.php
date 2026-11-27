@@ -63,6 +63,18 @@ final class ActionPreviewTest extends KernelTestCase
         self::assertSame("3 × Conseil — 80,00\u{a0}€\n1 × Déplacement — 45,50\u{a0}€", str_replace("\u{202f}", "\u{a0}", $preview['details'][1]['value']));
     }
 
+    public function testAClientsAddressShowsOnOneLine(): void
+    {
+        $this->signInMember();
+
+        $preview = $this->preview()->describe('create_resource', ['resource' => 'client', 'data' => [
+            'name' => 'Commune de Bellegarde-Poussieu',
+            'address' => ['street1' => '2 place de la Mairie', 'street2' => null, 'zip' => '38270', 'city' => 'Bellegarde-Poussieu'],
+        ]]);
+
+        self::assertStringContainsString('2 place de la Mairie, 38270 Bellegarde-Poussieu', json_encode($preview, JSON_UNESCAPED_UNICODE) ?: '');
+    }
+
     public function testAnIdentifierOfNothingShowsAsUnknown(): void
     {
         $this->signInMember();

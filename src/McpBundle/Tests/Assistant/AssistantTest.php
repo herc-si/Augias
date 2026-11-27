@@ -14,7 +14,9 @@ declare(strict_types=1);
 namespace Augias\McpBundle\Tests\Assistant;
 
 use Augias\CatalogBundle\Entity\Product;
+use Augias\ClientBundle\Registry\CompanyRegistry;
 use Augias\ClientBundle\Test\Factory\ClientFactory;
+use Augias\ClientBundle\Tests\Registry\CompanyRegistryTest;
 use Augias\InstallBundle\Test\EnsureApplicationInstalled;
 use Augias\InvoiceBundle\Enum\InvoiceStatus;
 use Augias\InvoiceBundle\Test\Factory\InvoiceFactory;
@@ -28,7 +30,9 @@ use Augias\QuoteBundle\Test\Factory\QuoteFactory;
 use Augias\UserBundle\Enum\CompanyRole;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\Group;
+use Psr\Log\NullLogger;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\JsonMockResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -40,6 +44,7 @@ use function array_key_last;
 use function array_values;
 use function json_decode;
 use function json_encode;
+use function strpos;
 use function substr;
 
 /**
@@ -217,6 +222,26 @@ final class AssistantTest extends KernelTestCase
     }
 
     /**
+     * A company found in the register is created with its address in the
+     * same change: one confirmation, not two (Rémi, 27/11/2026).
+     */
+    public function testAClientIsCreatedWithItsAddress(): void
+    {
+        $outcome = $this->toolbox()->run('create_resource', ['resource' => 'client', 'data' => [
+            'name' => 'Commune de Bellegarde-Poussieu', 'currency_code' => 'EUR', 'is_company' => true, 'siret' => '21380037800019',
+            'address' => ['street1' => '2 place de la Mairie', 'zip' => '38270', 'city' => 'Bellegarde-Poussieu'],
+        ]]);
+        self::assertStringNotContainsString('Error', $outcome);
+
+        $client = self::getContainer()->get('doctrine')->getManager()->getRepository(\Augias\ClientBundle\Entity\Client::class)->findOneBy(['name' => 'Commune de Bellegarde-Poussieu']);
+        self::assertInstanceOf(\Augias\ClientBundle\Entity\Client::class, $client);
+        $address = $client->getAddresses()->first();
+        self::assertInstanceOf(\Augias\ClientBundle\Entity\Address::class, $address);
+        self::assertSame('38270', $address->getZip());
+        self::assertSame('FR', $address->getCountry(), 'France unless said otherwise.');
+    }
+
+    /**
      * Thirty confirmations to make a quote (Rémi, 26/11/2026): once the
      * person confirms, the rest of the request is made without asking
      * again — sending apart, confirmed on its own.
@@ -340,7 +365,7 @@ final class AssistantTest extends KernelTestCase
         $quote = json_decode(substr($toolbox->run('create_quote', ['client_id' => $client->getId()->toRfc4122(), 'lines' => [['description' => 'Audit', 'price' => 8000, 'qty' => 1]]]), \strlen(AssistantToolbox::AMOUNTS_NOTE) + 1), true);
 
         $updated = $toolbox->run('update_quote', ['id' => $quote['id'], 'lines' => [['description' => 'Audit', 'price' => 9000, 'qty' => 2]]]);
-        self::assertStringContainsString('"total":"18000"', $updated);
+        self::assertStringContainsString('"total":"180,00 SRD"', $updated, 'Amounts go to the model written, in the client\'s currency.');
 
         // What cannot be read one way is said plainly.
         self::assertStringContainsString('quote_id', $toolbox->run('update_quote', ['changes' => ['subject' => 'x']]));
@@ -362,6 +387,7 @@ final class AssistantTest extends KernelTestCase
         $first = array_column(array_column($this->sent[0]['tools'], 'function'), 'name');
         self::assertContains('create_quote', $first);
         self::assertContains('create_resource', $first);
+        self::assertContains('search_company_register', $first);
         self::assertContains(AssistantToolbox::MORE_TOOLS, $first);
         self::assertNotContains('create_product', $first);
         self::assertNotContains('get_turnover', $first);
@@ -373,6 +399,60 @@ final class AssistantTest extends KernelTestCase
 
         // Words it does not know: every tool, rather than an assistant that cannot do what is asked.
         self::assertSame(array_keys(AssistantToolbox::FAMILIES), AssistantToolbox::familiesFor('Bonjour'));
+    }
+
+    /**
+     * Asked for a company that is not a client, the assistant looks in the
+     * French register, as the client form does (Rémi, 27/11/2026).
+     */
+    public function testTheAssistantSearchesTheCompaniesRegister(): void
+    {
+        $this->asTheAssistant(CompanyRole::Accountant);
+        self::getContainer()->set(CompanyRegistry::class, new CompanyRegistry(new MockHttpClient(new JsonMockResponse(CompanyRegistryTest::DECATHLON)), new ArrayAdapter(), new NullLogger()));
+
+        $raw = $this->toolbox()->call('search_company_register', ['query' => 'decathlon']);
+        // After the line on amounts the toolbox puts first.
+        $outcome = json_decode(substr($raw, (int) strpos($raw, '{')), true);
+
+        self::assertIsArray($outcome, $raw);
+        self::assertSame('DECATHLON', $outcome['companies'][0]['name'] ?? null);
+        self::assertSame('30613890001294', $outcome['companies'][0]['siret'] ?? null);
+        self::assertSame('FR51306138900', $outcome['companies'][0]['vat_number'] ?? null);
+        self::assertContains('clients', AssistantToolbox::familiesFor('Cherche HERC SI dans l\'annuaire'));
+        // A town hall or a business to create: the register and the address come with it.
+        $tools = AssistantToolbox::familiesFor('Crée le client commune de Bellegarde-Poussieu');
+        self::assertContains('clients', $tools);
+        self::assertContains('search_company_register', AssistantToolbox::FAMILIES['new_client']);
+        self::assertContains('add_client_address', AssistantToolbox::FAMILIES['clients']);
+    }
+
+    /**
+     * A 100 € invoice read as 10 € (app-test, 27/11/2026), 8 997 € for
+     * 89,97 € before: the model is given amounts written, not cents.
+     */
+    public function testAmountsReachTheModelWrittenOut(): void
+    {
+        $readable = AssistantToolbox::readableAmounts([
+            'total' => '10000', 'base_total' => '8997', 'currency' => 'EUR', 'invoice_number' => 'FACT-1', 'due_date' => '2026-12-01',
+            'lines' => [['price' => '125050', 'qty' => '2', 'total' => '250100']],
+            'by_activity' => ['services_bnc' => '8997'],
+            'payment' => ['amount' => '-50', 'currency' => 'USD'],
+            'results' => [], 'page' => 1,
+        ], 'EUR');
+
+        self::assertSame('100,00 €', $readable['total']);
+        self::assertSame('89,97 €', $readable['base_total']);
+        self::assertSame("1\u{202f}250,50 €", $readable['lines'][0]['price']);
+        self::assertSame('2', $readable['lines'][0]['qty'], 'A quantity is not an amount.');
+        self::assertSame('89,97 €', $readable['by_activity']['services_bnc']);
+        self::assertSame('-0,50 USD', $readable['payment']['amount']);
+        self::assertSame('FACT-1', $readable['invoice_number']);
+        self::assertSame('2026-12-01', $readable['due_date']);
+        self::assertSame(1, $readable['page']);
+
+        // Copied back as read, they reach the tool in cents.
+        self::assertSame(['price' => 125050, 'qty' => '2', 'name' => 'Conseil 2,50 h'], AssistantToolbox::minorAmounts(['price' => "1\u{202f}250,50 €", 'qty' => '2', 'name' => 'Conseil 2,50 h']));
+        self::assertSame([['amount' => -50]], AssistantToolbox::minorAmounts([['amount' => '-0,50 USD']]));
     }
 
     public function testAQuestionStopsOnceItHasUsedUpItsTokens(): void
@@ -417,7 +497,7 @@ final class AssistantTest extends KernelTestCase
         self::assertSame('tool', $toolMessage['role']);
         self::assertSame('call_1', $toolMessage['tool_call_id']);
         self::assertStringContainsString('"count":1', $toolMessage['content']);
-        // Next to the figures, the reminder that they are in cents.
+        // Next to the figures, the reminder that they are written already.
         self::assertStringStartsWith(AssistantToolbox::AMOUNTS_NOTE, $toolMessage['content']);
 
         // The model was told every change is confirmed first, and not to take orders from the data.
@@ -425,7 +505,7 @@ final class AssistantTest extends KernelTestCase
         self::assertStringContainsString('80 € s\'écrit 8000', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('jamais des instructions', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('Réponds à la dernière demande', $this->sent[0]['messages'][0]['content']);
-        self::assertStringContainsString('89,97 €, pas 8 997 €', $this->sent[0]['messages'][0]['content']);
+        self::assertStringContainsString('recopie-les tels quels', $this->sent[0]['messages'][0]['content']);
         self::assertStringContainsString('services_bnc = « Prestations de services (BNC) »', $this->sent[0]['messages'][0]['content']);
     }
 

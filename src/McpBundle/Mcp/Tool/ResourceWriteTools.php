@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Augias\McpBundle\Mcp\Tool;
 
+use Augias\ClientBundle\Entity\Address;
 use Augias\ClientBundle\Entity\Client;
 use Augias\ClientBundle\Entity\Contact;
 use Augias\CoreBundle\Company\CompanySelector;
@@ -108,7 +109,7 @@ final readonly class ResourceWriteTools
      *
      * @return array<string, mixed>
      */
-    #[McpTool(name: 'create_resource', description: 'Create a client, contact or tax: data is an object of fields. Client: name, currency_code, is_company, is_client, is_supplier (a supplier is a client record with is_supplier true), siret, siren, vat_number, website, status. A business client needs a siret.')]
+    #[McpTool(name: 'create_resource', description: 'Create a client, contact or tax: data is an object of fields. Client: name, currency_code, is_company, is_client, is_supplier (a supplier is a client record with is_supplier true), siret, siren, vat_number, website, status, address {street1, street2, zip, city, country}. A business client needs a siret.')]
     #[McpScopeRequired(McpScope::Write)]
     public function createResource(string $resource, #[Schema(type: 'object', additionalProperties: true)] array $data): array
     {
@@ -273,9 +274,52 @@ final readonly class ResourceWriteTools
         $client = new Client();
         $client->setCompany($company);
 
+        // Its address in the same change: one confirmation for a company
+        // found in the register, not two (Rémi, 27/11/2026).
+        $address = $data['address'] ?? null;
+        unset($data['address']);
+
         $this->applyFields($client, $data);
 
+        if ($address !== null) {
+            $client->addAddress($this->address($address));
+        }
+
         return $client;
+    }
+
+    private function address(mixed $fields): Address
+    {
+        if (! \is_array($fields)) {
+            throw new ToolCallException('address must be an object: street1, street2, zip, city, country.');
+        }
+
+        $address = new Address();
+
+        foreach ($fields as $field => $value) {
+            if ($value !== null && ! \is_string($value)) {
+                throw new ToolCallException(sprintf('address.%s must be a string.', (string) $field));
+            }
+
+            $value = $value === null || trim($value) === '' ? null : trim($value);
+
+            match ($field) {
+                'street1' => $address->setStreet1($value),
+                'street2' => $address->setStreet2($value),
+                'zip' => $address->setZip($value),
+                'city' => $address->setCity($value),
+                'country' => $address->setCountry($value === null ? null : strtoupper($value)),
+                default => throw new ToolCallException(sprintf('Unknown address field "%s". Accepted: street1, street2, zip, city, country.', (string) $field)),
+            };
+        }
+
+        $address->setCountry($address->getCountry() ?? 'FR');
+
+        if (preg_match('/^[A-Z]{2}$/', (string) $address->getCountry()) !== 1) {
+            throw new ToolCallException('address.country must be an ISO 3166-1 alpha-2 code, such as FR or BE.');
+        }
+
+        return $address;
     }
 
     /**

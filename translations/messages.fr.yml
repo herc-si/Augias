@@ -443,6 +443,7 @@ assistant:
     example_3: 'Ajoute au catalogue « Conseil » à 80 € de l''heure'
     examples_title: 'Par exemple :'
     field:
+        address: 'Adresse'
         address_id: 'Adresse'
         amount: 'Montant'
         category_id: 'Catégorie'

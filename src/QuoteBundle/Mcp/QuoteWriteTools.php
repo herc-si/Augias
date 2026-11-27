@@ -409,13 +409,50 @@ final readonly class QuoteWriteTools
     }
 
     /**
+     * Why this quote could not be sent, if it could not: asked before the
+     * person confirms the sending, who then confirms only what goes through
+     * (Rémi, 27/11/2026: a send confirmed, failed, and asked for again).
+     */
+    public function sendingProblem(string $quote_id): ?string
+    {
+        // An unknown quote is said by the call itself, as before.
+        try {
+            $quote = $this->quoteRepository->find(UlidParser::parse($quote_id, 'quote_id'));
+        } catch (ToolCallException) {
+            return null;
+        }
+
+        return $quote instanceof Quote ? $this->recipientsProblem($quote) : null;
+    }
+
+    /**
+     * A quote without a contact goes to its client's contacts that have an
+     * e-mail address: « send him the quote » means them. Null when it has
+     * someone to go to.
+     */
+    private function recipientsProblem(Quote $quote): ?string
+    {
+        if ($quote->getUsers()->isEmpty()) {
+            foreach ($quote->getClient()?->getContacts() ?? [] as $contact) {
+                if (trim((string) $contact->getEmail()) !== '') {
+                    $quote->addUser($contact);
+                }
+            }
+        }
+
+        return $quote->getUsers()->isEmpty()
+            ? 'Neither the quote nor its client has a contact with an e-mail address to send it to: add one to the client with add_contact first.'
+            : null;
+    }
+
+    /**
      * Email a quote to its contacts. A draft is marked as sent first.
      *
      * @param string $quote_id Quote ULID
      *
      * @return array<string, mixed>
      */
-    #[McpTool(name: 'send_quote', description: 'Email a quote (with its PDF) to its contacts; a draft quote is marked as sent.')]
+    #[McpTool(name: 'send_quote', description: 'Email a quote (with its PDF) to its contacts, or to its client\'s contacts with an e-mail address when it has none; a draft quote is marked as sent.')]
     #[McpScopeRequired(McpScope::Write)]
     public function sendQuote(string $quote_id): array
     {
@@ -428,8 +465,9 @@ final readonly class QuoteWriteTools
             throw new ToolCallException(sprintf('Quote %s not found.', $quote_id));
         }
 
-        if ($quote->getUsers()->isEmpty()) {
-            throw new ToolCallException('The quote has no contact to send it to. Add a contact to the client, then to the quote.');
+        $problem = $this->recipientsProblem($quote);
+        if ($problem !== null) {
+            throw new ToolCallException($problem);
         }
 
         try {

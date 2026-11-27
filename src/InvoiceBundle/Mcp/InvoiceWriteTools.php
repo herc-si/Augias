@@ -373,8 +373,9 @@ final readonly class InvoiceWriteTools
             throw new ToolCallException(sprintf('Invoice %s not found.', $invoice_id));
         }
 
-        if ($invoice->getUsers()->isEmpty()) {
-            throw new ToolCallException('Invoice has no contacts to send a reminder to.');
+        $problem = $this->recipientsProblem($invoice);
+        if ($problem !== null) {
+            throw new ToolCallException($problem);
         }
 
         try {
@@ -403,6 +404,41 @@ final readonly class InvoiceWriteTools
     }
 
     /**
+     * Why this invoice could not be sent (or reminded), if it could not:
+     * asked before the person confirms (Rémi, 27/11/2026).
+     */
+    public function sendingProblem(string $invoice_id): ?string
+    {
+        // An unknown invoice is said by the call itself, as before.
+        try {
+            $invoice = $this->invoiceRepository->find(UlidParser::parse($invoice_id, 'invoice_id'));
+        } catch (ToolCallException) {
+            return null;
+        }
+
+        return $invoice instanceof Invoice ? $this->recipientsProblem($invoice) : null;
+    }
+
+    /**
+     * An invoice without a contact goes to its client's contacts that have
+     * an e-mail address. Null when it has someone to go to.
+     */
+    private function recipientsProblem(Invoice $invoice): ?string
+    {
+        if ($invoice->getUsers()->isEmpty()) {
+            foreach ($invoice->getClient()?->getContacts() ?? [] as $contact) {
+                if (trim((string) $contact->getEmail()) !== '') {
+                    $invoice->addUser($contact);
+                }
+            }
+        }
+
+        return $invoice->getUsers()->isEmpty()
+            ? 'Neither the invoice nor its client has a contact with an e-mail address to send it to: add one to the client with add_contact first.'
+            : null;
+    }
+
+    /**
      * Send an invoice as the Send button does: a draft is finalised (numbered,
      * pending payment), emailed with its PDF to its contacts, and handed to the
      * electronic invoicing platform when the client is eligible.
@@ -424,8 +460,9 @@ final readonly class InvoiceWriteTools
             throw new ToolCallException(sprintf('Invoice %s not found.', $invoice_id));
         }
 
-        if ($invoice->getUsers()->isEmpty()) {
-            throw new ToolCallException('The invoice has no contact to send it to. Add a contact to the client, then to the invoice.');
+        $problem = $this->recipientsProblem($invoice);
+        if ($problem !== null) {
+            throw new ToolCallException($problem);
         }
 
         if (InvoiceStatus::Pending !== $invoice->getStatus() && $this->invoiceWorkflow->can($invoice, Graph::TRANSITION_ACCEPT)) {
