@@ -147,7 +147,7 @@ final class AssistantToolbox
     private const array FAMILY_WORDS = [
         'quotes' => ['devis', 'quote', 'estimat', 'proposition'],
         'invoices' => ['factur', 'invoice', 'acompte', 'relanc', 'paiement', 'payé', 'payée', 'paye', 'réglé', 'encaiss', 'impayé', 'retard', 'overdue', 'payment', 'paid', 'reminder'],
-        'clients' => ['client', 'contact', 'adresse', 'siret', 'siren', 'e-mail', 'email', 'customer', 'address', 'annuaire', 'registre', 'sirene', 'register'],
+        'clients' => ['client', 'contact', 'adresse', 'siret', 'siren', 'e-mail', 'email', 'customer', 'address', 'annuaire', 'registre', 'sirene', 'register', 'entreprise', 'société', 'societe', 'commune', 'mairie', 'association'],
         'catalogue' => ['produit', 'catalogue', 'article', 'prestation', 'tarif', 'catégorie', 'product', 'catalog', 'category'],
         'finance' => ['chiffre', 'compta', 'tva', 'déclar', 'urssaf', 'banque', 'bancaire', 'trésorerie', 'achat', 'fournisseur', 'revenu', 'livre', 'journal', 'reporting', 'reçue', 'turnover', 'revenue', 'bank', 'supplier', 'purchase', 'vat', 'accounting', 'ledger'],
     ];

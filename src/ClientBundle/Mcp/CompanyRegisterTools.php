@@ -43,7 +43,7 @@ final readonly class CompanyRegisterTools
      *
      * @return array<string, mixed>
      */
-    #[McpTool(name: 'search_company_register', description: 'Search the official French companies register (INSEE Sirene) by name, SIREN or SIRET, for a company that is not a client yet: name, SIREN, head office SIRET, VAT number and address, to create the client with. An individual entrepreneur who asked not to be listed is found by SIREN or SIRET only, without name or street (name null): ask the person for them.')]
+    #[McpTool(name: 'search_company_register', description: 'Search the French companies register by name (and town), SIREN or SIRET: name, siret, siren, vat_number and address to create a business client with. An unlisted sole trader has name null.')]
     #[McpScopeRequired(McpScope::Read)]
     public function searchCompanyRegister(string $query): array
     {

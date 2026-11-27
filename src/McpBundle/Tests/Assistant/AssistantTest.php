@@ -399,6 +399,11 @@ final class AssistantTest extends KernelTestCase
         self::assertSame('30613890001294', $outcome['companies'][0]['siret'] ?? null);
         self::assertSame('FR51306138900', $outcome['companies'][0]['vat_number'] ?? null);
         self::assertContains('clients', AssistantToolbox::familiesFor('Cherche HERC SI dans l\'annuaire'));
+        // A town hall or a business to create: the register and the address come with it.
+        $tools = AssistantToolbox::familiesFor('Crée le client commune de Bellegarde-Poussieu');
+        self::assertContains('clients', $tools);
+        self::assertContains('search_company_register', AssistantToolbox::FAMILIES['new_client']);
+        self::assertContains('add_client_address', AssistantToolbox::FAMILIES['clients']);
     }
 
     public function testAQuestionStopsOnceItHasUsedUpItsTokens(): void
